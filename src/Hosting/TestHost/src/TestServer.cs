@@ -77,6 +77,16 @@ namespace Microsoft.AspNetCore.TestHost
 
         public IFeatureCollection Features { get; }
 
+        /// <summary>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>. The default value is <see langword="false" />.
+        /// </summary>
+        public bool AllowSynchronousIO { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that controls if <see cref="ExecutionContext"/> and <see cref="AsyncLocal{T}"/> values are preserved from the client to the server. The default value is <see langword="false" />.
+        /// </summary>
+        public bool PreserveExecutionContext { get; set; }
+
         private IHttpApplication<Context> Application
         {
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
@@ -85,7 +95,7 @@ namespace Microsoft.AspNetCore.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, Application);
+            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         public HttpClient CreateClient()
@@ -96,7 +106,7 @@ namespace Microsoft.AspNetCore.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(pathBase, Application);
+            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         /// <summary>
@@ -120,7 +130,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            var builder = new HttpContextBuilder(Application);
+            var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
             builder.Configure(context =>
             {
                 var request = context.Request;
@@ -138,6 +148,7 @@ namespace Microsoft.AspNetCore.TestHost
                 request.PathBase = pathBase;
             });
             builder.Configure(configureContext);
+            // TODO: Wrap the request body if any?
             return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -146,7 +157,7 @@ namespace Microsoft.AspNetCore.TestHost
             if (!_disposed)
             {
                 _disposed = true;
-                _hostInstance.Dispose();
+                _hostInstance?.Dispose();
             }
         }
 

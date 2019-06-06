@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     /// <summary>
     /// A Stream that wraps another stream starting at a certain offset and reading for the given length.
     /// </summary>
-    internal class ReferenceReadStream : Stream
+    internal sealed class ReferenceReadStream : Stream
     {
         private readonly Stream _inner;
         private readonly long _innerOffset;

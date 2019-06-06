@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         public string ExpectedState { get; set; }
 
-        public TestServer CreateTestServer(AuthenticationProperties properties = null) => TestServerBuilder.CreateServer(_configureOptions, handler: null, properties: properties);
+        public TestServer CreateTestServer(AuthenticationProperties properties = null, Func<HttpContext, Task> handler = null) => TestServerBuilder.CreateServer(_configureOptions, handler: handler, properties: properties);
 
         public IDictionary<string, string> ValidateChallengeFormPost(string responseBody, params string[] parametersToValidate)
         {

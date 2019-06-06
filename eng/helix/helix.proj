@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Helix.Common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\build\repo.props" />
+
+  <ItemGroup>
+    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
+    <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
+    <IsExternal>true</IsExternal>
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(CI)' == 'true' ">
+    <HelixType>ci</HelixType>
+    <Creator>aspnetcore</Creator>
+    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(CI)' != 'true' ">
+    <HelixType>dev</HelixType>
+    <Creator>$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMdd HH:mm'))</HelixBuild>
+  </PropertyGroup>
+
+  <Target Name="Gather" BeforeTargets="Build">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+</Project>

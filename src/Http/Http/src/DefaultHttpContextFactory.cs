@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            if (featureCollection is IHttpContextContainer container)
+            if (featureCollection is IDefaultHttpContextContainer container)
             {
                 return container.HttpContext;
             }

@@ -325,33 +325,12 @@ namespace Microsoft.AspNetCore.Routing.Tests
                          ex.Message);
         }
 
-        [Fact]
-        public void ResolveConstraint_HasArguments_NoServiceProvider()
-        {
-            // Arrange
-            var routeOptions = new RouteOptions();
-            var constraintResolver = GetInlineConstraintResolver(routeOptions, hasServiceProvider: false);
-
-            // Act
-            var constraint = constraintResolver.ResolveConstraint("regex(ab,1)");
-
-            // Assert
-            Assert.IsType<RegexInlineRouteConstraint>(constraint);
-        }
-
-        private IInlineConstraintResolver GetInlineConstraintResolver(RouteOptions routeOptions, bool hasServiceProvider = true)
+        private IInlineConstraintResolver GetInlineConstraintResolver(RouteOptions routeOptions)
         {
             var optionsAccessor = new Mock<IOptions<RouteOptions>>();
             optionsAccessor.SetupGet(o => o.Value).Returns(routeOptions);
 
-            if (hasServiceProvider)
-            {
-                return new DefaultInlineConstraintResolver(optionsAccessor.Object, new TestServiceProvider());
-            }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            return new DefaultInlineConstraintResolver(optionsAccessor.Object);
-#pragma warning restore CS0618 // Type or member is obsolete
+            return new DefaultInlineConstraintResolver(optionsAccessor.Object, new TestServiceProvider());
         }
 
         private class MultiConstructorRouteConstraint : IRouteConstraint

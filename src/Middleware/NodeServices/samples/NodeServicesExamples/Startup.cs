@@ -21,7 +21,7 @@ namespace NodeServicesExamples
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IHostingEnvironment env, INodeServices nodeServices)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, INodeServices nodeServices)
         {
             app.UseDeveloperExceptionPage();
 
@@ -42,11 +42,11 @@ namespace NodeServicesExamples
             });
 
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

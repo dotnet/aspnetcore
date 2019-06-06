@@ -10,7 +10,7 @@ namespace System.Buffers
     /// <summary>
     /// Used to allocate and distribute re-usable blocks of memory.
     /// </summary>
-    internal class SlabMemoryPool : MemoryPool<byte>
+    internal sealed class SlabMemoryPool : MemoryPool<byte>
     {
         /// <summary>
         /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
@@ -29,6 +29,11 @@ namespace System.Buffers
         /// larger values can be leased but they will be disposed after use rather than returned to the pool.
         /// </summary>
         public override int MaxBufferSize { get; } = _blockSize;
+
+        /// <summary>
+        /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
+        /// </summary>
+        public static int BlockSize => _blockSize;
 
         /// <summary>
         /// 4096 * 32 gives you a slabLength of 128k contiguous bytes allocated per slab
@@ -157,6 +162,21 @@ namespace System.Buffers
             else
             {
                 GC.SuppressFinalize(block);
+            }
+        }
+
+        // This method can ONLY be called from the finalizer of MemoryPoolBlock
+        internal void RefreshBlock(MemoryPoolSlab slab, int offset, int length)
+        {
+            lock (_disposeSync)
+            {
+                if (!_isDisposed && slab != null && slab.IsActive)
+                {
+                    // Need to make a new object because this one is being finalized
+                    // Note, this must be called within the _disposeSync lock because the block
+                    // could be disposed at the same time as the finalizer.
+                    Return(new MemoryPoolBlock(this, slab, offset, length));
+                }
             }
         }
 

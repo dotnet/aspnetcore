@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the SendFileMiddleware. Using <see cref="HtmlEncoder.Default"/> instance.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options) 
+        public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options)
             : this(next, hostingEnv, HtmlEncoder.Default, options)
         {
         }
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the SendFileMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="encoder">The <see cref="HtmlEncoder"/> used by the default <see cref="HtmlDirectoryFormatter"/>.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, HtmlEncoder encoder, IOptions<DirectoryBrowserOptions> options)
+        public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, HtmlEncoder encoder, IOptions<DirectoryBrowserOptions> options)
         {
             if (next == null)
             {
@@ -78,8 +78,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            // Check if the URL matches any expected paths
-            if (Helpers.IsGetOrHeadMethod(context.Request.Method)
+            // Check if the URL matches any expected paths, skip if an endpoint was selected
+            if (context.GetEndpoint() == null &&
+                Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
                 && TryGetDirectoryInfo(subpath, out var contents))
             {

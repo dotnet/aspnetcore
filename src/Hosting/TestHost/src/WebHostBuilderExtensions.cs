@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -21,6 +22,26 @@ namespace Microsoft.AspNetCore.TestHost
             });
         }
 
+        /// <summary>
+        /// Retrieves the TestServer from the host services.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static TestServer GetTestServer(this IWebHost host)
+        {
+            return (TestServer)host.Services.GetRequiredService<IServer>();
+        }
+
+        /// <summary>
+        /// Retrieves the test client from the TestServer in the host services.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static HttpClient GetTestClient(this IWebHost host)
+        {
+            return host.GetTestServer().CreateClient();
+        }
+
         public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)
         {
             if (webHostBuilder == null)
@@ -33,9 +54,17 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(servicesConfiguration));
             }
 
-            webHostBuilder.ConfigureServices(
-                s => s.AddSingleton<IStartupConfigureServicesFilter>(
-                    new ConfigureTestServicesStartupConfigureServicesFilter(servicesConfiguration)));
+            if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder"))
+            {
+                // Generic host doesn't need to do anything special here since there's only one container.
+                webHostBuilder.ConfigureServices(servicesConfiguration);
+            }
+            else
+            {
+                webHostBuilder.ConfigureServices(
+                    s => s.AddSingleton<IStartupConfigureServicesFilter>(
+                        new ConfigureTestServicesStartupConfigureServicesFilter(servicesConfiguration)));
+            }
 
             return webHostBuilder;
         }

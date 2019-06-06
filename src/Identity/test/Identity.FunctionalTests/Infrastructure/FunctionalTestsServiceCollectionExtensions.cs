@@ -2,24 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Data.Common;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
     public static class FunctionalTestsServiceCollectionExtensions
     {
-        public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, string databaseName) where TContext : DbContext =>
+        public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, DbConnection connection) where TContext : DbContext =>
             services.AddDbContext<TContext>(options =>
-                options.UseInMemoryDatabase(databaseName, memoryOptions => { }));
+                options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .UseSqlite(connection));
 
         public static IServiceCollection SetupTestThirdPartyLogin(this IServiceCollection services) =>
             services.AddAuthentication()

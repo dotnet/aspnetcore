@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DataSourceDependentCache<T> where T : class
+    // FYI: This class is also linked into MVC. If you make changes to the API you will
+    // also need to change MVC's usage.
+    internal sealed class DataSourceDependentCache<T> : IDisposable where T : class
     {
         private readonly EndpointDataSource _dataSource;
         private readonly Func<IReadOnlyList<Endpoint>, T> _initializeCore;
@@ -19,11 +21,19 @@ namespace Microsoft.AspNetCore.Routing
         private bool _initialized;
         private T _value;
 
+        private IDisposable _disposable;
+        private bool _disposed;
+
         public DataSourceDependentCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
         {
             if (dataSource == null)
             {
                 throw new ArgumentNullException(nameof(dataSource));
+            }
+
+            if (initialize == null)
+            {
+                throw new ArgumentNullException(nameof(initialize));
             }
 
             _dataSource = dataSource;
@@ -51,8 +61,31 @@ namespace Microsoft.AspNetCore.Routing
                 var changeToken = _dataSource.GetChangeToken();
                 _value = _initializeCore(_dataSource.Endpoints);
 
-                changeToken.RegisterChangeCallback(_initializerWithState, null);
+                // Don't resubscribe if we're already disposed.
+                if (_disposed)
+                {
+                    return _value;
+                }
+
+                _disposable = changeToken.RegisterChangeCallback(_initializerWithState, null);
                 return _value;
+            }
+        }
+
+        public void Dispose()
+        {
+            lock (_lock)
+            {
+                if (!_disposed)
+                {
+                    _disposable?.Dispose();
+                    _disposable = null;
+
+                    // Tracking whether we're disposed or not prevents a race-condition
+                    // between disposal and Initialize(). If a change callback fires after
+                    // we dispose, then we don't want to reregister.
+                    _disposed = true;
+                }
             }
         }
     }

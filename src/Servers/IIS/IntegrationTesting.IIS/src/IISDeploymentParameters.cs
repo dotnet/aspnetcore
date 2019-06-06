@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         }
 
         public IISDeploymentParameters(
-           string applicationPath,
-           ServerType serverType,
-           RuntimeFlavor runtimeFlavor,
-           RuntimeArchitecture runtimeArchitecture)
+            string applicationPath,
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture runtimeArchitecture)
             : base(applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
         {
         }
@@ -47,6 +47,5 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         public IDictionary<string, string> WebConfigBasedEnvironmentVariables { get; set; } = new Dictionary<string, string>();
 
         public IDictionary<string, string> HandlerSettings { get; set; } = new Dictionary<string, string>();
-
     }
 }

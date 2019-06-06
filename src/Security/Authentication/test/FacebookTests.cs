@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
@@ -325,10 +324,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                                 if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == FacebookDefaults.TokenEndpoint)
                                 {
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
-                                    var graphResponse = JsonConvert.SerializeObject(new
-                                    {
-                                        access_token = "TestAuthToken"
-                                    });
+                                    var graphResponse = "{ \"access_token\": \"TestAuthToken\" }";
                                     res.Content = new StringContent(graphResponse, Encoding.UTF8);
                                     return res;
                                 }
@@ -337,11 +333,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                                 {
                                     finalUserInfoEndpoint = req.RequestUri.ToString();
                                     var res = new HttpResponseMessage(HttpStatusCode.OK);
-                                    var graphResponse = JsonConvert.SerializeObject(new
-                                    {
-                                        id = "TestProfileId",
-                                        name = "TestName"
-                                    });
+                                    var graphResponse = "{ \"id\": \"TestProfileId\", \"name\": \"TestName\" }";
                                     res.Content = new StringContent(graphResponse, Encoding.UTF8);
                                     return res;
                                 }

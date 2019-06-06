@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
@@ -24,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpResponseFeature,
         IHttpSendFileFeature,
         ITlsConnectionFeature,
+        ITlsHandshakeFeature,
         // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
@@ -336,6 +339,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             return Request.IsHttps ? this : null;
         }
+
+        internal ITlsHandshakeFeature GetTlsHandshakeFeature()
+        {
+            return Request.IsHttps ? this : null;
+        }
+
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
@@ -481,6 +490,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get => Request.MaxRequestBodySize;
             set => Request.MaxRequestBodySize = value;
         }
+
+        SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
+
+        CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
+
+        int ITlsHandshakeFeature.CipherStrength => Request.CipherStrength;
+
+        HashAlgorithmType ITlsHandshakeFeature.HashAlgorithm => Request.HashAlgorithm;
+
+        int ITlsHandshakeFeature.HashStrength => Request.HashStrength;
+
+        ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
+
+        int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
         internal async Task OnResponseStart()
         {

@@ -13,6 +13,7 @@ See the [ASP.NET Core MVC documentation](https://docs.microsoft.com/aspnet/core/
 
 Related community projects:
 * [AspNet.Mvc.TypedRouting](https://github.com/ivaylokenov/AspNet.Mvc.TypedRouting): A collection of extension methods providing strongly typed routing and link generation for ASP.NET Core MVC projects.
+* [ASP.NET API Versioning](https://github.com/Microsoft/aspnet-api-versioning): Adds API versioning semantics to your new and existing REST services built with ASP.NET Core. (Also supports ASP.NET Web API and OData.)
 * [ASP.NET MVC Boilerplate](https://visualstudiogallery.msdn.microsoft.com/6cf50a48-fc1e-4eaf-9e82-0b2a6705ca7d): Rich templates for ASP.NET Core MVC.
 * [MyTested.AspNetCore.Mvc](https://github.com/ivaylokenov/MyTested.AspNetCore.Mvc): Powerful fluent testing framework for ASP.NET Core MVC.
 * [MvcDeviceDetector](https://github.com/laskoviymishka/MvcDeviceDetector): Device detection mechanism to create mobile web applications.

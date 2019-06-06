@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 
@@ -45,6 +46,15 @@ namespace Microsoft.AspNetCore.Builder
         /// Default: false.
         /// </summary>
         public bool ServeUnknownFileTypes { get; set; }
+
+        /// <summary>
+        /// Indicates if files should be compressed for HTTPS requests when the Response Compression middleware is available.
+        /// The default value is <see cref="HttpsCompressionMode.Compress"/>.
+        /// </summary>
+        /// <remarks>
+        /// Enabling compression on HTTPS requests for remotely manipulable content may expose security problems.
+        /// </remarks>
+        public HttpsCompressionMode HttpsCompression { get; set; } = HttpsCompressionMode.Compress;
 
         /// <summary>
         /// Called after the status code and headers have been set, but before the body has been written.

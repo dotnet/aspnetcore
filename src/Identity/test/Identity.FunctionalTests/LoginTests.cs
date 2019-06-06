@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         where TStartup : class
         where TContext : DbContext
     {
-        public LoginTests(ServerFactory<TStartup, TContext> serverFactory)
+        protected LoginTests(ServerFactory<TStartup, TContext> serverFactory)
         {
             ServerFactory = serverFactory;
         }
@@ -289,6 +289,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
+            ServerFactory.EnsureDatabaseCreated();
+
             var client = server.CreateClient();
             var newClient = server.CreateClient();
 
@@ -310,6 +312,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .SetupTestEmailSender(emailSender);
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+
+            ServerFactory.EnsureDatabaseCreated();
 
             var client = server.CreateClient();
             var resetPasswordClient = server.CreateClient();

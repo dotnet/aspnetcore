@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
                     context.Logger.ModRewriteNotMatchedRule();
                     return;
                 }
+
+                condBackReferences = condResult.BackReferences;
             }
 
             // At this point, we know our rule passed, first apply pre conditions,

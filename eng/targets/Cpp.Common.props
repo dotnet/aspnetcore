@@ -4,6 +4,10 @@
   <PropertyGroup>
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
     <IsPackable>false</IsPackable>
+
+    <!-- These are defined in Directory.Build.props. This maps the common MSBuild property name to equivalent C++ project properties.  -->
+    <OutDir>$(OutputPath)</OutDir>
+    <IntDir>$(IntermediateOutputPath)</IntDir>
   </PropertyGroup>
 
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />

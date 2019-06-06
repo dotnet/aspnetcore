@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,13 +18,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
 
             // Act
-            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
 
             // Assert
             var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
             Assert.Empty(inner.Endpoints);
+
+            Assert.NotNull(lifetime.Cache);
         }
 
         [Fact]
@@ -32,7 +35,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
-            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
 
             var endpoint = new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
@@ -52,15 +56,41 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void Matcher_IgnoresUpdate_WhenDisposed()
+        {
+            // Arrange
+            var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
+
+            var endpoint = new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                RoutePatternFactory.Parse("a/b/c"),
+                0,
+                EndpointMetadataCollection.Empty,
+                "test");
+
+            lifetime.Dispose();
+
+            // Act
+            dataSource.AddEndpoint(endpoint);
+
+            // Assert
+            var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
+            Assert.Empty(inner.Endpoints);
+        }
+
+        [Fact]
         public void Matcher_Ignores_NonRouteEndpoint()
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
             var endpoint = new Endpoint(TestConstants.EmptyRequestDelegate, EndpointMetadataCollection.Empty, "test");
             dataSource.AddEndpoint(endpoint);
 
             // Act
-            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
 
             // Assert
             var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
@@ -72,6 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
             var endpoint = new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse("/"),
@@ -81,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             dataSource.AddEndpoint(endpoint);
 
             // Act
-            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
 
             // Assert
             var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
@@ -93,6 +124,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             // Arrange
             var dataSource = new DynamicEndpointDataSource();
+            var lifetime = new DataSourceDependentMatcher.Lifetime();
             var endpoint = new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse("/"),
@@ -102,35 +134,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             dataSource.AddEndpoint(endpoint);
 
             // Act
-            var matcher = new DataSourceDependentMatcher(dataSource, TestMatcherBuilder.Create);
+            var matcher = new DataSourceDependentMatcher(dataSource, lifetime, TestMatcherBuilder.Create);
 
             // Assert
             var inner = Assert.IsType<TestMatcher>(matcher.CurrentMatcher);
             Assert.Same(endpoint, Assert.Single(inner.Endpoints));
-        }
-
-        [Fact]
-        public void Cache_Reinitializes_WhenDataSourceChanges()
-        {
-            // Arrange
-            var count = 0;
-
-            var dataSource = new DynamicEndpointDataSource();
-            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
-            {
-                count++;
-                return $"hello, {count}!";
-            });
-
-            cache.EnsureInitialized();
-            Assert.Equal("hello, 1!", cache.Value);
-
-            // Act
-            dataSource.AddEndpoint(null);
-
-            // Assert
-            Assert.Equal(2, count);
-            Assert.Equal("hello, 2!", cache.Value);
         }
 
         private class TestMatcherBuilder : MatcherBuilder
@@ -154,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             public IReadOnlyList<RouteEndpoint> Endpoints { get; set; }
 
-            public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+            public override Task MatchAsync(HttpContext httpContext)
             {
                 throw new NotImplementedException();
             }

@@ -5,7 +5,11 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.StringReader;
+
 import org.junit.jupiter.api.Test;
+
+import com.google.gson.stream.JsonReader;
 
 
 class NegotiateResponseTest {
@@ -15,7 +19,7 @@ class NegotiateResponseTest {
                 "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}," +
                 "{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}," +
                 "{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}";
-        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertTrue(negotiateResponse.getAvailableTransports().contains("WebSockets"));
         assertTrue(negotiateResponse.getAvailableTransports().contains("ServerSentEvents"));
         assertTrue(negotiateResponse.getAvailableTransports().contains("LongPolling"));
@@ -29,7 +33,7 @@ class NegotiateResponseTest {
         String stringNegotiateResponse = "{\"url\":\"www.example.com\"," +
                 "\"accessToken\":\"some_access_token\"," +
                 "\"availableTransports\":[]}";
-        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertTrue(negotiateResponse.getAvailableTransports().isEmpty());
         assertNull(negotiateResponse.getConnectionId());
         assertEquals("some_access_token", negotiateResponse.getAccessToken());
@@ -41,7 +45,7 @@ class NegotiateResponseTest {
     public void NegotiateResponseIgnoresExtraProperties() {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                 "\"extra\":\"something\"}";
-        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
     }
 
@@ -49,7 +53,7 @@ class NegotiateResponseTest {
     public void NegotiateResponseIgnoresExtraComplexProperties() {
         String stringNegotiateResponse = "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                 "\"extra\":[\"something\"]}";
-        NegotiateResponse negotiateResponse = new NegotiateResponse(stringNegotiateResponse);
+        NegotiateResponse negotiateResponse = new NegotiateResponse(new JsonReader(new StringReader(stringNegotiateResponse)));
         assertEquals("bVOiRPG8-6YiJ6d7ZcTOVQ", negotiateResponse.getConnectionId());
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -17,25 +18,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class RequestBodyTests
     {
         [ConditionalFact]
-        public async Task RequestBody_SyncReadEnabledByDefault_ThrowsWhenDisabled()
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
+        public async Task RequestBody_SyncReadDisabledByDefault_WorksWhenEnabled()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
-                Assert.True(server.Options.AllowSynchronousIO);
+                Assert.False(server.Options.AllowSynchronousIO);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 byte[] input = new byte[100];
+                Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(input, 0, input.Length));
+
+                context.AllowSynchronousIO = true;
 
                 Assert.True(context.AllowSynchronousIO);
                 var read = context.Request.Body.Read(input, 0, input.Length);
                 context.Response.ContentLength = read;
                 context.Response.Body.Write(input, 0, read);
-
-                context.AllowSynchronousIO = false;
-                Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(input, 0, input.Length));
 
                 string response = await responseTask;
                 Assert.Equal("Hello World", response);
@@ -141,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2206", FlakyOn.All)]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();

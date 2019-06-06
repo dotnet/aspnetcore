@@ -1,0 +1,70 @@
+parameters:
+  configuration: 'Debug'
+
+  # Optional: condition for the job to run
+  condition: ''
+
+  # Optional: 'true' if future jobs should run even if this job fails
+  continueOnError: false
+
+  # Optional: dependencies of the job
+  dependsOn: ''
+
+  # Optional: Include PublishBuildArtifacts task
+  enablePublishBuildArtifacts: false
+
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  pool: {}
+
+  # Optional: should run as a public build even in the internal project
+  #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
+  runAsPublic: false
+
+  # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
+  publishUsingPipelines: false
+
+jobs:
+- job: Asset_Registry_Publish
+
+  dependsOn: ${{ parameters.dependsOn }}
+
+  displayName: Publish to Build Asset Registry
+
+  pool: ${{ parameters.pool }}
+
+  variables:
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: _BuildConfig
+      value: ${{ parameters.configuration }}
+    - group: Publish-Build-Assets
+
+  steps:
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download artifact
+      inputs:
+        artifactName: AssetManifests
+        downloadPath: '$(Build.StagingDirectory)/Download'
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
+    - task: PowerShell@2
+      displayName: Publish Build Assets
+      inputs:
+        filePath: eng\common\sdk-task.ps1
+        arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
+          /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
+          /p:BuildAssetRegistryToken=$(MaestroAccessToken)
+          /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
+          /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
+          /p:Configuration=$(_BuildConfig)
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
+    - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+          PublishLocation: Container
+          ArtifactName: $(Agent.Os)_PublishBuildAssets
+        continueOnError: true
+        condition: always()      

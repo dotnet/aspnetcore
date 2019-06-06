@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
@@ -25,7 +26,7 @@ namespace SampleStartups
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
-                .UseEnvironment(EnvironmentName.Development)
+                .UseEnvironment(Environments.Development)
                 .UseWebRoot("public")
                 .ConfigureServices(services =>
                 {

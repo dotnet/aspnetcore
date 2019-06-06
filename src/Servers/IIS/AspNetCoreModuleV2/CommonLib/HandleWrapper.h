@@ -9,7 +9,7 @@
 struct InvalidHandleTraits
 {
     using HandleType = HANDLE;
-    static const HANDLE DefaultHandle;
+    static constexpr HANDLE DefaultHandle = nullptr;
     static void Close(HANDLE handle) noexcept { CloseHandle(handle); }
 };
 
@@ -23,7 +23,7 @@ struct NullHandleTraits
 struct FindFileHandleTraits
 {
     using HandleType = HANDLE;
-    static const HANDLE DefaultHandle;
+    static constexpr HANDLE DefaultHandle = nullptr;
     static void Close(HANDLE handle) noexcept { FindClose(handle); }
 };
 
@@ -35,16 +35,16 @@ struct ModuleHandleTraits
 };
 
 // Code analysis doesn't like nullptr usages via traits
-#pragma warning( push )
-#pragma warning ( disable : 26477 ) // disable  Use 'nullptr' rather than 0 or NULL (es.47).
+#pragma warning(push)
+#pragma warning(disable : 26477) // disable  Use 'nullptr' rather than 0 or NULL (es.47).
 
-template<typename traits>
+template <typename traits>
 class HandleWrapper
 {
 public:
     using HandleType = typename traits::HandleType;
 
-    HandleWrapper(HandleType handle = traits::DefaultHandle) noexcept : m_handle(handle) { }
+    HandleWrapper(HandleType handle = traits::DefaultHandle) noexcept : m_handle(handle) {}
     ~HandleWrapper()
     {
         if (m_handle != traits::DefaultHandle)
@@ -54,14 +54,14 @@ public:
     }
 
     operator HandleType() noexcept { return m_handle; }
-    HandleWrapper& operator =(HandleType value) noexcept
+    HandleWrapper &operator=(HandleType value) noexcept
     {
         DBG_ASSERT(m_handle == traits::DefaultHandle);
         m_handle = value;
         return *this;
     }
 
-    HandleType* operator&() noexcept { return &m_handle; }
+    HandleType *operator&() noexcept { return &m_handle; }
 
     HandleType release() noexcept
     {
@@ -74,4 +74,4 @@ private:
     HandleType m_handle;
 };
 
-#pragma warning( pop )
+#pragma warning(pop)

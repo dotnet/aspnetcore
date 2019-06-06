@@ -12,7 +12,7 @@ import * as _debug from "debug";
 
 const debug = _debug("signalr-functional-tests:run");
 
-const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "artifacts");
 const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
 
 const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;
@@ -195,10 +195,9 @@ if (sauce) {
 }
 
 function runKarma(karmaConfig) {
-    return new Promise<karma.TestResults>((resolve, reject) => {
-        const server = new karma.Server(karmaConfig);
-        server.on("run_complete", (browsers, results) => {
-            return resolve(results);
+    return new Promise<number>((resolve, reject) => {
+        const server = new karma.Server(karmaConfig, (exitCode: number) => {
+            resolve(exitCode);
         });
         server.start();
     });
@@ -233,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp3.0", "FunctionalTests.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTests", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTests.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
@@ -351,12 +350,10 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (config.browsers.length === 0) {
             console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
         } else {
-            karmaExit = (await runKarma(conf)).exitCode;
-        }
-
-        if (karmaExit) {
+            karmaExit = (await runKarma(conf));
             console.log(`karma exit code: ${karmaExit}`);
         }
+
         console.log(`jest exit code: ${jestExit}`);
 
         process.exit(jestExit !== 0 ? jestExit : karmaExit);

@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -42,11 +41,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public LibuvOutputConsumerTests()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = MemoryPoolFactory.Create();
             _mockLibuv = new MockLibuv();
 
-            var libuvTransport = new LibuvTransport(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0));
-            _libuvThread = new LibuvThread(libuvTransport, maxLoops: 1);
+            var context = new TestLibuvTransportContext();
+            _libuvThread = new LibuvThread(_mockLibuv, context, maxLoops: 1);
             _libuvThread.StartAsync().Wait();
         }
 
@@ -304,13 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.NotEmpty(completeQueue);
 
                     // Add more bytes to the write-behind buffer to prevent the next write from
-                    _ = outputProducer.WriteAsync((writableBuffer, state) =>
-                    {
-                        writableBuffer.Write(state);
-                        return state.Count;
-                    },
-                    halfWriteBehindBuffer,
-                    default);
+                    _ = outputProducer.WriteDataAsync(halfWriteBehindBuffer, default);
 
                     // Act
                     var writeTask2 = outputProducer.WriteDataAsync(halfWriteBehindBuffer);
@@ -773,6 +766,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 http1Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
                 outputReader.Complete(ex);
+            }
+        }
+
+        // Work around the internal type conflict (multiple assemblies have internalized this type and that fails with IVT)
+        private class DuplexPipe : IDuplexPipe
+        {
+            public DuplexPipe(PipeReader reader, PipeWriter writer)
+            {
+                Input = reader;
+                Output = writer;
+            }
+
+            public PipeReader Input { get; }
+
+            public PipeWriter Output { get; }
+
+            public static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+            {
+                var input = new Pipe(inputOptions);
+                var output = new Pipe(outputOptions);
+
+                var transportToApplication = new DuplexPipe(output.Reader, input.Writer);
+                var applicationToTransport = new DuplexPipe(input.Reader, output.Writer);
+
+                return new DuplexPipePair(applicationToTransport, transportToApplication);
+            }
+
+            // This class exists to work around issues with value tuple on .NET Framework
+            public readonly struct DuplexPipePair
+            {
+                public IDuplexPipe Transport { get; }
+                public IDuplexPipe Application { get; }
+
+                public DuplexPipePair(IDuplexPipe transport, IDuplexPipe application)
+                {
+                    Transport = transport;
+                    Application = application;
+                }
             }
         }
     }

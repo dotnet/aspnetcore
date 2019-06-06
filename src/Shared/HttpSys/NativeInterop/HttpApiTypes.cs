@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Security.Authentication;
+
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static unsafe class HttpApiTypes
@@ -427,11 +429,23 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        internal struct HTTP_SSL_PROTOCOL_INFO
+        {
+            internal SslProtocols Protocol;
+            internal CipherAlgorithmType CipherType;
+            internal uint CipherStrength;
+            internal HashAlgorithmType HashType;
+            internal uint HashStrength;
+            internal ExchangeAlgorithmType KeyExchangeType;
+            internal uint KeyExchangeStrength;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         internal struct HTTP_REQUEST_INFO
         {
             internal HTTP_REQUEST_INFO_TYPE InfoType;
             internal uint InfoLength;
-            internal HTTP_REQUEST_AUTH_INFO* pInfo;
+            internal void* pInfo;
         }
 
         [Flags]

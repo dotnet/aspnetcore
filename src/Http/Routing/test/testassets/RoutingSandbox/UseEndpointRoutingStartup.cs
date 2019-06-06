@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,11 +32,13 @@ namespace RoutingSandbox
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(builder =>
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                builder.MapHello("/helloworld", "World");
+                endpoints.MapHello("/helloworld", "World");
 
-                builder.MapGet(
+                endpoints.MapGet(
                     "/",
                     (httpContext) =>
                     {
@@ -46,6 +49,10 @@ namespace RoutingSandbox
                         foreach (var endpoint in dataSource.Endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText, StringComparer.OrdinalIgnoreCase))
                         {
                             sb.AppendLine($"- {endpoint.RoutePattern.RawText}");
+                            foreach (var metadata in endpoint.Metadata)
+                            {
+                                sb.AppendLine("    " + metadata);
+                            }
                         }
 
                         var response = httpContext.Response;
@@ -53,7 +60,7 @@ namespace RoutingSandbox
                         response.ContentType = "text/plain";
                         return response.WriteAsync(sb.ToString());
                     });
-                builder.MapGet(
+                endpoints.MapGet(
                     "/plaintext",
                     (httpContext) =>
                     {
@@ -64,9 +71,8 @@ namespace RoutingSandbox
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
-                builder.MapGet(
+                endpoints.MapGet(
                     "/graph",
-                    "DFA Graph",
                     (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
@@ -77,9 +83,13 @@ namespace RoutingSandbox
                         }
 
                         return Task.CompletedTask;
-                    });
+                    }).WithDisplayName("DFA Graph");
 
-                builder.MapFramework(frameworkBuilder =>
+                endpoints.MapGet("/attributes", HandlerWithAttributes);
+
+                endpoints.Map("/getwithattributes", Handler);
+
+                endpoints.MapFramework(frameworkBuilder =>
                 {
                     frameworkBuilder.AddPattern("/transform/{hub:slugify=TestHub}/{method:slugify=TestMethod}");
                     frameworkBuilder.AddPattern("/{hub}/{method=TestMethod}");
@@ -90,7 +100,30 @@ namespace RoutingSandbox
                 });
             });
 
-            app.UseStaticFiles();
+        }
+
+        [Authorize]
+        private Task HandlerWithAttributes(HttpContext context)
+        {
+            return context.Response.WriteAsync("I have ann authorize attribute");
+        }
+
+        [HttpGet]
+        private Task Handler(HttpContext context)
+        {
+            return context.Response.WriteAsync("I have a method metadata attribute");
+        }
+
+        private class AuthorizeAttribute : Attribute
+        {
+
+        }
+
+        private class HttpGetAttribute : Attribute, IHttpMethodMetadata
+        {
+            public bool AcceptCorsPreflight => false;
+
+            public IReadOnlyList<string> HttpMethods { get; } = new List<string> { "GET" };
         }
     }
 }

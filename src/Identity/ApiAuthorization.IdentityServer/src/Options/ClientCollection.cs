@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using IdentityServer4.Models;
@@ -55,18 +55,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the clients in <paramref name="clients"/> to the collection.
         /// </summary>
         /// <param name="clients">The list of <see cref="Client"/> to add.</param>
-        public void AddRange(IEnumerable<Client> clients)
-        {
-            foreach (var client in clients)
-            {
-                Add(client);
-            }
-        }
-
-        /// <summary>
-        /// Adds the clients in <paramref name="clients"/> to the collection.
-        /// </summary>
-        /// <param name="clients">The list of <see cref="Client"/> to add.</param>
         public void AddRange(params Client[] clients)
         {
             foreach (var client in clients)
@@ -107,18 +95,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public void AddNativeApp(string clientId, Action<ClientBuilder> configure)
         {
             var app = ClientBuilder.NativeApp(clientId);
-            configure(app);
-            Add(app.Build());
-        }
-
-        /// <summary>
-        /// Adds an externally registered web application..
-        /// </summary>
-        /// <param name="clientId">The client id for the web application.</param>
-        /// <param name="configure">The <see cref="Action{ClientBuilder}"/> to configure the web application.</param>
-        public void AddWebApplication(string clientId, Action<ClientBuilder> configure)
-        {
-            var app = ClientBuilder.WebApplication(clientId);
             configure(app);
             Add(app.Build());
         }

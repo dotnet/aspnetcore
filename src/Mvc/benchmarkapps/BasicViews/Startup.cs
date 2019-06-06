@@ -116,7 +116,16 @@ namespace BasicViews
             });
 
             app.UseStaticFiles();
-            app.UseMvcWithDefaultRoute();
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
 
         private void CreateDatabaseTables(IServiceProvider services)

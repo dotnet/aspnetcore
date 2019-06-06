@@ -40,18 +40,19 @@ namespace Microsoft.AspNetCore.Http
 
         public DefaultHttpContext(IFeatureCollection features)
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _features.Initalize(features);
             _request = new DefaultHttpRequest(this);
             _response = new DefaultHttpResponse(this);
         }
 
         public void Initialize(IFeatureCollection features)
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
-            _request.Initialize();
-            _response.Initialize();
-            _connection?.Initialize(features);
-            _websockets?.Initialize(features);
+            var revision = features.Revision;
+            _features.Initalize(features, revision);
+            _request.Initialize(revision);
+            _response.Initialize(revision);
+            _connection?.Initialize(features, revision);
+            _websockets?.Initialize(features, revision);
         }
 
         public void Uninitialize()

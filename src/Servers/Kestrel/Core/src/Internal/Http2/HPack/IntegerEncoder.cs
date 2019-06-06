@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public static class IntegerEncoder
+    internal static class IntegerEncoder
     {
         public static bool Encode(int i, int n, Span<byte> buffer, out int length)
         {
+            Debug.Assert(i >= 0);
+            Debug.Assert(n >= 1 && n <= 8);
+
             var j = 0;
             length = 0;
 
@@ -37,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 {
                     buffer[j++] = (byte)(i % 128 + 128);
 
-                    if (j > buffer.Length)
+                    if (j >= buffer.Length)
                     {
                         return false;
                     }

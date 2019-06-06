@@ -8,13 +8,14 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    public class TestServer : IDisposable, IStartup
+    internal class TestServer : IDisposable, IStartup
     {
         private IWebHost _host;
         private ListenOptions _listenOptions;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _app = app;
             Context = context;
 
-            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory)
+            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
                 .UseKestrel(options =>
                 {
                     configureKestrel(options);
@@ -85,11 +86,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         Assert.All(context.ServerOptions.ListenOptions, lo =>
                             Assert.Equal(context.ExpectedConnectionMiddlewareCount, lo._middleware.Count));
 
-                        return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
+                        return new KestrelServer(sp.GetRequiredService<IConnectionListenerFactory>(), context);
                     });
                     configureServices(services);
                 })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
+                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                 .Build();
 
             _host.Start();
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         IServiceProvider IStartup.ConfigureServices(IServiceCollection services)
         {
             // Unfortunately, this needs to be replaced in IStartup.ConfigureServices
-            services.AddSingleton<IApplicationLifetime, LifetimeNotImplemented>();
+            services.AddSingleton<IHostApplicationLifetime, LifetimeNotImplemented>();
             return services.BuildServiceProvider();
         }
 

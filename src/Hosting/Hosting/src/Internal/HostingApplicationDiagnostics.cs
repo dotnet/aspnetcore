@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
-        private const string RequestIdHeaderName = "Request-Id";
-        private const string CorrelationContextHeaderName = "Correlation-Context";
-
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
@@ -49,20 +46,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
-            // id from the header
-            StringValues correlationId;
-            if (diagnosticListenerEnabled || loggingEnabled)
+            if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
             {
-                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+                context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+                context.HasDiagnosticListener = hasDiagnosticListener;
             }
 
             if (diagnosticListenerEnabled)
             {
-                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
-                {
-                    context.Activity = StartActivity(httpContext, correlationId);
-                }
                 if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
                 {
                     startTimestamp = Stopwatch.GetTimestamp();
@@ -76,7 +67,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext, correlationId);
+                context.Scope = _logger.RequestScope(httpContext, context.Activity.Id);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -89,7 +80,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     LogRequestStarting(httpContext);
                 }
             }
-
             context.StartTimestamp = startTimestamp;
         }
 
@@ -137,19 +127,28 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
 
                 }
-
-                var activity = context.Activity;
-                // Always stop activity if it was started
-                if (activity != null)
-                {
-                    StopActivity(httpContext, activity);
-                }
             }
 
-            if (context.EventLogEnabled && exception != null)
+            var activity = context.Activity;
+            // Always stop activity if it was started
+            if (activity != null)
             {
-                // Non-inline
-                HostingEventSource.Log.UnhandledException();
+                StopActivity(httpContext, activity, context.HasDiagnosticListener);
+            }
+
+            if (context.EventLogEnabled)
+            {
+                if (exception != null)
+                {
+                    // Non-inline
+                    HostingEventSource.Log.UnhandledException();
+                }
+
+                // Count 500 as failed requests
+                if (httpContext.Response.StatusCode >= 500)
+                {
+                    HostingEventSource.Log.RequestFailed();
+                }
             }
 
             // Logging Scope is finshed with
@@ -240,17 +239,29 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
+        private Activity StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
         {
             var activity = new Activity(ActivityName);
+            hasDiagnosticListener = false;
+
+            var headers = httpContext.Request.Headers;
+            if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
+            {
+                headers.TryGetValue(HeaderNames.RequestId, out requestId);
+            }
+
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
+                if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
+                {
+                    activity.TraceStateString = traceState;
+                }
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(CorrelationContextHeaderName);
-                if (baggage != StringValues.Empty)
+                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                if (baggage.Length > 0)
                 {
                     foreach (var item in baggage)
                     {
@@ -262,8 +273,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
+            _diagnosticListener.OnActivityImport(activity, httpContext);
+
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
+                hasDiagnosticListener = true;
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
             }
             else
@@ -275,9 +289,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void StopActivity(HttpContext httpContext, Activity activity)
+        private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
         {
-            _diagnosticListener.StopActivity(activity, new { HttpContext = httpContext });
+            if (hasDiagnosticListener)
+            {
+                _diagnosticListener.StopActivity(activity, new { HttpContext = httpContext });
+            }
+            else
+            {
+                activity.Stop();
+            }
         }
     }
 }

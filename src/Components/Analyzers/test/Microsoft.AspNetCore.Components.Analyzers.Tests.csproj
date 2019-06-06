@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- This is set to a ProjectReference because analyzers cannot be referenced via Reference.  -->
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Components.Analyzers.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,5 +1,21 @@
 <Project>
-  <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
+
+  <PropertyGroup>
+    <IncludePath>$(IncludePath);$(IntDir)</IncludePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="@(MessageFile->Count()) != 0">
+    <CustomBuild Include="@(MessageFile)">
+      <FileType>Document</FileType>
+      <Command>mc "%(FullPath)" -h $(IntDir) -r $(IntDir)</Command>
+      <Message>Compiling Event Messages ...</Message>
+      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG0409.bin</Outputs>
+    </CustomBuild>
+
+    <MessageFile Remove="@(MessageFile)" />
+  </ItemGroup>
+
+  <Target Name="CreateVersionHeader" DependsOnTargets="InitializeSourceControlInformation" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />
       <VersionHeaderContents Include="// Licensed under the MIT License. See LICENSE.txt in the project root for license information." />
@@ -11,14 +27,14 @@
       <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
       <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
       <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
-      <VersionHeaderContents Include="#define CommitHash &quot;$(CommitHash)\0&quot;" />
+      <VersionHeaderContents Include="#define CommitHash &quot;$(SourceRevisionId)\0&quot;" />
     </ItemGroup>
 
     <ItemGroup>
-      <FileWrites Include="version.h" />
+      <FileWrites Include="$(IntDir)version.h" />
     </ItemGroup>
 
-    <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile File="$(IntDir)version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
   </Target>
 
 </Project>

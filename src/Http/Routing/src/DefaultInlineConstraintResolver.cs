@@ -21,17 +21,15 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultInlineConstraintResolver"/> class.
         /// </summary>
-        /// <param name="routeOptions">
-        /// Accessor for <see cref="RouteOptions"/> containing the constraints of interest.
-        /// </param>
-        [Obsolete("This constructor is obsolete. Use DefaultInlineConstraintResolver.ctor(IOptions<RouteOptions>, IServiceProvider) instead.")]
-        public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
-        {
-            _inlineConstraintMap = routeOptions.Value.ConstraintMap;
-        }
-
+        /// <param name="routeOptions">Accessor for <see cref="RouteOptions"/> containing the constraints of interest.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to get service arguments from.</param>
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions, IServiceProvider serviceProvider)
         {
+            if (routeOptions == null)
+            {
+                throw new ArgumentNullException(nameof(routeOptions));
+            }
+
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));

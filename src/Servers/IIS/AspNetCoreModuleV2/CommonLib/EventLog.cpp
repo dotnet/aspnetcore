@@ -21,7 +21,7 @@ EventLog::LogEventNoTrace(
     }
     // Static locals to avoid getting the process ID and string multiple times.
     // Effectively have the same semantics as global variables, except initialized
-    // on first occurence.
+    // on first occurrence.
     static const auto processIdString = GetProcessIdString();
     static const auto versionInfoString = GetVersionInfoString();
     

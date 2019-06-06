@@ -5,8 +5,6 @@
 
 #include "AppOfflineTrackingApplication.h"
 
-typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]); // TODO these may need to be BSTRs
-
 class InProcessApplicationBase : public AppOfflineTrackingApplication
 {
 public:

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore;
 
@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.Hosting
         /// <remarks>
         ///   The following defaults are applied to the <see cref="IWebHostBuilder"/>:
         ///     use Kestrel as the web server and configure it using the application's configuration providers,
+        ///     adds the HostFiltering middleware,
+        ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.
         /// </remarks>
         /// <param name="builder">The <see cref="IHostBuilder" /> instance to configure</param>

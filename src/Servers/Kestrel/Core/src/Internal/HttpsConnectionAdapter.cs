@@ -11,16 +11,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    public class HttpsConnectionAdapter : IConnectionAdapter
+    internal class HttpsConnectionAdapter : IConnectionAdapter
     {
         private static readonly ClosedAdaptedConnection _closedAdaptedConnection = new ClosedAdaptedConnection();
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         {
             SslStream sslStream;
             bool certificateRequired;
-            var feature = new TlsConnectionFeature();
+            var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
@@ -128,8 +128,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var timeoutFeature = context.Features.Get<IConnectionTimeoutFeature>();
             timeoutFeature.SetTimeout(_options.HandshakeTimeout);
 
-            _options.OnHandshakeStarted?.Invoke();
-
             try
             {
                 // Adapt to the SslStream signature
@@ -170,6 +168,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
                 }
+
+                _options.OnAuthenticate?.Invoke(context.ConnectionContext, sslOptions);
 
                 await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
             }

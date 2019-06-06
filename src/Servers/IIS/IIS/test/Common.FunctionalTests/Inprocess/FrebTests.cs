@@ -14,15 +14,13 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class FrebTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-        public FrebTests(PublishedSitesFixture fixture)
+        public FrebTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static IList<FrebLogItem> FrebChecks()
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task FrebIncludesHResultFailures()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var parameters = Fixture.GetBaseDeploymentParameters();
             parameters.TransformArguments((args, _) => string.Empty);
             var result = await SetupFrebApp(parameters);
 
@@ -104,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task<IISDeploymentResult> SetupFrebApp(IISDeploymentParameters parameters = null)
         {
-            parameters = parameters ?? _fixture.GetBaseDeploymentParameters(publish: true);
+            parameters = parameters ?? Fixture.GetBaseDeploymentParameters();
             parameters.EnableFreb("Verbose", _logFolderPath);
 
             Directory.CreateDirectory(_logFolderPath);

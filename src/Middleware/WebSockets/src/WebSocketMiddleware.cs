@@ -48,12 +48,6 @@ namespace Microsoft.AspNetCore.WebSockets
             // TODO: validate options.
         }
 
-        [Obsolete("This constructor has been replaced with an equivalent constructor which requires an ILoggerFactory.")]
-        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options)
-            : this(next, options, NullLoggerFactory.Instance)
-        {
-        }
-
         public Task Invoke(HttpContext context)
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
@@ -153,13 +147,13 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[Constants.Headers.SecWebSocketKey]);
+                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
-                return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
+                return WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);
             }
         }
     }

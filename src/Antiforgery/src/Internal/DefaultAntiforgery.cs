@@ -9,13 +9,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Provides access to the antiforgery system, which provides protection against
     /// Cross-site Request Forgery (XSRF, also called CSRF) attacks.
     /// </summary>
-    public class DefaultAntiforgery : IAntiforgery
+    internal class DefaultAntiforgery : IAntiforgery
     {
         private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryTokenGenerator _tokenGenerator;
@@ -133,12 +133,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             // Validate
-            string message;
             var result = _tokenGenerator.TryValidateTokenSet(
                 httpContext,
                 deserializedCookieToken,
                 deserializedRequestToken,
-                out message);
+                out string message);
 
             if (result)
             {
@@ -264,12 +263,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 _tokenStore.SaveCookieToken(httpContext, cookieToken);
             }
 
-            if (!_options.SuppressXFrameOptionsHeader && !httpContext.Response.Headers.ContainsKey("X-Frame-Options"))
+            if (!_options.SuppressXFrameOptionsHeader && !httpContext.Response.Headers.ContainsKey(HeaderNames.XFrameOptions))
             {
                 // Adding X-Frame-Options header to prevent ClickJacking. See
                 // http://tools.ietf.org/html/draft-ietf-websec-x-frame-options-10
                 // for more information.
-                httpContext.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                httpContext.Response.Headers[HeaderNames.XFrameOptions] = "SAMEORIGIN";
             }
         }
 

@@ -31,7 +31,6 @@
     <Culture Condition=" '$(Culture)' == '' ">en-US</Culture>
     <Cultures Condition=" '$(Cultures)' == '' ">$(Culture)</Cultures>
     <InstallerPlatform>$(Platform)</InstallerPlatform>
-    <PlatformName Condition=" '$(PlatformName)' == '' ">$(Platform)</PlatformName>
     <OutDir Condition=" '$(OutDir)' == '' ">$(OutputPath)</OutDir>
     <DefineConstants>$(DefineConstants);BinPath=$(OutputPath)$(Culture)\</DefineConstants>
     <DefineConstants>$(WixVariables);$(DefineConstants)</DefineConstants>

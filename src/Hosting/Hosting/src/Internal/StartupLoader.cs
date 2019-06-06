@@ -279,6 +279,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return new ConfigureContainerBuilder(configureMethod);
         }
 
+        internal static bool HasConfigureServicesIServiceProviderDelegate(Type startupType, string environmentName)
+        {
+            return null != FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false);
+        }
+
         internal static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
         {
             var servicesMethod = FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)

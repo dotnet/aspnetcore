@@ -26,7 +26,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
+    internal class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
     {
         public static byte[] ClientPreface { get; } = Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n");
 
@@ -357,29 +357,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return false;
         }
 
-        private bool ParsePreface(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private bool ParsePreface(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
-            consumed = readableBuffer.Start;
-            examined = readableBuffer.End;
+            consumed = buffer.Start;
+            examined = buffer.End;
 
-            if (readableBuffer.Length < ClientPreface.Length)
+            if (buffer.Length < ClientPreface.Length)
             {
                 return false;
             }
 
-            var span = readableBuffer.IsSingleSegment
-                ? readableBuffer.First.Span
-                : readableBuffer.ToSpan();
+            var preface = buffer.Slice(0, ClientPreface.Length);
+            var span = preface.ToSpan();
 
-            for (var i = 0; i < ClientPreface.Length; i++)
+            if (!span.SequenceEqual(ClientPreface))
             {
-                if (ClientPreface[i] != span[i])
-                {
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
-                }
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorInvalidPreface, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            consumed = examined = readableBuffer.GetPosition(ClientPreface.Length);
+            consumed = examined = preface.End;
             return true;
         }
 
@@ -705,7 +701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                return ackTask;
+                return ackTask.AsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
@@ -738,7 +734,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload);
+            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).AsTask();
         }
 
         private Task ProcessGoAwayFrameAsync()
@@ -1077,9 +1073,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ValidateHeader(name, value);
             try
             {
-                // Drop trailers for now. Adding them to the request headers is not thread safe.
-                // https://github.com/aspnet/KestrelHttpServer/issues/2051
-                if (_requestHeaderParsingState != RequestHeaderParsingState.Trailers)
+                if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                {
+                    _currentHeadersStream.OnTrailer(name, value);
+                }
+                else
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
@@ -1095,6 +1093,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http2ErrorCode.PROTOCOL_ERROR);
             }
         }
+
+        public void OnHeadersComplete()
+            => _currentHeadersStream.OnHeadersComplete();
 
         private void ValidateHeader(Span<byte> name, Span<byte> value)
         {

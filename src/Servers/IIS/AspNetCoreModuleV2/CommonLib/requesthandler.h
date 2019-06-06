@@ -24,6 +24,8 @@ public:
     VOID
     ReferenceRequestHandler() noexcept override
     {
+        DBG_ASSERT(m_cRefs != 0);
+
         InterlockedIncrement(&m_cRefs);
     }
 
@@ -73,7 +75,7 @@ public:
     {
     }
 
-private:
+protected:
     IHttpContext& m_pHttpContext;
     mutable LONG  m_cRefs = 1;
 };

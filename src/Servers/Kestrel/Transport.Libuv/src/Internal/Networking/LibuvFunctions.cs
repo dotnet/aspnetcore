@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class LibuvFunctions
+    internal class LibuvFunctions
     {
         public LibuvFunctions()
         {

@@ -35,9 +35,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  + $" --output \"{publishDirectory.FullName}\""
                                  + $" --framework {deploymentParameters.TargetFramework}"
                                  + $" --configuration {deploymentParameters.Configuration}"
-                                 + " --no-restore -p:VerifyMatchingImplicitPackageVersion=false";
-                // Set VerifyMatchingImplicitPackageVersion to disable errors when Microsoft.NETCore.App's version is overridden externally
-                // This verification doesn't matter if we are skipping restore during tests.
+                                 + $" /p:TargetArchitecture={deploymentParameters.RuntimeArchitecture}"
+                                 + " --no-restore";
 
                 if (deploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var architecture = deploymentParameters.RuntimeArchitecture;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return "win7-" + architecture;
+                return "win-" + architecture;
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

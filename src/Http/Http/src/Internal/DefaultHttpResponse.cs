@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpResponseStartFeature> _nullResponseStartFeature = f => null;
         private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
         private readonly static Func<HttpContext, IResponseBodyPipeFeature> _newResponseBodyPipeFeature = context => new ResponseBodyPipeFeature(context);
 
@@ -23,12 +25,17 @@ namespace Microsoft.AspNetCore.Http.Internal
         public DefaultHttpResponse(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(context.Features);
         }
 
         public void Initialize()
         {
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(_context.Features);
+        }
+
+        public void Initialize(int revision)
+        {
+            _features.Initalize(_context.Features, revision);
         }
 
         public void Uninitialize()
@@ -38,6 +45,9 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private IHttpResponseFeature HttpResponseFeature =>
             _features.Fetch(ref _features.Cache.Response, _nullResponseFeature);
+
+        private IHttpResponseStartFeature HttpResponseStartFeature =>
+            _features.Fetch(ref _features.Cache.ResponseStart, _nullResponseStartFeature);
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
@@ -99,10 +109,9 @@ namespace Microsoft.AspNetCore.Http.Internal
             get { return HttpResponseFeature.HasStarted; }
         }
 
-        public override PipeWriter BodyPipe
+        public override PipeWriter BodyWriter
         {
-            get { return ResponseBodyPipeFeature.ResponseBodyPipe; }
-            set { ResponseBodyPipeFeature.ResponseBodyPipe = value; }
+            get { return ResponseBodyPipeFeature.Writer; }
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)
@@ -139,11 +148,27 @@ namespace Microsoft.AspNetCore.Http.Internal
             Headers[HeaderNames.Location] = location;
         }
 
+        public override Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            if (HasStarted)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (HttpResponseStartFeature == null)
+            {
+                return HttpResponseFeature.Body.FlushAsync(cancellationToken);
+            }
+
+            return HttpResponseStartFeature.StartAsync(cancellationToken);
+        }
+
         struct FeatureInterfaces
         {
             public IHttpResponseFeature Response;
             public IResponseCookiesFeature Cookies;
             public IResponseBodyPipeFeature BodyPipe;
+            public IHttpResponseStartFeature ResponseStart;
         }
     }
 }

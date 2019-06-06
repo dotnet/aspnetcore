@@ -13,6 +13,7 @@ with the right MSBuild incantations to get output copied to the right place.
         <ProjectReference Include="@(NativeProjectReference)">
           <!-- Set the arch-->
           <SetPlatform>Platform=%(Platform)</SetPlatform>
+          <SetPlatform Condition="'%(Platform)' == 'x86'">Platform=Win32</SetPlatform>
           <!-- The base path for the output. -->
           <LinkBase>%(Platform)\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->

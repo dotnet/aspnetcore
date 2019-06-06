@@ -7,8 +7,6 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- There are no symbols. -->
     <IncludeSymbols>false</IncludeSymbols>
-    <!-- There is no API to check -->
-    <EnableApiCheck>false</EnableApiCheck>
     <!-- Manually control dependencies -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- The only build output of a pkgproj is the project -->
@@ -19,16 +17,6 @@
     <RunPackageAnalysis>false</RunPackageAnalysis>
 
   </PropertyGroup>
-
-  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
-    <ItemGroup>
-      <ArtifactInfo Include="$(TargetPath)">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-      </ArtifactInfo>
-    </ItemGroup>
-  </Target>
 
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
@@ -40,6 +41,48 @@ namespace Microsoft.AspNetCore.StaticFiles
                     var response = await client.GetAsync("TestDocument.txt");
 
                     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => { services.AddSingleton(LoggerFactory); services.AddRouting(); })
+                .UseKestrel()
+                .UseWebRoot(AppContext.BaseDirectory)
+                .Configure(app =>
+                {
+                    // Routing first => static files noops
+                    app.UseRouting();
+
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint, this will make the default files noop.
+                        context.SetEndpoint(new Endpoint((c) =>
+                        {
+                            return context.Response.WriteAsync("Hi from endpoint.");
+                        },
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseStaticFiles();
+
+                    app.UseEndpoints(endpoints => {});
+                });
+
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
+            {
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                {
+                    var response = await client.GetAsync("TestDocument.txt");
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
                 }
             }
         }
@@ -99,7 +142,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
                 using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
@@ -137,7 +180,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
                 using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
@@ -164,25 +207,25 @@ namespace Microsoft.AspNetCore.StaticFiles
         };
 
         [Fact]
-        public void ClientDisconnect_Kestrel_NoWriteExceptionThrown()
+        public Task ClientDisconnect_Kestrel_NoWriteExceptionThrown()
         {
-            ClientDisconnect_NoWriteExceptionThrown(ServerType.Kestrel);
+            return ClientDisconnect_NoWriteExceptionThrown(ServerType.Kestrel);
         }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void ClientDisconnect_WebListener_NoWriteExceptionThrown()
+        public Task ClientDisconnect_WebListener_NoWriteExceptionThrown()
         {
-            ClientDisconnect_NoWriteExceptionThrown(ServerType.HttpSys);
+            return ClientDisconnect_NoWriteExceptionThrown(ServerType.HttpSys);
         }
 
-        private void ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
+        private async Task ClientDisconnect_NoWriteExceptionThrown(ServerType serverType)
         {
             var interval = TimeSpan.FromSeconds(15);
-            var requestReceived = new ManualResetEvent(false);
-            var requestCancelled = new ManualResetEvent(false);
-            var responseComplete = new ManualResetEvent(false);
+            var requestReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestCancelled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             Exception exception = null;
             var builder = new WebHostBuilder()
                 .ConfigureServices(services => services.AddSingleton(LoggerFactory))
@@ -193,8 +236,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                     {
                         try
                         {
-                            requestReceived.Set();
-                            Assert.True(requestCancelled.WaitOne(interval), "not cancelled");
+                            requestReceived.SetResult(0);
+                            await requestCancelled.Task.TimeoutAfter(interval);
                             Assert.True(context.RequestAborted.WaitHandle.WaitOne(interval), "not aborted");
                             await next();
                         }
@@ -202,7 +245,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         {
                             exception = ex;
                         }
-                        responseComplete.Set();
+                        responseComplete.SetResult(0);
                     });
                     app.UseStaticFiles();
                 });
@@ -220,13 +263,13 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 // We don't use HttpClient here because it's disconnect behavior varies across platforms.
                 var socket = SendSocketRequestAsync(server.GetAddress(), "/TestDocument1MB.txt");
-                Assert.True(requestReceived.WaitOne(interval), "not received");
+                await requestReceived.Task.TimeoutAfter(interval);
 
                 socket.LingerState = new LingerOption(true, 0);
                 socket.Dispose();
-                requestCancelled.Set();
+                requestCancelled.SetResult(0);
 
-                Assert.True(responseComplete.WaitOne(interval), "not completed");
+                await responseComplete.Task.TimeoutAfter(interval);
                 Assert.Null(exception);
             }
         }

@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IRequestBodyPipeFeature
     {
         /// <summary>
-        /// A <see cref="PipeWriter"/> representing the request body, if any.
+        /// A <see cref="PipeReader"/> representing the request body, if any.
         /// </summary>
-        PipeReader RequestBodyPipe { get; set; }
+        PipeReader Reader { get; }
     }
 }

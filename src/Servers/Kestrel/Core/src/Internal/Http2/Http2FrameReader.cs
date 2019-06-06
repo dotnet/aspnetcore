@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public static class Http2FrameReader
+    internal static class Http2FrameReader
     {
         /* https://tools.ietf.org/html/rfc7540#section-4.1
             +-----------------------------------------------+

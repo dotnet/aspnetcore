@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class Huffman
+    internal class Huffman
     {
         // TODO: this can be constructed from _decodingTable
         private static readonly (uint code, int bitLength)[] _encodingTable = new (uint code, int bitLength)[]

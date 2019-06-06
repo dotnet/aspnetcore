@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </remarks>
         /// <param name="builder">The <see cref="IdentityBuilder"/>.</param>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
-        public static IdentityBuilder AddDefaultUI(this IdentityBuilder builder) => builder.AddDefaultUI(UIFramework.Bootstrap3);
+        public static IdentityBuilder AddDefaultUI(this IdentityBuilder builder) => builder.AddDefaultUI(UIFramework.Bootstrap4);
 
 
         /// <summary>

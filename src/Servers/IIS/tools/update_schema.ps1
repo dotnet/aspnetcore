@@ -10,12 +10,11 @@ param()
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 
-$ancmSchemaFiles = @(
-    "aspnetcore_schema.xml",
-    "aspnetcore_schema_v2.xml"
-)
-
-$ancmSchemaFileLocation = Resolve-Path "$PSScriptRoot\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml";
+$ancmSchemaFileLocation = Join-Path $PSScriptRoot "aspnetcore_schema_v2.xml";
+if (!(Test-Path $ancmSchemaFileLocation))
+{
+    $ancmSchemaFileLocation = Resolve-Path "$PSScriptRoot\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml";
+}
 
 [bool]$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 
@@ -40,30 +39,28 @@ if (-not $isAdmin -and -not $WhatIfPreference) {
     }
 }
 
-for ($i=0; $i -lt $ancmSchemaFiles.Length; $i++)
-{
-    $schemaFile = $ancmSchemaFiles[$i]
-    $schemaSource = $ancmSchemaFileLocation
+$schemaFile = "aspnetcore_schema.xml"
+$schemaSource = $ancmSchemaFileLocation
 
-    $destinations = @(
-        "${env:ProgramFiles(x86)}\IIS Express\config\schema\",
-        "${env:ProgramFiles}\IIS Express\config\schema\",
-        "${env:windir}\system32\inetsrv\config\schema\"
-    )
+$destinations = @(
+    "${env:ProgramFiles(x86)}\IIS Express\config\schema\",
+    "${env:ProgramFiles}\IIS Express\config\schema\",
+    "${env:ProgramW6432}\IIS Express\config\schema\",
+    "${env:windir}\system32\inetsrv\config\schema\"
+)
 
-    foreach ($destPath in $destinations) {
-        $dest = "$destPath\${schemaFile}";
+foreach ($destPath in $destinations) {
+    $dest = "$destPath\${schemaFile}";
 
-        if (!(Test-Path $destPath))
-        {
-            Write-Host "$destPath doesn't exist"
-            continue;
-        }
+    if (!(Test-Path $destPath))
+    {
+        Write-Host "$destPath doesn't exist"
+        continue;
+    }
 
-        if ($PSCmdlet.ShouldProcess($dest, "Replace file")) {
-            Write-Host "Updated $dest"
-            Move-Item $dest "${dest}.bak" -ErrorAction Ignore
-            Copy-Item $schemaSource $dest
-        }
+    if ($PSCmdlet.ShouldProcess($dest, "Replace file")) {
+        Write-Host "Updated $dest"
+        Move-Item $dest "${dest}.bak" -ErrorAction Ignore
+        Copy-Item $schemaSource $dest
     }
 }

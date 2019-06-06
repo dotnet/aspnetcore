@@ -125,6 +125,10 @@ namespace PlatformBenchmarks
         {
         }
 
+        public void OnHeadersComplete()
+        {
+        }
+
         public async ValueTask OnReadCompletedAsync()
         {
             await Writer.FlushAsync();
@@ -175,6 +179,12 @@ namespace PlatformBenchmarks
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
+
+            public void OnHeadersComplete()
+                => RequestHandler.OnHeadersComplete();
+#if !NETCOREAPP3_0
+#error This is a .NET Core 3.0 application and needs to be compiled for <TargetFramework>netcoreapp3.0</TargetFramework>
+#endif
         }
     }
 

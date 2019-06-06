@@ -1,0 +1,15 @@
+<!--
+  This project produces a generic RPM installer for Linux x64 platforms only.
+-->
+<Project DefaultTargets="Build">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+
+  <PropertyGroup>
+    <RpmPackageInstallRoot>/usr/share/dotnet/</RpmPackageInstallRoot>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.rpm</TargetFileName>
+  </PropertyGroup>
+
+  <Import Project="..\Rpm.Runtime.Common.targets" />
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>

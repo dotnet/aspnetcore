@@ -5,6 +5,10 @@ JavaScript and TypeScript clients for SignalR for ASP.NET Core
 ```bash
 npm install @aspnet/signalr
 ```
+or
+```bash
+yarn add @aspnet/signalr
+```
 
 ## Usage
 
@@ -13,6 +17,10 @@ See the [SignalR Documentation](https://docs.microsoft.com/en-us/aspnet/core/sig
 ### Browser
 
 To use the client in a browser, copy `*.js` files from the `dist/browser` folder to your script folder include on your page using the `<script>` tag.
+
+### WebWorker
+
+To use the client in a webworker, copy `*.js` files from the `dist/webworker` folder to your script folder include on your webworker using the `importScripts` function. Note that webworker SignalR hub connection supports only absolute path to a SignalR hub.
 
 ### Node.js
 
@@ -31,6 +39,25 @@ connection.on("send", data => {
 
 connection.start()
     .then(() => connection.invoke("send", "Hello"));
+```
+
+### Example (WebWorker)
+
+
+```JavaScript
+importScripts('signalr.js');
+
+let connection = new signalR.HubConnectionBuilder()
+    .withUrl("https://example.com/signalr/chat")
+    .build();
+
+connection.on("send", data => {
+    console.log(data);
+});
+
+connection.start()
+    .then(() => connection.invoke("send", "Hello"));
+
 ```
 
 ### Example (NodeJS)

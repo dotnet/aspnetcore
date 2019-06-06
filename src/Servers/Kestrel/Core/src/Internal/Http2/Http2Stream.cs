@@ -12,18 +12,19 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
+
+        public Pipe RequestBodyPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
 
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this, ServerOptions.Limits.MinRequestBodyDataRate);
+            => Http2MessageBody.For(this);
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -366,11 +367,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             RequestBodyPipe.Writer.Write(segment.Span);
                         }
-                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
-                        // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
-                        // _inputFlowControl.Advance() didn't throw.
-                        Debug.Assert(flushTask.IsCompleted);
+                        // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
+                        // Data will still be available to the reader.
+                        if (!endStream)
+                        {
+                            var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                            // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                            // _inputFlowControl.Advance() didn't throw.
+                            Debug.Assert(flushTask.IsCompleted);
+                        }
                     }
                 }
             }
@@ -396,6 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
+            OnTrailersComplete();
             RequestBodyPipe.Writer.Complete();
 
             _inputFlowControl.StopWindowUpdates();
@@ -486,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 pauseWriterThreshold: windowSize + 1,
                 resumeWriterThreshold: windowSize + 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
         private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)

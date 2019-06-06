@@ -28,12 +28,17 @@ namespace Microsoft.AspNetCore.Http.Internal
         public DefaultHttpRequest(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(context.Features);
         }
 
         public void Initialize()
         {
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(_context.Features);
+        }
+
+        public void Initialize(int revision)
+        {
+            _features.Initalize(_context.Features, revision);
         }
 
         public void Uninitialize()
@@ -111,8 +116,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"]); }
-            set { Headers["Host"] = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
+            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -166,10 +171,9 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { RouteValuesFeature.RouteValues = value; }
         }
 
-        public override PipeReader BodyPipe
+        public override PipeReader BodyReader
         {
-            get { return RequestBodyPipeFeature.RequestBodyPipe; }
-            set { RequestBodyPipeFeature.RequestBodyPipe = value; }
+            get { return RequestBodyPipeFeature.Reader; }
         }
 
         struct FeatureInterfaces

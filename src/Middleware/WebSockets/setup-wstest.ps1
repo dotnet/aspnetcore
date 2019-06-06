@@ -14,6 +14,7 @@ $WsTest = Join-Path $ScriptsDir "wstest.exe"
 $VCPythonMsi = Join-Path $VendorDir "VCForPython27.msi"
 if(!(Test-Path $VCPythonMsi)) {
     Write-Host "Downloading VCForPython27.msi"
+    $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
     Invoke-WebRequest -Uri https://download.microsoft.com/download/7/9/6/796EF2E4-801B-4FC4-AB28-B59FBF6D907B/VCForPython27.msi -OutFile "$VCPythonMsi"
 }
 else {

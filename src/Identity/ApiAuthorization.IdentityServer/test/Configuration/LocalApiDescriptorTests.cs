@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
         public void LocalApiDescriptor_DefinesApiResources()
         {
             // Arrange
-            var environment = new Mock<IHostingEnvironment>();
+            var environment = new Mock<IWebHostEnvironment>();
             environment.SetupGet(e => e.ApplicationName).Returns("Test");
             var descriptor = new IdentityServerJwtDescriptor(environment.Object);
 

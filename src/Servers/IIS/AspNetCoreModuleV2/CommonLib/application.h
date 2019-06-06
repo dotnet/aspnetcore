@@ -7,7 +7,9 @@
 #include "iapplication.h"
 #include "ntassert.h"
 #include "SRWExclusiveLock.h"
+#include "SRWSharedLock.h"
 #include "exceptions.h"
+#include "HandleWrapper.h"
 
 class APPLICATION : public IAPPLICATION
 {
@@ -21,13 +23,18 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Outptr_result_maybenull_ IREQUEST_HANDLER  **pRequestHandler) override
     {
-        TraceContextScope traceScope(pHttpContext->GetTraceContext());
         *pRequestHandler = nullptr;
 
+        SRWSharedLock stopLock(m_stopLock);
+
+        // If we have acquired the stopLock, we don't need to acquire the data lock
+        // as m_fStoppedCalled is only set by Stop.
         if (m_fStopCalled)
         {
             return S_FALSE;
         }
+
+        TraceContextScope traceScope(pHttpContext->GetTraceContext());
 
         return CreateHandler(pHttpContext, pRequestHandler);
     }
@@ -45,22 +52,25 @@ public:
           m_applicationConfigPath(pHttpApplication.GetAppConfigPath()),
           m_applicationId(pHttpApplication.GetApplicationId())
     {
-        InitializeSRWLock(&m_stateLock);
+        InitializeSRWLock(&m_stopLock);
+        InitializeSRWLock(&m_dataLock);
         m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
     }
-
 
     VOID
     Stop(bool fServerInitiated) override
     {
-        SRWExclusiveLock stopLock(m_stateLock);
+        SRWExclusiveLock stopLock(m_stopLock);
 
-        if (m_fStopCalled)
         {
-            return;
-        }
+            SRWExclusiveLock dataLock(m_dataLock);
+            if (m_fStopCalled)
+            {
+                return;
+            }
 
-        m_fStopCalled = true;
+            m_fStopCalled = true;
+        }
 
         StopInternal(fServerInitiated);
     }
@@ -116,7 +126,8 @@ public:
     }
 
 protected:
-    SRWLOCK m_stateLock {};
+    SRWLOCK m_stopLock{};
+    SRWLOCK m_dataLock {};
     bool m_fStopCalled;
 
 private:

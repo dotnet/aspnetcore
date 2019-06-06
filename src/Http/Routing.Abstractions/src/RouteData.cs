@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// A snapshot of the state of a <see cref="RouteData"/> instance.
         /// </summary>
-        public struct RouteDataSnapshot
+        public readonly struct RouteDataSnapshot
         {
             private readonly RouteData _routeData;
             private readonly RouteValueDictionary _dataTokens;

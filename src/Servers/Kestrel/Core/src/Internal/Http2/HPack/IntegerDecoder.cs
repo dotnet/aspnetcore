@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     /// <summary>
     /// The maximum we will decode is Int32.MaxValue, which is also the maximum request header field size.
     /// </summary>
-    public class IntegerDecoder
+    internal class IntegerDecoder
     {
         private int _i;
         private int _m;

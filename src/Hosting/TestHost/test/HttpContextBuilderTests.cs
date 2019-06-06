@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
                     var bytes = Encoding.UTF8.GetBytes("BodyStarted" + Environment.NewLine);
+                    c.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                     c.Response.Body.Write(bytes, 0, bytes.Length);
                     await block.Task;
                     bytes = Encoding.UTF8.GetBytes("BodyFinished");
@@ -307,6 +308,24 @@ namespace Microsoft.AspNetCore.TestHost
 
             // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
             var ctx = await server.SendAsync(c => { });
+        }
+
+        [Fact]
+        public async Task CallingAbortInsideHandlerShouldSetRequestAborted()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        context.Abort();
+                        return Task.CompletedTask;
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var ctx = await server.SendAsync(c => { });
+            Assert.True(ctx.RequestAborted.IsCancellationRequested);
         }
 
         private class VerifierLogger : ILogger<IWebHost>

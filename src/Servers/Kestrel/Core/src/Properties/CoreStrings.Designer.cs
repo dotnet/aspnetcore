@@ -2212,6 +2212,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorStreamAborted(object frameType, object streamId)
             => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamAborted", "frameType", "streamId"), frameType, streamId);
 
+        /// <summary>
+        /// HTTP protocol selection failed.
+        /// </summary>
+        internal static string ProtocolSelectionFailed
+        {
+            get => GetString("ProtocolSelectionFailed");
+        }
+
+        /// <summary>
+        /// HTTP protocol selection failed.
+        /// </summary>
+        internal static string FormatProtocolSelectionFailed()
+            => GetString("ProtocolSelectionFailed");
+
+        /// <summary>
+        /// Server shutdown started during connection initialization.
+        /// </summary>
+        internal static string ServerShutdownDuringConnectionInitialization
+        {
+            get => GetString("ServerShutdownDuringConnectionInitialization");
+        }
+
+        /// <summary>
+        /// Server shutdown started during connection initialization.
+        /// </summary>
+        internal static string FormatServerShutdownDuringConnectionInitialization()
+            => GetString("ServerShutdownDuringConnectionInitialization");
+
+        /// <summary>
+        /// Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().
+        /// </summary>
+        internal static string StartAsyncBeforeGetMemory
+        {
+            get => GetString("StartAsyncBeforeGetMemory");
+        }
+
+        /// <summary>
+        /// Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().
+        /// </summary>
+        internal static string FormatStartAsyncBeforeGetMemory()
+            => GetString("StartAsyncBeforeGetMemory");
+
+        /// <summary>
+        /// This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.
+        /// </summary>
+        internal static string Http2MinDataRateNotSupported
+        {
+            get => GetString("Http2MinDataRateNotSupported");
+        }
+
+        /// <summary>
+        /// This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.
+        /// </summary>
+        internal static string FormatHttp2MinDataRateNotSupported()
+            => GetString("Http2MinDataRateNotSupported");
+
+        /// <summary>
+        /// The request trailers are not available yet. They may not be available until the full request body is read.
+        /// </summary>
+        internal static string RequestTrailersNotAvailable
+        {
+            get => GetString("RequestTrailersNotAvailable");
+        }
+
+        /// <summary>
+        /// The request trailers are not available yet. They may not be available until the full request body is read.
+        /// </summary>
+        internal static string FormatRequestTrailersNotAvailable()
+            => GetString("RequestTrailersNotAvailable");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

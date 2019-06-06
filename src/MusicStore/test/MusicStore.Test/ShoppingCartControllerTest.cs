@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using MusicStore.Models;
 using MusicStore.ViewModels;
@@ -18,21 +16,14 @@ using Xunit;
 
 namespace MusicStore.Controllers
 {
-    public class ShoppingCartControllerTest
+    public class ShoppingCartControllerTest : IClassFixture<ShoppingCartControllerTest.Fixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly Fixture _fixture;
 
-        public ShoppingCartControllerTest()
+        public ShoppingCartControllerTest(Fixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-            services
-                .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            services.AddMvc();
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
@@ -43,8 +34,8 @@ namespace MusicStore.Controllers
             httpContext.Session = new TestSession();
 
             var controller = new ShoppingCartController(
-                _serviceProvider.GetRequiredService<MusicStoreContext>(),
-                _serviceProvider.GetService<ILogger<ShoppingCartController>>());
+                _fixture.Context,
+                _fixture.ServiceProvider.GetService<ILogger<ShoppingCartController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -69,8 +60,8 @@ namespace MusicStore.Controllers
             httpContext.Session.SetString("Session", "CartId_A");
 
             var controller = new ShoppingCartController(
-                _serviceProvider.GetRequiredService<MusicStoreContext>(),
-                _serviceProvider.GetService<ILogger<ShoppingCartController>>());
+                _fixture.Context,
+                _fixture.ServiceProvider.GetService<ILogger<ShoppingCartController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -95,7 +86,7 @@ namespace MusicStore.Controllers
             httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", cartId);
 
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var cartItems = CreateTestCartItems(
                 cartId,
                 itemPrice: 10,
@@ -106,7 +97,7 @@ namespace MusicStore.Controllers
 
             var controller = new ShoppingCartController(
                 dbContext,
-                _serviceProvider.GetService<ILogger<ShoppingCartController>>());
+                _fixture.ServiceProvider.GetService<ILogger<ShoppingCartController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -132,14 +123,14 @@ namespace MusicStore.Controllers
             httpContext.Session.SetString("Session", "CartId_A");
 
             // Creates the albums of AlbumId = 1 ~ 10.
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var albums = CreateTestAlbums(itemPrice: 10);
             dbContext.AddRange(albums);
             dbContext.SaveChanges();
 
             var controller = new ShoppingCartController(
                 dbContext,
-                _serviceProvider.GetService<ILogger<ShoppingCartController>>());
+                _fixture.ServiceProvider.GetService<ILogger<ShoppingCartController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -170,7 +161,7 @@ namespace MusicStore.Controllers
             httpContext.Session.SetString("Session", cartId);
 
             // DbContext initialization
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var dbContext = _fixture.Context;
             var cartItems = CreateTestCartItems(cartId, unitPrice, numberOfItem);
             dbContext.AddRange(cartItems.Select(n => n.Album).Distinct());
             dbContext.AddRange(cartItems);
@@ -181,7 +172,7 @@ namespace MusicStore.Controllers
             httpContext.Features.Set<IServiceProvidersFeature>(serviceProviderFeature);
 
             // AntiForgery initialization
-            serviceProviderFeature.RequestServices = _serviceProvider;
+            serviceProviderFeature.RequestServices = _fixture.ServiceProvider;
             var antiForgery = serviceProviderFeature.RequestServices.GetRequiredService<IAntiforgery>();
             var tokens = antiForgery.GetTokens(httpContext);
 
@@ -194,7 +185,7 @@ namespace MusicStore.Controllers
             // Cotroller initialization
             var controller = new ShoppingCartController(
                 dbContext,
-                _serviceProvider.GetService<ILogger<ShoppingCartController>>());
+                _fixture.ServiceProvider.GetService<ILogger<ShoppingCartController>>());
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
@@ -205,7 +196,7 @@ namespace MusicStore.Controllers
             var viewModel = Assert.IsType<ShoppingCartRemoveViewModel>(jsonResult.Value);
             Assert.Equal(numberOfItem - 1, viewModel.CartCount);
             Assert.Equal((numberOfItem - 1) * 10, viewModel.CartTotal);
-            Assert.Equal(" has been removed from your shopping cart.", viewModel.Message);
+            Assert.Equal("Greatest Hits has been removed from your shopping cart.", viewModel.Message);
 
             var cart = ShoppingCart.GetCart(dbContext, httpContext);
             Assert.DoesNotContain((await cart.GetCartItems()), c => c.CartItemId == cartItemId);
@@ -230,11 +221,34 @@ namespace MusicStore.Controllers
         private static Album[] CreateTestAlbums(decimal itemPrice)
         {
             return Enumerable.Range(1, 10).Select(n =>
-                new Album()
+                new Album
                 {
+                    Title = "Greatest Hits",
                     AlbumId = n,
                     Price = itemPrice,
+                    Artist = new Artist
+                    {
+                        ArtistId = 1,
+                        Name = "Kung Fu Kenny"
+                    },
+                    Genre = new Genre
+                    {
+                        GenreId = 1,
+                        Name = "Rap"
+                    }
                 }).ToArray();
+        }
+
+        public class Fixture : SqliteInMemoryFixture
+        {
+            public override IServiceCollection ConfigureServices(IServiceCollection services)
+            {
+                services = base.ConfigureServices(services);
+
+                services.AddMvc();
+
+                return services;
+            }
         }
     }
 }

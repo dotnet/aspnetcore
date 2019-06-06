@@ -14,20 +14,31 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 verbose=false
 update=false
 reinstall=false
-repo_path="$DIR"
 lockfile_path="$DIR/korebuild-lock.txt"
 config_file="$DIR/korebuild.json"
 channel='master'
 tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
+target_os_name=''
 ci=false
-run_restore=true
+run_restore=''
 run_build=true
 run_pack=false
 run_tests=false
 build_all=false
-build_managed=false
-build_nodejs=false
+build_deps=true
+build_managed=''
+build_native=''
+build_nodejs=''
+build_java=''
 build_projects=''
+target_arch='x64'
+
+if [ "$(uname)" = "Darwin" ]; then
+    target_os_name='osx'
+else
+    target_os_name='linux'
+fi
+
 msbuild_args=()
 
 #
@@ -37,23 +48,29 @@ __usage() {
     echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <Arguments>...]
 
 Arguments:
-    <Arguments>...     Arguments passed to the command. Variable number of arguments allowed.
+    <Arguments>...         Arguments passed to the command. Variable number of arguments allowed.
 
 Options:
-    --[no-]restore     Run restore.
-    --[no-]build       Compile projects
-    --[no-]pack        Produce packages.
-    --[no-]test        Run tests.
+    --arch                 The CPU architecture to build for (x64, arm, arm64). Default=$target_arch
+    --os-name              The base runtime identifier to build for (linux, osx, linux-musl). Default=$target_os_name
 
-    --projects         A list of projects to build. (Must be an absolute path.)
-                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+    --[no-]restore         Run restore.
+    --[no-]build           Compile projects. (Implies --no-restore)
+    --[no-]pack            Produce packages.
+    --[no-]test            Run tests.
 
-    --all              Build all project types.
-    --managed          Build managed projects (C#, F#, VB).
-    --nodejs           Build NodeJS projects (TypeScript, JS).
+    --projects             A list of projects to build. (Must be an absolute path.)
+                           Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+    --no-build-deps        Do not build project-to-project references and only build the specified project.
 
-    --ci               Apply CI specific settings and environment variables.
-    --verbose          Show verbose output.
+    --all                  Build all project types.
+    --[no-]build-native    Build native projects (C, C++).
+    --[no-]build-managed   Build managed projects (C#, F#, VB).
+    --[no-]build-nodejs    Build NodeJS projects (TypeScript, JS).
+    --[no-]build-java      Build Java projects.
+
+    --ci                   Apply CI specific settings and environment variables.
+    --verbose              Show verbose output.
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -151,11 +168,15 @@ while [[ $# -gt 0 ]]; do
             __usage --no-exit
             exit 0
             ;;
-        --repo-root|-RepoRoot)
+        --arch)
             shift
-            __warn '--repo-root is obsolete and will be removed when we finish https://github.com/aspnet/AspNetCore/issues/4246'
-            repo_path="${1:-}"
-            [ -z "$repo_path" ] && __error "Missing value for parameter --repo-root" && __usage
+            target_arch="${1:-}"
+            [ -z "$target_arch" ] && __error "Missing value for parameter --arch" && __usage
+            ;;
+        --os-name)
+            shift
+            target_os_name="${1:-}"
+            [ -z "$target_os_name" ] && __error "Missing value for parameter --os-name" && __usage
             ;;
         --restore|-[Rr]estore)
             run_restore=true
@@ -168,6 +189,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-build)
             run_build=false
+            # --no-build implies --no-restore
+            [ -z "$run_restore" ] && run_restore=false
+            ;;
+        --no-build-deps)
+            build_deps=false
             ;;
         --pack|-[Pp]ack)
             run_pack=true
@@ -189,20 +215,32 @@ while [[ $# -gt 0 ]]; do
         --all|-[Aa]ll)
             build_all=true
             ;;
-        --managed|-[Mm]anaged)
+        --build-managed|-BuildManaged)
             build_managed=true
             ;;
-        --nodejs|-[Nn]ode[Jj][Ss])
+        --no-build-managed|-NoBuildManaged)
+            build_managed=false
+            ;;
+        --build-nodejs|-BuildNodeJs)
             build_nodejs=true
             ;;
-        --native|-[Nn]ative)
-            __warn 'The C++ projects in this repo only build on Windows. The --native flag will be ignored.'
+        --no-build-nodejs|-NoBuildNodeJs)
+            build_nodejs=false
+            ;;
+        --build-java|-BuildJava)
+            build_java=true
+            ;;
+        --no-build-java|-NoBuildJava)
+            build_java=false
+            ;;
+        --build-native|-BuildNative)
+            build_native=true
+            ;;
+        --no-build-native|-NoBuildNative)
+            build_native=false
             ;;
         --ci|-[Cc][Ii])
             ci=true
-            if [[ -z "${DOTNET_HOME:-}" ]]; then
-                DOTNET_HOME="$DIR/.dotnet"
-            fi
             ;;
         --verbose|-[Vv]erbose)
             verbose=true
@@ -250,8 +288,7 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
-[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
-export DOTNET_HOME="$DOTNET_HOME"
+export DOTNET_HOME="$DIR/.dotnet"
 
 get_korebuild
 
@@ -259,25 +296,39 @@ if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 elif [ ! -z "$build_projects" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:Projects=$build_projects"
-else
-    # When adding new sub-group build flags, add them to this check
-    if [ "$build_managed" = false ] && [ "$build_nodejs" = false ]; then
-        # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
-        # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
-        __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh -help`` for more details."
-        build_managed=true
-    fi
-
-    msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
-    msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
+elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ]; then
+    # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
+    # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
+    __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh -help`` for more details."
+    build_managed=true
 fi
 
-msbuild_args[${#msbuild_args[*]}]="-p:_RunRestore=$run_restore"
+if [ "$build_deps" = false ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:BuildProjectReferences=false"
+fi
+
+# Only set these MSBuild properties if they were explicitly set by build parameters.
+[ ! -z "$build_java" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildJava=$build_java"
+[ ! -z "$build_native" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNative=$build_native"
+[ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
+[ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
+
+# Run restore by default unless --no-restore or --no-build was specified.
+[ -z "$run_restore" ] && run_restore=true
+
+[ "$run_restore" = true ] && msbuild_args[${#msbuild_args[*]}]="-restore"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunBuild=$run_build"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunPack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunTests=$run_tests"
 
-set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
+msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
+msbuild_args[${#msbuild_args[*]}]="-p:TargetOsName=$target_os_name"
+
+# Disable downloading ref assemblies as a tarball. Use netfx refs from the Microsoft.NETFramework.ReferenceAssemblies NuGet package instead.
+[ -z "${KOREBUILD_SKIP_INSTALL_NETFX:-}" ] && KOREBUILD_SKIP_INSTALL_NETFX=1
+
+export KOREBUILD_KEEPGLOBALJSON=1
+set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$DIR" "$config_file" "$ci"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u

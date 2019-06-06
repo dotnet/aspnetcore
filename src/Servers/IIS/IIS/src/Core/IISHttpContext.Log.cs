@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             private static readonly Action<ILogger, string, string, Exception> _unexpectedError =
                 LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(3, "UnexpectedError"), @"Unexpected exception in ""{ClassName}.{MethodName}"".");
 
+            private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
+                LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(4, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+
             public static void ConnectionDisconnect(ILogger logger, string connectionId)
             {
                 _connectionDisconnect(logger, connectionId, null);
@@ -33,6 +36,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             public static void UnexpectedError(ILogger logger, string className, Exception ex, [CallerMemberName] string methodName = null)
             {
                 _unexpectedError(logger, className, methodName, ex);
+            }
+
+            public static void ConnectionBadRequest(ILogger logger, string connectionId, BadHttpRequestException ex)
+            {
+                _connectionBadRequest(logger, connectionId, ex.Message, ex);
             }
         }
     }

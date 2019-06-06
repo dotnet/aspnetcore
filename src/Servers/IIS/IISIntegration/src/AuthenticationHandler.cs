@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 {
                     // Always create the identity if the handle exists, we need to dispose it so it does not leak.
                     var handle = new IntPtr(hexHandle);
-                    var winIdentity = new WindowsIdentity(handle);
+                    var winIdentity = new WindowsIdentity(handle, IISDefaults.AuthenticationScheme);
 
                     // WindowsIdentity just duplicated the handle so we need to close the original.
                     NativeMethods.CloseHandle(handle);

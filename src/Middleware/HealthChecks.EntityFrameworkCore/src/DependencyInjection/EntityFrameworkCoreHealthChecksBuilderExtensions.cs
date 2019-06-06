@@ -41,12 +41,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// By default the health check implementation will use the <see cref="DatabaseFacade.CanConnectAsync(CancellationToken)"/> method
         /// to test connectivity to the database. This method requires that the database provider has correctly implemented the
-        /// <see cref="IDatabaseCreatorWithCanConnect" /> interface. If the database provide has not implemented this interface
+        /// <see cref="IDatabaseCreator" /> interface. If the database provide has not implemented this interface
         /// then the health check will report a failure.
         /// </para>
         /// <para>
         /// Providing a <paramref name="customTestQuery" /> will replace the use of <see cref="DatabaseFacade.CanConnectAsync(CancellationToken)"/>
-        /// to test database connectivity. An implementation of a test query should handle exceptions that can arise due to connectivity failure, 
+        /// to test database connectivity. An implementation of a test query should handle exceptions that can arise due to connectivity failure,
         /// and should return a pass/fail result. The test query should be be designed to complete in a short and predicatable amount of time.
         /// </para>
         /// </remarks>

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var minRate = new MinDataRate(16384, TimeSpan.FromSeconds(2));
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinResponseDataRateFeature>().MinDataRate = minRate;
                 return Task.CompletedTask;
@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel == LogLevel.Information);
                 }
-                await server.StopAsync();
             }
         }
     }

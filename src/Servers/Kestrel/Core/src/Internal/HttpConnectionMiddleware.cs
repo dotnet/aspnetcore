@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class HttpConnectionMiddleware<TContext>
+    internal class HttpConnectionMiddleware<TContext>
     {
         private readonly IList<IConnectionAdapter> _connectionAdapters;
         private readonly ServiceContext _serviceContext;
@@ -47,20 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Transport = connectionContext.Transport
             };
 
-            var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
-
-            if (connectionFeature != null)
-            {
-                if (connectionFeature.LocalIpAddress != null)
-                {
-                    httpConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
-                }
-
-                if (connectionFeature.RemoteIpAddress != null)
-                {
-                    httpConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
-                }
-            }
+            httpConnectionContext.LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint;
+            httpConnectionContext.RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint;
 
             var connection = new HttpConnection(httpConnectionContext);
 

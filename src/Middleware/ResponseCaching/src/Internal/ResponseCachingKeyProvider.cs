@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCachingKeyProvider : IResponseCachingKeyProvider
+    internal class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCachingOptions _options;
 
-        public ResponseCachingKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
+        internal ResponseCachingKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
         {
             if (poolProvider == null)
             {
@@ -110,19 +110,21 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 builder.Append(varyByRules.VaryByKeyPrefix);
 
                 // Vary by headers
-                if (varyByRules?.Headers.Count > 0)
+                var headersCount = varyByRules?.Headers.Count ?? 0;
+                if (headersCount > 0)
                 {
                     // Append a group separator for the header segment of the cache key
                     builder.Append(KeyDelimiter)
                         .Append('H');
 
-                    for (var i = 0; i < varyByRules.Headers.Count; i++)
+                    var requestHeaders = context.HttpContext.Request.Headers;
+                    for (var i = 0; i < headersCount; i++)
                     {
                         var header = varyByRules.Headers[i];
-                        var headerValues = context.HttpContext.Request.Headers[header];
+                        var headerValues = requestHeaders[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)
-                            .Append("=");
+                            .Append('=');
 
                         var headerValuesArray = headerValues.ToArray();
                         Array.Sort(headerValuesArray, StringComparer.Ordinal);
@@ -152,7 +154,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         {
                             builder.Append(KeyDelimiter)
                                 .AppendUpperInvariant(queryArray[i].Key)
-                                .Append("=");
+                                .Append('=');
 
                             var queryValueArray = queryArray[i].Value.ToArray();
                             Array.Sort(queryValueArray, StringComparer.Ordinal);
@@ -176,7 +178,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                             var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                             builder.Append(KeyDelimiter)
                                 .Append(queryKey)
-                                .Append("=");
+                                .Append('=');
 
                             var queryValueArray = queryKeyValues.ToArray();
                             Array.Sort(queryValueArray, StringComparer.Ordinal);

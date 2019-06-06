@@ -83,6 +83,18 @@ namespace GlobalVersionTests
         EXPECT_STREQ(res.c_str(), L"2.1.0");
     }
 
+    // Sem version 2.0 will not be used with ANCM out of process handler, but it's the most convenient way to test it.
+    TEST(FindHighestGlobalVersion, HighestVersionWithSemVersion20)
+    {
+        auto tempPath = TempDirectory();
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview"));
+        EXPECT_TRUE(fs::create_directories(tempPath.path() / "2.1.0-preview.1.1"));
+
+        auto res = GlobalVersionUtility::FindHighestGlobalVersion(tempPath.path().c_str());
+
+        EXPECT_STREQ(res.c_str(), L"2.1.0-preview.1.1");
+    }
+
     TEST(FindHighestGlobalVersion, HighestVersionWithMultipleVersionsPreview)
     {
         auto tempPath = TempDirectory();

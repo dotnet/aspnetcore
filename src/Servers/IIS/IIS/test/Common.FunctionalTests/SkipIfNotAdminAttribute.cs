@@ -5,7 +5,7 @@ using System;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class SkipIfNotAdminAttribute : Attribute, ITestCondition
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 var identity = WindowsIdentity.GetCurrent();
                 var principal = new WindowsPrincipal(identity);
-                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator) || SkipInVSTSAttribute.RunningInVSTS;
             }
         }
 

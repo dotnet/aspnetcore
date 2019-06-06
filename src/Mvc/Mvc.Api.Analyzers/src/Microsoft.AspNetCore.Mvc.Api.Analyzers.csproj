@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
+    <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
+
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Analyzers\src\CodeAnalysisExtensions.cs" />
+    <Compile Include="..\..\Mvc.Analyzers\src\MvcFacts.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" >
+
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        description=$(Description);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(SourceRevisionId);
+        copyright=$(Copyright);
+
+        OutputBinary=$(OutputPath)$(AssemblyName).dll;
+        OutputSymbol=$(OutputPath)$(AssemblyName).pdb;
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>

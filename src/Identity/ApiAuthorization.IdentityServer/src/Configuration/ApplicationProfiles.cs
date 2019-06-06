@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
@@ -32,10 +32,5 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// The application is a native application like a mobile or desktop application.
         /// </summary>
         public const string NativeApp = "NativeApp";
-
-        /// <summary>
-        /// The application is a web application.
-        /// </summary>
-        internal const string WebApplication = "WebApplication";
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using IdentityServer4.Extensions;
@@ -43,9 +43,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 case ApplicationProfiles.NativeApp:
                     responseType = "code";
                     break;
-                //case ApplicationProfiles.WebApplication:
-                //    responseType = "id_token code";
-                //    break;
                 default:
                     throw new InvalidOperationException($"Invalid application type '{type}' for '{clientId}'.");
             }
@@ -55,7 +52,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 ["authority"] = authority,
                 ["client_id"] = client.ClientId,
                 ["redirect_uri"] = UrlFactory.GetAbsoluteUrl(context, client.RedirectUris.First()),
-                ["post_logout_redirect_uri"] = UrlFactory.GetAbsoluteUrl(context, client.RedirectUris.First()),
+                ["post_logout_redirect_uri"] = UrlFactory.GetAbsoluteUrl(context, client.PostLogoutRedirectUris.First()),
                 ["response_type"] = responseType,
                 ["scope"] = string.Join(" ", client.AllowedScopes)
             };

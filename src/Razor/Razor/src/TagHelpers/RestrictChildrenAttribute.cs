@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// <see cref="HtmlTargetElementAttribute.TagStructure"/> as <see cref="TagStructure.WithoutEndTag"/> will result
     /// in this attribute being ignored.</remarks>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class RestrictChildrenAttribute : Attribute
+    public sealed class RestrictChildrenAttribute : Attribute
     {
         /// <summary>
         /// Instantiates a new instance of the <see cref="RestrictChildrenAttribute"/> class.

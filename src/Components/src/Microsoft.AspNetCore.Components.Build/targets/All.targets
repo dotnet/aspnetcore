@@ -1,5 +1,0 @@
-<Project>
-
-  <Import Project="RazorCompilation.targets" />
-
-</Project>

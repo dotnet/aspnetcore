@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -11,9 +12,11 @@ using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -79,7 +82,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                     ValidatedRequest = new ValidatedEndSessionRequest()
                     {
                         Client = ClientBuilder.IdentityServerSPA("MySPA").Build(),
-                        PostLogOutUri = "https://www.example.com/logout"
+                        PostLogOutUri = "https://www.example.com/logout",
+                        State = "appState"
                     }
                 });
 
@@ -99,10 +103,11 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             // Assert
             Assert.NotNull(response);
             var redirect = Assert.IsType<AutoRedirectEndSessionEndpoint.RedirectResult>(response);
-            Assert.Equal("https://www.example.com/logout", redirect.Url);
+            Assert.Equal("https://www.example.com/logout?state=appState", redirect.Url);
+
             await response.ExecuteAsync(ctx);
             Assert.Equal(StatusCodes.Status302Found, ctx.Response.StatusCode);
-            Assert.Equal("https://www.example.com/logout", ctx.Response.Headers[HeaderNames.Location]);
+            Assert.Equal("https://www.example.com/logout?state=appState", ctx.Response.Headers[HeaderNames.Location]);
         }
 
         [Fact]

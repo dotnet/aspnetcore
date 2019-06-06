@@ -16,8 +16,6 @@
     <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.17134.0</IisOobWinSdkVersion>
     <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
     <CharacterSet>Unicode</CharacterSet>
-    <OutDir>bin\$(Configuration)\$(PlatformShortname)\</OutDir>
-    <IntDir>obj\$(Configuration)\$(PlatformShortname)\</IntDir>
   </PropertyGroup>
 
   <!--

@@ -4,15 +4,8 @@
 import { AbortError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger } from "./ILogger";
+import { NodeHttpClient } from "./NodeHttpClient";
 import { XhrHttpClient } from "./XhrHttpClient";
-
-let nodeHttpClientModule: any;
-if (typeof XMLHttpRequest === "undefined") {
-    // In order to ignore the dynamic require in webpack builds we need to do this magic
-    // @ts-ignore: TS doesn't know about these names
-    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    nodeHttpClientModule = requireFunc("./NodeHttpClient");
-}
 
 /** Default implementation of {@link @aspnet/signalr.HttpClient}. */
 export class DefaultHttpClient extends HttpClient {
@@ -24,10 +17,8 @@ export class DefaultHttpClient extends HttpClient {
 
         if (typeof XMLHttpRequest !== "undefined") {
             this.httpClient = new XhrHttpClient(logger);
-        } else if (typeof nodeHttpClientModule !== "undefined") {
-            this.httpClient = new nodeHttpClientModule.NodeHttpClient(logger);
         } else {
-            throw new Error("No HttpClient could be created.");
+            this.httpClient = new NodeHttpClient(logger);
         }
     }
 

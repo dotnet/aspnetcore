@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly IISOptions _options;
         private readonly ILogger _logger;
         private readonly string _pairingToken;
-        private readonly IApplicationLifetime _applicationLifetime;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly bool _isWebsocketsSupported;
 
         // Can't break public API, so creating a second constructor to propagate the isWebsocketsSupported flag.
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             IOptions<IISOptions> options,
             string pairingToken,
             IAuthenticationSchemeProvider authentication,
-            IApplicationLifetime applicationLifetime)
+            IHostApplicationLifetime applicationLifetime)
             : this(next, loggerFactory, options, pairingToken, isWebsocketsSupported: true, authentication, applicationLifetime)
         {
         }
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             string pairingToken,
             bool isWebsocketsSupported,
             IAuthenticationSchemeProvider authentication,
-            IApplicationLifetime applicationLifetime)
+            IHostApplicationLifetime applicationLifetime)
         {
             if (next == null)
             {

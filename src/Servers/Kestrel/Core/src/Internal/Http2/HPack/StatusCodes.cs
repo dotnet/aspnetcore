@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public static class StatusCodes
+    internal static class StatusCodes
     {
         private static readonly byte[] _bytesStatus100 = CreateStatusBytes(Microsoft.AspNetCore.Http.StatusCodes.Status100Continue);
         private static readonly byte[] _bytesStatus101 = CreateStatusBytes(Microsoft.AspNetCore.Http.StatusCodes.Status101SwitchingProtocols);
