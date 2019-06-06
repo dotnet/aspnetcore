@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Constructor.
         /// </summary>
         /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
-        /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
+        /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
         /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
         /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
         public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform, IOptions<AuthenticationOptions> options)
