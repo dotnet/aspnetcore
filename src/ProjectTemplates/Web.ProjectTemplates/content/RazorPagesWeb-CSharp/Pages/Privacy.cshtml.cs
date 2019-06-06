@@ -12,7 +12,7 @@ namespace Company.WebApplication1.Pages
     {
         private readonly ILogger<PrivacyModel> logger;
 
-        public ErrorModel(ILogger<PrivacyModel> _logger)
+        public PrivacyModel(ILogger<PrivacyModel> _logger)
         {
             logger = _logger;
         }
