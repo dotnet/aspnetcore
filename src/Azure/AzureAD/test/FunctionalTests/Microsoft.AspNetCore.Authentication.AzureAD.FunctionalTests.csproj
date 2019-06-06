@@ -15,7 +15,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Content Include="..\testassets\AzureAD.WebSite\**\*" />
+    <Content Include="..\testassets\AzureAD.WebSite\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>      
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
