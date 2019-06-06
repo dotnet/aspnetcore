@@ -342,7 +342,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/aspnet/AspNetCore-Internal/issues/2626")]
         [MemberData(nameof(ConvertibleTypeData))]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2626", FlakyOn.AzP.Linux)]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_FrenchThirtyTwoThousandPointOne(Type destinationType)
