@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Localization
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILogger<RequestLocalizationMiddleware> logger)
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Localization
             }
 
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _logger = logger ?? throw new ArgumentNullException(nameof(next));
+            _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(next));
             _options = options.Value;
         }
 
