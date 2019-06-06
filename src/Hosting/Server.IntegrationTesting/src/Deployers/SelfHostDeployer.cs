@@ -62,14 +62,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     try
                     {
-                        (actualUrl, hostExitToken) = await StartSelfHostAsync();
+                        var hintUrl = TestUriHelper.BuildTestUri(
+                            DeploymentParameters.ServerType,
+                            DeploymentParameters.Scheme,
+                            DeploymentParameters.ApplicationBaseUriHint,
+                            DeploymentParameters.StatusMessagesEnabled);
+                        (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         // Retry 3 times and throw
                         if (i == RetryCount - 1)
                         {
-                            throw ex;
+                            throw;
                         }
                     }
                 }
@@ -85,14 +90,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync()
+        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync(Uri hintUrl)
         {
-            var hintUrl = TestUriHelper.BuildTestUri(
-                DeploymentParameters.ServerType,
-                DeploymentParameters.Scheme,
-                DeploymentParameters.ApplicationBaseUriHint,
-                DeploymentParameters.StatusMessagesEnabled);
-
             using (Logger.BeginScope("StartSelfHost"))
             {
                 var executableName = string.Empty;

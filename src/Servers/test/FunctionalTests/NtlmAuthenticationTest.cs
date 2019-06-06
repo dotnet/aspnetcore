@@ -21,7 +21,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
