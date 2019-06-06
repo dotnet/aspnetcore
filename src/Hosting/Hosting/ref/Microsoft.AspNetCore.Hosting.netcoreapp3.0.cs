@@ -145,7 +145,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
     }
-    [System.Diagnostics.Tracing.EventSourceAttribute(Name="Microsoft-AspNetCore-Hosting")]
     public sealed partial class HostingEventSource : System.Diagnostics.Tracing.EventSource
     {
         internal HostingEventSource() { }
@@ -154,6 +153,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void HostStart() { }
         [System.Diagnostics.Tracing.EventAttribute(2, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void HostStop() { }
+        protected override void OnEventCommand(System.Diagnostics.Tracing.EventCommandEventArgs command) { }
         [System.Diagnostics.Tracing.EventAttribute(3, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void RequestStart(string method, string path) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.Tracing.EventAttribute(4, Level=System.Diagnostics.Tracing.EventLevel.Informational)]

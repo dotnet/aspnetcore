@@ -5,7 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
-    <TestAssetOutputName>InProcessForwardsCompatWebSite</TestAssetOutputName>
+    <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
   </PropertyGroup>
 
