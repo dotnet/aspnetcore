@@ -173,8 +173,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
-                        // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
 
                     TriggerHostShutdown(hostExitTokenSource);
                 };
