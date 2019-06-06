@@ -1,6 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore
+{
+    public static partial class StaticWebAssetsWebHostBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Hosting
 {
     public partial class DelegateStartup : Microsoft.AspNetCore.Hosting.StartupBase<Microsoft.Extensions.DependencyInjection.IServiceCollection>
@@ -206,6 +213,14 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
         public ServerAddressesFeature() { }
         public System.Collections.Generic.ICollection<string> Addresses { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool PreferHostingUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
+{
+    public partial class StaticWebAssetsLoader
+    {
+        public StaticWebAssetsLoader() { }
+        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment) { }
     }
 }
 namespace Microsoft.Extensions.Hosting

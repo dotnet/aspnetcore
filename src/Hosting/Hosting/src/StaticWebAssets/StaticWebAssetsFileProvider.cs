@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 {
     // A file provider used for serving static web assets from referenced projects and packages during development.
     // The file provider maps folders from referenced projects and packages and prepends a prefix to their relative
