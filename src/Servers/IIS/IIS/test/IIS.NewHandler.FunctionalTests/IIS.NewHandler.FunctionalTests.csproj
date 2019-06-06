@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
+    <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+    <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
@@ -16,9 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\testassets\**\*.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
@@ -38,12 +35,5 @@
     <Reference Include="System.Diagnostics.EventLog" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
-
-  <Target Name="RemoveSourceOverride" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
-    <ItemGroup>
-      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('IIS\AspNetCoreModule')) == 'true'" />
-      <_SourceItemsToCopyToOutputDirectory Remove="@(SourceItemsToRemove)" />
-   </ItemGroup>
-  </Target>
 
 </Project>
