@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Localization
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
-        private readonly ILogger<RequestLocalizationMiddleware> _logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Localization
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
+        [ActivatorUtilitiesConstructor]
         public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -44,6 +46,25 @@ namespace Microsoft.AspNetCore.Localization
 
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _options = options.Value;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
+        /// <see cref="RequestLocalizationMiddleware"/>.</param>
+        [Obsolete("This is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = NullLogger.Instance;
             _options = options.Value;
         }
 
