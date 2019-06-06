@@ -21,7 +21,8 @@ HostFxrResolver::GetHostFxrParameters(
     const std::wstring &applicationArguments,
     fs::path           &hostFxrDllPath,
     fs::path           &dotnetExePath,
-    std::vector<std::wstring> &arguments
+    std::vector<std::wstring> &arguments,
+    ErrorContext&      errorContext
 )
 {
     LOG_INFOF(L"Resolving hostfxr parameters for application: '%ls' arguments: '%ls' path: '%ls'",
@@ -93,7 +94,13 @@ HostFxrResolver::GetHostFxrParameters(
             LOG_INFOF(L"Checking application.dll at '%ls'", applicationDllPath.c_str());
             if (!is_regular_file(applicationDllPath))
             {
-                throw InvalidOperationException(format(L"Application .dll was not found at %s", applicationDllPath.c_str()));
+                errorContext.subStatusCode = 38;
+                errorContext.errorReason = "Application DLL not found. Confirm the application dll is present. Single-file deployments are not supported in IIS.";
+                errorContext.generalErrorType = "ANCM Application DLL Not Found";
+                errorContext.detailedErrorContent = format("Application DLL was not found at %s.", to_multi_byte_string(applicationDllPath, CP_UTF8).c_str());
+                throw InvalidOperationException(
+                    format(L"Application DLL was not found at %s. Confirm the application dll is present. Single-file deployments are not supported in IIS.",
+                        applicationDllPath.c_str()));
             }
 
             hostFxrDllPath = executablePath.parent_path() / "hostfxr.dll";
