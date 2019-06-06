@@ -203,6 +203,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected string SignInScheme { get { throw null; } }
         protected override System.Threading.Tasks.Task<object> CreateEventsAsync() { throw null; }
         protected virtual void GenerateCorrelationId(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        protected virtual string GenerateUniqueId() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult> HandleAccessDeniedErrorAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
