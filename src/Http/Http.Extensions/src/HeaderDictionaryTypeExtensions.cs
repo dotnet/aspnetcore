@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (StringValues.IsNullOrEmpty(values))
             {
-                new List<T>();
+                return Array.Empty<T>();
             }
 
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 return (IList<T>)parameters[1];
             }
-            return new List<T>();
+            return Array.Empty<T>();
         }
     }
 }
