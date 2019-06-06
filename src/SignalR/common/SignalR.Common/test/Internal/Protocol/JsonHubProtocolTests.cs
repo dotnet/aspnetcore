@@ -101,6 +101,26 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(expectedMessage, message);
         }
 
+        [Fact]
+        public void ReadCaseInsensitivePropertiesByDefault()
+        {
+            var input = Frame("{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StrIngProp\":\"test\",\"DoublePrOp\":3.14159,\"IntProp\":43,\"DateTimeProp\":\"2019-06-03T22:00:00\",\"NuLLProp\":null,\"ByteARRProp\":\"AgQG\"}}");
+
+            var binder = new TestBinder(null, typeof(TemporaryCustomObject));
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+            JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+
+            var streamItemMessage = Assert.IsType<StreamItemMessage>(message);
+            Assert.Equal(new TemporaryCustomObject()
+            {
+                ByteArrProp = new byte[] { 2, 4, 6 },
+                IntProp = 43,
+                DoubleProp = 3.14159,
+                StringProp = "test",
+                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM")
+            }, streamItemMessage.Item);
+        }
+
         public static IDictionary<string, JsonProtocolTestData> CustomProtocolTestData => new[]
         {
             new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
