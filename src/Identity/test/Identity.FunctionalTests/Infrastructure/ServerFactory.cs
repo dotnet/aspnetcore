@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,9 +42,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             });
         }
 
-        public override void EnsureDatabaseCreated()
+        protected override TestServer CreateServer(IWebHostBuilder builder)
         {
-            using (var scope = Services.CreateScope())
+            var result = base.CreateServer(builder);
+            EnsureDatabaseCreated(result);
+            return result;
+        }
+
+        public void EnsureDatabaseCreated(TestServer server)
+        {
+            using (var scope = server.Host.Services.CreateScope())
             {
                 scope.ServiceProvider.GetService<TContext>().Database.EnsureCreated();
             }
