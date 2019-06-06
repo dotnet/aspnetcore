@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
         {
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Empty(httpsCertificateList);
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateForEmptyVersionField()
         {
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Empty(httpsCertificateList);
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnsValidIfVersionIsZero()
         {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.NotEmpty(httpsCertificateList);
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate_ReturnValidIfCertIsNewer()
         {
