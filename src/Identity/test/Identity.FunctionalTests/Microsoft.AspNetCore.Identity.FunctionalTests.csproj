@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="AngleSharp" />
-    <Content Include="..\..\testassets\Identity.DefaultUI.WebSite\**\*" />
+    <Content Include="..\..\testassets\Identity.DefaultUI.WebSite\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -41,8 +41,6 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\Pages')" ContinueOnError="true" />
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot')" ContinueOnError="true" />
   </Target>
 
 </Project>
