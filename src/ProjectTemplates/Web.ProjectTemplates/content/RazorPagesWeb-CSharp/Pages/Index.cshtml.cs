@@ -12,7 +12,7 @@ namespace Company.WebApplication1.Pages
     {
         private readonly ILogger<IndexModel> logger;
 
-        public ErrorModel(ILogger<IndexModel> _logger)
+        public IndexModel(ILogger<IndexModel> _logger)
         {
             logger = _logger;
         }
