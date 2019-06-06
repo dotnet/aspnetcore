@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -12,6 +12,7 @@
     <Reference Include="Microsoft.AspNetCore.Diagnostics" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.HostFiltering" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Hosting" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.StaticWebAssets" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Routing" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" PrivateAssets="None" />

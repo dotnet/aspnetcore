@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Tests
+namespace Microsoft.AspNetCore.StaticWebAssets
 {
     public class StaticWebAssetsFileProviderTests
     {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Tests
                 Path.GetDirectoryName(new Uri(typeof(StaticWebAssetsFileProviderTests).Assembly.CodeBase).LocalPath));
 
             // Act
-            var file = provider.GetFileInfo("/_CONTENT/Microsoft.AspNetCore.TestHost.StaticWebAssets.xml");
+            var file = provider.GetFileInfo("/_CONTENT/Microsoft.AspNetCore.Hosting.StaticWebAssets.xml");
 
             // Assert
             Assert.Equal(expectedResult, file.Exists);

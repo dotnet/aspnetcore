@@ -9,13 +9,20 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore.StaticWebAssets
 {
-    internal class StaticWebAssetsLoader
+    /// <summary>
+    /// Loader for static web assets
+    /// </summary>
+    public class StaticWebAssetsLoader
     {
         internal const string StaticWebAssetsManifestName = "Microsoft.AspNetCore.StaticWebAssets.xml";
 
-        internal static void UseStaticWebAssets(IWebHostEnvironment environment)
+        /// <summary>
+        /// Configure the <see cref="IWebHostEnvironment"/> to use static web assets.
+        /// </summary>
+        /// <param name="environment"></param>
+        public static void UseStaticWebAssets(IWebHostEnvironment environment)
         {
             using (var manifest = ResolveManifest(environment))
             {
@@ -49,24 +56,10 @@ namespace Microsoft.AspNetCore
 
         internal static Stream ResolveManifest(IWebHostEnvironment environment)
         {
-            // We plan to remove the embedded file resolution code path in
-            // a future preview.
-            Assembly assembly = null;
             try
             {
-                assembly = Assembly.Load(environment.ApplicationName);
-            }
-            catch (Exception)
-            {
-            }
-
-            if (assembly != null && assembly.GetManifestResourceNames().Any(a => a == StaticWebAssetsManifestName))
-            {
-                return assembly.GetManifestResourceStream(StaticWebAssetsManifestName);
-            }
-            else
-            {
-                // Fallback to physical file as we plan to use a file on disk instead of the embedded resource.
+                
+                var assembly = Assembly.Load(environment.ApplicationName);
                 var filePath = Path.Combine(Path.GetDirectoryName(GetAssemblyLocation(assembly)), $"{environment.ApplicationName}.StaticWebAssets.xml");
                 if (File.Exists(filePath))
                 {
@@ -79,6 +72,10 @@ namespace Microsoft.AspNetCore
                     // at build time.
                     return null;
                 }
+            }
+            catch
+            {
+                return null;
             }
         }
 

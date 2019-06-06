@@ -29,6 +29,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.StaticWebAssets" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Core" />
     <AspNetCoreAppReference Include="Microsoft.Net.Http.Headers" />

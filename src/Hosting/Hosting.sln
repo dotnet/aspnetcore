@@ -61,6 +61,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{962C2A87-DDA7-4D5E-861E-9042DA021F7D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticWebAssets", "StaticWebAssets\src\Microsoft.AspNetCore.StaticWebAssets.csproj", "{8FEE2B36-C9E0-476F-8774-4934FAE079A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticWebAssets.Tests", "StaticWebAssets\test\Microsoft.AspNetCore.StaticWebAssets.Tests.csproj", "{F823022C-22C3-49B5-865C-E3301DFE2A36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +175,14 @@ Global
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FEE2B36-C9E0-476F-8774-4934FAE079A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FEE2B36-C9E0-476F-8774-4934FAE079A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FEE2B36-C9E0-476F-8774-4934FAE079A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FEE2B36-C9E0-476F-8774-4934FAE079A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F823022C-22C3-49B5-865C-E3301DFE2A36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F823022C-22C3-49B5-865C-E3301DFE2A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F823022C-22C3-49B5-865C-E3301DFE2A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F823022C-22C3-49B5-865C-E3301DFE2A36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

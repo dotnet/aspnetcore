@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Tests
+namespace Microsoft.AspNetCore.StaticWebAssets
 {
     public class StaticWebAssetsLoaderTests
     {
@@ -59,27 +59,6 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void ResolveManifest_FindsEmbeddedManifestProvider()
-        {
-            // Arrange
-            var expectedManifest = @"<StaticWebAssets Version=""1.0"">
-  <ContentRoot Path=""/Path"" BasePath=""/BasePath"" />
-</StaticWebAssets>
-";
-            var originalRoot = new NullFileProvider();
-            var environment = new HostingEnvironment()
-            {
-                ApplicationName = typeof(StaticWebAssetsReaderTests).Assembly.GetName().Name
-            };
-
-            // Act
-            var manifest = StaticWebAssetsLoader.ResolveManifest(environment);
-
-            // Assert
-            Assert.Equal(expectedManifest, new StreamReader(manifest).ReadToEnd());
-        }
-
-        [Fact]
         public void ResolveManifest_ManifestFromFile()
         {
             // Arrange
@@ -90,7 +69,7 @@ namespace Microsoft.AspNetCore.Tests
 
             var environment = new HostingEnvironment()
             {
-                ApplicationName = "Microsoft.AspNetCore.TestHost"
+                ApplicationName = "Microsoft.AspNetCore.Hosting"
             };
 
             // Act

@@ -8,7 +8,7 @@ using System.Text;
 using System.Xml;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Tests
+namespace Microsoft.AspNetCore.StaticWebAssets
 {
     public class StaticWebAssetsReaderTests
     {
