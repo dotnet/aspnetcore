@@ -29,6 +29,7 @@ namespace FunctionalTests
         public ITestOutputHelper Output { get; }
 
         [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2641", FlakyOn.All)]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
         [InlineData("Startup")]
         [InlineData("StartupWithoutEndpointRouting")]
