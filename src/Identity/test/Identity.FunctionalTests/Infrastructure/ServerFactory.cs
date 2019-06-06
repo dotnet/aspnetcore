@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
@@ -27,6 +29,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             ClientOptions.BaseAddress = new Uri("https://localhost");
         }
 
+        protected override IHostBuilder CreateHostBuilder()
+        {
+            Program.UseStartup = false;
+            return base.CreateHostBuilder();
+        }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
@@ -42,18 +50,25 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             });
         }
 
-        protected override TestServer CreateServer(IWebHostBuilder builder)
+        protected override IHost CreateHost(IHostBuilder builder)
         {
-            var result = base.CreateServer(builder);
-            EnsureDatabaseCreated(result);
+            var result = base.CreateHost(builder);
+            EnsureDatabaseCreated(result.Services);
             return result;
         }
 
-        public void EnsureDatabaseCreated(TestServer server)
+        protected override TestServer CreateServer(IWebHostBuilder builder)
         {
-            using (var scope = server.Host.Services.CreateScope())
+            var result = base.CreateServer(builder);
+            EnsureDatabaseCreated(result.Host.Services);
+            return result;
+        }
+
+        public void EnsureDatabaseCreated(IServiceProvider services)
+        {
+            using (var scope = services.CreateScope())
             {
-                scope.ServiceProvider.GetService<TContext>().Database.EnsureCreated();
+                scope.ServiceProvider.GetService<TContext>()?.Database?.EnsureCreated();
             }
         }
 
