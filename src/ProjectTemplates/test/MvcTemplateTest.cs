@@ -141,7 +141,6 @@ namespace Templates.Test
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -153,7 +152,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
@@ -168,7 +166,6 @@ namespace Templates.Test
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -180,7 +177,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
@@ -195,7 +191,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl
