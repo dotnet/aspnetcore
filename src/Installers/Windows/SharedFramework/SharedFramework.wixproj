@@ -5,7 +5,6 @@
   <PropertyGroup>
     <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
     <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
-    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <Name>AspNetCoreSharedFramework</Name>
     <OutputType>Package</OutputType>
     <EmbedCab>no</EmbedCab>
