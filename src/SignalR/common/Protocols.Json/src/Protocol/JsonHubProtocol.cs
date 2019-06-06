@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.PropertyName:
-                            if (reader.TextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
+                            if (reader.ValueTextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 type = reader.ReadAsInt32(TypePropertyName);
 
@@ -155,11 +155,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     throw new InvalidDataException($"Expected '{TypePropertyName}' to be of type {JsonTokenType.Number}.");
                                 }
                             }
-                            else if (reader.TextEquals(InvocationIdPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(InvocationIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 invocationId = reader.ReadAsString(InvocationIdPropertyName);
                             }
-                            else if (reader.TextEquals(StreamIdsPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(StreamIdsPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -179,15 +179,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 streamIds = newStreamIds.ToArray();
                             }
-                            else if (reader.TextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 target = reader.ReadAsString(TargetPropertyName);
                             }
-                            else if (reader.TextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (reader.TextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 hasResult = true;
 
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     result = BindType(ref reader, returnType);
                                 }
                             }
-                            else if (reader.TextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     return new StreamBindingFailureMessage(id, ExceptionDispatchInfo.Capture(ex));
                                 }
                             }
-                            else if (reader.TextEquals(ArgumentsPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(ArgumentsPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     }
                                 }
                             }
-                            else if (reader.TextEquals(HeadersPropertyNameBytes.EncodedUtf8Bytes))
+                            else if (reader.ValueTextEquals(HeadersPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
                                 headers = ReadHeaders(ref reader);
