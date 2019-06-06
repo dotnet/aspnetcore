@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     {
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
+        private const int RetryCount = 3;
 
         public Process HostProcess { get; private set; }
 
@@ -55,14 +56,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                var hintUrl = TestUriHelper.BuildTestUri(
-                    DeploymentParameters.ServerType,
-                    DeploymentParameters.Scheme,
-                    DeploymentParameters.ApplicationBaseUriHint,
-                    DeploymentParameters.StatusMessagesEnabled);
-
-                // Launch the host process.
-                var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
+                Uri actualUrl = null;
+                CancellationToken hostExitToken = new CancellationToken();
+                for (var i = 0; i < RetryCount; i++)
+                {
+                    try
+                    {
+                        (actualUrl, hostExitToken) = await StartSelfHostAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Retry 3 times and throw
+                        if (i == RetryCount - 1)
+                        {
+                            throw ex;
+                        }
+                    }
+                }
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
 
@@ -75,8 +85,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync(Uri hintUrl)
+        protected async Task<(Uri url, CancellationToken hostExitToken)> StartSelfHostAsync()
         {
+            var hintUrl = TestUriHelper.BuildTestUri(
+                DeploymentParameters.ServerType,
+                DeploymentParameters.Scheme,
+                DeploymentParameters.ApplicationBaseUriHint,
+                DeploymentParameters.StatusMessagesEnabled);
+
             using (Logger.BeginScope("StartSelfHost"))
             {
                 var executableName = string.Empty;
@@ -158,8 +174,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
-                    // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                        // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
+                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
 
                     TriggerHostShutdown(hostExitTokenSource);
                 };

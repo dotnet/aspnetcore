@@ -183,14 +183,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
 
-            // Repeat dropping file and restarting multiple times
-            for (int i = 0; i < 5; i++)
-            {
-                AddAppOffline(deploymentResult.ContentRoot);
-                await AssertAppOffline(deploymentResult);
-                RemoveAppOffline(deploymentResult.ContentRoot);
-                await AssertRunning(deploymentResult);
-            }
+            AddAppOffline(deploymentResult.ContentRoot);
+            await AssertAppOffline(deploymentResult);
+            RemoveAppOffline(deploymentResult.ContentRoot);
+            await AssertRunning(deploymentResult);
 
             AddAppOffline(deploymentResult.ContentRoot);
             await AssertAppOffline(deploymentResult);
