@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static readonly RazorDiagnosticDescriptor BindAttribute_InvalidSyntax =
             new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9991",
-            () => "The attribute names could not be inferred from bind attribute '{0}'. Bind attributes should be of the form" +
+            () => "The attribute names could not be inferred from bind attribute '{0}'. Bind attributes should be of the form " +
                 "'bind' or 'bind-value' along with their corresponding optional parameters like 'bind-value:event', 'bind:format' etc.",
             RazorDiagnosticSeverity.Error);
 
