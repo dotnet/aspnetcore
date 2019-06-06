@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
-namespace Microsoft.AspNetCore.StaticWebAssets
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 {
     public class StaticWebAssetsLoaderTests
     {

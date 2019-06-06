@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Microsoft.AspNetCore.StaticWebAssets
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 {
     public class StaticWebAssetsFileProviderTests
     {

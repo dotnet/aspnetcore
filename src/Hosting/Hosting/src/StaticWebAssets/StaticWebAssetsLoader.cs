@@ -9,7 +9,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.StaticWebAssets
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 {
     /// <summary>
     /// Loader for static web assets
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets
         {
             try
             {
-                
+
                 var assembly = Assembly.Load(environment.ApplicationName);
                 var filePath = Path.Combine(Path.GetDirectoryName(GetAssemblyLocation(assembly)), $"{environment.ApplicationName}.StaticWebAssets.xml");
                 if (File.Exists(filePath))
