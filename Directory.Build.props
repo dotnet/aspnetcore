@@ -156,7 +156,7 @@
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
 
-  <Import Project="eng\Workarounds.AfterArcade.props" />
+  <Import Project="eng\Workarounds.props" />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
