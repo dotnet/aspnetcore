@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
-    public class Overhead
+    public class QueueEmptyOverhead
     {
         private const int _numRequests = 20000;
 
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 
             var options = new RequestThrottlingOptions
             {
-                MaxConcurrentRequests = MaxConcurrentRequests,
-                RequestQueueLimit = RequestQueueLimit
+                MaxConcurrentRequests = 8,
+                RequestQueueLimit = _numRequests
             };
 
             _middleware = new RequestThrottlingMiddleware(
@@ -36,12 +36,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
                     options: Options.Create(options)
                 );
         }
-
-        [Params(8)]
-        public int MaxConcurrentRequests;
-
-        [Params(_numRequests)]
-        public int RequestQueueLimit;
 
         [Params(false, true)]
         public bool YieldsThreadInternally;
