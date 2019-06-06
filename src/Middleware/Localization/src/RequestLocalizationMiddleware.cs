@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Localization
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
-        private ILogger _logger;
+        private readonly ILogger<RequestLocalizationMiddleware> _logger;
 
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Localization
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILogger<RequestLocalizationMiddleware> logger)
         {
             if (options == null)
             {
@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Localization
             }
 
             _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = logger ?? throw new ArgumentNullException(nameof(next));
             _options = options.Value;
         }
 
@@ -84,8 +85,7 @@ namespace Microsoft.AspNetCore.Localization
 
                         if (cultureInfo == null)
                         {
-                            EnsureLogger(context);
-                            _logger?.UnsupportedCultures(provider.GetType().Name, cultures);
+                            _logger.UnsupportedCultures(provider.GetType().Name, cultures);
                         }
                     }
 
@@ -98,8 +98,7 @@ namespace Microsoft.AspNetCore.Localization
 
                         if (uiCultureInfo == null)
                         {
-                            EnsureLogger(context);
-                           _logger?.UnsupportedUICultures(provider.GetType().Name, uiCultures);
+                            _logger.UnsupportedUICultures(provider.GetType().Name, uiCultures);
                         }
                     }
 
@@ -134,11 +133,6 @@ namespace Microsoft.AspNetCore.Localization
             SetCurrentThreadCulture(requestCulture);
 
             await _next(context);
-        }
-
-        private void EnsureLogger(HttpContext context)
-        {
-            _logger = _logger ?? context.RequestServices.GetService<ILogger<RequestLocalizationMiddleware>>();
         }
 
         private static void SetCurrentThreadCulture(RequestCulture requestCulture)
