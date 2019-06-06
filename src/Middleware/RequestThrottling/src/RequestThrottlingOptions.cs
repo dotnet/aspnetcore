@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public int RequestQueueLimit { get; set; } = 5000;
 
         /// <summary>
-        /// 
+        /// Optional callback; processes requests rejected by the middleware.
         /// </summary>
         public RequestDelegate OnRejected { get; set; } = context =>
         {
