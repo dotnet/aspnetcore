@@ -38,6 +38,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 return writer;
             }
 
+            if (context.SourceDocument.FilePath != null &&
+                !string.Equals(context.SourceDocument.FilePath, span.Value.FilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                // We don't want to generate padding for nodes from imports.
+                return writer;
+            }
+
             var basePadding = CalculatePadding();
             var resolvedPadding = Math.Max(basePadding - offset, 0);
 

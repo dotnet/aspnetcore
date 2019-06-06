@@ -7,6 +7,8 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         UsingDirective - (1:0,1 [19] x:\dir\subdir\Test\_Imports.razor) - System.Text
         UsingDirective - (21:1,1 [25] x:\dir\subdir\Test\_Imports.razor) - System.Reflection
+        CSharpCode - (57:2,11 [14] x:\dir\subdir\Test\_Imports.razor)
+            IntermediateToken - (57:2,11 [14] x:\dir\subdir\Test\_Imports.razor) - CSharp - [Serializable]
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Counter

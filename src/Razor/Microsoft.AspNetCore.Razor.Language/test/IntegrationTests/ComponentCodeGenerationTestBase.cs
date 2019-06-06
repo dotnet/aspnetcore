@@ -3652,6 +3652,7 @@ namespace Test
             var importContent = @"
 @using System.Text
 @using System.Reflection
+@attribute [Serializable]
 ";
             var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
             ImportItems.Add(importItem);

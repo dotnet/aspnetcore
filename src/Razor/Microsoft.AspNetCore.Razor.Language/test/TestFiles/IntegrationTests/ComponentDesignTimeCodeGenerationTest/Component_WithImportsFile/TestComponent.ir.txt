@@ -7,8 +7,11 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         UsingDirective - (1:0,1 [17] x:\dir\subdir\Test\_Imports.razor) - System.Text
         UsingDirective - (21:1,1 [23] x:\dir\subdir\Test\_Imports.razor) - System.Reflection
+        CSharpCode - (57:2,11 [14] x:\dir\subdir\Test\_Imports.razor)
+            IntermediateToken - (57:2,11 [14] x:\dir\subdir\Test\_Imports.razor) - CSharp - [Serializable]
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
+                DirectiveToken - (57:2,11 [14] x:\dir\subdir\Test\_Imports.razor) - [Serializable]
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
             CSharpCode - 

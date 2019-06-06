@@ -156,6 +156,27 @@ public class MyModel
         }
 
         [Fact]
+        public void AttributeDirectiveWithViewImports_Runtime()
+        {
+            // Arrange
+            var projectItem = CreateProjectItemFromFile();
+            AddProjectItemFromText(@"
+@using System
+@attribute [Serializable]");
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: false, throwOnFailure: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+            AssertLinePragmas(compiled.CodeDocument, designTime: false);
+
+            var diagnostics = compiled.Compilation.GetDiagnostics().Where(d => d.Severity >= DiagnosticSeverity.Warning);
+            Assert.Equal("Duplicate 'Serializable' attribute", Assert.Single(diagnostics).GetMessage());
+        }
+
+        [Fact]
         public void MalformedPageDirective_Runtime()
         {
             // Arrange
@@ -637,6 +658,28 @@ public class MyModel
             AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
             AssertLinePragmas(compiled.CodeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
+        }
+
+        [Fact]
+        public void AttributeDirectiveWithViewImports_DesignTime()
+        {
+            // Arrange
+            var projectItem = CreateProjectItemFromFile();
+            AddProjectItemFromText(@"
+@using System
+@attribute [Serializable]");
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: true, throwOnFailure: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+            AssertLinePragmas(compiled.CodeDocument, designTime: true);
+            AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
+
+            var diagnostics = compiled.Compilation.GetDiagnostics().Where(d => d.Severity >= DiagnosticSeverity.Warning);
+            Assert.Equal("Duplicate 'Serializable' attribute", Assert.Single(diagnostics).GetMessage());
         }
 
         [Fact]
