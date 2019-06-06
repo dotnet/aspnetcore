@@ -55,17 +55,10 @@ namespace Microsoft.AspNetCore.Localization
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        [Obsolete("This is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
+        [Obsolete("This constructor is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
         public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
+               : this(next, options, NullLoggerFactory.Instance)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _logger = NullLogger.Instance;
-            _options = options.Value;
         }
 
         /// <summary>
