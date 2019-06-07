@@ -37,6 +37,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.12' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Server.HttpSys;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
