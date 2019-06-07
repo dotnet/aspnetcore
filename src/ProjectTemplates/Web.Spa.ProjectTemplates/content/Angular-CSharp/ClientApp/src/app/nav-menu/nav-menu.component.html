@@ -19,6 +19,9 @@
         class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
         [ngClass]="{ show: isExpanded }"
       >
+        <!--#if (IndividualLocalAuth) -->
+        <app-login-menu></app-login-menu>
+        <!--#endif -->
         <ul class="navbar-nav flex-grow">
           <li
             class="nav-item"
