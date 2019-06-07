@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 #requires -version 4
 
+# This script packages, installs and creates a template to help with rapid iteration in the templating area.
 [CmdletBinding(PositionalBinding = $false)]
 param()
 
