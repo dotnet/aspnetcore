@@ -27,9 +27,11 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
             }
             else
             {
-                // fastest implementation on .NET Core for Linux/macOS.
-                // Not supported on .NET Framework
-                return new NetCorePbkdf2Provider();
+                // REVIEW: DervieBytes API changed with switch to netstandard2.0
+                return new ManagedPbkdf2Provider();
+                //// fastest implementation on .NET Core for Linux/macOS.
+                //// Not supported on .NET Framework
+                //return new NetCorePbkdf2Provider();
             }
         }
     }
