@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop.Internal;
