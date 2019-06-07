@@ -434,24 +434,31 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnRemoteFailure = ctx =>
                     {
+                        var ex = ctx.Failure;
+                        Assert.True(ex.Data.Contains("error"), "error");
+                        Assert.True(ex.Data.Contains("error_description"), "error_description");
+                        Assert.True(ex.Data.Contains("error_uri"), "error_uri");
+                        Assert.Equal("itfailed", ex.Data["error"]);
+                        Assert.Equal("whyitfailed", ex.Data["error_description"]);
+                        Assert.Equal("https://example.com/fail", ex.Data["error_uri"]);
                         ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
                 } : new OAuthEvents();
             });
-            var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar&state=protected_state",
+            var sendTask = server.SendAsync("https://example.com/signin-google?error=itfailed&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
                 ".AspNetCore.Correlation.Google.correlationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?FailureMessage=OMG" + UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("/error?FailureMessage=itfailed" + UrlEncoder.Default.Encode(";Description=whyitfailed;Uri=https://example.com/fail"), transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
                 var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
-                Assert.Equal("OMG;Description=SoBad;Uri=foobar", error.GetBaseException().Message);
+                Assert.Equal("itfailed;Description=whyitfailed;Uri=https://example.com/fail", error.GetBaseException().Message);
             }
         }
 

@@ -91,7 +91,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     failureMessage.Append(";Uri=").Append(errorUri);
                 }
 
-                return HandleRequestResult.Fail(failureMessage.ToString(), properties);
+                var ex = new Exception(failureMessage.ToString());
+                ex.Data["error"] = error.ToString();
+                ex.Data["error_description"] = errorDescription.ToString();
+                ex.Data["error_uri"] = errorUri.ToString();
+
+                return HandleRequestResult.Fail(ex, properties);
             }
 
             var code = query["code"];
