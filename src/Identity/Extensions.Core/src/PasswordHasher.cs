@@ -65,6 +65,26 @@ namespace Microsoft.AspNetCore.Identity
             _rng = options.Rng;
         }
 
+        // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static bool ByteArraysEqual(byte[] a, byte[] b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+            if (a == null || b == null || a.Length != b.Length)
+            {
+                return false;
+            }
+            var areSame = true;
+            for (var i = 0; i < a.Length; i++)
+            {
+                areSame &= (a[i] == b[i]);
+            }
+            return areSame;
+        }
+
         /// <summary>
         /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
         /// </summary>
@@ -222,7 +242,7 @@ namespace Microsoft.AspNetCore.Identity
 
             // Hash the incoming password and verify it
             byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
-            return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+            return ByteArraysEqual(actualSubkey, expectedSubkey);
         }
 
         private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password, out int iterCount)
@@ -255,7 +275,7 @@ namespace Microsoft.AspNetCore.Identity
 
                 // Hash the incoming password and verify it
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
-                return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+                return ByteArraysEqual(actualSubkey, expectedSubkey);
             }
             catch
             {
