@@ -97,37 +97,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             Assert.Equal(status, (int)response.StatusCode);
         }
 
-        [Fact]
-        public async Task WhitespaceHostRejected()
-        {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddHostFiltering(options =>
-                    {
-                        options.AllowEmptyHosts = true;
-                        options.AllowedHosts.Add("Localhost");
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.Use((ctx, next) =>
-                    {
-                        ctx.Request.Headers[HeaderNames.Host] = " ";
-                        return next();
-                    });
-                    app.UseHostFiltering();
-                    app.Run(c =>
-                    {
-                        return Task.CompletedTask;
-                    });
-                    app.Run(c => Task.CompletedTask);
-                });
-            var server = new TestServer(builder);
-            var response = await server.CreateClient().GetAsync("/");
-            Assert.Equal(400, (int)response.StatusCode);
-        }
-
         [Theory]
         [InlineData("localHost", "localhost")]
         [InlineData("localHost", "*")] // Any - Used by HttpSys

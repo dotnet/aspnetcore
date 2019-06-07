@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         {
             var host = context.Request.Headers[HeaderNames.Host].ToString();
 
-            if (0u >= (uint)host.Length)
+            if (host.Length == 0)
             {
                 return IsEmptyHostAllowed(context);
             }
