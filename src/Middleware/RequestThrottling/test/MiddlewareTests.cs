@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.Equal(0, middleware.ActiveRequestCount);
 
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext()));
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
             Assert.Equal(0, middleware.ActiveRequestCount);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     throw new NotImplementedException();
                 });
 
-            await middleware.Invoke(new DefaultHttpContext());
+            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 requestQueueLimit: 0);
 
             var context = new DefaultHttpContext();
-            await middleware.Invoke(context);
+            await middleware.Invoke(context).OrTimeout();
             Assert.Equal(503, context.Response.StatusCode);
         }
 
@@ -126,6 +126,60 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             _ = middleware.Invoke(new DefaultHttpContext());
             Assert.Equal(2, middleware.ActiveRequestCount);
+        }
+
+        [Fact]
+        public async void FullQueueInvokesOnRejected()
+        {
+            bool onRejectedInvoked = false;
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 0,
+                requestQueueLimit: 0,
+                onRejected: httpContext =>
+                {
+                    onRejectedInvoked = true;
+                    return Task.CompletedTask;
+                });
+
+            var context = new DefaultHttpContext();
+            await middleware.Invoke(context).OrTimeout();
+            Assert.True(onRejectedInvoked);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async void ExceptionThrownDuringOnRejected()
+        {
+            TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 1,
+                requestQueueLimit: 0,
+                onRejected: httpContext =>
+                {
+                    throw new DivideByZeroException();
+                },
+                next: httpContext =>
+                {
+                    return tsc.Task;
+                });
+
+            var firstRequest = middleware.Invoke(new DefaultHttpContext());
+
+            var context = new DefaultHttpContext();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).OrTimeout();
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+
+            tsc.SetResult(true);
+
+            Assert.True(firstRequest.IsCompletedSuccessfully);
+
+            var thirdRequest = middleware.Invoke(new DefaultHttpContext());
+
+            Assert.True(thirdRequest.IsCompletedSuccessfully);
+
+            Assert.Equal(0, middleware.ActiveRequestCount);
         }
     }
 }
