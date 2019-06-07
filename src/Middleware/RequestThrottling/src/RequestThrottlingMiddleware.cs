@@ -35,6 +35,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
+            if (_requestThrottlingOptions.MaxConcurrentRequests < 0)
+            {
+                throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be a positive integer.", nameof(options));
+            }
             if (_requestThrottlingOptions.RequestQueueLimit < 0)
             {
                 throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
