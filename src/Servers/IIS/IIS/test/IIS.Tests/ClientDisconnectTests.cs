@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     await requestStartedCompletionSource.Task.DefaultTimeout();
                 }
 
-                await requestAborted.Task;
+                await requestAborted.Task.DefaultTimeout();
 
                 await requestCompletedCompletionSource.Task.DefaultTimeout();
             }
