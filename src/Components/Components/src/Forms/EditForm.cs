@@ -69,6 +69,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; private set; }
 
+        public Task SubmitAsync()
+        {
+            return _handleSubmitDelegate.Invoke();
+        }
+
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
