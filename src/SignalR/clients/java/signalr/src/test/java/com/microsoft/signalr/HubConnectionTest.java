@@ -1960,6 +1960,52 @@ class HubConnectionTest {
     }
 
     @Test
+    public void userSetAuthHeaderIsNotClearedAfterRedirect() {
+        AtomicReference<String> beforeRedirectHeader  = new AtomicReference<>();
+        AtomicReference<String> afterRedirectHeader = new AtomicReference<>();
+
+        TestHttpClient client = new TestHttpClient()
+
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            beforeRedirectHeader.set(req.getHeaders().get("Authorization"));
+                            return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"redirectToken\"}\"}"));
+                        })
+                .on("POST", "http://testexample.com/negotiate",
+                        (req) -> {
+                            afterRedirectHeader.set(req.getHeaders().get("Authorization"));
+                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHeader("Authorization", "ExampleValue")
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().blockingAwait();
+        assertEquals("ExampleValue", beforeRedirectHeader.get());
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("Bearer redirectToken", afterRedirectHeader.get());
+
+        // Making sure you can do this after restarting the HubConnection.
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().blockingAwait();
+        assertEquals("ExampleValue", beforeRedirectHeader.get());
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("Bearer redirectToken", afterRedirectHeader.get());
+    }
+
+    @Test
     public void sameHeaderSetTwiceGetsOverwritten() {
         AtomicReference<String> header = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()

@@ -41,7 +41,7 @@ public class HubConnection {
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private Single<String> redirectAccessTokenProvider;
-    private Map<String, String> headers;
+    private final Map<String, String> headers;
     private final Map<String, String> localHeaders = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
@@ -148,10 +148,7 @@ public class HubConnection {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
         }
 
-        if (headers != null) {
-            this.headers = headers;
-        }
-
+        this.headers = headers;
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
@@ -304,7 +301,7 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
-        if(headers != null) {
+        if (headers != null) {
             this.localHeaders.putAll(headers);
         }
 

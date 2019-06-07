@@ -5,8 +5,6 @@ package com.microsoft.signalr;
 
 import java.util.Map;
 
-import io.reactivex.Single;
-import io.reactivex.subjects.CompletableSubject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
