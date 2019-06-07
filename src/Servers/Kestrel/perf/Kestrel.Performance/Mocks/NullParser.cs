@@ -21,16 +21,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static readonly NullParser<Http1ParsingHandler> Instance = new NullParser<Http1ParsingHandler>();
 
-        public bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
+        public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
         {
             handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
             handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
             handler.OnHeader(new Span<byte>(_connectionHeaderName), new Span<byte>(_connectionHeaderValue));
             handler.OnHeadersComplete();
-
-            consumedBytes = 0;
-            consumed = buffer.Start;
-            examined = buffer.End;
 
             return true;
         }
