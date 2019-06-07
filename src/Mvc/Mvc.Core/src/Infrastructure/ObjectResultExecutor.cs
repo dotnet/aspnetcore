@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -18,16 +23,43 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
+        private delegate Task<object> ReadAsyncEnumerableDelegate(object value);
+
+        private readonly MethodInfo Converter = typeof(ObjectResultExecutor).GetMethod(
+            nameof(ReadAsyncEnumerable),
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private readonly ConcurrentDictionary<Type, ReadAsyncEnumerableDelegate> _asyncEnumerableConverters =
+            new ConcurrentDictionary<Type, ReadAsyncEnumerableDelegate>();
+        private readonly MvcOptions _mvcOptions;
+
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
+            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ObjectResultExecutor"/>.
+        /// </summary>
+        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+        public ObjectResultExecutor(
+            OutputFormatterSelector formatterSelector,
+            IHttpResponseStreamWriterFactory writerFactory,
+            ILoggerFactory loggerFactory,
+            IOptions<MvcOptions> mvcOptions)
         {
             if (formatterSelector == null)
             {
@@ -47,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
+            _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
         }
 
         /// <summary>
@@ -87,16 +120,35 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             InferContentTypes(context, result);
 
             var objectType = result.DeclaredType;
+
             if (objectType == null || objectType == typeof(object))
             {
                 objectType = result.Value?.GetType();
             }
 
+            var value = result.Value;
+
+            if (value is IAsyncEnumerable<object> asyncEnumerable)
+            {
+                return ExecuteAsyncEnumerable(context, result, asyncEnumerable);
+            }
+
+            return ExecuteAsyncCore(context, result, objectType, value);
+        }
+
+        private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, IAsyncEnumerable<object> asyncEnumerable)
+        {
+            var enumerated = await EnumerateAsyncEnumerable(asyncEnumerable);
+            await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
+        }
+
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
                 WriterFactory,
                 objectType,
-                result.Value);
+                value);
 
             var selectedFormatter = FormatterSelector.SelectFormatter(
                 formatterContext,
@@ -137,6 +189,51 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 result.ContentTypes.Add("application/problem+json");
                 result.ContentTypes.Add("application/problem+xml");
             }
+        }
+
+        private Task<object> EnumerateAsyncEnumerable(IAsyncEnumerable<object> value)
+        {
+            var type = value.GetType();
+            if (!_asyncEnumerableConverters.TryGetValue(type, out var result))
+            {
+                var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IAsyncEnumerable<>));
+                result = null;
+                if (enumerableType != null)
+                {
+                    var enumeratedObjectType = enumerableType.GetGenericArguments()[0];
+
+                    var converter = (ReadAsyncEnumerableDelegate)Converter
+                        .MakeGenericMethod(enumeratedObjectType)
+                        .CreateDelegate(typeof(ReadAsyncEnumerableDelegate), this);
+
+                    _asyncEnumerableConverters.TryAdd(type, converter);
+                    result = converter;
+                }
+            }
+
+            return result(value);
+        }
+
+        private async Task<object> ReadAsyncEnumerable<T>(object value)
+        {
+            var asyncEnumerable = (IAsyncEnumerable<T>)value;
+            var result = new List<T>();
+            var count = 0;
+
+            await foreach (var item in asyncEnumerable)
+            {
+                if (count++ >= _mvcOptions.MaxIAsyncEnumerableBufferLimit)
+                {
+                    throw new InvalidOperationException(Resources.FormatObjectResultExecutor_MaxEnumerationExceeded(
+                        nameof(ObjectResultExecutor),
+                        _mvcOptions.MaxIAsyncEnumerableBufferLimit,
+                        value.GetType()));
+                }
+
+                result.Add(item);
+            }
+
+            return result;
         }
     }
 }

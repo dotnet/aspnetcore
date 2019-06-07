@@ -1746,6 +1746,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatProperty_MustBeInstanceOfType(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("Property_MustBeInstanceOfType"), p0, p1, p2);
 
+        /// <summary>
+        /// {0} execeeded the maximum configured enumeration limit '{1}' when enumerating async enumerable type '{2}'.
+        /// </summary>
+        internal static string ObjectResultExecutor_MaxEnumerationExceeded
+        {
+            get => GetString("ObjectResultExecutor_MaxEnumerationExceeded");
+        }
+
+        /// <summary>
+        /// {0} execeeded the maximum configured enumeration limit '{1}' when enumerating async enumerable type '{2}'.
+        /// </summary>
+        internal static string FormatObjectResultExecutor_MaxEnumerationExceeded(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ObjectResultExecutor_MaxEnumerationExceeded"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

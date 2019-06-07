@@ -503,5 +503,8 @@
   </data>
   <data name="Property_MustBeInstanceOfType" xml:space="preserve">
     <value>Property '{0}.{1}' must be an instance of type '{2}'.</value>
-  </data>  
+  </data>
+  <data name="ObjectResultExecutor_MaxEnumerationExceeded" xml:space="preserve">
+    <value>{0} execeeded the maximum configured enumeration limit '{1}' when enumerating async enumerable type '{2}'.</value>
+  </data>
 </root>

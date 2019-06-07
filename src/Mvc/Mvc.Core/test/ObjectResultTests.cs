@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new DefaultOutputFormatterSelector(Options.Create(new MvcOptions()), NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                Options.Create(new MvcOptions())));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider();
