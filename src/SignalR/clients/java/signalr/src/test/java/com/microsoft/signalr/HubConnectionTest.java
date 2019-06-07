@@ -1965,7 +1965,6 @@ class HubConnectionTest {
         AtomicReference<String> afterRedirectHeader = new AtomicReference<>();
 
         TestHttpClient client = new TestHttpClient()
-
                 .on("POST", "http://example.com/negotiate",
                         (req) -> {
                             beforeRedirectHeader.set(req.getHeaders().get("Authorization"));
