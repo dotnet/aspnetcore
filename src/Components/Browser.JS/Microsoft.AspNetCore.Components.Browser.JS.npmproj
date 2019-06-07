@@ -13,6 +13,4 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
-  <Target Name="Restore" />
-
 </Project>

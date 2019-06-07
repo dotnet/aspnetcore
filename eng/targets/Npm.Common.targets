@@ -53,22 +53,8 @@
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
-    <ReadLinesFromFile File="$(PackageJson)" Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))">
-      <Output TaskParameter="Lines" ItemName="PackageJsonContent" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup Condition="@(PackageJsonContent->Count()) > 0">
-      <_PackageJsonContent>@(PackageJsonContent->'%(Identity)', '%0a')</_PackageJsonContent>
-      <_PackageJsonContent>$(_PackageJsonContent.Replace('%(ReplacePackageContent.Identity)', '%(ReplacePackageContent.ReplaceWith)'))</_PackageJsonContent>
-    </PropertyGroup>
-
-    <WriteLinesToFile
-      File="$(PackageJson)"
-      Lines="$(_PackageJsonContent)"
-      Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))"
-      Overwrite="true" />
-
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js $(PackageJson) $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />

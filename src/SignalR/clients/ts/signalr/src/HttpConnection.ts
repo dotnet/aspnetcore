@@ -190,15 +190,19 @@ export class HttpConnection implements IConnection {
             // This exception is returned to the user as a rejected Promise from the start method.
         }
 
+        if (this.sendQueue) {
+            try {
+                await this.sendQueue.stop();
+            } catch (e) {
+                this.logger.log(LogLevel.Error, `TransportSendQueue.stop() threw error '${e}'.`);
+            }
+            this.sendQueue = undefined;
+        }
+
         // The transport's onclose will trigger stopConnection which will run our onclose event.
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
         if (this.transport) {
-            if (this.sendQueue) {
-                this.sendQueue.stop();
-                this.sendQueue = undefined;
-            }
-
             try {
                 await this.transport.stop();
             } catch (e) {
@@ -516,24 +520,28 @@ export class TransportSendQueue {
     private buffer: any[] = [];
     private sendBufferedData: PromiseSource;
     private executing: boolean = true;
-    private transportResult: PromiseSource;
+    private transportResult?: PromiseSource;
+    private sendLoopPromise: Promise<void>;
 
     constructor(private readonly transport: ITransport) {
         this.sendBufferedData = new PromiseSource();
         this.transportResult = new PromiseSource();
 
-        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
-        this.sendLoop().then(() => {}, (_) => {});
+        this.sendLoopPromise = this.sendLoop();
     }
 
     public send(data: string | ArrayBuffer): Promise<void> {
         this.bufferData(data);
+        if (!this.transportResult) {
+            this.transportResult = new PromiseSource();
+        }
         return this.transportResult.promise;
     }
 
-    public stop(): void {
+    public stop(): Promise<void> {
         this.executing = false;
         this.sendBufferedData.resolve();
+        return this.sendLoopPromise;
     }
 
     private bufferData(data: string | ArrayBuffer): void {
@@ -550,14 +558,17 @@ export class TransportSendQueue {
             await this.sendBufferedData.promise;
 
             if (!this.executing) {
-                // Did we stop?
+                if (this.transportResult) {
+                    this.transportResult.reject("Connection stopped.");
+                }
+
                 break;
             }
 
             this.sendBufferedData = new PromiseSource();
 
-            const transportResult = this.transportResult;
-            this.transportResult = new PromiseSource();
+            const transportResult = this.transportResult!;
+            this.transportResult = undefined;
 
             const data = typeof(this.buffer[0]) === "string" ?
                 this.buffer.join("") :
