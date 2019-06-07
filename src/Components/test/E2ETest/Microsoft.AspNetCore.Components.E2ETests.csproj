@@ -7,20 +7,11 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
-    <!-- https://github.com/dotnet/aspnetcore/issues/6857 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-
     <!-- Run on platforms where we support Selenium -->
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' == 'true'">false</SkipTests>
 
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <BaseOutputPath />
-
-    <OutputPath />
-
     <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +36,17 @@
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
+    <Content Include="..\testassets\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixPreCommand Include="call npm i yarn;call node_modules\.bin\yarn install" />
+    <HelixContent Include="package.json" />
+    <HelixContent Include="yarn.lock" />
+    <!-- This is currently windows only -->
+    <HelixProjectPlatform Remove="Linux;OSX" />
+    <HelixProjectPlatform Remove="@(HelixProjectPlatform)" />    
+    <HelixProjectTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
