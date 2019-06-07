@@ -35,17 +35,13 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
-            if (_requestThrottlingOptions.MaxConcurrentRequests < 0)
+            if (_requestThrottlingOptions.MaxConcurrentRequests <= 0)
             {
-                throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be a positive integer.", nameof(options));
+                throw new ArgumentOutOfRangeException(nameof(options), "The value of `options.MaxConcurrentRequests` must be a positive integer.");
             }
             if (_requestThrottlingOptions.RequestQueueLimit < 0)
             {
                 throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
-            }
-            if (_requestThrottlingOptions.MaxConcurrentRequests <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(options), "The value of `options.MaxConcurrentRequests` must be a positive integer.");
             }
 
             if (_requestThrottlingOptions.OnRejected == null)
@@ -55,9 +51,15 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _requestQueue = new TailDrop(
-                _requestThrottlingOptions.MaxConcurrentRequests.Value,
-                _requestThrottlingOptions.RequestQueueLimit);
+
+            if (_requestThrottlingOptions.ServerAlwaysBlocks)
+            {
+                _requestQueue = new TailDrop(0, _requestThrottlingOptions.RequestQueueLimit);
+            }
+            else
+            {
+                _requestQueue = new TailDrop(_requestThrottlingOptions.MaxConcurrentRequests.Value, _requestThrottlingOptions.RequestQueueLimit);
+            }
         }
 
         /// <summary>

@@ -15,9 +15,11 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var options = new RequestThrottlingOptions
             {
-                MaxConcurrentRequests = maxConcurrentRequests,
+                MaxConcurrentRequests = maxConcurrentRequests == 0 ? 999 : maxConcurrentRequests,
                 RequestQueueLimit = requestQueueLimit
             };
+
+            options.ServerAlwaysBlocks = maxConcurrentRequests == 0;
 
             if (onRejected != null)
             {
