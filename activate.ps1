@@ -38,6 +38,7 @@ deactivate -init
 $_OLD_PATH = $env:PATH
 # Tell dotnet where to find itself
 $env:DOTNET_ROOT = "$PSScriptRoot\.dotnet"
+${env:DOTNET_ROOT(x86)} = "$PSScriptRoot\.dotnet\x86"
 # Tell dotnet not to look beyond the DOTNET_ROOT folder for more dotnet things
 $env:DOTNET_MULTILEVEL_LOOKUP = 0
 # Put dotnet first on PATH

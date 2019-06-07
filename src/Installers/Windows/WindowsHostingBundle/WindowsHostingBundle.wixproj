@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <Name>WindowsServerHostingBundle</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <OutputName>WindowsServerHostingBundle</OutputName>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>6F1B115C-1903-40CB-837D-7961AB610F4E</ProjectGuid>
     <OutputType>Bundle</OutputType>
     <Platform>x86</Platform>
@@ -73,7 +74,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <OutputName>dotnet-hosting-$(PackageVersion)-win</OutputName>
+    <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
 
     <BundleNameShort>Microsoft .NET Core $(PackageBrandingVersion)</BundleNameShort>
   </PropertyGroup>

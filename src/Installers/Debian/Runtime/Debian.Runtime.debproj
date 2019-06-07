@@ -32,6 +32,7 @@
 
   <PropertyGroup>
     <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.deb</TargetFileName>
+    <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
     <!-- DebPackageVersion does not match the ASP.NET Core runtime verison. -->
     <DebPackageVersion>$(VersionPrefix)</DebPackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->

@@ -6,8 +6,9 @@
     <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
     <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
     <Name>AspNetCoreTargetingPack</Name>
+    <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
@@ -68,7 +69,7 @@
 
   <PropertyGroup>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
-    <OutputName>$(TargetingPackInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <PackageFileName>$(TargetingPackInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
 
     <!-- Suppresses building this project completely during servicing builds. -->

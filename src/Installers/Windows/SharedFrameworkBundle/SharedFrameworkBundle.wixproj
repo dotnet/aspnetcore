@@ -4,7 +4,8 @@
 
   <PropertyGroup>
     <Name>AspNetCoreSharedFrameworkBundle</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <OutputName>$(Name)-$(Platform)</OutputName>
+    <IsShipping>true</IsShipping>
     <OutputType>Bundle</OutputType>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ProjectGuid>{D6C54D8B-043F-4877-B751-60E7390F9EC6}</ProjectGuid>
@@ -46,7 +47,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
 
     <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
     <BundleNameSub>Shared Framework</BundleNameSub>

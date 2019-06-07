@@ -25,6 +25,7 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).deb</TargetFileName>
+    <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
 
     <DebPackageVersion>$(TargetingPackVersionPrefix)</DebPackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->

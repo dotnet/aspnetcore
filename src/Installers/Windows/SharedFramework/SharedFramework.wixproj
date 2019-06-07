@@ -6,6 +6,7 @@
     <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
     <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
     <Name>AspNetCoreSharedFramework</Name>
+    <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <EmbedCab>no</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
@@ -14,7 +15,7 @@
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
     <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
     <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
     <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
@@ -74,8 +75,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
-
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
