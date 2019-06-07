@@ -3,14 +3,15 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
     <TestAssetOutputName>InProcessNewShimWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
+    <RuntimeFrameworkVersion>2.2.4</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp2.2" />
     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
   </ItemGroup>
 
@@ -30,14 +31,30 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="4.5.1" >
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
 
