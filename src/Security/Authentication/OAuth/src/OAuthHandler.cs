@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         protected HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -259,7 +260,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             if (Options.UsePkce)
             {
-                var codeVerifier = GenerateUniqueId();
+                var bytes = new byte[32];
+                CryptoRandom.GetBytes(bytes);
+                var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);

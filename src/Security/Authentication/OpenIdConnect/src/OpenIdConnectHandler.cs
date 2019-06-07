@@ -370,7 +370,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // https://tools.ietf.org/html/rfc7636
             if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
             {
-                var codeVerifier = GenerateUniqueId();
+                var bytes = new byte[32];
+                CryptoRandom.GetBytes(bytes);
+                var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);

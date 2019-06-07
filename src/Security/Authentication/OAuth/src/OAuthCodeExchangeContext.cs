@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public class OAuthCodeExchangeContext
     {
         /// <summary>
-        /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
+        /// Initializes a new <see cref="OAuthCodeExchangeContext"/>.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <param name="code">The code returned from the authorization endpoint.</param>
