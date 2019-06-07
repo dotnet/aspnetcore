@@ -19,8 +19,6 @@ class WebSocketTransport implements Transport {
     private String url;
     private HttpClient client;
     private Map<String, String> headers;
-    private Single<String> accessTokenProvider;
-
     private final Logger logger = LoggerFactory.getLogger(WebSocketTransport.class);
 
     private static final String HTTP = "http";
@@ -29,13 +27,8 @@ class WebSocketTransport implements Transport {
     private static final String WSS = "wss";
 
     public WebSocketTransport(Map<String, String> headers, HttpClient client) {
-        this(headers, client, Single.just(""));
-    }
-
-    public WebSocketTransport(Map<String, String> headers, HttpClient client, Single<String> accessTokenProvider) {
         this.client = client;
         this.headers = headers;
-        this.accessTokenProvider = accessTokenProvider;
     }
 
     String getUrl() {
@@ -52,32 +45,19 @@ class WebSocketTransport implements Transport {
         return url;
     }
 
-    private Single updateHeaderToken() {
-        return this.accessTokenProvider.flatMap((token) -> {
-            if (!token.isEmpty()) {
-                this.headers.put("Authorization", "Bearer " + token);
-            }
-            return Single.just("");
-        });
-    }
-
     @Override
     public Completable start(String url) {
         this.url = formatUrl(url);
-        CompletableSubject start = CompletableSubject.create();
         logger.debug("Starting Websocket connection.");
-        return this.updateHeaderToken().flatMapCompletable((r) -> {
-            this.webSocketClient = client.createWebSocket(this.url, this.headers);
-            this.webSocketClient.setOnReceive((message) -> onReceive(message));
-            this.webSocketClient.setOnClose((code, reason) -> {
-                if (onClose != null) {
-                    onClose(code, reason);
-                }
-            });
+        this.webSocketClient = client.createWebSocket(this.url, this.headers);
+        this.webSocketClient.setOnReceive((message) -> onReceive(message));
+        this.webSocketClient.setOnClose((code, reason) -> {
+            if (onClose != null) {
+                onClose(code, reason);
+            }
+        });
 
-            return webSocketClient.start().doOnComplete(() -> logger.info("WebSocket transport connected to: {}.", this.url));
-        }).subscribeWith(start);
-
+        return webSocketClient.start().doOnComplete(() -> logger.info("WebSocket transport connected to: {}.", this.url));
     }
 
     @Override
