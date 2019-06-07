@@ -43,6 +43,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
             }
+            if (_requestThrottlingOptions.MaxConcurrentRequests <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options), "The value of `options.MaxConcurrentRequests` must be a positive integer.");
+            }
 
             if (_requestThrottlingOptions.OnRejected == null)
             {
@@ -65,12 +69,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
         {
             var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
 
-            if (waitInQueueTask.IsCompletedSuccessfully)
+            if (waitInQueueTask.IsCompletedSuccessfully && waitInQueueTask.Result)
             {
-                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
-                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                await _requestThrottlingOptions.OnRejected(context);
-                return;
+                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
             }
             else
             {
@@ -83,6 +84,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await _requestThrottlingOptions.OnRejected(context);
                 return;
             }
 

@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public void MultipleRequestsFillUpQueue()
         {
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 0,
+                maxConcurrentRequests: 1,
                 requestQueueLimit: 10,
                 next: httpContext =>
                 {
