@@ -151,6 +151,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 catch (IOException)
                 {
                     // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
+                    // See https://github.com/aspnet/AspNetCore/issues/2941 for more context
                     File.Copy(tempFilename, finalFilename);
                 }
             }
