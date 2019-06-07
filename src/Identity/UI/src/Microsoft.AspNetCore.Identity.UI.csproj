@@ -17,13 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="wwwroot/**/*" />
-    <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
-    <None Remove="wwwroot/**/LICENSE*" />
+    <Content Include="wwwroot/**/*" Pack="true" PackagePath="staticwebassets" />
+    <Content Remove="wwwroot/**/LICENSE*" />
+    <Content Include="build\Microsoft.AspNetCore.Identity.UI.props" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/THIRD-PARTY-NOTICES.txt" />
-
-    <Content Update="wwwroot/**/*" Pack="false" />
-    <Content Update="**\*.cshtml" Pack="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,47 +37,27 @@
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="build\" />
+  </ItemGroup>
+
   <!-- Source build doesn't build this package -->
   <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <Message Text="Building razor views assemblies" Importance="High" />
-    <MSbuild Projects="$(MSBuildThisFile)"
-             Targets="BuildForUI"
-             Properties="
-             BuildProjectReferences=false;
-             RazorCompileOnBuild=true;
-             UIFrameworkVersion=%(UIFrameworkVersionMoniker.Identity);
-             IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\;" />
+    <MSbuild Projects="$(MSBuildThisFile)" Targets="BuildForUI" Properties="&#xD;&#xA;             BuildProjectReferences=false;&#xD;&#xA;             RazorCompileOnBuild=true;&#xD;&#xA;             UIFrameworkVersion=%(UIFrameworkVersionMoniker.Identity);&#xD;&#xA;             IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\;" />
 
-    <Copy
-      SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
+    <Copy SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)" UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
 
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly"/>
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly" />
     </Copy>
 
-    <Copy
-      SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-      Retries="$(CopyRetryCount)"
-      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
+    <Copy SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" DestinationFolder="$(OutDir)" SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)" UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)">
 
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
 
-    <Message
-      Importance="High"
-      Text="$(MSBuildProjectName) -&gt; %(_RazorAssembly.FullPath)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; %(_RazorAssembly.FullPath)" />
 
   </Target>
 
@@ -90,19 +67,15 @@
 
   <Target Name="SetupRazorInputs">
     <ItemGroup>
-      <_RazorGenerate
-        Include="Areas\Identity\Pages\$(UIFrameworkVersion)\**\*.cshtml" />
+      <_RazorGenerate Include="Areas\Identity\Pages\$(UIFrameworkVersion)\**\*.cshtml" />
 
-      <RazorGenerate
-        Include="@(_RazorGenerate)"
-        Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
+      <RazorGenerate Include="@(_RazorGenerate)" Link="Areas\Identity\Pages\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
   <Target Name="BuildForUI" DependsOnTargets="SetupRazorInputs;RazorCompile" />
 
-<Target
-    Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
+<Target Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
 
     <ItemGroup>
       <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
@@ -117,15 +90,13 @@
 
   <Target Name="_AddRazorDlls" BeforeTargets="BuiltProjectOutputGroup">
     <ItemGroup>
-      <BuiltProjectOutputGroupOutput
-        Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
+      <BuiltProjectOutputGroupOutput Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
     </ItemGroup>
   </Target>
 
   <Target Name="_AddRazorPdbs" BeforeTargets="DebugSymbolsProjectOutputGroup">
     <ItemGroup>
-      <DebugSymbolsProjectOutputGroupOutput
-        Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" />
+      <DebugSymbolsProjectOutputGroupOutput Include="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" />
     </ItemGroup>
   </Target>
 
@@ -136,8 +107,7 @@
       <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
     </ItemGroup>
 
-    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)"
-           Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
+    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)" Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
   </Target>
 
 </Project>
