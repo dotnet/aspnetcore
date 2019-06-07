@@ -9,7 +9,12 @@ if type -P "node" &>/dev/null; then
 fi
 
 node_version=$1
-arch=$2
+arch=`uname -m`
+if [[ $arch == arm* ]] 
+    arch="arm64"
+else
+    arch="x64"
+fi
 osname=`uname -s`
 if [ "$osname" = "Darwin" ]; then
    platformarch='darwin-$arch'
