@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Mono.Cecil;
 
