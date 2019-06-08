@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
