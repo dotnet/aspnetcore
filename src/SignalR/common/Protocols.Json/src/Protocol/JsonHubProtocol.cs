@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 using var token = GetParsedObject(message.Result, message.Result?.GetType());
-                token.RootElement.WriteAsProperty(ResultPropertyNameBytes.EncodedUtf8Bytes, writer);
+                token.RootElement.WriteProperty(ResultPropertyNameBytes.EncodedUtf8Bytes, writer);
             }
         }
 
@@ -516,7 +516,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             using var token = GetParsedObject(message.Item, message.Item?.GetType());
-            token.RootElement.WriteAsProperty(ItemPropertyNameBytes.EncodedUtf8Bytes, writer);
+            token.RootElement.WriteProperty(ItemPropertyNameBytes.EncodedUtf8Bytes, writer);
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 else
                 {
                     using var token = GetParsedObject(argument, type);
-                    token.RootElement.WriteAsValue(writer);
+                    token.RootElement.WriteValue(writer);
                 }
             }
             writer.WriteEndArray();
