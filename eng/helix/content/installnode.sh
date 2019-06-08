@@ -10,7 +10,7 @@ fi
 
 node_version=$1
 arch=`uname -m`
-if [[ $arch == arm* ]] 
+if [[ $arch == arm* ]]; then 
     arch="arm64"
 else
     arch="x64"
