@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             Assert.Equal(expected, Encoding.ASCII.GetString(actual.Span));
         }
 
-        private async Task<Memory<byte>> Receive(int length)
+        public async Task<Memory<byte>> Receive(int length)
         {
             var actual = new byte[length];
             int offset = 0;
