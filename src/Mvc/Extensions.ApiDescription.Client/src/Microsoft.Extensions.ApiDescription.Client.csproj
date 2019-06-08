@@ -11,6 +11,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <DevelopmentDependency>true</DevelopmentDependency>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 

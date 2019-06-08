@@ -13,6 +13,7 @@
     <PackageTags>MSBuild;Swagger;Open API;code generation;Web API</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
     <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup>
