@@ -7,23 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WebpackInputs Include="src\**\*.ts" />
-    <WebPackOutputs Include="dist\Debug\blazor.webassembly.js" />
-    <WebPackOutputs Include="dist\Release\blazor.webassembly.js" />
-    <WebPackOutputs Include="dist\Debug\blazor.server.js" />
-    <WebPackOutputs Include="dist\Release\blazor.server.js" />
+    <ProjectReference Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj" />
+    <ProjectReference Include="..\..\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
-
-  <!-- Override the default 'Build' target from eng/targets/Npm.Common.targets. -->
-  <Target Name="Build"
-          Inputs="@(WebpackInputs)"
-          Outputs="@(WebPackOutputs)">
-    <RemoveDir Directories="dist" />
-
-    <Yarn Command="run build:debug" />
-    <Yarn Command="run build:production" />
-  </Target>
 
 </Project>
