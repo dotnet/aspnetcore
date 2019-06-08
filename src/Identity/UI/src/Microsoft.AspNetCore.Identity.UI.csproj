@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -7,19 +7,29 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+
+    <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
+    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _UpdatedIdentityUIStaticWebAssets
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+
+    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap4</IdentityUIFrameworkVersion>
+
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="wwwroot/**/*" Pack="true" PackagePath="staticwebassets" />
-    <Content Remove="wwwroot/**/LICENSE*" />
-    <Content Include="build\Microsoft.AspNetCore.Identity.UI.props" />
+    <Content Remove="@(Content)" />
+    <Content Include="wwwroot\**\*" Pack="true" PackagePath="staticwebassets" />
+    <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/THIRD-PARTY-NOTICES.txt" />
   </ItemGroup>
 
@@ -108,6 +118,33 @@
     </ItemGroup>
 
     <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)" Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
+  </Target>
+
+  <Target Name="_UpdatedIdentityUIStaticWebAssets">
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" />
+
+      <_V3Content Include="wwwroot\V3\**" />
+      <_V4Content Include="wwwroot\V4\**" />
+
+      <StaticWebAsset Include="@(_V3Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3'">
+        <SourceType></SourceType>
+        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
+        <ContentRoot>$(MSBuildThisFileDirectory)wwwroot\V3\</ContentRoot>
+        <BasePath>/Identity</BasePath>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </StaticWebAsset>
+
+      <StaticWebAsset Include="@(_V4Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
+        <SourceType></SourceType>
+        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
+        <ContentRoot>$(MSBuildThisFileDirectory)wwwroot\V4\</ContentRoot>
+        <BasePath>/Identity</BasePath>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      </StaticWebAsset>
+    </ItemGroup>
+
   </Target>
 
 </Project>

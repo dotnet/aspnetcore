@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UserSecretsId>aspnet-Identity.DefaultUI.WebSite-80C658D8-CED7-467F-9B47-75DA3BC1A16D</UserSecretsId>
+    <IdentityDefaultUIFramework>Bootstrap3</IdentityDefaultUIFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,4 +44,15 @@
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>  
+  </PropertyGroup>
+
+  <Target Name="_SetBootstrapFrameworkVersion">
+    <ItemGroup>
+      <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.identity.UI'">
+        <AdditionalProperties>IdentityDefaultUIFramework=$(IdentityDefaultUIFramework)</AdditionalProperties>
+      </_StaticWebAssetsProjectReference>
+    </ItemGroup>  
+  </Target>
 </Project>

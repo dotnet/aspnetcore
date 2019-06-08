@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,8 +7,6 @@
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
-    <Content Include="..\..\UI\src\Areas\Identity\Pages\**\*.*" LinkBase="UI\src\Areas\Identity\Pages" />
-    <Content Include="..\..\UI\src\wwwroot\**\*.*" LinkBase="UI\src\wwwroot" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,8 +15,19 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
+
+  <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_IdentitUIDefaultUI Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.DefaultUIProjectPath</_Parameter1>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultUI.MSBuildSourceProjectFile)'))</_Parameter2>
+      </AssemblyAttribute>      
+    </ItemGroup>
+  </Target>
 
 </Project>

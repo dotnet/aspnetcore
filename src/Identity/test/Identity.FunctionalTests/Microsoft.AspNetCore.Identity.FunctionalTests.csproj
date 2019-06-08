@@ -7,9 +7,10 @@
    </PropertyGroup>
 
   <ItemGroup>
-    
+
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
+    <Compile Include="..\..\UI\src\UIFramework.cs" Link="Infrastructure\UIFramework.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +28,35 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Testing.DefaultWebSite.StaticWebAssets.V3.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="AddProjectReferenceAssemblyInfo" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_IdentitUIDefaultWebSite Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Identity.DefaultUI.WebSite'" />
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.DefaultWebSiteProjectPath</_Parameter1>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIDefaultWebSite.MSBuildSourceProjectFile)'))</_Parameter2>
+      </AssemblyAttribute>
+
+      <_IdentitUIProjectPath Include="@(ReferencePath)" Condition="'%(ReferencePath.FileName)' == 'Microsoft.AspNetCore.Identity.UI'" />
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>Microsoft.AspNetCore.Testing.IdentityUIProjectPath</_Parameter1>
+        <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
+      </AssemblyAttribute>
+
+    </ItemGroup>
+  </Target>
+
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
@@ -35,21 +65,11 @@
       <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
       <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)" />
-    <Copy
-      SourceFiles="@(_PagesFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
-    <Copy
-      SourceFiles="@(_wwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />
+    <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
+    <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
     <!-- Drop a dummy sln to specify content root location -->
-    <WriteLinesToFile
-        File="$(PublishDir)\contentroot.sln"
-        Lines="Ignored"
-        Overwrite="true"
-        Encoding="Unicode" />
+    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
   </Target>
 
 </Project>
