@@ -24,7 +24,7 @@
     <IsPackable>false</IsPackable>
     <UseCodebase>true</UseCodebase>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
-    <DeployProjectOutput Condition="'$(CI)' == 'true'">false</DeployProjectOutput>
+    <DeployProjectOutput Condition="'$(ContinuousIntegrationBuild)' == 'true'">false</DeployProjectOutput>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 

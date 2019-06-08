@@ -16,7 +16,7 @@
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(CI)' == 'true' ">
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <Creator>aspnetcore</Creator>
     <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
@@ -25,7 +25,7 @@
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(CI)' != 'true' ">
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <HelixType>dev</HelixType>
     <Creator>$(USERNAME)</Creator>
     <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>

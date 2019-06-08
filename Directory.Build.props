@@ -135,7 +135,6 @@
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!--
       Disable deterministic source paths in test assets and samples.
       In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths

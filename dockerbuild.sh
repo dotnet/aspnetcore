@@ -130,8 +130,7 @@ docker build "$(dirname "$dockerfile")" \
 docker run \
     --rm \
     -t \
-    -e CI \
-    -e TEAMCITY_VERSION \
+    -e TF_BUILD \
     -e BUILD_NUMBER \
     -e BUILD_BUILDNUMBER \
     -e BUILD_REPOSITORY_URI \
