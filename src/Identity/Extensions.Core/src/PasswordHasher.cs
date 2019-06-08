@@ -283,7 +283,13 @@ namespace Microsoft.AspNetCore.Identity
 
                 // Hash the incoming password and verify it
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
+#if NETSTANDARD2_0
                 return ByteArraysEqual(actualSubkey, expectedSubkey);
+#elif NETCOREAPP3_0
+                return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+#else
+#error Update target frameworks
+#endif
             }
             catch
             {
