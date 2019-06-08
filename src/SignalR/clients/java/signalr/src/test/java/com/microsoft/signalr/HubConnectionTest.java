@@ -107,6 +107,57 @@ class HubConnectionTest {
     }
 
     @Test
+    public void hubConnectionUrlCanBeChanged() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("http://example.com", hubConnection.getBaseUrl());
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.setBaseUrl("http://newurl.com");
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals("http://newurl.com", hubConnection.getBaseUrl());
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    @Test
+    public void changingUrlWhenConnectedThrows() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("http://example.com", hubConnection.getBaseUrl());
+
+
+        Throwable exception = assertThrows(IllegalStateException.class, () -> hubConnection.setBaseUrl("http://newurl.com"));
+        assertEquals("The HubConnection must be in the disconnected state to change the url.",exception.getMessage());
+    }
+
+    @Test
+    public void settingNewUrlToNullThrows() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("http://example.com", hubConnection.getBaseUrl());
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> hubConnection.setBaseUrl(null));
+        assertEquals("The HubConnection url must be a valid url.",exception.getMessage());
+    }
+
+    @Test
     public void invalidHandShakeResponse() {
         MockTransport mockTransport = new MockTransport(false);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
