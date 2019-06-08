@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
     <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>

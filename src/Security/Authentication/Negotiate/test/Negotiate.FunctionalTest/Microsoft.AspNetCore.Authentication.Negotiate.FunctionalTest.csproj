@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <IsTestProject>true</IsTestProject>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
+    <!-- Disabled because of https://github.com/aspnet/AspNetCore/issues/11009. Tests don't run on Win7 or Win8 correctly. -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
