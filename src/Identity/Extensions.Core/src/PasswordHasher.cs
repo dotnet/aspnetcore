@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Identity
             _rng = options.Rng;
         }
 
+#if NETSTANDARD2_0
         // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static bool ByteArraysEqual(byte[] a, byte[] b)
@@ -84,6 +85,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             return areSame;
         }
+#endif
 
         /// <summary>
         /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
