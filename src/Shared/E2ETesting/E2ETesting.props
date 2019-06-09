@@ -3,7 +3,7 @@
     <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
     <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\selenium\</SeleniumProcessTrackingFolder>
-    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
+    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT' and '$(BuildJava)' == 'true'">true</SeleniumE2ETestsSupported>
     <EnforcePrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and '$(EnforcePrerequisites)' == ''">true</EnforcePrerequisites>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
