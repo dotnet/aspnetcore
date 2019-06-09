@@ -25,7 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
-    <Content Include="..\..\samples\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="%(RecursiveDir)%"/>
+    <Content Include="..\..\samples\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="%(RecursiveDir)"/>
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
