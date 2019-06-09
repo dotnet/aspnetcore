@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="AngleSharp" />
-    <Content Include="..\..\testassets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\testassets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="'$(IsHelixJob)' == 'true'" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
