@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
@@ -161,6 +162,7 @@ namespace Microsoft.AspNetCore.Http
         // We send an anonymous object with an HttpContext property
         // via DiagnosticSource in various events throughout the pipeline. Instead
         // we just send the HttpContext to avoid extra allocations
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public HttpContext HttpContext => this;
 
         public override void Abort()
