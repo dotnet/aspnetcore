@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,6 +13,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.HeaderPropagation.Tests
@@ -159,12 +162,60 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("different"));
         }
 
-        private IWebHostBuilder CreateBuilder(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler, Action<HeaderPropagationMessageHandlerOptions> configureClient = null)
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task HeaderInRequest_IncludeInLoggerScope_AddScopeToLogger(bool includeInLoggerScope)
+        {
+            // Arrange
+            var handler = new SimpleHandler();
+            var loggingProvider = new LoggerProvider();
+            var builder = CreateBuilder(c =>
+                {
+                    c.Headers.Add("foo");
+                },
+                handler,
+                includeInLoggerScope: includeInLoggerScope)
+                .ConfigureLogging((_, logging) => logging.AddProvider(loggingProvider));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage();
+            request.Headers.Add("foo", "bar");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(handler.Headers.Contains("foo"));
+            Assert.Equal(new[] { "bar" }, handler.Headers.GetValues("foo"));
+            if (includeInLoggerScope)
+            {
+                Assert.Single(loggingProvider.Scopes);
+                var scope = loggingProvider.Scopes[0];
+                Assert.Single(scope);
+                Assert.IsType<HeaderPropagationLoggerScope>(scope);
+                var entry = scope[0];
+                Assert.Equal("foo", entry.Key);
+                Assert.Equal("bar", (StringValues)entry.Value);
+            }
+            else
+            {
+                Assert.Empty(loggingProvider.Scopes);
+            }
+        }
+
+        private IWebHostBuilder CreateBuilder(
+            Action<HeaderPropagationOptions> configure,
+            HttpMessageHandler primaryHandler,
+            Action<HeaderPropagationMessageHandlerOptions> configureClient = null,
+            bool includeInLoggerScope = false)
         {
             return new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseHeaderPropagation();
+                    app.UseHeaderPropagation(includeInLoggerScope);
                     app.UseMiddleware<SimpleMiddleware>();
                 })
                 .ConfigureServices(services =>
@@ -211,6 +262,31 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             {
                 var client = _httpClientFactory.CreateClient("example.com");
                 return client.GetAsync("");
+            }
+        }
+
+        private class LoggerProvider : ILoggerProvider, ILogger
+        {
+            public List<HeaderPropagationLoggerScope> Scopes { get; } = new List<HeaderPropagationLoggerScope>();
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public ILogger CreateLogger(string name) => this;
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                if (state is HeaderPropagationLoggerScope scope)
+                {
+                    Scopes.Add(scope);
+                }
+                return this;
+            }
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+            }
+
+            public void Dispose()
+            {
             }
         }
     }

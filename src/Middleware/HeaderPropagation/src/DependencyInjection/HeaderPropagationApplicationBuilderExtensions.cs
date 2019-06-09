@@ -34,5 +34,23 @@ namespace Microsoft.AspNetCore.Builder
 
             return app.UseMiddleware<HeaderPropagationMiddleware>();
         }
+
+        /// <summary>
+        /// Adds a middleware that collect headers to be propagated to a <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="includeInLoggerScope">Includes the captured headers in the logger scope.</param>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
+        public static IApplicationBuilder UseHeaderPropagation(this IApplicationBuilder app, bool includeInLoggerScope)
+        {
+            app.UseHeaderPropagation();
+
+            if (includeInLoggerScope)
+            {
+                app.UseMiddleware<HeaderPropagationLoggerScopeMiddleware>();
+            }
+
+            return app;
+        }
     }
 }

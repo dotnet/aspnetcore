@@ -58,7 +58,9 @@ namespace HeaderPropagationSample
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHeaderPropagation();
+            // Add the propagated headers Middleware
+            // and configure it to include the propagated headers to the logger scope.
+            app.UseHeaderPropagation(includeInLoggerScope: true);
 
             app.UseRouting();
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware to propagate HTTP headers from the incoming request to the outgoing HTTP Client requests</Description>
@@ -8,10 +8,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;httpclient</PackageTags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.HeaderPropagation.Tests" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />

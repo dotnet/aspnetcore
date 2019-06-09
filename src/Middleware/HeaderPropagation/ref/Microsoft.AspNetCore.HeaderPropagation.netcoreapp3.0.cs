@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Builder
     public static partial class HeaderPropagationApplicationBuilderExtensions
     {
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseHeaderPropagation(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseHeaderPropagation(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, bool includeInLoggerScope) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.HeaderPropagation
@@ -33,6 +34,11 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public void Add(string headerName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
         public void Add(string inboundHeaderName, string outboundHeaderName) { }
         public void Add(string inboundHeaderName, string outboundHeaderName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
+    }
+    public partial class HeaderPropagationLoggerScopeMiddleware
+    {
+        public HeaderPropagationLoggerScopeMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationLoggerScopeMiddleware> logger, Microsoft.AspNetCore.HeaderPropagation.IHeaderPropagationLoggerScopeBuilder loggerScopeBuilder) { }
+        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class HeaderPropagationMessageHandler : System.Net.Http.DelegatingHandler
     {
@@ -69,7 +75,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public partial class HeaderPropagationValues
     {
         public HeaderPropagationValues() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } set { } }
+    }
+    public partial interface IHeaderPropagationLoggerScopeBuilder
+    {
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
