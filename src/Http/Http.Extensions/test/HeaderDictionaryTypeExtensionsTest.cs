@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Headers
 
             var result = context.Request.GetTypedHeaders().Get<MediaTypeHeaderValue>(HeaderNames.ContentType);
 
-            Assert. Null(result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Http.Headers
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Http.Headers
 
             var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             context.Request.Headers["custom"] = "invalid";
 
             var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
-            Assert.Equal(0, results.Count);
+            Assert.Empty(results);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Http.Headers
             var context = new DefaultHttpContext();
 
             var results = context.Request.GetTypedHeaders().GetList<TestHeaderValue>("custom");
-            Assert.Equal(0, results.Count);
+            Assert.Empty(results);
         }
 
         [Fact]
