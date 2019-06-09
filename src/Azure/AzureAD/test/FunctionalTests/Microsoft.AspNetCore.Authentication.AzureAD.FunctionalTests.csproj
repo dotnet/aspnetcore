@@ -15,7 +15,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Content Include="..\testassets\**\*" LinkBase="%(RecursiveDir)%" >
+    <Content Include="..\testassets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>      
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
