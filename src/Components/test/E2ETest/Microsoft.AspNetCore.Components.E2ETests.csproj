@@ -36,7 +36,7 @@
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
-    <Content Include="..\testassets\**\*" />
+    <HelixContent Include="..\testassets\**\*" />
   </ItemGroup>
 
   <ItemGroup>
