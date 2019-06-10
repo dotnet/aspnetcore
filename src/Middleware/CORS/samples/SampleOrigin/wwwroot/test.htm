@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -25,6 +25,7 @@
     <script type="text/javascript">
         (function () {
             function _fetch(options) {
+                // TODO
                 const url = `http://${location.hostname}:9000/${options.testPath}`;
                 options.cors = 'cors';
                 return fetch(url, options);

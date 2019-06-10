@@ -80,24 +80,6 @@ namespace FunctionalTests
                 "Debug";
 #endif
 
-            var destinationParameters = new DeploymentParameters
-            {
-                TargetFramework = "netcoreapp3.0",
-                RuntimeFlavor = RuntimeFlavor.CoreClr,
-                ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
-                PublishApplicationBeforeDeployment = false,
-                ApplicationType = ApplicationType.Portable,
-                Configuration = configuration,
-                EnvironmentVariables =
-                {
-                    ["CORS_STARTUP"] = startup
-                }
-            };
-
-            var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
-            var destinationDeployment = await destinationFactory.DeployAsync();
-
             var originParameters = new DeploymentParameters
             {
                 TargetFramework = "netcoreapp3.0",
@@ -111,6 +93,25 @@ namespace FunctionalTests
 
             var originFactory = ApplicationDeployerFactory.Create(originParameters, loggerFactory);
             var originDeployment = await originFactory.DeployAsync();
+            var port = originDeployment.HttpClient.BaseAddress.Port;
+            var destinationParameters = new DeploymentParameters
+            {
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
+                ServerType = ServerType.Kestrel,
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
+                PublishApplicationBeforeDeployment = false,
+                ApplicationType = ApplicationType.Portable,
+                Configuration = configuration,
+                EnvironmentVariables =
+                {
+                    ["CORS_STARTUP"] = startup,
+                    ["ORIGIN_PORT"] = port.ToString()
+                }
+            };
+
+            var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
+            var destinationDeployment = await destinationFactory.DeployAsync();
 
             return new SamplesDeploymentResult(originFactory, originDeployment, destinationFactory, destinationDeployment);
         }

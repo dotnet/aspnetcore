@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace SampleDestination
 {
     public class Startup
     {
-        private static readonly string DefaultAllowedOrigin = $"http://{Dns.GetHostName()}:9001";
+        // TODO make this work with samples
+        private static readonly string DefaultAllowedOrigin = $"http://{Dns.GetHostName()}:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
         private readonly ILogger<Startup> _logger;
 
         public Startup(ILoggerFactory loggerFactory)
