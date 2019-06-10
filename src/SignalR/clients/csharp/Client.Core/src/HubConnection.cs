@@ -1942,7 +1942,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return _connectionLock.Wait(0);
             }
 
-            // Don't call this method in a try/finally since we're also potentially releasing the connection lock here.
+            // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
             public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
                 await WaitConnectionLockAsync(methodName);
