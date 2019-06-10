@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -18,6 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     public class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+
         public MicrosoftAccountHandler(IOptionsMonitor<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -56,6 +60,23 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.DomainHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.LoginHintKey);
             AddQueryString(queryStrings, properties, MicrosoftChallengeProperties.PromptKey);
+
+            if (Options.UsePkce)
+            {
+                var bytes = new byte[32];
+                CryptoRandom.GetBytes(bytes);
+                var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
+
+                // Store this for use during the code redemption.
+                properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+
+                using var sha256 = SHA256.Create();
+                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
+
+                queryStrings[OAuthConstants.CodeChallengeKey] = codeChallenge;
+                queryStrings[OAuthConstants.CodeChallengeMethodKey] = OAuthConstants.CodeChallengeMethodS256;
+            }
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);
