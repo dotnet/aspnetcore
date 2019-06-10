@@ -105,11 +105,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static string MakeNewConnectionId()
         {
-            // TODO: Use Span when WebEncoders implements Span methods https://github.com/aspnet/Home/issues/2966
             // 128 bit buffer / 8 bits per byte = 16 bytes
-            var buffer = new byte[16];
-            _keyGenerator.GetBytes(buffer);
+            Span<byte> buffer = stackalloc byte[16];
             // Generate the id with RNGCrypto because we want a cryptographically random id, which GUID is not
+            _keyGenerator.GetBytes(buffer);
             return WebEncoders.Base64UrlEncode(buffer);
         }
 
