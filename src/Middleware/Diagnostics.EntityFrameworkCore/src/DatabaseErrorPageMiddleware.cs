@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                                 if (databaseExists)
                                 {
                                     // Also check if the database is completely empty - see https://github.com/aspnet/EntityFrameworkCore/issues/15997
-                                    databaseExists = (bool)typeof(RelationalDatabaseCreator).GetMethod("HasTables", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(relationalDatabaseCreator, null);
+                                    databaseExists = (bool)typeof(RelationalDatabaseCreator).GetMethod("HasTables", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(relationalDatabaseCreator, null);
                                 }
 
                                 var migrationsAssembly = context.GetService<IMigrationsAssembly>();
