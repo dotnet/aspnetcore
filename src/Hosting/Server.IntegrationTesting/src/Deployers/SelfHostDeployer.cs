@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     {
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
-        private const int RetryCount = 3;
 
         public Process HostProcess { get; private set; }
 
@@ -56,28 +55,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                Uri actualUrl = null;
-                CancellationToken hostExitToken = new CancellationToken();
-                for (var i = 0; i < RetryCount; i++)
-                {
-                    try
-                    {
-                        var hintUrl = TestUriHelper.BuildTestUri(
-                            DeploymentParameters.ServerType,
-                            DeploymentParameters.Scheme,
-                            DeploymentParameters.ApplicationBaseUriHint,
-                            DeploymentParameters.StatusMessagesEnabled);
-                        (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
-                    }
-                    catch (Exception)
-                    {
-                        // Retry 3 times and throw
-                        if (i == RetryCount - 1)
-                        {
-                            throw;
-                        }
-                    }
-                }
+                var hintUrl = TestUriHelper.BuildTestUri(
+                    DeploymentParameters.ServerType,
+                    DeploymentParameters.Scheme,
+                    DeploymentParameters.ApplicationBaseUriHint,
+                    DeploymentParameters.StatusMessagesEnabled);
+
+                // Launch the host process.
+                var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
                 Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
 
