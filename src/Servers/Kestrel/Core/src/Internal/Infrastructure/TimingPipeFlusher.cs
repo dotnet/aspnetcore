@@ -22,7 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IKestrelTrace _log;
 
         private readonly object _flushLock = new object();
-        private Task<FlushResult> _lastFlushTask = null;
+
+        // This ValueTask that was either:
+        // 1. The default value which "IsCompleted"
+        // 2. Created by an async method
+        // 3. Constructed explicitely from a completed result
+        // This means it should be safe to await a single _lastFlushTask instance multiple times.
+        private ValueTask<FlushResult> _lastFlushTask;
 
         public TimingPipeFlusher(
             PipeWriter writer,
@@ -55,13 +61,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // Pipelines don't support multiple awaiters on flush.
             lock (_flushLock)
             {
-                if (_lastFlushTask != null && !_lastFlushTask.IsCompleted)
+                if (!_lastFlushTask.IsCompleted)
                 {
                     _lastFlushTask = AwaitLastFlushAndTimeFlushAsync(_lastFlushTask, minRate, count, outputAborter, cancellationToken);
-                    return new ValueTask<FlushResult>(_lastFlushTask);
+                }
+                else
+                {
+                    _lastFlushTask = TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
                 }
 
-                return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
+                return _lastFlushTask;
             }
         }
 
@@ -79,11 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 return new ValueTask<FlushResult>(pipeFlushTask.Result);
             }
 
-            _lastFlushTask = TimeFlushAsyncAwaited(pipeFlushTask, minRate, count, outputAborter, cancellationToken);
-            return new ValueTask<FlushResult>(_lastFlushTask);
+            return TimeFlushAsyncAwaited(pipeFlushTask, minRate, count, outputAborter, cancellationToken);
         }
 
-        private async Task<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             if (minRate != null)
             {
@@ -116,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return default;
         }
 
-        private async Task<FlushResult> AwaitLastFlushAndTimeFlushAsync(Task lastFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> AwaitLastFlushAndTimeFlushAsync(ValueTask<FlushResult> lastFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             await lastFlushTask;
             return await TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
