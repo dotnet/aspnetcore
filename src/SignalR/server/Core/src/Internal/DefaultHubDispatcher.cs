@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
-                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies))
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies, string hubMethodName, object[] hubMethodArguments)
         {
             // If there are no policies we don't need to run auth
             if (!policies.Any())
@@ -491,10 +491,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, null);
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new AuthHubConnectionContext(hubConnectionContext, hubMethodName, hubMethodArguments));
         }
 
-        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, object resource)
+        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, AuthHubConnectionContext resource)
         {
             var authService = provider.GetRequiredService<IAuthorizationService>();
             var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
@@ -569,5 +569,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             return descriptor.ParameterTypes;
         }
+    }
+
+    public class AuthHubConnectionContext : DefaultHubCallerContext
+    {
+        public AuthHubConnectionContext(HubConnectionContext connection, string hubMethodName, object[] hubMethodArguments) : base(connection)
+        {
+            HubMethodName = hubMethodName;
+            HubMethodArguments = hubMethodArguments;
+        }
+
+        public string HubMethodName { get; }
+        public IReadOnlyList<object> HubMethodArguments { get; }
     }
 }
