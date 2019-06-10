@@ -53,7 +53,6 @@ export class HttpConnection implements IConnection {
     // connectionStarted is tracked independently from connectionState, so we can check if the
     // connection ever did successfully transition from connecting to connected before disconnecting.
     private connectionStarted: boolean;
-    private readonly baseUrl: string;
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
@@ -66,6 +65,7 @@ export class HttpConnection implements IConnection {
     private sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
+    public baseUrl: string;
     public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;

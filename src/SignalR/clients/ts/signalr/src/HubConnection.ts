@@ -127,6 +127,10 @@ export class HubConnection {
         return this.connection ? (this.connection.connectionId || null) : null;
     }
 
+    get baseUrl(): string | null {
+        return this.connection ? (this.connection.baseUrl || null) : null;
+    }
+
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
