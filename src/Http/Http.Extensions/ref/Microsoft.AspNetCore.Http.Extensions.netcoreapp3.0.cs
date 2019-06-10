@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Http
 {
-    public static partial class ContextExtensions
+    public static partial class HttpContextServerVariableExtensions
     {
         public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
     }
