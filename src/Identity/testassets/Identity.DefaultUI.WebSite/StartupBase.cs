@@ -93,6 +93,7 @@ namespace Identity.DefaultUI.WebSite
         {
             var pendingProviders = new Stack<IFileProvider>();
             pendingProviders.Push(env.WebRootFileProvider);
+            pendingProviders.Push(env.ContentRootFileProvider);
             while (pendingProviders.TryPop(out var currentProvider))
             {
                 switch (currentProvider)
