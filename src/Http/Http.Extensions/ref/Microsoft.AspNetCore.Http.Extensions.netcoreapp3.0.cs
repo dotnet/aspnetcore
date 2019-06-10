@@ -3,15 +3,15 @@
 
 namespace Microsoft.AspNetCore.Http
 {
-    public static partial class HttpContextServerVariableExtensions
-    {
-        public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
-    }
     public static partial class HeaderDictionaryTypeExtensions
     {
         public static void AppendList<T>(this Microsoft.AspNetCore.Http.IHeaderDictionary Headers, string name, System.Collections.Generic.IList<T> values) { }
         public static Microsoft.AspNetCore.Http.Headers.RequestHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
         public static Microsoft.AspNetCore.Http.Headers.ResponseHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse response) { throw null; }
+    }
+    public static partial class HttpContextServerVariableExtensions
+    {
+        public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
     }
     public static partial class ResponseExtensions
     {
