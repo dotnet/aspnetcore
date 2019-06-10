@@ -89,7 +89,7 @@ namespace Identity.DefaultUI.WebSite
             });
         }
 
-        protected static void DisableFilePolling(IWebHostEnvironment env)
+        public static void DisableFilePolling(IWebHostEnvironment env)
         {
             var pendingProviders = new Stack<IFileProvider>();
             pendingProviders.Push(env.WebRootFileProvider);
