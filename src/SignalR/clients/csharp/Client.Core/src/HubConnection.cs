@@ -1948,6 +1948,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
                 {
+                    ReleaseConnectionLock();
                     throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
                 }
 
