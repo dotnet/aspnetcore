@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace FunctionalTests
 {
     internal static class ProcessManager
     {
-        private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
 
         public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo, ILogger logger)
         {
@@ -40,6 +40,10 @@ namespace FunctionalTests
             var timeoutTask = Task.Delay(Timeout).ContinueWith((t) =>
             {
                 // Don't timeout during debug sessions
+                while (Debugger.IsAttached)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                }
 
                 if (process.HasExited)
                 {

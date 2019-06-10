@@ -10,7 +10,7 @@ const corsServerPath = `http://${hostname}:${destinationPortVar}`;
 // e.g., npm test --debug
 // In debug mode we show the editor, slow down operations, and increase the timeout for each test
 let debug = process.env.npm_config_debug || false;
-jest.setTimeout(60000);
+jest.setTimeout(debug ? 60000 : 30000);
 
 let browser;
 let error;

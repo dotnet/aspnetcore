@@ -16,7 +16,6 @@ namespace SampleDestination
 {
     public class Startup
     {
-        // TODO make this work with samples
         private static readonly string DefaultAllowedOrigin = $"http://localhost:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
         private readonly ILogger<Startup> _logger;
 
