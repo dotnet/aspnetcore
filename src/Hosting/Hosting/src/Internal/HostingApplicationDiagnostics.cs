@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        // These are versions of DiagnosticSource.Star/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
+        // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
         private Activity StartActivity(Activity activity, HttpContext httpContext)
         {
             activity.Start();
