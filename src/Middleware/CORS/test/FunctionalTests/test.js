@@ -1,13 +1,16 @@
-﻿const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer');
 const os = require("os");
-const hostname = os.hostname();
+const hostname = "localhost";
+const originPortVar = process.env.ORIGIN_PORT;
+const destinationPortVar = process.env.DESTINATION_PORT;
+const secondOriginPortVar = process.env.SECOND_ORIGIN_PORT;
 
-const corsServerPath = `http://${hostname}:9000`;
+const corsServerPath = `http://${hostname}:${destinationPortVar}`;
 
 // e.g., npm test --debug
 // In debug mode we show the editor, slow down operations, and increase the timeout for each test
 let debug = process.env.npm_config_debug || false;
-jest.setTimeout(debug ? 60000 : 30000);
+jest.setTimeout(60000);
 
 let browser;
 let error;
@@ -47,7 +50,7 @@ describe('Browser is initialized', () => {
 });
 
 describe('CORS allowed origin tests ', () => {
-    const testPagePath = `http://${hostname}:9001/`;
+    const testPagePath = `http://${hostname}:${originPortVar}/`;
     let page;
 
     beforeAll(async () => {
@@ -228,7 +231,7 @@ describe('CORS allowed origin tests ', () => {
 });
 
 describe('CORS disallowed origin tests ', () => {
-    const testPagePath = `http://${hostname}:9002/`;
+    const testPagePath = `http://${hostname}:${secondOriginPortVar}/`;
     let page;
 
     beforeAll(async () => {

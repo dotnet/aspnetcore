@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +13,7 @@ namespace SampleDestination
 {
     public class StartupWithoutEndpointRouting
     {
-        private static readonly string DefaultAllowedOrigin = $"http://{Dns.GetHostName()}:9001";
+        private static readonly string DefaultAllowedOrigin = $"http://localhost:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
         private readonly ILogger<StartupWithoutEndpointRouting> _logger;
 
         public StartupWithoutEndpointRouting(ILoggerFactory loggerFactory)
