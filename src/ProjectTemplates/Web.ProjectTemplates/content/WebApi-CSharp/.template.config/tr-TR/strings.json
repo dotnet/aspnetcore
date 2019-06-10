@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API",
+    "description": "RESTful HTTP hizmetine ait örnek bir Denetleyici içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda ASP.NET Core MVC Görünümleri ve Denetleyicileri için de kullanılabilir."
+  }
+}

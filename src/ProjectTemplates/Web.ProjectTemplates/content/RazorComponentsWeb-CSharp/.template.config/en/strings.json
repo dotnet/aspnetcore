@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Blazor (server-side)",
+    "description": "A project template for creating a Blazor application that runs server-side inside an ASP.NET Core application. This template can be used for web applications with rich dynamic user interfaces (UIs)."
+  }
+}

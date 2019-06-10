@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Razor-Klassenbibliothek",
+    "description": "Eine Projektvorlage zum Erstellen einer Razor-Klassenbibliothek."
+  }
+}
