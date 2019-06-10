@@ -129,6 +129,31 @@ class HubConnectionTest {
     }
 
     @Test
+    public void canUpdateUrlInOnClosed() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertEquals("http://example.com", hubConnection.getBaseUrl());
+
+        hubConnection.onClosed((error) -> {
+            hubConnection.setBaseUrl("http://newurl.com");
+        });
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals("http://newurl.com", hubConnection.getBaseUrl());
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    @Test
     public void changingUrlWhenConnectedThrows() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
