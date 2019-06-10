@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 
             app.UseBlazorDebugging();
 
+            app.UseStaticFiles();
             app.UseClientSideBlazorFiles(FindClientAssemblyPath(environment));
 
             app.UseRouting();
