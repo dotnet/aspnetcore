@@ -59,6 +59,8 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
+
+            HubCallerContext = new DefaultHubCallerContext(this);
         }
 
         internal StreamTracker StreamTracker
@@ -74,6 +76,8 @@ namespace Microsoft.AspNetCore.SignalR
                 return _streamTracker;
             }
         }
+
+        internal HubCallerContext HubCallerContext { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

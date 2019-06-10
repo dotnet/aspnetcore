@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
-                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies))
                 {
                     Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                     await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -479,11 +479,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private void InitializeHub(THub hub, HubConnectionContext connection)
         {
             hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
-            hub.Context = new DefaultHubCallerContext(connection);
+            hub.Context = connection.HubCallerContext;
             hub.Groups = _hubContext.Groups;
         }
 
-        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        private Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, IList<IAuthorizeData> policies)
         {
             // If there are no policies we don't need to run auth
             if (!policies.Any())
@@ -491,10 +491,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, principal, policies);
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, null);
         }
 
-        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, object resource)
         {
             var authService = provider.GetRequiredService<IAuthorizationService>();
             var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
             Debug.Assert(authorizePolicy != null);
 
-            var authorizationResult = await authService.AuthorizeAsync(principal, authorizePolicy);
+            var authorizationResult = await authService.AuthorizeAsync(principal, resource, authorizePolicy);
             // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
             return authorizationResult.Succeeded;
         }
