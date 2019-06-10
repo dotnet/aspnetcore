@@ -28,12 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
-        {
-            if (formatterSelector == null)
-            {
-                throw new ArgumentNullException(nameof(formatterSelector));
-            }
-
+        {       
             if (writerFactory == null)
             {
                 throw new ArgumentNullException(nameof(writerFactory));
@@ -44,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            FormatterSelector = formatterSelector;
+            FormatterSelector = formatterSelector ?? throw new ArgumentNullException(nameof(formatterSelector));
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
         }

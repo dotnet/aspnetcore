@@ -36,13 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// </summary>
         /// <param name="policy">Authorization policy to be used.</param>
         public AuthorizeFilter(AuthorizationPolicy policy)
-        {
-            if (policy == null)
-            {
-                throw new ArgumentNullException(nameof(policy));
-            }
-
-            Policy = policy;
+        {            
+            Policy = policy ?? throw new ArgumentNullException(nameof(policy));
         }
 
         /// <summary>
@@ -52,13 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
         public AuthorizeFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
             : this(authorizeData)
-        {
-            if (policyProvider == null)
-            {
-                throw new ArgumentNullException(nameof(policyProvider));
-            }
-
-            PolicyProvider = policyProvider;
+        {      
+            PolicyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
         /// <summary>
@@ -67,12 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
         public AuthorizeFilter(IEnumerable<IAuthorizeData> authorizeData)
         {
-            if (authorizeData == null)
-            {
-                throw new ArgumentNullException(nameof(authorizeData));
-            }
-
-            AuthorizeData = authorizeData;
+            AuthorizeData = authorizeData ?? throw new ArgumentNullException(nameof(authorizeData));
         }
 
         /// <summary>

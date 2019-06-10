@@ -35,22 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IObjectModelValidator validator,
             IOptions<MvcOptions> mvcOptions,
             ILoggerFactory loggerFactory)
-        {
-            if (modelMetadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(modelMetadataProvider));
-            }
-
-            if (modelBinderFactory == null)
-            {
-                throw new ArgumentNullException(nameof(modelBinderFactory));
-            }
-
-            if (validator == null)
-            {
-                throw new ArgumentNullException(nameof(validator));
-            }
-
+        {  
             if (mvcOptions == null)
             {
                 throw new ArgumentNullException(nameof(mvcOptions));
@@ -61,9 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _modelMetadataProvider = modelMetadataProvider;
-            _modelBinderFactory = modelBinderFactory;
-            _objectModelValidator = validator;
+            _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
+            _modelBinderFactory = modelBinderFactory ?? throw new ArgumentNullException(nameof(modelBinderFactory));
+            _objectModelValidator = validator ?? throw new ArgumentNullException(nameof(validator));
             Logger = loggerFactory.CreateLogger(GetType());
         }
 

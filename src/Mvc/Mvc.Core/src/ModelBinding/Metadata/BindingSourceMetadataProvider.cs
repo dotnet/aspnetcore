@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </param>
         public BindingSourceMetadataProvider(Type type, BindingSource bindingSource)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             BindingSource = bindingSource;
         }
 

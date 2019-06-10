@@ -20,12 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="configurationType">A type which configures a middleware pipeline.</param>
         public MiddlewareFilterAttribute(Type configurationType)
         {
-            if (configurationType == null)
-            {
-                throw new ArgumentNullException(nameof(configurationType));
-            }
-
-            ConfigurationType = configurationType;
+            ConfigurationType = configurationType ?? throw new ArgumentNullException(nameof(configurationType));
         }
 
         public Type ConfigurationType { get; }

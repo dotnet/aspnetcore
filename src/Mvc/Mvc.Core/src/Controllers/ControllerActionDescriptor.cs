@@ -39,13 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                base.DisplayName = value;
+            {                
+                base.DisplayName = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
     }

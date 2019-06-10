@@ -23,12 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="innerStream">The stream which should not be closed or flushed.</param>
         public NonDisposableStream(Stream innerStream)
         {
-            if (innerStream == null)
-            {
-                throw new ArgumentNullException(nameof(innerStream));
-            }
-
-            _innerStream = innerStream;
+            _innerStream = innerStream ?? throw new ArgumentNullException(nameof(innerStream));
         }
 
         /// <summary>

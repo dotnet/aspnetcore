@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// </param>
         public CompositeModelValidatorProvider(IList<IModelValidatorProvider> providers)
         {
-            if (providers == null)
-            {
-                throw new ArgumentNullException(nameof(providers));
-            }
-
-            ValidatorProviders = providers;
+            ValidatorProviders = providers ?? throw new ArgumentNullException(nameof(providers));
         }
 
         /// <summary>

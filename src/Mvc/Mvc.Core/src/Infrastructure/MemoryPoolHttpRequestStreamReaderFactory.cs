@@ -34,19 +34,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public MemoryPoolHttpRequestStreamReaderFactory(
             ArrayPool<byte> bytePool,
             ArrayPool<char> charPool)
-        {
-            if (bytePool == null)
-            {
-                throw new ArgumentNullException(nameof(bytePool));
-            }
-
-            if (charPool == null)
-            {
-                throw new ArgumentNullException(nameof(charPool));
-            }
-
-            _bytePool = bytePool;
-            _charPool = charPool;
+        {         
+            _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
+            _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
         }
 
         /// <inheritdoc />

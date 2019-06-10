@@ -61,30 +61,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             DefaultModelBindingMessageProvider modelBindingMessageProvider)
             : base(details.Key)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            if (detailsProvider == null)
-            {
-                throw new ArgumentNullException(nameof(detailsProvider));
-            }
-
-            if (details == null)
-            {
-                throw new ArgumentNullException(nameof(details));
-            }
-
-            if (modelBindingMessageProvider == null)
-            {
-                throw new ArgumentNullException(nameof(modelBindingMessageProvider));
-            }
-
-            _provider = provider;
-            _detailsProvider = detailsProvider;
-            _details = details;
-            _modelBindingMessageProvider = modelBindingMessageProvider;
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _detailsProvider = detailsProvider ?? throw new ArgumentNullException(nameof(detailsProvider));
+            _details = details ?? throw new ArgumentNullException(nameof(details));
+            _modelBindingMessageProvider = modelBindingMessageProvider ?? throw new ArgumentNullException(nameof(modelBindingMessageProvider));
         }
 
         /// <summary>

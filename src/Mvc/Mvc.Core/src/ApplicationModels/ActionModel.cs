@@ -28,17 +28,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             MethodInfo actionMethod,
             IReadOnlyList<object> attributes)
         {
-            if (actionMethod == null)
-            {
-                throw new ArgumentNullException(nameof(actionMethod));
-            }
-
             if (attributes == null)
             {
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            ActionMethod = actionMethod;
+            ActionMethod = actionMethod ?? throw new ArgumentNullException(nameof(actionMethod));
 
             ApiExplorer = new ApiExplorerModel();
             Attributes = new List<object>(attributes);

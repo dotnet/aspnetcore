@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="version">The unique version of discovered actions.</param>
         public ActionDescriptorCollection(IReadOnlyList<ActionDescriptor> items, int version)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            Items = items;
+            Items = items ?? throw new ArgumentNullException(nameof(items));
             Version = version;
         }
 

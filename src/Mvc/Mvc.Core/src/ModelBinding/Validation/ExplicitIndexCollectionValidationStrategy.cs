@@ -35,12 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="elementKeys">The keys of collection elements that were used during model binding.</param>
         public ExplicitIndexCollectionValidationStrategy(IEnumerable<string> elementKeys)
         {
-            if (elementKeys == null)
-            {
-                throw new ArgumentNullException(nameof(elementKeys));
-            }
-
-            ElementKeys = elementKeys;
+            ElementKeys = elementKeys ?? throw new ArgumentNullException(nameof(elementKeys));
         }
 
         /// <summary>

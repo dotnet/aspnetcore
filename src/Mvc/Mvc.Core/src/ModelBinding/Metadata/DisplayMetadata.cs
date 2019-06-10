@@ -73,12 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _displayFormatStringProvider = value;
+                _displayFormatStringProvider = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 

@@ -29,12 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
             : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
         {
-            if (valueBinder == null)
-            {
-                throw new ArgumentNullException(nameof(valueBinder));
-            }
-
-            _valueBinder = valueBinder;
+            _valueBinder = valueBinder ?? throw new ArgumentNullException(nameof(valueBinder));
         }
 
         /// <summary>
@@ -66,12 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // CollectionModelBinder should not check IsRequired, done in this model binder.
                 allowValidatingTopLevelNodes: false)
         {
-            if (valueBinder == null)
-            {
-                throw new ArgumentNullException(nameof(valueBinder));
-            }
-
-            _valueBinder = valueBinder;
+            _valueBinder = valueBinder ?? throw new ArgumentNullException(nameof(valueBinder));
         }
 
         /// <summary>
@@ -108,12 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                   allowValidatingTopLevelNodes: false,
                   mvcOptions)
         {
-            if (valueBinder == null)
-            {
-                throw new ArgumentNullException(nameof(valueBinder));
-            }
-
-            _valueBinder = valueBinder;
+            _valueBinder = valueBinder ?? throw new ArgumentNullException(nameof(valueBinder));
         }
 
         /// <inheritdoc />

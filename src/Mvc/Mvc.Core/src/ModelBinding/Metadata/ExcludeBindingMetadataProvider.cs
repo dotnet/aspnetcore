@@ -22,12 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </param>
         public ExcludeBindingMetadataProvider(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            _type = type;
+            _type = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         /// <inheritdoc />

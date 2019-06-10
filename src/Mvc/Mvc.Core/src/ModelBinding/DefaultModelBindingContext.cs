@@ -32,11 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _actionContext; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _actionContext = value;
+                _actionContext = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -46,11 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _state.FieldName; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _state.FieldName = value;
+                _state.FieldName = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -67,11 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _state.ModelMetadata; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _state.ModelMetadata = value;
+                _state.ModelMetadata = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -81,11 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _state.ModelName; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _state.ModelName = value;
+                _state.ModelName = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -95,11 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _modelState; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _modelState = value;
+                _modelState = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -132,11 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _originalValueProvider; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _originalValueProvider = value;
+                _originalValueProvider = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -146,11 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _state.ValueProvider; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _state.ValueProvider = value;
+                _state.ValueProvider = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
@@ -167,11 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get { return _validationState; }
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _validationState = value;
+                _validationState = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 

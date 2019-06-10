@@ -36,12 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(bindingSource));
             }
 
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            _values = values;
+            _values = values ?? throw new ArgumentNullException(nameof(values));
             Culture = culture;
         }
 

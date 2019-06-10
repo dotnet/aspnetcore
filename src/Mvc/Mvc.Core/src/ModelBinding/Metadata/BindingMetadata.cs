@@ -83,12 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             get => _messageProvider;
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _messageProvider = value;
+                _messageProvider = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 

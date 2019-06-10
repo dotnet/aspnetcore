@@ -17,12 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         public MiddlewareFilter(RequestDelegate middlewarePipeline)
         {
-            if (middlewarePipeline == null)
-            {
-                throw new ArgumentNullException(nameof(middlewarePipeline));
-            }
-
-            _middlewarePipeline = middlewarePipeline;
+            _middlewarePipeline = middlewarePipeline ?? throw new ArgumentNullException(nameof(middlewarePipeline));
         }
 
         public Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)

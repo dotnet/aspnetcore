@@ -27,23 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
         {
-            if (keyBinder == null)
-            {
-                throw new ArgumentNullException(nameof(keyBinder));
-            }
-
-            if (valueBinder == null)
-            {
-                throw new ArgumentNullException(nameof(valueBinder));
-            }
-
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _keyBinder = keyBinder;
-            _valueBinder = valueBinder;
+            _keyBinder = keyBinder ?? throw new ArgumentNullException(nameof(keyBinder)); 
+            _valueBinder = valueBinder ?? throw new ArgumentNullException(nameof(valueBinder));
             _logger = loggerFactory.CreateLogger<KeyValuePairModelBinder<TKey, TValue>>();
         }
 
