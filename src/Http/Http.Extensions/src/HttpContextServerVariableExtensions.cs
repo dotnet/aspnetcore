@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public static class ContextExtensions
+    public static class HttpContextServerVariableExtensions
     {
         /// <summary>
         /// Gets the value of a server variable for the current request.
