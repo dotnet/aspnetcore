@@ -265,8 +265,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles;GenerateNuspec"
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <!-- Native files are included in _PackageFile instead because they belong in a separate package folder.r -->
+      <!-- Native files are included in _PackageFile instead because they belong in a separate package folder. -->
       <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' == 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb' " />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveRuntimePackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="GenerateSharedFxDepsFile">
+    <ItemGroup>
+      <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+
+      <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
 
