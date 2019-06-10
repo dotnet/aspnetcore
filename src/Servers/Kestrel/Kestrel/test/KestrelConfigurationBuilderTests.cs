@@ -428,6 +428,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
             Assert.True(ran3);
         }
+        //[Fact]
+        //public void CertificatesConfigSection_StoreDefaultValueShouldIsMy_WhenConfigIsNullOrEmpty()
+        //{
+        //    // Arrange
+        //    var serverOptions = CreateServerOptions();
+        //    var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        //    {
+        //        new KeyValuePair<string, string>("Kestrel:Certificates:Default:Store", null),
+        //        new KeyValuePair<string, string>("Kestrel:Certificates:Default:Subject", "test"),
+        //    }).Build();
+
+        //    // Act
+        //    serverOptions.Configure(config).Load();
+
+        //    // Assert
+        //    Assert.True(serverOptions.DefaultCertificate != null);
+        //}
 
         private static string GetCertificatePath()
         {
