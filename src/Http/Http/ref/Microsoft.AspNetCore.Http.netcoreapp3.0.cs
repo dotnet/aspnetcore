@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Http
         public override Microsoft.AspNetCore.Http.ConnectionInfo Connection { get { throw null; } }
         public override Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
         public Microsoft.AspNetCore.Http.Features.FormOptions FormOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
         public override System.Threading.CancellationToken RequestAborted { get { throw null; } set { } }
