@@ -56,5 +56,9 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.AzureAppServices.SiteExtension;
     </PackagesInPatch>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.6' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Api.Analyzers;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

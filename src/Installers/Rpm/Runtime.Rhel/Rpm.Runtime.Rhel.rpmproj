@@ -6,10 +6,13 @@
 
   <PropertyGroup>
     <RpmPackageInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/</RpmPackageInstallRoot>
-    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-rh.rhel.7-x64.rpm</TargetFileName>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <Import Project="..\Rpm.Runtime.Common.targets" />
 
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <PropertyGroup>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-rh.rhel.7-x64.rpm</TargetFileName>
+    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
+  </PropertyGroup>
 </Project>

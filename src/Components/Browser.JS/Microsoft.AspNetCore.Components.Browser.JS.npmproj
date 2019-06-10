@@ -7,11 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj" />
     <ProjectReference Include="..\..\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
-
-  <Target Name="Restore" />
 
 </Project>

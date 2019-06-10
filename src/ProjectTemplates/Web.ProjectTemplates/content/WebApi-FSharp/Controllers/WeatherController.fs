@@ -5,6 +5,7 @@ open System.Collections.Generic
 open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore.Mvc
+open Microsoft.Extensions.Logging
 
 type public TemperatureUnit =
    | Celsius=0
@@ -18,8 +19,9 @@ type WeatherResult = {
 
 [<Route("api/SampleData/[controller]")>]
 [<ApiController>]
-type WeatherController () =
+type WeatherController (_logger : ILogger<WeatherController>) =
     inherit ControllerBase()
+    let mutable logger = _logger
 
     [<HttpGet>]
     member this.Get(location:string, unit: TemperatureUnit) =

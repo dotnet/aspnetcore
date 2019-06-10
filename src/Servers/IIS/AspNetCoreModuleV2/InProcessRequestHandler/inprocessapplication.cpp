@@ -55,7 +55,7 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 VOID
 IN_PROCESS_APPLICATION::StopClr()
 {
-    // This has the state lock around it. 
+    // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -195,6 +195,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
+        ErrorContext errorContext; // unused 
+
         if (s_fMainCallback == nullptr)
         {
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
@@ -202,6 +204,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
+                errorContext,
                 hostFxrResolutionResult
                 ));
 
@@ -241,25 +244,19 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        if (m_pConfig->QueryCallStartupHook())
+        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
+        if (startupReturnCode != 0)
         {
-            // Used to display developer exception page when there is an exception in main.
-            auto currentStartupHookEnv = Environment::GetEnvironmentVariableValue(DOTNETCORE_STARTUP_HOOK);
-
-            if (currentStartupHookEnv.has_value())
-            {
-                currentStartupHookEnv = currentStartupHookEnv.value() + L";" + ASPNETCORE_STARTUP_ASSEMBLY;
-                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, currentStartupHookEnv.value().c_str()));
-            }
-            else
-            {
-                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
-            }
+            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
         }
 
-        // Used to make .NET Runtime always log to event log when there is an unhandled exception.
-        LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
-        LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_DefaultStackSize", m_pConfig->QueryStackSize().c_str()));
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+        }
+
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
 
         bool clrThreadExited;
         {
@@ -434,6 +431,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         LOG_INFOF(L"Managed application exited with code %d", exitCode);
 
         context->m_exitCode = exitCode;
+        context->m_hostFxr.Close();
     }
     __except(GetExceptionCode() != 0)
     {

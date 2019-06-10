@@ -247,7 +247,8 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            for (int i = 0; i < patterns.Count; i++)
+            var count = patterns.Count;
+            for (int i = 0; i < count; i++)
             {
                 var pattern = patterns[i];
 

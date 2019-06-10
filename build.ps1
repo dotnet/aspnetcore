@@ -348,6 +348,10 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         }
     }
 
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+    }
+
     if (-not $foundJdk) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
     }
@@ -357,6 +361,7 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     $env:KOREBUILD_KEEPGLOBALJSON = 1
+    $env:KOREBUILD_DISABLE_DOTNET_ARCH = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'

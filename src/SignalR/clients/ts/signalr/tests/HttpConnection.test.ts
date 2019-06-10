@@ -853,11 +853,13 @@ describe("TransportSendQueue", () => {
         transport.send = sendMock;
         const queue = new TransportSendQueue(transport);
 
-        await queue.send("Hello");
+        const x = queue.send("Hello");
+        await x;
 
         expect(sendMock.mock.calls.length).toBe(1);
 
-        queue.stop();
+        const stop = queue.stop();
+        await stop;
     });
 
     it("sends buffered data on fail", async () => {
@@ -885,23 +887,16 @@ describe("TransportSendQueue", () => {
         // This should get queued.
         const second = queue.send("world");
 
-        promiseSource3.reject();
-
-        let hasError = false;
-        try {
-            await first;
-        } catch {
-            hasError = true;
-        }
+        promiseSource3.reject("Test error");
+        await expect(first).rejects.toBe("Test error");
 
         await second;
 
-        expect(hasError).toBe(true);
         expect(sendMock.mock.calls.length).toBe(2);
         expect(sendMock.mock.calls[0][0]).toEqual("Hello");
         expect(sendMock.mock.calls[1][0]).toEqual("world");
 
-        queue.stop();
+        await queue.stop();
     });
 
     it("rejects promise for buffered sends", async () => {
@@ -915,7 +910,7 @@ describe("TransportSendQueue", () => {
                 promiseSource2.resolve();
                 await promiseSource3;
             })
-            .mockImplementationOnce(() => Promise.reject());
+            .mockImplementationOnce(() => Promise.reject("Test error"));
         transport.send = sendMock;
 
         const queue = new TransportSendQueue(transport);
@@ -932,20 +927,13 @@ describe("TransportSendQueue", () => {
         promiseSource3.resolve();
 
         await first;
+        await expect(second).rejects.toBeDefined();
 
-        let hasError = false;
-        try {
-            await second;
-        } catch {
-            hasError = true;
-        }
-
-        expect(hasError).toBe(true);
         expect(sendMock.mock.calls.length).toBe(2);
         expect(sendMock.mock.calls[0][0]).toEqual("Hello");
         expect(sendMock.mock.calls[1][0]).toEqual("world");
 
-        queue.stop();
+        await queue.stop();
     });
 
     it ("concatenates string sends", async () => {
@@ -982,7 +970,7 @@ describe("TransportSendQueue", () => {
         expect(sendMock.mock.calls[0][0]).toEqual("Hello");
         expect(sendMock.mock.calls[1][0]).toEqual("world!");
 
-        queue.stop();
+        await queue.stop();
     });
 
     it ("concatenates buffered ArrayBuffer", async () => {
@@ -1019,7 +1007,7 @@ describe("TransportSendQueue", () => {
         expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
         expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
 
-        queue.stop();
+        await queue.stop();
     });
 
     it ("throws if mixed data is queued", async () => {
@@ -1051,6 +1039,38 @@ describe("TransportSendQueue", () => {
         promiseSource3.resolve();
 
         await Promise.all([first, second]);
-        queue.stop();
+        await queue.stop();
+    });
+
+    it ("rejects pending promises on stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const send = queue.send("Test");
+        await queue.stop();
+
+        await expect(send).rejects.toBe("Connection stopped.");
+    });
+
+    it ("prevents additional sends after stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        await queue.stop();
+        await expect(queue.send("test")).rejects.toBe("Connection stopped.");
     });
 });

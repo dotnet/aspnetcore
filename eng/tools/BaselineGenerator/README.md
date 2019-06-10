@@ -8,8 +8,8 @@ Add `--package-source {source}` to the commands below if the packages of interes
 
 ### Auto-update
 
-1. Run `dotnet run --update` in this project folder.
-2. Run `dotnet run` in this project.
+Run `dotnet run --update` in this project folder. This will attempt to find the latest patch version of packages and
+update the baseline file.
 
 ### Manual update
 

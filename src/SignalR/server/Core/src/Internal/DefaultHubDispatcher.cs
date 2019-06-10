@@ -331,6 +331,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             }
                             catch (Exception ex)
                             {
+                                Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                                 return;

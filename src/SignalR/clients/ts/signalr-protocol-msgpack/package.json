@@ -42,7 +42,7 @@
     "src/**/*"
   ],
   "dependencies": {
-    "@aspnet/signalr": "file:../signalr",
+    "@aspnet/signalr": "link:../signalr",
     "msgpack5": "^4.0.2"
   },
   "devDependencies": {

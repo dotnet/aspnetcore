@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
 
 namespace Microsoft.AspNetCore.RequestThrottling
@@ -22,5 +24,14 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// Defaults to 5000 queued requests.
         /// </summary>
         public int RequestQueueLimit { get; set; } = 5000;
+
+        /// <summary>
+        /// A <see cref="RequestDelegate"/> that handles requests rejected by this middleware.
+        /// If it doesn't modify the response, an empty 503 response will be written.
+        /// </summary>
+        public RequestDelegate OnRejected { get; set; } = context =>
+        {
+            return Task.CompletedTask;
+        };
     }
 }

@@ -41,7 +41,8 @@ public class HubConnection {
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private Single<String> redirectAccessTokenProvider;
-    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers;
+    private final Map<String, String> localHeaders = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
@@ -147,10 +148,7 @@ public class HubConnection {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
         }
 
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
-
+        this.headers = headers;
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
@@ -255,7 +253,7 @@ public class HubConnection {
 
     private Single<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
-        request.addHeaders(this.headers);
+        request.addHeaders(this.localHeaders);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
             if (response.getStatusCode() != 200) {
@@ -274,7 +272,7 @@ public class HubConnection {
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
                 String token = this.redirectAccessTokenProvider.blockingGet();
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
 
             return negotiateResponse;
@@ -303,9 +301,13 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
+        if (headers != null) {
+            this.localHeaders.putAll(headers);
+        }
+
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
             tokenCompletable.onComplete();
         });
@@ -326,10 +328,10 @@ public class HubConnection {
                 Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient, tokenProvider);
+                        transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                         break;
                     default:
-                        transport = new WebSocketTransport(headers, httpClient);
+                        transport = new WebSocketTransport(localHeaders, httpClient);
                 }
             }
 
@@ -493,7 +495,7 @@ public class HubConnection {
             redirectAccessTokenProvider = null;
             connectionId = null;
             transportEnum = TransportEnum.ALL;
-            this.headers.remove("Authorization");
+            this.localHeaders.clear();
         } finally {
             hubConnectionStateLock.unlock();
         }
