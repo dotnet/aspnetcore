@@ -230,6 +230,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static byte[] Base64UrlDecode(string input) { throw null; }
         public static byte[] Base64UrlDecode(string input, int offset, char[] buffer, int bufferOffset, int count) { throw null; }
         public static byte[] Base64UrlDecode(string input, int offset, int count) { throw null; }
+        public static string Base64UrlEncode(System.ReadOnlySpan<byte> input) { throw null; }
         public static string Base64UrlEncode(byte[] input) { throw null; }
         public static int Base64UrlEncode(byte[] input, int offset, char[] output, int outputOffset, int count) { throw null; }
         public static string Base64UrlEncode(byte[] input, int offset, int count) { throw null; }
