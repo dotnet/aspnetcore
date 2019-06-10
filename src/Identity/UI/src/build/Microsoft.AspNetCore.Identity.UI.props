@@ -13,7 +13,7 @@
     <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V3">
       <SourceType>Package</SourceType>
       <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V3')</ContentRoot>
+      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V3'))</ContentRoot>
       <BasePath>/Identity</BasePath>
       <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
     </StaticWebAsset>
@@ -23,7 +23,7 @@
     <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V4">
       <SourceType>Package</SourceType>
       <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V4')</ContentRoot>
+      <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V4'))</ContentRoot>
       <BasePath>/Identity</BasePath>
       <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
     </StaticWebAsset>

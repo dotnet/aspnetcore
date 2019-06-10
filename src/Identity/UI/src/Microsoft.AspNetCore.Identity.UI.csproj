@@ -131,7 +131,7 @@
       <StaticWebAsset Include="@(_V3Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3'">
         <SourceType></SourceType>
         <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V3/')</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V3/'))</ContentRoot>
         <BasePath>/Identity</BasePath>
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </StaticWebAsset>
@@ -139,7 +139,7 @@
       <StaticWebAsset Include="@(_V4Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
         <SourceType></SourceType>
         <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V4/')</ContentRoot>
+        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V4/'))</ContentRoot>
         <BasePath>/Identity</BasePath>
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </StaticWebAsset>
