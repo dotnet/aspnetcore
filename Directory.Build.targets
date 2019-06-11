@@ -1,6 +1,9 @@
 <Project>
 
   <PropertyGroup>
+    <!-- When OnlyPackPlatformSpecificPackages is set, only produce packages for projects which set RuntimeIdentifier. -->
+    <IsPackable Condition=" '$(OnlyPackPlatformSpecificPackages)' == 'true' AND '$(IsPackable)' == 'true' AND '$(RuntimeIdentifier)' == '' ">false</IsPackable>
+
     <!--
       By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
       Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
