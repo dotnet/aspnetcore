@@ -29,7 +29,7 @@ public class HubConnection {
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private final String baseUrl;
+    private String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
@@ -286,6 +286,27 @@ public class HubConnection {
      */
     public HubConnectionState getConnectionState() {
         return hubConnectionState;
+    }
+
+    // For testing only
+    String getBaseUrl() {
+        return this.baseUrl;
+    }
+
+    /**
+     * Sets a new url for the HubConnection.
+     * @param url The url to connect to.
+     */
+    public void setBaseUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            throw new IllegalArgumentException("The HubConnection url must be a valid url.");
+        }
+
+        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+            throw new IllegalStateException("The HubConnection must be in the disconnected state to change the url.");
+        }
+
+        this.baseUrl = url;
     }
 
     /**
