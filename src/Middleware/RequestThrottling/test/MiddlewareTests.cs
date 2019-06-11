@@ -84,8 +84,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async void RequestsBlockedIfQueueFull()
         {
-            var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 0,
+            var middleware = TestUtils.CreateBlockingTestMiddleware(
                 requestQueueLimit: 0,
                 next: httpContext =>
                 {
@@ -99,9 +98,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async void FullQueueResultsIn503Error()
         {
-            var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 0,
-                requestQueueLimit: 0);
+            var middleware = TestUtils.CreateBlockingTestMiddleware(requestQueueLimit: 0);
 
             var context = new DefaultHttpContext();
             await middleware.Invoke(context).OrTimeout();
@@ -133,8 +130,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             bool onRejectedInvoked = false;
 
-            var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 0,
+            var middleware = TestUtils.CreateBlockingTestMiddleware(
                 requestQueueLimit: 0,
                 onRejected: httpContext =>
                 {

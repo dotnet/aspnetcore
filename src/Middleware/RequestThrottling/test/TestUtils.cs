@@ -15,12 +15,27 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var options = new RequestThrottlingOptions
             {
-                MaxConcurrentRequests = maxConcurrentRequests == 0 ? 999 : maxConcurrentRequests,
+                MaxConcurrentRequests = maxConcurrentRequests,
                 RequestQueueLimit = requestQueueLimit
             };
 
-            options.ServerAlwaysBlocks = maxConcurrentRequests == 0;
+            return BuildFromOptions(options, onRejected, next);
+        }
 
+        public static RequestThrottlingMiddleware CreateBlockingTestMiddleware(int requestQueueLimit = 5000, RequestDelegate onRejected = null, RequestDelegate next = null)
+        {
+            var options = new RequestThrottlingOptions
+            {
+                MaxConcurrentRequests = 999,
+                RequestQueueLimit = requestQueueLimit,
+                ServerAlwaysBlocks = true
+            };
+
+            return BuildFromOptions(options, onRejected, next);
+        }
+
+        private static RequestThrottlingMiddleware BuildFromOptions(RequestThrottlingOptions options, RequestDelegate onRejected, RequestDelegate next)
+        {
             if (onRejected != null)
             {
                 options.OnRejected = onRejected;
@@ -33,6 +48,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new TailDrop(maxConcurrentRequests, 5000);
+        internal static IRequestQueue CreateRequestQueue(int maxConcurrentRequests) => new TailDrop(maxConcurrentRequests, 5000);
     }
 }

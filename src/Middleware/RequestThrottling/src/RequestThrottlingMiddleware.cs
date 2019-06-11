@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly RequestQueue _requestQueue;
+        private readonly IRequestQueue _requestQueue;
         private readonly RequestDelegate _next;
         private readonly RequestThrottlingOptions _requestThrottlingOptions;
         private readonly ILogger _logger;
