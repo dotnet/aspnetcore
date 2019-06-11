@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             _http1Connection = MakeHttp1Connection();
             _consumeResponseBodyTask = ConsumeResponseBody();
         }

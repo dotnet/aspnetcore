@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalSetup]
         public void Setup()
         {
-            _memoryPool = MemoryPoolFactory.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             var pipe = new Pipe(new PipeOptions(_memoryPool));
             _reader = pipe.Reader;
             _writer = pipe.Writer;

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _memoryPool = MemoryPoolFactory.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             _http1Connection = MakeHttp1Connection();
             _consumeResponseBodyTask = ConsumeResponseBody();
         }

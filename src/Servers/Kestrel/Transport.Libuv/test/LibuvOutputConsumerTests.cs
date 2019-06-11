@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public LibuvOutputConsumerTests()
         {
-            _memoryPool = MemoryPoolFactory.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             _mockLibuv = new MockLibuv();
 
             var context = new TestLibuvTransportContext();
