@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaselineGenerator", "BaselineGenerator\BaselineGenerator.csproj", "{CF76A947-3A72-4824-87E6-BF029D84218B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoTasks", "RepoTasks\RepoTasks.csproj", "{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,17 @@ Global
 		{CF76A947-3A72-4824-87E6-BF029D84218B}.Release|x64.Build.0 = Release|Any CPU
 		{CF76A947-3A72-4824-87E6-BF029D84218B}.Release|x86.ActiveCfg = Release|Any CPU
 		{CF76A947-3A72-4824-87E6-BF029D84218B}.Release|x86.Build.0 = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|x64.Build.0 = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|x64.ActiveCfg = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|x64.Build.0 = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{E418DA57-B2AA-43FC-9AD5-0E4D1AA993DE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

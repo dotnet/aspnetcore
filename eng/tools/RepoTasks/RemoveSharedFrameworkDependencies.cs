@@ -98,6 +98,7 @@ namespace RepoTasks
                         stream.Position = 0;
                         stream.SetLength(0);
                         rawNuspec.Save(stream);
+                        Log.LogMessage(MessageImportance.High, "Added <frameworkReference> to {0}", fileName);
                     }
                     else
                     {
