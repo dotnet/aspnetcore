@@ -491,10 +491,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return TaskCache.True;
             }
 
-            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new AuthHubConnectionContext(hubConnectionContext, hubMethodName, hubMethodArguments));
+            return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, policies, new HubAuthorizationContext(hubConnectionContext.HubCallerContext, hubMethodName, hubMethodArguments));
         }
 
-        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, AuthHubConnectionContext resource)
+        private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubAuthorizationContext resource)
         {
             var authService = provider.GetRequiredService<IAuthorizationService>();
             var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
@@ -571,14 +571,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         }
     }
 
-    public class AuthHubConnectionContext : DefaultHubCallerContext
+    public struct HubAuthorizationContext
     {
-        public AuthHubConnectionContext(HubConnectionContext connection, string hubMethodName, object[] hubMethodArguments) : base(connection)
+        public HubAuthorizationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
             HubMethodName = hubMethodName;
             HubMethodArguments = hubMethodArguments;
+            Context = context;
         }
 
+        public HubCallerContext Context { get; }
         public string HubMethodName { get; }
         public IReadOnlyList<object> HubMethodArguments { get; }
     }

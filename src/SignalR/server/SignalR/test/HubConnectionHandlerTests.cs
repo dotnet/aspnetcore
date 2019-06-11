@@ -2199,16 +2199,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        internal class CustomAuth : IAuthorizationHandler
+        internal class TestAuthHandler : IAuthorizationHandler
         {
             public Task HandleAsync(AuthorizationHandlerContext context)
             {
                 Assert.NotNull(context.Resource);
-                var resource = Assert.IsType<AuthHubConnectionContext>(context.Resource);
+                var resource = Assert.IsType<HubAuthorizationContext>(context.Resource);
                 Assert.Equal(nameof(MethodHub.MultiParamAuthMethod), resource.HubMethodName);
                 Assert.Equal(2, resource.HubMethodArguments?.Count);
                 Assert.Equal("Hello", resource.HubMethodArguments[0]);
                 Assert.Equal("World!", resource.HubMethodArguments[1]);
+                Assert.NotNull(resource.Context);
+                Assert.Equal(context.User, resource.Context.User);
 
                 return Task.CompletedTask;
             }
@@ -2230,7 +2232,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         });
                     });
 
-                    services.AddSingleton<IAuthorizationHandler, CustomAuth>();
+                    services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
                 }, LoggerFactory);
 
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
