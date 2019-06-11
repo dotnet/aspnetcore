@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
     /// <summary>
     ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
     /// </summary>
+    [DesignerCategory("Code")]
     public class WebHostService : ServiceBase
     {
         private IWebHost _host;
