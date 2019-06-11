@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
-#if NETSTANDARD2_1 || NETCOREAPP3_0
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
         {
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
@@ -142,6 +141,5 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
             }
         }
-#endif
     }
 }
