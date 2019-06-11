@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(ProjectDir)..\build\submodule.props" Condition="Exists('$(ProjectDir)..\build\submodule.props')" />
-  <Import Project="$(ProjectDir)..\build\versions.props" Condition="Exists('$(ProjectDir)..\build\versions.props')" />
-  <Import Project="$(ProjectDir)..\build\settings.props" Condition="Exists('$(ProjectDir)..\build\settings.props')" />
+  <Import Project="..\build\submodule.props" />
+  <Import Project="..\build\settings.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -47,7 +46,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -67,12 +66,4 @@
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(ProjectDir)..\build\submodule.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\submodule.props'))" />
-    <Error Condition="!Exists('$(ProjectDir)..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\versions.props'))" />
-    <Error Condition="!Exists('$(ProjectDir)..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\settings.props'))" />
-  </Target>
 </Project>

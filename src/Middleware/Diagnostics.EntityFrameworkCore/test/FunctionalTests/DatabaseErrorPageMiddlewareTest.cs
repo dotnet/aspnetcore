@@ -80,13 +80,13 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Existing_database_not_using_migrations_exception_passes_thru()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
                 var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
 
-                Assert.Equal("Invalid column name 'Name'.", ex.InnerException.Message);
+                Assert.Equal("SQLite Error 1: 'no such table: Blogs'.", ex.InnerException.Message);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var db = context.RequestServices.GetService<BloggingContext>();
                 db.Database.EnsureCreated();
-                db.Database.ExecuteSqlRaw("ALTER TABLE dbo.Blogs DROP COLUMN Name");
+                db.Database.ExecuteSqlRaw("ALTER TABLE Blogs RENAME TO Bloogs");
 
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_no_migrations()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database);
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void No_exception_on_diagnostic_event_received_when_null_state()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 using (var server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database))
                 {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         }
                         catch (Exception e)
                         {
-                            Assert.Equal("SqlException", e.GetType().Name);
+                            Assert.Equal("DbUpdateException", e.GetType().Name);
                         }
                     }
                 }
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_pending_migrations()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_pending_model_changes()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_then_apply_migrations()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
                 var client = server.CreateClient();
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             var migrationsEndpoint = "/MyCustomEndPoints/ApplyMyMigrationsHere";
 
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 var builder = new WebHostBuilder()
                     .Configure(app =>
@@ -314,10 +314,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddDbContext<BloggingContextWithMigrations>(optionsBuilder =>
-                        {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
-                        });
+                        services.AddDbContext<BloggingContextWithMigrations>(
+                            optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
                     });
                 var server = new TestServer(builder);
 
@@ -355,8 +353,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             catch (Exception exception)
             {
                 Assert.True(
-                    exception.GetType().Name == "SqlException"
-                    || exception.InnerException?.GetType().Name == "SqlException");
+                    exception.GetType().Name == "SqliteException"
+                    || exception.InnerException?.GetType().Name == "SqliteException");
             }
 
             Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
@@ -370,18 +368,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                using (var database = SqlServerTestStore.CreateScratch())
+                using (var database = SqlTestStore.CreateScratch())
                 {
                     var optionsBuilder = new DbContextOptionsBuilder()
-                        .UseLoggerFactory(context.RequestServices.GetService<ILoggerFactory>());
-                    if (!PlatformHelper.IsMono)
-                    {
-                        optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600).EnableRetryOnFailure());
-                    }
-                    else
-                    {
-                        optionsBuilder.UseInMemoryDatabase("Scratch");
-                    }
+                        .UseLoggerFactory(context.RequestServices.GetService<ILoggerFactory>())
+                        .UseSqlite(database.ConnectionString);
 
                     var db = new BloggingContext(optionsBuilder.Options);
                     db.Blogs.Add(new Blog());
@@ -396,7 +387,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Pass_thru_when_exception_in_logic()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 var logProvider = new TestLoggerProvider();
 
@@ -409,8 +400,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 catch (Exception exception)
                 {
                     Assert.True(
-                        exception.GetType().Name == "SqlException"
-                        || exception.InnerException?.GetType().Name == "SqlException");
+                        exception.GetType().Name == "SqliteException"
+                        || exception.InnerException?.GetType().Name == "SqliteException");
                 }
 
                 Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
@@ -437,7 +428,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Error_page_displayed_when_exception_wrapped()
         {
-            using (var database = SqlServerTestStore.CreateScratch())
+            using (var database = SqlTestStore.CreateScratch())
             {
                 TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>(database);
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -470,7 +461,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        private static TestServer SetupTestServer<TContext, TMiddleware>(SqlServerTestStore database, ILoggerProvider logProvider = null)
+        private static TestServer SetupTestServer<TContext, TMiddleware>(SqlTestStore database, ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
             var builder = new WebHostBuilder()
@@ -489,20 +480,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDbContext<TContext>(optionsBuilder =>
-                    {
-                        if (!PlatformHelper.IsMono)
-                        {
-                            optionsBuilder.UseSqlServer(
-                                database.ConnectionString, 
-                                b => b.CommandTimeout(600).EnableRetryOnFailure());
-                        }
-                        else
-                        {
-                            optionsBuilder.UseInMemoryDatabase("Scratch");
-                        }
-                    });
+                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
                 });
+
             return new TestServer(builder);
         }
 

@@ -2,14 +2,12 @@
   <PropertyGroup>
     <AssemblyName>GetDocument.Insider</AssemblyName>
     <Description>GetDocument Command-line Tool inside man</Description>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <VerifyVersion>false</VerifyVersion>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
-    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
@@ -17,10 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Hard-coded to 2.0 because this project currently targets netcoreapp2.0 -->
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
   <Target Name="BuildX86" AfterTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">

@@ -4,7 +4,6 @@
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
-    <IsTestProject>false</IsTestProject>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 

@@ -4,9 +4,6 @@
   <Import Project="CodeSign.targets" />
 
   <PropertyGroup>
-    <!-- Some projects need access to tasks bundled in KoreBuild. -->
-    <BuildProperties>$(BuildProperties);BuildToolsTaskAssembly=$(_BuildToolsAssembly)</BuildProperties>
-
     <!-- Reset the default korebuild lifecycle. -->
     <BuildDependsOn>Prepare</BuildDependsOn>
     <!-- Map bootstrapper flags to KoreBuild targets -->

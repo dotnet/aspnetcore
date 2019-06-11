@@ -123,6 +123,35 @@ describe("HubConnection", () => {
                 }
             });
         });
+
+        it("works if argument is null", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    // We don't actually care to wait for the send.
+                    // tslint:disable-next-line:no-floating-promises
+                    hubConnection.send("testMethod", "arg", null)
+                        .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
+
+                    // Verify the message is sent
+                    expect(connection.sentData.length).toBe(1);
+                    expect(JSON.parse(connection.sentData[0])).toEqual({
+                        arguments: [
+                            "arg",
+                            null,
+                        ],
+                        streamIds: [],
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+                } finally {
+                    // Close the connection
+                    await hubConnection.stop();
+                }
+            });
+        });
     });
 
     describe("invoke", () => {

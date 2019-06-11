@@ -10,6 +10,8 @@
 #include <vector>
 #include <string>
 
+#include "ErrorContext.h"
+
 class HostFxrResolutionResult
 {
 public:
@@ -44,6 +46,7 @@ public:
          _In_  const std::wstring& pcwzProcessPath,
          _In_  const std::wstring& pcwzApplicationPhysicalPath,
          _In_  const std::wstring& pcwzArguments,
+         _In_  ErrorContext& errorContext,
          _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper);
 
 private:

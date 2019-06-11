@@ -1942,12 +1942,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return _connectionLock.Wait(0);
             }
 
+            // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
             public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                await WaitConnectionLockAsync();
+                await WaitConnectionLockAsync(methodName);
 
                 if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
                 {
+                    ReleaseConnectionLock(methodName);
                     throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
                 }
 

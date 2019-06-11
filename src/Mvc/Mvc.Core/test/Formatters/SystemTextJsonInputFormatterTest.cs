@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         protected override TextInputFormatter GetInputFormatter()
         {
-            return new SystemTextJsonInputFormatter(new MvcOptions());
+            return new SystemTextJsonInputFormatter(new JsonOptions());
         }
     }
 }

@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     {
         private readonly RequestQueue _requestQueue;
         private readonly RequestDelegate _next;
+        private readonly RequestThrottlingOptions _requestThrottlingOptions;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -28,20 +29,31 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <param name="options">The <see cref="RequestThrottlingOptions"/> containing the initialization parameters.</param>
         public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RequestThrottlingOptions> options)
         {
-            if (options.Value.MaxConcurrentRequests == null)
+            _requestThrottlingOptions = options.Value;
+
+            if (_requestThrottlingOptions.MaxConcurrentRequests == null)
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
-            if (options.Value.RequestQueueLimit < 0)
+            if (_requestThrottlingOptions.MaxConcurrentRequests < 0)
+            {
+                throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be a positive integer.", nameof(options));
+            }
+            if (_requestThrottlingOptions.RequestQueueLimit < 0)
             {
                 throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
+            }
+
+            if (_requestThrottlingOptions.OnRejected == null)
+            {
+                throw new ArgumentException("The value of 'options.OnRejected' must not be null.", nameof(options));
             }
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _requestQueue = new RequestQueue(
-                options.Value.MaxConcurrentRequests.Value,
-                options.Value.RequestQueueLimit);
+                _requestThrottlingOptions.MaxConcurrentRequests.Value,
+                _requestThrottlingOptions.RequestQueueLimit);
         }
 
         /// <summary>
@@ -56,6 +68,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await _requestThrottlingOptions.OnRejected(context);
                 return;
             }
             else if (!waitInQueueTask.IsCompletedSuccessfully)

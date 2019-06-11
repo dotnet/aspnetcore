@@ -117,7 +117,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
@@ -164,9 +163,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
-    <LatestPackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
-    <LatestPackageReference Include="xunit" Version="$(XunitPackageVersion)" />
 
     <!-- Runtime packages required for crossgen -->
     <LatestPackageReference Include="runtime.win-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />

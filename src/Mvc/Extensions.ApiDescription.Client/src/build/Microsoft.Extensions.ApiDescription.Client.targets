@@ -2,21 +2,18 @@
 <Project>
   <!-- Internal settings. Not intended for customization. -->
   <PropertyGroup>
-    <GenerateOpenApiReferenceCodeDependsOn>
-      _GetMetadataForOpenApiReferences;
-      _GenerateOpenApiReferenceCode;
-      _CreateCompileItemsForOpenApiReferences
-    </GenerateOpenApiReferenceCodeDependsOn>
-    <GenerateServiceFileReferenceCodeDependsOn>
+    <GenerateOpenApiCodeDependsOn>
       _GenerateErrorsForOldItems;
       _CreateOpenApiReferenceItemsForOpenApiProjectReferences;
-      GenerateOpenApiReferenceCode
-    </GenerateServiceFileReferenceCodeDependsOn>
+      _GetMetadataForOpenApiReferences;
+      _GenerateOpenApiCode;
+      _CreateCompileItemsForOpenApiReferences
+    </GenerateOpenApiCodeDependsOn>
   </PropertyGroup>
 
   <!-- OpenApiProjectReference support. -->
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(OpenApiBuildReferencedProjects)' == 'true' ">
     <!--
       Do not change %(ReferenceOutputAssembly) if project contains duplicate @(ProjectReference) and
       @(OpenApiProjectReference) items.
@@ -30,19 +27,16 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Target Name="_CreateOpenApiReferenceItemsForOpenApiProjectReferences"
-      AfterTargets="ResolveProjectReferences"
-      Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
+  <Target Name="_CreateOpenApiReferenceItemsForOpenApiProjectReferences" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
       <_Temporary Remove="@(_Temporary)" />
     </ItemGroup>
 
     <MSBuild Targets="OpenApiGetDocuments"
-        Projects="@(ProjectReferenceWithConfiguration)"
-        Condition="'%(ProjectReferenceWithConfiguration.OpenApiReference)' == 'true'"
-        Properties="%(ProjectReferenceWithConfiguration.SetConfiguration); %(ProjectReferenceWithConfiguration.SetPlatform); %(ProjectReferenceWithConfiguration.SetTargetFramework)"
+        BuildInParallel="$(BuildInParallel)"
+        Projects="@(OpenApiProjectReference)"
         RebaseOutputs="true"
-        RemoveProperties="%(ProjectReferenceWithConfiguration.GlobalPropertiesToRemove);TargetFrameworks;RuntimeIdentifier">
+        RemoveProperties="Configuration;Platform;RuntimeIdentifier;TargetFramework;TargetFrameworks">
       <Output TaskParameter="TargetOutputs" ItemName="_Temporary" />
     </MSBuild>
 
@@ -62,7 +56,7 @@
     <GetFileReferenceMetadata Inputs="@(OpenApiReference)"
         Extension="$(DefaultLanguageSourceExtension)"
         Namespace="$(RootNamespace)"
-        OutputDirectory="$(OpenApiDefaultOutputDirectory)">
+        OutputDirectory="$(OpenApiCodeDirectory)">
       <Output TaskParameter="Outputs" ItemName="_Temporary" />
     </GetFileReferenceMetadata>
 
@@ -79,17 +73,16 @@
     </GetCurrentItems>
   </Target>
 
-  <Target Name="_InnerGenerateOpenApiReferenceCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
+  <Target Name="_InnerGenerateOpenApiCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
 
-  <Target Name="_GenerateOpenApiReferenceCode"
-      Condition="$(OpenApiGenerateAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
+  <Target Name="_GenerateOpenApiCode"
+      Condition="$(OpenApiGenerateCodeAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
       Inputs="@(OpenApiReference)"
       Outputs="%(OutputPath)">
-    <MSBuild BuildInParallel="$(BuildInParallel)"
-        Projects="$(MSBuildProjectFullPath)"
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+        BuildInParallel="$(BuildInParallel)"
         Properties="GeneratorTargetPath=%(OpenApiReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"
-        RemoveProperties="TargetFrameworks"
-        Targets="_InnerGenerateOpenApiReferenceCode" />
+        Targets="_InnerGenerateOpenApiCode" />
   </Target>
 
   <Target Name="_CreateCompileItemsForOpenApiReferences" Condition="'@(OpenApiReference)' != ''">
@@ -133,9 +126,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateOpenApiReferenceCode" DependsOnTargets="$(GenerateOpenApiReferenceCodeDependsOn)" />
-
-  <!-- Tie above code generation steps into the build.  -->
+  <!-- Inform users of breaking changes in this file and Microsoft.Extensions.ApiDescription.Client.props. -->
 
   <Target Name="_GenerateErrorsForOldItems">
     <Error Condition="'@(ServiceProjectReference)' != ''" Text="ServiceProjectReference items are no longer supported." />
@@ -143,7 +134,18 @@
     <Error Condition="'@(ServiceFileReference)' != ''" Text="ServiceFileReference items are no longer supported." />
   </Target>
 
-  <Target Name="GenerateServiceFileReferenceCode"
+  <!-- Main code generation entry point. -->
+
+  <Target Name="GenerateOpenApiCode" DependsOnTargets="$(GenerateOpenApiCodeDependsOn)" />
+
+  <!--
+    Unless this is an inner build or default timing is disabled, tie code generation into the build. Separate from
+    GenerateOpenApiCode and not invoked from the ../buildMultiTargeting targets to prevent repeated code generation
+    when multi-targeting.
+  -->
+
+  <Target Name="_TieInGenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
-      DependsOnTargets="$(GenerateServiceFileReferenceCodeDependsOn)" />
+      Condition=" '$(OpenApiGenerateCodeOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
+      DependsOnTargets="GenerateOpenApiCode" />
 </Project>

@@ -90,6 +90,19 @@
     <input id="textbox-nullable-decimal-invalid-mirror" @bind="textboxNullableDecimalInvalidValue" readonly />
 </p>
 
+<p>
+    Generic bind (int):
+    <BindGenericComponent Id="textbox-generic-int" @bind-Value="textboxGenericIntValue" />
+    <span id="textbox-generic-int-value">@textboxGenericIntValue</span>
+    <input id="textbox-generic-int-mirror" @bind="textboxGenericIntValue" readonly />
+</p>
+<p>
+    Generic bind (guid):
+    <BindGenericComponent Id="textbox-generic-guid" @bind-Value="textboxGenericGuidValue" />
+    <span id="textbox-generic-guid-value">@textboxGenericGuidValue</span>
+    <input id="textbox-generic-guid-mirror" @bind="textboxGenericGuidValue" readonly />
+</p>
+
 <h2>Text Area</h2>
 <p>
     Initially blank:
@@ -138,36 +151,39 @@
 </p>
 
 @code {
-    string textboxInitiallyBlankValue = null;
-    string textboxInitiallyPopulatedValue = "Hello";
+string textboxInitiallyBlankValue = null;
+string textboxInitiallyPopulatedValue = "Hello";
 
-    string textAreaInitiallyBlankValue = null;
-    string textAreaInitiallyPopulatedValue = "Hello";
+string textAreaInitiallyBlankValue = null;
+string textAreaInitiallyPopulatedValue = "Hello";
 
-    bool? checkboxInitiallyNullValue = null;
-    bool checkboxInitiallyUncheckedValue = false;
-    bool checkboxInitiallyCheckedValue = true;
+bool? checkboxInitiallyNullValue = null;
+bool checkboxInitiallyUncheckedValue = false;
+bool checkboxInitiallyCheckedValue = true;
 
-    int textboxIntValue = -42;
-    int? textboxNullableIntValue = null;
-    long textboxLongValue = 3_000_000_000;
-    long? textboxNullableLongValue = null;
-    float textboxFloatValue = 3.141f;
-    float? textboxNullableFloatValue = null;
-    double textboxDoubleValue = 3.14159265359d;
-    double? textboxNullableDoubleValue = null;
-    decimal textboxDecimalValue = 0.0000000000000000000000000001M;
-    decimal? textboxNullableDecimalValue = null;
-    decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
-    decimal? textboxNullableDecimalInvalidValue = null;
+int textboxIntValue = -42;
+int? textboxNullableIntValue = null;
+long textboxLongValue = 3_000_000_000;
+long? textboxNullableLongValue = null;
+float textboxFloatValue = 3.141f;
+float? textboxNullableFloatValue = null;
+double textboxDoubleValue = 3.14159265359d;
+double? textboxNullableDoubleValue = null;
+decimal textboxDecimalValue = 0.0000000000000000000000000001M;
+decimal? textboxNullableDecimalValue = null;
+decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
+decimal? textboxNullableDecimalInvalidValue = null;
 
-    bool includeFourthOption = false;
-    enum SelectableValue { First, Second, Third, Fourth }
-    SelectableValue selectValue = SelectableValue.Second;
+int textboxGenericIntValue = -42;
+Guid textboxGenericGuidValue = Guid.Empty;
 
-    void AddAndSelectNewSelectOption()
-    {
-        includeFourthOption = true;
-        selectValue = SelectableValue.Fourth;
-    }
+bool includeFourthOption = false;
+enum SelectableValue { First, Second, Third, Fourth }
+SelectableValue selectValue = SelectableValue.Second;
+
+void AddAndSelectNewSelectOption()
+{
+    includeFourthOption = true;
+    selectValue = SelectableValue.Fourth;
+}
 }

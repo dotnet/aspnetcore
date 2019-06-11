@@ -22,7 +22,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_LoginPartial.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
@@ -82,7 +81,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
         "Properties/launchSettings.json",
@@ -141,7 +139,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_LoginPartial.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
@@ -201,7 +198,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_LoginPartial.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
@@ -261,7 +257,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
         "Properties/launchSettings.json",
@@ -320,7 +315,6 @@
         "Pages/Privacy.cshtml.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/_ViewStart.cshtml",
-        "Pages/Shared/_CookieConsentPartial.cshtml",
         "Pages/Shared/_Layout.cshtml",
         "Pages/Shared/_LoginPartial.cshtml",
         "Pages/Shared/_ValidationScriptsPartial.cshtml",
@@ -404,7 +398,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "IndividualB2C"
@@ -417,7 +411,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "SingleOrg"
@@ -430,7 +424,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -443,7 +437,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
@@ -456,7 +450,7 @@
         "appsettings.json",
         "Program.fs",
         "Startup.fs",
-        "Controllers/ValuesController.fs",
+        "Controllers/WeatherController.fs",
         "Properties/launchSettings.json"
       ]
     }
@@ -484,7 +478,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_LoginPartial.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
@@ -543,7 +536,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
         "wwwroot/favicon.ico",
@@ -601,7 +593,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_LoginPartial.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
@@ -660,7 +651,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_LoginPartial.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
@@ -719,7 +709,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
         "wwwroot/favicon.ico",
@@ -777,7 +766,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_LoginPartial.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
@@ -836,7 +824,6 @@
         "Views/Home/Index.cshtml",
         "Views/Home/Privacy.cshtml",
         "Views/Shared/Error.cshtml",
-        "Views/Shared/_CookieConsentPartial.cshtml",
         "Views/Shared/_Layout.cshtml",
         "Views/Shared/_ValidationScriptsPartial.cshtml",
         "wwwroot/favicon.ico",

@@ -83,8 +83,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
 
             _buffer = _buffer.Slice(consumed, _buffer.End);
+            var reader = new SequenceReader<byte>(_buffer);
 
-            if (!_parser.ParseHeaders(new Adapter(this), _buffer, out consumed, out examined, out var consumedBytes))
+            if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }

@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                Assert.Equal("http://localhost" + requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
