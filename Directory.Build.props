@@ -47,9 +47,6 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591;</WarningsNotAsErrors>
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-    <!-- The assembly 'contentFiles\any\any\x64\aspnetcorev2.dll' is not inside the 'lib' folder and hence it won't be added as a reference when the package is installed into a project.
-      Move it into the 'lib' folder if it needs to be referenced.-->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU5100</WarningsNotAsErrors>
   </PropertyGroup>
 
   <!-- Source code settings -->
