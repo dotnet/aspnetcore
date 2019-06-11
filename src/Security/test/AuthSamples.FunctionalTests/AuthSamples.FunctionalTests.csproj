@@ -25,7 +25,6 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
-    <Content Include="..\..\samples\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="'$(IsHelixJob)' == 'true'" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -49,12 +48,42 @@
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)"
       ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_claimsWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_cookiesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Cookies\wwwroot"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_customProviderFiles)"
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_pathWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Identity.ExternalClaims\wwwroot"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_staticFiles)"
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)"
+      ContinueOnError="true" />
+    
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode"
+        ContinueOnError="true" />
   </Target>
 
 </Project>
