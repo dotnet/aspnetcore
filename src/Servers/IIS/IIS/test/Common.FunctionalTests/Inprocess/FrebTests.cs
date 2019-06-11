@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
             var folderPath = Helpers.GetFrebFolder(_logFolderPath, result);
-            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml"));
+            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).ToList();
             var frebEvents = new List<FrebLogItem>();
 
             result.Logger.LogInformation($"Number of freb files available {xmlFiles.Length}.");
