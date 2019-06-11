@@ -4,7 +4,12 @@
   },
   "tools": {
     "dotnet": "3.0.100-preview5-011568",
-    "jdk": "11.0.3"
+    "jdk": "11.0.3",
+    "runtimes": {
+      "dotnet": [
+        "$(MicrosoftNETCoreAppPackageVersion)"
+      ]
+    }
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.15.2",

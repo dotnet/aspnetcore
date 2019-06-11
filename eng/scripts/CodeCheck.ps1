@@ -43,7 +43,7 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
+        & $repoRoot/restore.cmd -ci
     }
 
     #

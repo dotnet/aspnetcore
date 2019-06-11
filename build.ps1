@@ -33,6 +33,9 @@ Run tests.
 .PARAMETER Sign
 Run code signing.
 
+.PARAMETER Configuration
+Debug or Release
+
 .PARAMETER Architecture
 The CPU architecture to build for (x64, x86, arm). Default=x64
 
@@ -62,6 +65,9 @@ You can also use -NoBuildJava to suppress this project type.
 Build Windows Installers. Required .NET 3.5 to be installed (WiX toolset requirement).
 You can also use -NoBuildInstallers to suppress this project type.
 
+.PARAMETER BinaryLog
+Enable the binary logger
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -73,7 +79,7 @@ Building both native and managed projects.
 .EXAMPLE
 Building a subfolder of code.
 
-    build.ps1 "$(pwd)/src/SomeFolder/**/*.csproj"
+    build.ps1 -projects "$(pwd)/src/SomeFolder/**/*.csproj"
 
 .EXAMPLE
 Running tests.
@@ -95,6 +101,10 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
+
+    [Alias('c')]
+    [ValidateSet('Debug', 'Release')]
+    $Configuration,
 
     [ValidateSet('x64', 'x86', 'arm')]
     $Architecture = 'x64',
@@ -119,10 +129,16 @@ param(
     [switch]$NoBuildJava,
     [switch]$NoBuildInstallers,
 
+    # Skip building eng/tools/RepoTasks/
+    [switch]$NoBuildRepoTasks,
+
     # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
     # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
     # MSBuild for .NET Core
     [switch]$ForceCoreMsbuild,
+
+    [Alias('bl')]
+    [switch]$BinaryLog,
 
     # Other lifecycle targets
     [switch]$Help, # Show help
@@ -135,115 +151,10 @@ param(
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-#
-# Functions
-#
-
-function Get-KoreBuild {
-
-    if (!(Test-Path $LockFile)) {
-        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $LockFile
-    }
-
-    $version = Get-Content $LockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
-    if (!$version) {
-        Write-Error "Failed to parse version from $LockFile. Expected a line that begins with 'version:'"
-    }
-    $version = $version.TrimStart('version:').Trim()
-    $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
-
-    if (!(Test-Path $korebuildPath)) {
-        Write-Host -ForegroundColor Magenta "Downloading KoreBuild $version"
-        New-Item -ItemType Directory -Path $korebuildPath | Out-Null
-        $remotePath = "$ToolsSource/korebuild/artifacts/$version/korebuild.$version.zip"
-
-        try {
-            $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
-            Get-RemoteFile $remotePath $tmpfile
-            if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
-                # Use built-in commands where possible as they are cross-plat compatible
-                Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
-            }
-            else {
-                # Fallback to old approach for old installations of PowerShell
-                Add-Type -AssemblyName System.IO.Compression.FileSystem
-                [System.IO.Compression.ZipFile]::ExtractToDirectory($tmpfile, $korebuildPath)
-            }
-        }
-        catch {
-            Remove-Item -Recurse -Force $korebuildPath -ErrorAction Ignore
-            throw
-        }
-        finally {
-            Remove-Item $tmpfile -ErrorAction Ignore
-        }
-    }
-
-    return $korebuildPath
-}
-
-function Join-Paths([string]$path, [string[]]$childPaths) {
-    $childPaths | ForEach-Object { $path = Join-Path $path $_ }
-    return $path
-}
-
-function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
-    if ($RemotePath -notlike 'http*') {
-        Copy-Item $RemotePath $LocalPath
-        return
-    }
-
-    $retries = 10
-    while ($retries -gt 0) {
-        $retries -= 1
-        try {
-            $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
-            return
-        }
-        catch {
-            Write-Verbose "Request failed. $retries retries remaining"
-        }
-    }
-
-    Write-Error "Download failed: '$RemotePath'."
-}
-
-#
-# Main
-#
-
-# Load configuration or set defaults
-
 if ($Help) {
     Get-Help $PSCommandPath
     exit 1
 }
-
-$Channel = 'master'
-$ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools'
-$ConfigFile = Join-Path $PSScriptRoot 'korebuild.json'
-$LockFile = Join-Path $PSScriptRoot 'korebuild-lock.txt'
-
-if (Test-Path $ConfigFile) {
-    try {
-        $config = Get-Content -Raw -Encoding UTF8 -Path $ConfigFile | ConvertFrom-Json
-        if ($config) {
-            if (Get-Member -Name 'channel' -InputObject $config) { [string] $Channel = $config.channel }
-            if (Get-Member -Name 'toolsSource' -InputObject $config) { [string] $ToolsSource = $config.toolsSource}
-        }
-    } catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
-    }
-}
-
-$DotNetHome = Join-Path $PSScriptRoot '.dotnet'
-$env:DOTNET_HOME = $DotNetHome
-
-# Execute
-
-$korebuildPath = Get-KoreBuild
 
 # Project selection
 if ($All) {
@@ -254,7 +165,7 @@ elseif ($Projects) {
     {
         $Projects = Join-Path (Get-Location) $Projects
     }
-    $MSBuildArguments += "/p:Projects=$Projects"
+    $MSBuildArguments += "/p:ProjectToBuild=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
 elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
@@ -290,17 +201,19 @@ $RunRestore = if ($NoRestore) { $false }
     else { $true }
 
 # Target selection
-if ($RunRestore) {
-    $MSBuildArguments += "/restore"
-}
-
-$MSBuildArguments += "/p:_RunBuild=$RunBuild"
-$MSBuildArguments += "/p:_RunPack=$Pack"
-$MSBuildArguments += "/p:_RunTests=$Test"
-$MSBuildArguments += "/p:_RunSign=$Sign"
+$MSBuildArguments += "/p:Restore=$RunRestore"
+$MSBuildArguments += "/p:Build=$RunBuild"
+$MSBuildArguments += "/p:Pack=$Pack"
+$MSBuildArguments += "/p:Test=$Test"
+$MSBuildArguments += "/p:Sign=$Sign"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
+
+if (-not $Configuration) {
+    $Configuration = if ($CI) { 'Release' } else { 'Debug' }
+}
+$MSBuildArguments += "/p:Configuration=$Configuration"
 
 if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     $foundJdk = $false
@@ -357,19 +270,55 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     }
 }
 
-Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
+# Initialize global variables need to be set before the import of Arcade is imported
+$restore = $RunRestore
+
+if ($ForceCoreMsbuild) {
+    $msbuildEngine = 'dotnet'
+}
+
+# Workaround Arcade check which asserts BinaryLog is true on CI.
+# We always use binlogs on CI, but we customize the name of the log file
+$tmpBinaryLog = $BinaryLog
+if ($CI) {
+    $BinaryLog = $true
+}
+
+# Import Arcade
+. "$PSScriptRoot/eng/common/tools.ps1"
+
+if ($tmpBinaryLog) {
+    $MSBuildArguments += "/bl:$LogDir/Build.binlog"
+}
 
 try {
-    $env:KOREBUILD_KEEPGLOBALJSON = 1
-    $env:KOREBUILD_DISABLE_DOTNET_ARCH = 1
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
-    if ($ForceCoreMsbuild) {
-        $global:KoreBuildSettings.MSBuildType = 'core'
+    # Import custom tools configuration, if present in the repo.
+    # Note: Import in global scope so that the script set top-level variables without qualification.
+    $configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
+    if (Test-Path $configureToolsetScript) {
+      . $configureToolsetScript
     }
-    Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
+
+    $toolsetBuildProj = InitializeToolset
+
+    if (-not $NoBuildRepoTasks) {
+        MSBuild $toolsetBuildProj `
+            /p:RepoRoot=$RepoRoot `
+            /p:Projects=$EngRoot\tools\RepoTasks\RepoTasks.csproj `
+            /p:Configuration=Release `
+            /p:Restore=$RunRestore `
+            /p:Build=true `
+            /clp:NoSummary
+    }
+
+    MSBuild $toolsetBuildProj `
+        /p:RepoRoot=$RepoRoot `
+        @MSBuildArguments
 }
-finally {
-    Remove-Module 'KoreBuild' -ErrorAction Ignore
-    Remove-Item env:DOTNET_HOME
-    Remove-Item env:KOREBUILD_KEEPGLOBALJSON
+catch {
+    Write-Host $_.ScriptStackTrace
+    Write-PipelineTaskError -Message $_
+    ExitWithExitCode 1
 }
+
+ExitWithExitCode 0
