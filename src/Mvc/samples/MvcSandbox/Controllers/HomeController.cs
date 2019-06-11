@@ -5,14 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MvcSandbox.Controllers
 {
+    [ApiController]
     public class HomeController : Controller
     {
-        [ModelBinder]
-        public string Id { get; set; }
-
-        public IActionResult Index()
+        [HttpPost("/")]
+        public IActionResult Index(Person person)
         {
-            return View();
+            return Ok(person);
         }
     }
+
+    public class Person
+    {
+        public int Id { get; set; }
+    }
+
 }

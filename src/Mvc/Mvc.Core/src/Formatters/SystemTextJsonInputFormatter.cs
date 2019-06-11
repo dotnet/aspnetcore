@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -16,13 +18,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private readonly ILogger<SystemTextJsonInputFormatter> _logger;
+
         /// <summary>
         /// Initializes a new instance of <see cref="SystemTextJsonInputFormatter"/>.
         /// </summary>
         /// <param name="options">The <see cref="JsonOptions"/>.</param>
-        public SystemTextJsonInputFormatter(JsonOptions options)
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        public SystemTextJsonInputFormatter(
+            JsonOptions options,
+            ILogger<SystemTextJsonInputFormatter> logger)
         {
             SerializerOptions = options.JsonSerializerOptions;
+            _logger = logger;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -67,6 +75,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 model = await JsonSerializer.ReadAsync(inputStream, context.ModelType, SerializerOptions);
             }
+            catch (JsonException jsonException)
+            {
+                var path = jsonException.Path;
+                if (path.StartsWith("$.", StringComparison.Ordinal))
+                {
+                    path = path.Substring(2);
+                }
+
+                // Handle path combinations such as ""+"Property", "Parent"+"Property", or "Parent"+"[12]".
+                var key = ModelNames.CreatePropertyModelName(context.ModelName, path);
+
+                var formatterException = new InputFormatterException(jsonException.Message, jsonException);
+
+                var metadata = GetPathMetadata(context.Metadata, path);
+                context.ModelState.TryAddModelError(key, formatterException, metadata);
+
+                Log.JsonInputException(_logger, jsonException);
+
+                return InputFormatterResult.Failure();
+            }
             finally
             {
                 if (inputStream is TranscodingReadStream transcoding)
@@ -97,6 +125,69 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             return new TranscodingReadStream(httpContext.Request.Body, encoding);
+        }
+
+        // Keep in sync with NewtonsoftJsonInputFormatter.GetPatMetadata
+        private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
+        {
+            var index = 0;
+            while (index >= 0 && index < path.Length)
+            {
+                if (path[index] == '[')
+                {
+                    // At start of "[0]".
+                    if (metadata.ElementMetadata == null)
+                    {
+                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
+                        break;
+                    }
+
+                    metadata = metadata.ElementMetadata;
+                    index = path.IndexOf(']', index);
+                }
+                else if (path[index] == '.' || path[index] == ']')
+                {
+                    // Skip '.' in "prefix.property" or "[0].property" or ']' in "[0]".
+                    index++;
+                }
+                else
+                {
+                    // At start of "property", "property." or "property[0]".
+                    var endIndex = path.IndexOfAny(new[] { '.', '[' }, index);
+                    if (endIndex == -1)
+                    {
+                        endIndex = path.Length;
+                    }
+
+                    var propertyName = path.Substring(index, endIndex - index);
+                    if (metadata.Properties[propertyName] == null)
+                    {
+                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
+                        break;
+                    }
+
+                    metadata = metadata.Properties[propertyName];
+                    index = endIndex;
+                }
+            }
+
+            return metadata;
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception> _jsonInputFormatterException;
+
+            static Log()
+            {
+                _jsonInputFormatterException = LoggerMessage.Define(
+                   LogLevel.Debug,
+                   new EventId(1, "SystemTextJsonInputException"),
+                   "JSON input formatter threw an exception.");
+            }
+
+            public static void JsonInputException(ILogger logger, Exception exception) 
+                => _jsonInputFormatterException(logger, exception);
         }
     }
 }
