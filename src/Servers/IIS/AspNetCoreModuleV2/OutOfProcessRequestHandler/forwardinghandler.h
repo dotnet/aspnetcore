@@ -211,7 +211,7 @@ private:
     //
     volatile  LONG                      m_dwHandlers;
     DWORD                               m_cchHeaders;
-    DWORD                               m_BytesToReceive;
+    ULONGLONG                           m_BytesToReceive;
     DWORD                               m_BytesToSend;
     DWORD                               m_cchLastSend;
     DWORD                               m_cEntityBuffers;

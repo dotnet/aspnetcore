@@ -216,19 +216,26 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     //
     // Calculate the bytes to receive from the content length.
     //
-    DWORD cbContentLength = 0;
+    DWORD cbContentLength = WINHTTP_IGNORE_REQUEST_TOTAL_LENGTH;
     PCSTR pszContentLength = pRequest->GetHeader(HttpHeaderContentLength);
     if (pszContentLength != NULL)
     {
-        cbContentLength = m_BytesToReceive = atol(pszContentLength);
-        if (m_BytesToReceive == INFINITE)
+        m_BytesToReceive = atoll(pszContentLength);
+         //only set cbContentLength which gets used for the dwTotalLength parameter in WinHttpSendRequest if the value fits in an unsigned 32 bit int
+        //If it is greater than the max value of a 32 bit unsigned integer WinHttpSendRequest will get the value from the content length header and we should send WINHTTP_IGNORE_REQUEST_TOTAL_LENGTH
+        if (m_BytesToReceive <= ULONG_MAX)
+        {
+            cbContentLength = (DWORD)m_BytesToReceive;
+        }
+
+        if (m_BytesToReceive == ULLONG_MAX)
         {
             FAILURE(HRESULT_FROM_WIN32(WSAECONNRESET));
         }
     }
     else if (pRequest->GetHeader(HttpHeaderTransferEncoding) != NULL)
     {
-        m_BytesToReceive = INFINITE;
+        m_BytesToReceive = ULLONG_MAX;
     }
 
     if (m_fWebSocketEnabled)
@@ -1518,21 +1525,21 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
         }
         hr = pRequest->ReadEntityBody(
             m_pEntityBuffer + 6,
-            min(m_BytesToReceive, BUFFER_SIZE),
+            (DWORD)(min(m_BytesToReceive, (ULONGLONG)BUFFER_SIZE)),
             TRUE,       // fAsync
             NULL,       // pcbBytesReceived
             NULL);      // pfCompletionPending
         if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
         {
             DBG_ASSERT(m_BytesToReceive == 0 ||
-                m_BytesToReceive == INFINITE);
+                m_BytesToReceive == ULLONG_MAX);
 
             //
             // ERROR_HANDLE_EOF is not an error.
             //
             hr = S_OK;
 
-            if (m_BytesToReceive == INFINITE)
+            if (m_BytesToReceive == ULLONG_MAX)
             {
                 m_BytesToReceive = 0;
                 m_cchLastSend = 5;
@@ -1826,8 +1833,8 @@ FORWARDING_HANDLER::OnSendingRequest(
     //
     if (hrCompletionStatus == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
     {
-        DBG_ASSERT(m_BytesToReceive == 0 || m_BytesToReceive == INFINITE);
-        if (m_BytesToReceive == INFINITE)
+        DBG_ASSERT(m_BytesToReceive == 0 || m_BytesToReceive == ULLONG_MAX);
+        if (m_BytesToReceive == ULLONG_MAX)
         {
             m_BytesToReceive = 0;
             m_cchLastSend = 5; // "0\r\n\r\n"
@@ -1848,7 +1855,7 @@ FORWARDING_HANDLER::OnSendingRequest(
     {
         DWORD cbOffset;
 
-        if (m_BytesToReceive != INFINITE)
+        if (m_BytesToReceive != ULLONG_MAX)
         {
             m_BytesToReceive -= cbCompletion;
             cbOffset = 6;
