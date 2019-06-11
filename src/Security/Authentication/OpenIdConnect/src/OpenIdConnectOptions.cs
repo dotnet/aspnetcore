@@ -48,14 +48,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ClaimActions.DeleteClaim("aud");
             ClaimActions.DeleteClaim("azp");
             ClaimActions.DeleteClaim("acr");
-            ClaimActions.DeleteClaim("amr");
             ClaimActions.DeleteClaim("iss");
             ClaimActions.DeleteClaim("iat");
             ClaimActions.DeleteClaim("nbf");
             ClaimActions.DeleteClaim("exp");
             ClaimActions.DeleteClaim("at_hash");
             ClaimActions.DeleteClaim("c_hash");
-            ClaimActions.DeleteClaim("auth_time");
             ClaimActions.DeleteClaim("ipaddr");
             ClaimActions.DeleteClaim("platf");
             ClaimActions.DeleteClaim("ver");
