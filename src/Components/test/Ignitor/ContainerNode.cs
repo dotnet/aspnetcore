@@ -28,34 +28,57 @@ namespace Ignitor
                 throw new Exception("Not implemented: inserting non-empty logical container");
             }
 
-            if (getLogicalParent(child))
+            if (child.Parent != null)
             {
                 // Likewise, we could easily support this scenario too (in this 'if' block, just splice
                 // out 'child' from the logical children array of its previous logical parent by using
                 // Array.prototype.indexOf to determine its previous sibling index).
                 // But again, since there's not currently any scenario that would use it, we would not
                 // have any test coverage for such an implementation.
-                throw new Error('Not implemented: moving existing logical children');
+                throw new NotSupportedException("Not implemented: moving existing logical children");
             }
 
-            const newSiblings = getLogicalChildrenArray(parent);
-            if (childIndex < newSiblings.length)
+            if (childIndex < Children.Count)
             {
                 // Insert
-                const nextSibling = newSiblings[childIndex] as any as Node;
-                nextSibling.parentNode!.insertBefore(child, nextSibling);
-                newSiblings.splice(childIndex, 0, child);
+                _children[childIndex] = child;
             }
             else
             {
                 // Append
-                appendDomNode(child, parent);
-                newSiblings.push(child);
+                _children.Add(child);
             }
 
-            child[logicalParentPropname] = parent;
-            if (!(logicalChildrenPropname in child)) {
-                child[logicalChildrenPropname] = [];
+            child.Parent = this;
+        }
+
+        public ContainerNode CreateAndInsertContainer(int childIndex)
+        {
+            var containerElement = new CommentNode("!");
+            InsertLogicalChild(containerElement, childIndex);
+            return containerElement;
+        }
+
+        public ComponentNode CreateAndInsertComponent(int componentId, int childIndex)
+        {
+            var componentElement = new ComponentNode(componentId);
+            InsertLogicalChild(componentElement, childIndex);
+            return componentElement;
+        }
+
+        public void RemoveLogicalChild(int childIndex)
+        {
+            var childToRemove = Children[childIndex];
+            _children.RemoveAt(childIndex);
+
+            // If it's a logical container, also remove its descendants
+            if (childToRemove is CommentNode comment) {
+
+                var grandchildrenArray = comment.Children;
+                while (grandchildrenArray.Count > 0)
+                {
+                    comment.RemoveLogicalChild(0);
+                }
             }
         }
     }

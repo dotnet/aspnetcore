@@ -156,7 +156,7 @@ namespace Ignitor
 
                     case RenderTreeFrameType.Element:
                         var elementSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
-                        var elementName = ReadString(frameData, strings);
+                        var elementName = ReadString(frameData.Slice(8, 4), strings);
                         result[i / 16] = RenderTreeFrame.Element(0, elementName).WithElementSubtreeLength(elementSubtreeLength);
                         break;
 

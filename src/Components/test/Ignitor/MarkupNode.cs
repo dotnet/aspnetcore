@@ -3,13 +3,13 @@
 
 namespace Ignitor
 {
-    internal class TextNode : Node
+    internal class MarkupNode : Node
     {
-        public TextNode(string text)
+        public MarkupNode(string markupContent)
         {
-            TextContent = text;
+            MarkupContent = markupContent;
         }
 
-        public string TextContent { get; set; }
+        public string MarkupContent { get; }
     }
 }

@@ -5,5 +5,11 @@ namespace Ignitor
 {
     internal class CommentNode : ContainerNode
     {
+        public CommentNode(string commentContent)
+        {
+            CommentContent = commentContent;
+        }
+
+        public string CommentContent { get; }
     }
 }

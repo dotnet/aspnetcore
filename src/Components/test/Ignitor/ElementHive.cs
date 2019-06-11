@@ -10,7 +10,11 @@ namespace Ignitor
 {
     internal class ElementHive
     {
+        private const string SelectValuePropname = "_blazorSelectValue";
+
         public Dictionary<int, ComponentNode> Components { get; } = new Dictionary<int, ComponentNode>();
+
+        public string SerializedValue => NodeSerializer.Serialize(this);
 
         public void Update(RenderBatch batch)
         {
@@ -54,7 +58,7 @@ namespace Ignitor
 
         }
 
-        private void ApplyEdits(RenderBatch batch, Node parent, int childIndex, ArraySegment<RenderTreeEdit> edits)
+        private void ApplyEdits(RenderBatch batch, ContainerNode parent, int childIndex, ArraySegment<RenderTreeEdit> edits)
         {
             var currentDepth = 0;
             var childIndexAtCurrentDepth = childIndex;
@@ -69,14 +73,14 @@ namespace Ignitor
                         {
                             var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
                             var siblingIndex = edit.SiblingIndex;
-                            insertFrame(batch, parent, childIndexAtCurrentDepth + siblingIndex, frame, edit.ReferenceFrameIndex);
+                            InsertFrame(batch, parent, childIndexAtCurrentDepth + siblingIndex, batch.ReferenceFrames.Array, frame, edit.ReferenceFrameIndex);
                             break;
                         }
 
                     case RenderTreeEditType.RemoveFrame:
                         {
                             var siblingIndex = edit.SiblingIndex;
-                            removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+                            parent.RemoveLogicalChild(childIndexAtCurrentDepth + siblingIndex);
                             break;
                         }
 
@@ -84,8 +88,8 @@ namespace Ignitor
                         {
                             var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
                             var siblingIndex = edit.SiblingIndex;
-                            var element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-                            if (element is ElementNode)
+                            var node = parent.Children[childIndexAtCurrentDepth + siblingIndex];
+                            if (node is ElementNode element)
                             {
                                 applyAttribute(batch, element, frame);
                             }
@@ -101,16 +105,16 @@ namespace Ignitor
                             // Note that we don't have to dispose the info we track about event handlers here, because the
                             // disposed event handler IDs are delivered separately (in the 'disposedEventHandlerIds' array)
                             var siblingIndex = edit.SiblingIndex;
-                            var element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-                            if (element is ElementNode)
+                            var node = parent.Children[childIndexAtCurrentDepth + siblingIndex];
+                            if (node is ElementNode element)
                             {
                                 var attributeName = edit.RemovedAttributeName;
 
                                 // First try to remove any special property we use for this attribute
-                                if (!tryApplySpecialProperty(batch, element, attributeName, null))
+                                if (!TryApplySpecialProperty(batch, element, attributeName, default))
                                 {
                                     // If that's not applicable, it's a regular DOM attribute so remove that
-                                    element.removeAttribute(attributeName);
+                                    element.RemoveAttribute(attributeName);
                                 }
                             }
                             else
@@ -124,10 +128,10 @@ namespace Ignitor
                         {
                             var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
                             var siblingIndex = edit.SiblingIndex;
-                            var textNode = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-                            if (textNode is TextNode)
+                            var node = parent.Children[childIndexAtCurrentDepth + siblingIndex];
+                            if (node is TextNode textNode)
                             {
-                                textNode.textContent = frame.TextContent;
+                                textNode.TextContent = frame.TextContent;
                             }
                             else
                             {
@@ -141,15 +145,15 @@ namespace Ignitor
                         {
                             var frame = batch.ReferenceFrames.Array[edit.ReferenceFrameIndex];
                             var siblingIndex = edit.SiblingIndex;
-                            removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-                            insertMarkup(batch, parent, childIndexAtCurrentDepth + siblingIndex, frame);
+                            parent.RemoveLogicalChild(childIndexAtCurrentDepth + siblingIndex);
+                            InsertMarkup(parent, childIndexAtCurrentDepth + siblingIndex, frame);
                             break;
                         }
 
                     case RenderTreeEditType.StepIn:
                         {
                             var siblingIndex = edit.SiblingIndex;
-                            parent = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+                            parent = (ContainerNode)parent.Children[childIndexAtCurrentDepth + siblingIndex];
                             currentDepth++;
                             childIndexAtCurrentDepth = 0;
                             break;
@@ -157,23 +161,25 @@ namespace Ignitor
 
                     case RenderTreeEditType.StepOut:
                         {
-                            parent = getLogicalParent(parent)!;
-                            currentDepth--;
-                            childIndexAtCurrentDepth = currentDepth == 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
-                            break;
+                            throw new NotSupportedException();
+                            //parent = getLogicalParent(parent)!;
+                            //currentDepth--;
+                            //childIndexAtCurrentDepth = currentDepth == 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
+                            //break;
                         }
 
                     case RenderTreeEditType.PermutationListEntry:
                         {
-                            permutations.Add(new PermutationListEntry(childIndexAtCurrentDepth + edit.SiblingIndex, childIndexAtCurrentDepth + edit.MoveToSiblingIndex));,
+                            permutations.Add(new PermutationListEntry(childIndexAtCurrentDepth + edit.SiblingIndex, childIndexAtCurrentDepth + edit.MoveToSiblingIndex));
                             break;
                         }
 
                     case RenderTreeEditType.PermutationListEnd:
                         {
-                            permuteLogicalChildren(parent, permutations!);
-                            permutations.Clear();
-                            break;
+                            throw new NotSupportedException();
+                            //permuteLogicalChildren(parent, permutations!);
+                            //permutations.Clear();
+                            //break;
                         }
 
                     default:
@@ -190,13 +196,13 @@ namespace Ignitor
             {
                 case RenderTreeFrameType.Element:
                     {
-                        InsertElement(batch, parent, childIndex, frame, frameIndex);
+                        InsertElement(batch, parent, childIndex, frames, frame, frameIndex);
                         return 1;
                     }
 
                 case RenderTreeFrameType.Text:
                     {
-                        insertText(batch, parent, childIndex, frame);
+                        InsertText(parent, childIndex, frame);
                         return 1;
                     }
 
@@ -207,13 +213,13 @@ namespace Ignitor
 
                 case RenderTreeFrameType.Component:
                     {
-                        insertComponent(batch, parent, childIndex, frame);
+                        InsertComponent(parent, childIndex, frame);
                         return 1;
                     }
 
                 case RenderTreeFrameType.Region:
                     {
-                        return insertFrameRange(batch, parent, childIndex, frames, frameIndex + 1, frameIndex + frameReader.subtreeLength(frame));
+                        return InsertFrameRange(batch, parent, childIndex, frames, frameIndex + 1, frameIndex + CountDescendantFrames(frame));
                     }
 
                 case RenderTreeFrameType.ElementReferenceCapture:
@@ -224,18 +230,49 @@ namespace Ignitor
 
                 case RenderTreeFrameType.Markup:
                     {
-                        insertMarkup(batch, parent, childIndex, frame);
+                        InsertMarkup(parent, childIndex, frame);
                         return 1;
                     }
 
-                default:
-                    {
-                        throw new Exception($"Unknown frame type: {frame.FrameType}");
-                    }
             }
+
+            throw new Exception($"Unknown frame type: {frame.FrameType}");
         }
 
-        private void InsertElement(RenderBatch batch, ContainerNode parent, int childIndex, RenderTreeFrame frame, int frameIndex)
+        private void InsertText(ContainerNode parent, int childIndex, RenderTreeFrame frame)
+        {
+            var textContent = frame.TextContent;
+            var newTextNode = new TextNode(textContent);
+            parent.InsertLogicalChild(newTextNode, childIndex);
+        }
+
+        private void InsertComponent(ContainerNode parent, int childIndex, RenderTreeFrame frame)
+        {
+            // All we have to do is associate the child component ID with its location. We don't actually
+            // do any rendering here, because the diff for the child will appear later in the render batch.
+            var childComponentId = frame.ComponentId;
+            var containerElement = parent.CreateAndInsertComponent(childComponentId, childIndex);
+
+            Components[childComponentId] = containerElement;
+        }
+
+        private int InsertFrameRange(RenderBatch batch, ContainerNode parent, int childIndex, ArraySegment<RenderTreeFrame> frames, int startIndex, int endIndexExcl)
+        {
+            var origChildIndex = childIndex;
+            for (var index = startIndex; index < endIndexExcl; index++)
+            {
+                var frame = batch.ReferenceFrames.Array[index];
+                var numChildrenInserted = InsertFrame(batch, parent, childIndex, frames, frame, index);
+                childIndex += numChildrenInserted;
+
+                // Skip over any descendants, since they are already dealt with recursively
+                index += CountDescendantFrames(frame);
+            }
+
+            return (childIndex - origChildIndex); // Total number of children inserted
+        }
+
+        private void InsertElement(RenderBatch batch, ContainerNode parent, int childIndex, ArraySegment<RenderTreeFrame> frames, RenderTreeFrame frame, int frameIndex)
         {
             // Note: we don't handle SVG here
             var newElement = new ElementNode(frame.ElementName);
@@ -253,9 +290,130 @@ namespace Ignitor
                 {
                     // As soon as we see a non-attribute child, all the subsequent child frames are
                     // not attributes, so bail out and insert the remnants recursively
-                    insertFrameRange(batch, newElement, 0, i, frameIndex + frame.ElementSubtreeLength);
+                    InsertFrameRange(batch, newElement, 0, frames, i, frameIndex + frame.ElementSubtreeLength);
                     break;
                 }
+            }
+        }
+
+        private void applyAttribute(RenderBatch batch, ElementNode elementNode, RenderTreeFrame attributeFrame)
+        {
+            var attributeName = attributeFrame.AttributeName;
+            var eventHandlerId = attributeFrame.AttributeEventHandlerId;
+
+            if (eventHandlerId != 0)
+            {
+                var firstTwoChars = attributeName.Substring(0, 2);
+                var eventName = attributeName.Substring(2);
+                if (firstTwoChars != "on" || string.IsNullOrEmpty(eventName))
+                {
+                    throw new InvalidOperationException($"Attribute has nonzero event handler ID, but attribute name '${attributeName}' does not start with 'on'.");
+                }
+
+                return;
+            }
+
+            // First see if we have special handling for this attribute
+            if (!this.TryApplySpecialProperty(batch, elementNode, attributeName, attributeFrame))
+            {
+                // If not, treat it as a regular string-valued attribute
+                elementNode.SetAttribute(
+                  attributeName,
+                  attributeFrame.AttributeValue);
+            }
+        }
+
+        private bool TryApplySpecialProperty(RenderBatch batch, ElementNode element, string attributeName, RenderTreeFrame attributeFrame)
+        {
+            switch (attributeName)
+            {
+                case "value":
+                    return TryApplyValueProperty(element, attributeFrame);
+                case "checked":
+                    return TryApplyCheckedProperty(element, attributeFrame);
+                default:
+                    return false;
+            }
+        }
+
+
+
+        private bool TryApplyValueProperty(ElementNode element, RenderTreeFrame attributeFrame)
+        {
+            // Certain elements have built-in behaviour for their 'value' property
+            switch (element.TagName)
+            {
+                case "INPUT":
+                case "SELECT":
+                case "TEXTAREA":
+                    {
+                        var value = attributeFrame.AttributeValue;
+                        element.SetProperty("value", value);
+
+                        if (element.TagName == "SELECT")
+                        {
+                            // <select> is special, in that anything we write to .value will be lost if there
+                            // isn't yet a matching <option>. To maintain the expected behavior no matter the
+                            // element insertion/update order, preserve the desired value separately so
+                            // we can recover it when inserting any matching <option>.
+                            element.SetProperty(SelectValuePropname, value);
+                        }
+                        return true;
+                    }
+                case "OPTION":
+                    {
+                        var value = attributeFrame.AttributeValue;
+                        if (value != null)
+                        {
+                            element.SetAttribute("value", value);
+                        }
+                        else
+                        {
+                            element.RemoveAttribute("value");
+                        }
+                        return true;
+                    }
+                default:
+                    return false;
+            }
+        }
+
+        private bool TryApplyCheckedProperty(ElementNode element, RenderTreeFrame attributeFrame)
+        {
+            // Certain elements have built-in behaviour for their 'checked' property
+            if (element.TagName == "INPUT")
+            {
+                var value = attributeFrame.AttributeValue;
+                element.SetProperty("checked", value);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void InsertMarkup(ContainerNode parent, int childIndex, RenderTreeFrame markupFrame)
+        {
+            var markupContainer = parent.CreateAndInsertContainer(childIndex);
+            var markupContent = markupFrame.MarkupContent;
+            var markupNode = new MarkupNode(markupContent);
+            markupContainer.InsertLogicalChild(markupNode, childIndex);
+        }
+
+        private int CountDescendantFrames(RenderTreeFrame frame)
+        {
+            switch (frame.FrameType)
+            {
+                // The following frame types have a subtree length. Other frames may use that memory slot
+                // to mean something else, so we must not read it. We should consider having nominal subtypes
+                // of RenderTreeFramePointer that prevent access to non-applicable fields.
+                case RenderTreeFrameType.Component:
+                    return frame.ComponentSubtreeLength - 1;
+                case RenderTreeFrameType.Element:
+                    return frame.ElementSubtreeLength - 1;
+                case RenderTreeFrameType.Region:
+                    return frame.RegionSubtreeLength - 1;
+                default:
+                    return 0;
             }
         }
 

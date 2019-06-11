@@ -68,6 +68,7 @@ namespace Ignitor
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
             builder.WithUrl(new Uri(uri, "_blazor/"));
             builder.ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Trace));
+            var hive = new ElementHive();
 
             await using (var connection = builder.Build())
             {
@@ -88,18 +89,19 @@ namespace Ignitor
 
             void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
             {
-                Console.WriteLine();
+                Console.WriteLine("JS Invoke: " + identifier + " (" + argsJson + ")");
             }
 
             void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
             {
                 var batch = RenderBatchReader.Read(batchData);
+                hive.Update(batch);
                 Console.WriteLine();
             }
 
             void OnError(Error error)
             {
-                Console.WriteLine();
+                Console.WriteLine("ERROR: " + error.Stack);
             }
 
             Task OnClosedAsync(Exception ex)
