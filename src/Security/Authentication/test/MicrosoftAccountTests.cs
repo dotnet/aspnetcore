@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
         {
-            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("GoogleTest"));
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MicrosoftTest"));
             var server = CreateServer(o =>
             {
                 o.ClientId = "Test Id";
