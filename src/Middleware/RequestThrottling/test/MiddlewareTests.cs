@@ -108,13 +108,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void MultipleRequestsFillUpQueue()
         {
-            var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 1,
-                requestQueueLimit: 10,
-                next: httpContext =>
-                {
-                    return Task.Delay(TimeSpan.FromSeconds(30));
-                });
+            var middleware = TestUtils.CreateBlockingTestMiddleware(requestQueueLimit: 10);
 
             Assert.Equal(0, middleware.ActiveRequestCount);
 

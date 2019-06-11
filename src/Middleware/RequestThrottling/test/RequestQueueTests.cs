@@ -10,19 +10,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
     public class RequestQueueTests
     {
         [Fact]
-        public async Task LimitsIncomingRequests()
-        {
-            using var s = TestUtils.CreateRequestQueue(1);
-            Assert.Equal(0, s.TotalRequests);
-
-            Assert.True(await s.TryEnterQueueAsync().OrTimeout());
-            Assert.Equal(1, s.TotalRequests);
-
-            s.Release();
-            Assert.Equal(0, s.TotalRequests);
-        }
-
-        [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
             using var s = TestUtils.CreateRequestQueue(2);
@@ -46,7 +33,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var waitingTask = s.TryEnterQueueAsync();
             Assert.False(waitingTask.IsCompleted);
 
-            s.Release();
+            s.OnExit();
             Assert.True(await waitingTask.OrTimeout());
         }
 

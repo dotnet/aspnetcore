@@ -5,49 +5,43 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.RequestThrottling.Internal;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
     public static class TestUtils
     {
-        public static RequestThrottlingMiddleware CreateTestMiddleware(int? maxConcurrentRequests, int requestQueueLimit = 5000, RequestDelegate onRejected = null, RequestDelegate next = null)
+        private static RequestThrottlingMiddleware CreateTestMiddleware(IRequestQueue queue, RequestDelegate onRejected, RequestDelegate next)
         {
-            var options = new RequestThrottlingOptions
-            {
-                MaxConcurrentRequests = maxConcurrentRequests,
-                RequestQueueLimit = requestQueueLimit
-            };
-
-            return BuildFromOptions(options, onRejected, next);
-        }
-
-        public static RequestThrottlingMiddleware CreateBlockingTestMiddleware(int requestQueueLimit = 5000, RequestDelegate onRejected = null, RequestDelegate next = null)
-        {
-            var options = new RequestThrottlingOptions
-            {
-                MaxConcurrentRequests = 999,
-                RequestQueueLimit = requestQueueLimit,
-                ServerAlwaysBlocks = true
-            };
-
-            return BuildFromOptions(options, onRejected, next);
-        }
-
-        private static RequestThrottlingMiddleware BuildFromOptions(RequestThrottlingOptions options, RequestDelegate onRejected, RequestDelegate next)
-        {
-            if (onRejected != null)
-            {
-                options.OnRejected = onRejected;
-            }
+            var options = new RequestThrottlingOptions { OnRejected = onRejected ?? (context => Task.CompletedTask) };
 
             return new RequestThrottlingMiddleware(
                     next: next ?? (context => Task.CompletedTask),
                     loggerFactory: NullLoggerFactory.Instance,
-                    options: Options.Create(options)
+                    queue: queue,
+                    options: options
                 );
         }
 
         internal static IRequestQueue CreateRequestQueue(int maxConcurrentRequests) => new TailDrop(maxConcurrentRequests, 5000);
+    }
+
+    class AlwaysBlockStrategy : IRequestQueue
+    {
+        public async Task<bool> TryEnterQueueAsync()
+        {
+            // just wait forever; never return
+            Thread.Sleep(Timeout.Infinite);
+            await Task.CompletedTask;
+            return true;
+        }
+
+        public void OnExit() { }
+
+        public void Dispose()
+        {
+            // do the threads really get cleaned up?? let's see
+        }
     }
 }

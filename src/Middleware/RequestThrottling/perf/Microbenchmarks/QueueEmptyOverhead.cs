@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RequestThrottling.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -24,6 +25,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
+            var queue = 
+            TestUtils.Create()
             var options = new RequestThrottlingOptions
             {
                 MaxConcurrentRequests = 8,

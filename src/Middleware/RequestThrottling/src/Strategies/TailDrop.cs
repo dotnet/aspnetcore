@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Internal
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     internal class TailDrop : IRequestQueue
     {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
             return true;
         }
 
-        public void Release()
+        public void OnExit()
         {
             _serverSemaphore.Release();
 

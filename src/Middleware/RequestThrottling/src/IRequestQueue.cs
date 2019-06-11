@@ -4,14 +4,12 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Internal
+namespace Microsoft.AspNetCore.RequestThrottling
 {
-    interface IRequestQueue : IDisposable
+    public interface IRequestQueue : IDisposable
     {
-        int TotalRequests { get; }
-
         Task<bool> TryEnterQueueAsync();
 
-        void Release();
+        void OnExit();
     }
 }

@@ -33,10 +33,5 @@ namespace Microsoft.AspNetCore.RequestThrottling
         {
             return Task.CompletedTask;
         };
-
-        /// <summary>
-        /// For internal testing only. If true, no requests will enter the server.
-        /// </summary>
-        internal bool ServerAlwaysBlocks { get; set; } = false;
     }
 }
