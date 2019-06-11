@@ -57,7 +57,31 @@ describe("HubConnection", () => {
                     hubConnection.baseUrl = "http://newurl.com";
                     expect(hubConnection.baseUrl).not.toBe(originalUrl);
                     expect(hubConnection.baseUrl).toBe("http://newurl.com");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
 
+        it("can change url in onclose", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+                    expect(connection.sentData.length).toBe(1);
+                    expect(JSON.parse(connection.sentData[0])).toEqual({
+                        protocol: "json",
+                        version: 1,
+                    });
+
+                    expect(hubConnection.baseUrl).toBe("http://example.com");
+                    hubConnection.onclose(() => {
+                        hubConnection.baseUrl = "http://newurl.com";
+                    });
+
+                    await hubConnection.stop();
+                    expect(hubConnection.baseUrl).toBe("http://newurl.com");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -75,9 +99,11 @@ describe("HubConnection", () => {
                         protocol: "json",
                         version: 1,
                     });
+
                     expect(() => {
                         hubConnection.baseUrl = "http://newurl.com";
                     }).toThrow("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+
                 } finally {
                     await hubConnection.stop();
                 }
