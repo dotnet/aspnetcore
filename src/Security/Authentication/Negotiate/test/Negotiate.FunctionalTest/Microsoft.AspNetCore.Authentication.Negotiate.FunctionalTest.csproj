@@ -18,9 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="testCert.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="negotiateAuthCert.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

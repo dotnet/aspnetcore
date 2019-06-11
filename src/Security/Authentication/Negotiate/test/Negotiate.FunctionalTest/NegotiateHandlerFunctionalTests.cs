@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         options.Listen(IPAddress.Loopback, 0, endpoint =>
                         {
-                            endpoint.UseHttps("testCert.pfx", "testPassword");
+                            endpoint.UseHttps("negotiateAuthCert.pfx", "testPassword");
                         });
                     });
                     webHostBuilder.Configure(app =>
