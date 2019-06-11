@@ -127,12 +127,17 @@ export class HubConnection {
         return this.connection ? (this.connection.connectionId || null) : null;
     }
 
-    get baseUrl(): string | null {
-        return this.connection ? (this.connection.baseUrl || null) : null;
+    /** Indicates the url of the {@link HubConnection} to the server. */
+    get baseUrl(): string {
+        return this.connection.baseUrl || "";
     }
 
-    set baseUrl(newUrl: string | null) {
-        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting ) {
+    /**
+     * Sets a new url for the HubConnection.
+     * @param {string} newUrl The url to connect to.
+     */
+    set baseUrl(newUrl: string) {
+        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting) {
             throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
         }
 

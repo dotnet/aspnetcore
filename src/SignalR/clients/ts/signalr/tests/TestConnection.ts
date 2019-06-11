@@ -5,7 +5,7 @@ import { IConnection } from "../src/IConnection";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 export class TestConnection implements IConnection {
-    public baseUrl: string | null;
+    public baseUrl: string;
     public readonly features: any = {};
     public connectionId?: string;
 
