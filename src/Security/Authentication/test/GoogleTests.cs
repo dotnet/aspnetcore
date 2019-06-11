@@ -420,6 +420,50 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("/custom-denied-page?rurl=http%3A%2F%2Fwww.google.com%2F", transaction.Response.Headers.GetValues("Location").First());
         }
 
+        [Fact]
+        public async Task ReplyPathWithAccessDeniedErrorAndNoAccessDeniedPath_FallsBackToRemoteError()
+        {
+            var accessDeniedCalled = false;
+            var remoteFailureCalled = false;
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = new TestStateDataFormat();
+                o.Events = new OAuthEvents()
+                {
+                    OnAccessDenied = ctx =>
+                    {
+                        Assert.Null(ctx.AccessDeniedPath.Value);
+                        Assert.Equal("http://testhost/redirect", ctx.ReturnUrl);
+                        Assert.Equal("ReturnUrl", ctx.ReturnUrlParameter);
+                        accessDeniedCalled = true;
+                        return Task.FromResult(0);
+                    },
+                    OnRemoteFailure = ctx =>
+                    {
+                        var ex = ctx.Failure;
+                        Assert.True(ex.Data.Contains("error"), "error");
+                        Assert.True(ex.Data.Contains("error_description"), "error_description");
+                        Assert.True(ex.Data.Contains("error_uri"), "error_uri");
+                        Assert.Equal("access_denied", ex.Data["error"]);
+                        Assert.Equal("whyitfailed", ex.Data["error_description"]);
+                        Assert.Equal("https://example.com/fail", ex.Data["error_uri"]);
+                        remoteFailureCalled = true;
+                        ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
+                        ctx.HandleResponse();
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var transaction = await server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
+                ".AspNetCore.Correlation.Google.correlationId=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.StartsWith("/error?FailureMessage=", transaction.Response.Headers.GetValues("Location").First());
+            Assert.True(accessDeniedCalled);
+            Assert.True(remoteFailureCalled);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
