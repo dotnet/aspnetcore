@@ -405,7 +405,7 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>2bb2dcaeffb1dfeda077354449868ddac254bc3d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.DotNetAppHost" Version="3.0.0-preview6-27730-01">
+    <Dependency Name="Microsoft.NETCore.DotNetAppHost" Version="3.0.0-preview7-27809-08">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>63abc77da6d99470caa5bfa0465afe244105e595</Sha>
     </Dependency>
