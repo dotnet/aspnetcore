@@ -10,10 +10,6 @@
     <BuildJava>true</BuildJava>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <BuildSiteExtensions Condition="('$(TargetRuntimeIdentifier)' == 'win-x64' OR '$(TargetRuntimeIdentifier)' == 'win-x86') AND '$(BuildSiteExtensions)' == ''">true</BuildSiteExtensions>
-  </PropertyGroup>
-
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
 
@@ -92,6 +88,12 @@
                         Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
         <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'rpm' "
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
+      </ItemGroup>
+
+      <ItemGroup Condition=" '$(BuildSiteExtensions)' == 'true' ">
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
       </ItemGroup>
 
       <ItemGroup>
