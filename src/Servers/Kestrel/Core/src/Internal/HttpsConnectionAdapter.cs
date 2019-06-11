@@ -5,17 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
@@ -39,6 +40,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+
+            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
+            if (options.HttpProtocols == HttpProtocols.Http2 && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new NotSupportedException("HTTP/2 over TLS is not supported on OSX due to missing ALPN support.");
             }
 
             // capture the certificate now so it can't be switched after validation
