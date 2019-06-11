@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3'">
-    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V3">
+    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V3\**">
       <SourceType>Package</SourceType>
       <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
       <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V3'))</ContentRoot>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
-    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V4">
+    <StaticWebAsset Include="$(MSBuildThisFileDirectory)..\staticwebassets\V4\**">
       <SourceType>Package</SourceType>
       <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
       <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\staticwebassets\V4'))</ContentRoot>
