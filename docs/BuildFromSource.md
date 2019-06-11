@@ -95,10 +95,6 @@ The cause of this problem is that the solution you are using does not include th
    ```
    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
    ```
-   Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
-   ```
-   ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
-   ```
 
 ## Building with Visual Studio Code
 
