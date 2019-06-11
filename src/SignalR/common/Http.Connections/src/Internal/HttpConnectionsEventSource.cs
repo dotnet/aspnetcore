@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private long _connectionsTimedOut;
         private long _currentConnections;
 
-        private HttpConnectionsEventSource()
+        internal HttpConnectionsEventSource()
             : base("Microsoft-AspNetCore-Http-Connections")
         {
         }
