@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -20,11 +23,28 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Commands
 
             HelpOption("-?|-h|--help");
 
+            ApplicationPath = new CommandArgument()
+            {
+                Description = "Path to the client application dll",
+                MultipleValues = false,
+                Name = "<PATH>",
+                ShowInHelpText = true
+            };
+            Arguments.Add(ApplicationPath);
+
             OnExecute(Execute);
         }
 
+        public CommandArgument ApplicationPath { get; private set; }
+
         private int Execute()
         {
+            if (string.IsNullOrWhiteSpace(ApplicationPath.Value))
+            {
+                throw new InvalidOperationException($"Invalid path {ApplicationPath.Value}.");
+            }
+
+            Server.Startup.ApplicationAssembly = ApplicationPath.Value;
             Server.Program.BuildWebHost(RemainingArguments.ToArray()).Run();
             return 0;
         }
