@@ -583,18 +583,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
                     }
-                }
+                },
+                ExpectedConnectionMiddlewareCount = 1
             };
 
             testContext.InitializeHeartbeat();
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = certificate })
-                }
-            };
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = certificate });
+            }
 
             using (var server = new TestServer(async context =>
             {
@@ -621,7 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await aborted.Task.DefaultTimeout();
                 }
-            }, testContext, listenOptions))
+            }, testContext, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {

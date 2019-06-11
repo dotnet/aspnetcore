@@ -13,6 +13,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -34,15 +35,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task CanReadAndWriteWithHttpsConnectionAdapter()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
-                }
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
             };
 
-            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
                     new FormUrlEncodedContent(new[] {
@@ -57,12 +55,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task HandshakeDetailsAreAvailable()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
-                }
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
             };
 
             await using (var server = new TestServer(context =>
@@ -78,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 
                 return context.Response.WriteAsync("hello world");
-            }, new TestServiceContext(LoggerFactory), listenOptions))
+            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
@@ -88,20 +83,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = ClientCertificateMode.RequireCertificate
-                    })
-                }
-            };
+                ServerCertificate = _x509Certificate2,
+                ClientCertificateMode = ClientCertificateMode.RequireCertificate
+            });
 
-
-            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, listenOptions))
             {
                 await Assert.ThrowsAnyAsync<Exception>(
                     () => server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/"));
@@ -111,17 +100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task AllowCertificateContinuesWhenNoCertificate()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = ClientCertificateMode.AllowCertificate
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
+                });
+            }
 
             await using (var server = new TestServer(context =>
                 {
@@ -129,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.NotNull(tlsFeature);
                     Assert.Null(tlsFeature.ClientCertificate);
                     return context.Response.WriteAsync("hello world");
-                }, new TestServiceContext(LoggerFactory), listenOptions))
+                }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
@@ -139,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public void ThrowsWhenNoServerCertificateIsProvided()
         {
-            Assert.Throws<ArgumentException>(() => new HttpsConnectionAdapter(
+            Assert.Throws<ArgumentException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask,
                 new HttpsConnectionAdapterOptions())
                 );
         }
@@ -147,15 +133,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task UsesProvidedServerCertificate()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
-                }
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
             };
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -173,24 +156,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UsesProvidedServerCertificateSelector()
         {
             var selectorCalled = 0;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificateSelector = (connection, name) =>
                     {
-                        ServerCertificateSelector = (connection, name) =>
-                        {
-                            Assert.NotNull(connection);
-                            Assert.NotNull(connection.Features.Get<SslStream>());
-                            Assert.Equal("localhost", name);
-                            selectorCalled++;
-                            return _x509Certificate2;
-                        }
-                    })
-                }
-            };
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+                        Assert.NotNull(connection);
+                        Assert.NotNull(connection.Features.Get<SslStream>());
+                        Assert.Equal("localhost", name);
+                        selectorCalled++;
+                        return _x509Certificate2;
+                    }
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -209,28 +190,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UsesProvidedServerCertificateSelectorEachTime()
         {
             var selectorCalled = 0;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificateSelector = (connection, name) =>
                     {
-                        ServerCertificateSelector = (connection, name) =>
+                        Assert.NotNull(connection);
+                        Assert.NotNull(connection.Features.Get<SslStream>());
+                        Assert.Equal("localhost", name);
+                        selectorCalled++;
+                        if (selectorCalled == 1)
                         {
-                            Assert.NotNull(connection);
-                            Assert.NotNull(connection.Features.Get<SslStream>());
-                            Assert.Equal("localhost", name);
-                            selectorCalled++;
-                            if (selectorCalled == 1)
-                            {
-                                return _x509Certificate2;
-                            }
-                            return _x509Certificate2NoExt;
+                            return _x509Certificate2;
                         }
-                    })
-                }
-            };
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+                        return _x509Certificate2NoExt;
+                    }
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -259,21 +238,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UsesProvidedServerCertificateSelectorValidatesEkus()
         {
             var selectorCalled = 0;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificateSelector = (features, name) =>
                     {
-                        ServerCertificateSelector = (features, name) =>
-                        {
-                            selectorCalled++;
-                            return TestResources.GetTestCertificate("eku.code_signing.pfx");
-                        }
-                    })
-                }
-            };
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+                        selectorCalled++;
+                        return TestResources.GetTestCertificate("eku.code_signing.pfx");
+                    }
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -292,25 +269,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UsesProvidedServerCertificateSelectorOverridesServerCertificate()
         {
             var selectorCalled = 0;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificate = _x509Certificate2NoExt,
+                    ServerCertificateSelector = (connection, name) =>
                     {
-                        ServerCertificate = _x509Certificate2NoExt,
-                        ServerCertificateSelector = (connection, name) =>
-                        {
-                            Assert.NotNull(connection);
-                            Assert.NotNull(connection.Features.Get<SslStream>());
-                            Assert.Equal("localhost", name);
-                            selectorCalled++;
-                            return _x509Certificate2;
-                        }
-                    })
-                }
-            };
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+                        Assert.NotNull(connection);
+                        Assert.NotNull(connection.Features.Get<SslStream>());
+                        Assert.Equal("localhost", name);
+                        selectorCalled++;
+                        return _x509Certificate2;
+                    }
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -329,21 +304,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UsesProvidedServerCertificateSelectorFailsIfYouReturnNull()
         {
             var selectorCalled = 0;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificateSelector = (features, name) =>
                     {
-                        ServerCertificateSelector = (features, name) =>
-                        {
-                            selectorCalled++;
-                            return null;
-                        }
-                    })
-                }
-            };
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+                        selectorCalled++;
+                        return null;
+                    }
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -363,19 +336,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure Http/1.1 doesn't regress with Http/2 enabled.
         public async Task CertificatePassedToHttpContext(HttpProtocols httpProtocols)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                Protocols = httpProtocols,
-                ConnectionAdapters =
+                listenOptions.Protocols = httpProtocols;
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                });
+            }
 
             await using (var server = new TestServer(context =>
                 {
@@ -384,7 +354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.NotNull(tlsFeature.ClientCertificate);
                     Assert.NotNull(context.Connection.ClientCertificate);
                     return context.Response.WriteAsync("hello world");
-                }, new TestServiceContext(LoggerFactory), listenOptions))
+                }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -401,15 +371,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task HttpsSchemePassedToRequestFeature()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
-                }
-            };
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            }
 
-            await using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("https", result);
@@ -419,20 +386,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task DoesNotSupportTls10()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                });
+            }
 
-            await using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), new TestServiceContext(LoggerFactory), listenOptions))
+
+            await using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -453,26 +418,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
         {
             var clientCertificateValidationCalled = false;
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
                     {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = mode,
-                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
-                        {
-                            clientCertificateValidationCalled = true;
-                            Assert.NotNull(certificate);
-                            Assert.NotNull(chain);
-                            return true;
-                        }
-                    })
-                }
-            };
+                        clientCertificateValidationCalled = true;
+                        Assert.NotNull(certificate);
+                        Assert.NotNull(chain);
+                        return true;
+                    }
+                });
+            }
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -490,20 +452,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ValidationFailureRejectsConnection(ClientCertificateMode mode)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = mode,
-                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
+                });
+            }
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -519,19 +478,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task RejectsConnectionOnSslPolicyErrorsWhenNoValidation(ClientCertificateMode mode)
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = mode
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = mode
+                });
+            }
 
-            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -545,18 +501,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task CertificatePassedToHttpContextIsNotDisposed()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
                 {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
-                    {
-                        ServerCertificate = _x509Certificate2,
-                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                    })
-                }
-            };
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                });
+            }
 
             RequestDelegate app = context =>
             {
@@ -568,7 +521,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 return context.Response.WriteAsync("hello world");
             };
 
-            await using (var server = new TestServer(app, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(app, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -591,7 +544,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var cert = new X509Certificate2(certPath, "testPassword");
             Assert.Empty(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
 
-            new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = cert,
             });
@@ -609,7 +562,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
             Assert.NotEmpty(eku.EnhancedKeyUsages);
 
-            new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = cert,
             });
@@ -628,7 +581,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.NotEmpty(eku.EnhancedKeyUsages);
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
                 {
                     ServerCertificate = cert,
                 }));

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         public AdaptedPipeline(IDuplexPipe transport,
                                Pipe inputPipe,
                                Pipe outputPipe,
-                               IKestrelTrace log,
+                               ILogger log,
                                int minAllocBufferSize)
         {
             TransportStream = new RawStream(transport.Input, transport.Output, throwOnCancelled: true);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         public Pipe Output { get; }
 
-        public IKestrelTrace Log { get; }
+        public ILogger Log { get; }
 
         PipeReader IDuplexPipe.Input => Input.Reader;
 

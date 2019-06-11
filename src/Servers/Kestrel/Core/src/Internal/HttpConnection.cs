@@ -215,63 +215,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void StopProcessingNextRequest()
         {
+            ProtocolSelectionState previousState;
             lock (_protocolSelectionLock)
             {
+                previousState = _protocolSelectionState;
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
-                        _requestProcessor.StopProcessingNextRequest();
-                        break;
                     case ProtocolSelectionState.Aborted:
                         break;
                 }
+            }
+
+            switch (previousState)
+            {
+                case ProtocolSelectionState.Initializing:
+                    CloseUninitializedConnection(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.StopProcessingNextRequest();
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
             }
         }
 
         private void OnInputOrOutputCompleted()
         {
+            ProtocolSelectionState previousState;
             lock (_protocolSelectionLock)
             {
+                previousState = _protocolSelectionState;
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        // OnReader/WriterCompleted callbacks are not wired until after leaving the Initializing state.
-                        Debug.Assert(false);
-
-                        CloseUninitializedConnection(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
-                        _requestProcessor.OnInputOrOutputCompleted();
-                        break;
                     case ProtocolSelectionState.Aborted:
                         break;
                 }
+            }
 
+            switch (previousState)
+            {
+                case ProtocolSelectionState.Initializing:
+                    // OnReader/WriterCompleted callbacks are not wired until after leaving the Initializing state.
+                    Debug.Assert(false);
+
+                    CloseUninitializedConnection(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.OnInputOrOutputCompleted();
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
             }
         }
 
         private void Abort(ConnectionAbortedException ex)
         {
+            ProtocolSelectionState previousState;
+
             lock (_protocolSelectionLock)
             {
-                switch (_protocolSelectionState)
-                {
-                    case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(ex);
-                        break;
-                    case ProtocolSelectionState.Selected:
-                        _requestProcessor.Abort(ex);
-                        break;
-                    case ProtocolSelectionState.Aborted:
-                        break;
-                }
-
+                previousState = _protocolSelectionState;
                 _protocolSelectionState = ProtocolSelectionState.Aborted;
+            }
+
+            switch (previousState)
+            {
+                case ProtocolSelectionState.Initializing:
+                    CloseUninitializedConnection(ex);
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.Abort(ex);
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
             }
         }
 
@@ -365,6 +391,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
         {
             _context.ConnectionContext.Abort(abortReason);
+
+            if (_context.ConnectionAdapters.Count > 0)
+            {
+                _adaptedTransport.Input.Complete();
+                _adaptedTransport.Output.Complete();
+            }
         }
 
         public void OnTimeout(TimeoutReason reason)

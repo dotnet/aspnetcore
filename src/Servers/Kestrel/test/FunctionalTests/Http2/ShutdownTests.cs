@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
                 .Callback(() => requestStopping.SetResult(null));
 
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object) { ExpectedConnectionMiddlewareCount = 1 };
 
             testContext.InitializeHeartbeat();
 
@@ -111,7 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
             var testContext = new TestServiceContext(LoggerFactory)
             {
-                MemoryPoolFactory = memoryPoolFactory.Create
+                MemoryPoolFactory = memoryPoolFactory.Create,
+                ExpectedConnectionMiddlewareCount = 1
             };
 
             TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;

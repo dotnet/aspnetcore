@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                     "ALPN: " + tlsFeature.ApplicationProtocol.Length);
 
                 return context.Response.WriteAsync("hello world " + context.Request.Protocol);
-            }, new TestServiceContext(LoggerFactory),
+            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                     "ALPN: " + tlsFeature.ApplicationProtocol.Length);
 
                 return context.Response.WriteAsync("hello world " + context.Request.Protocol);
-            }, new TestServiceContext(LoggerFactory),
+            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>

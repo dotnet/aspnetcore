@@ -89,23 +89,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 
+        internal string Scheme
+        {
+            get
+            {
+                if (IsHttp)
+                {
+                    return IsTls ? "https" : "http";
+                }
+                return "tcp";
+            }
+        }
+
+        internal bool IsHttp { get; set; } = true;
+
+        internal bool IsTls { get; set; }
+
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
         /// </summary>
         internal virtual string GetDisplayName()
         {
-            var scheme = ConnectionAdapters.Any(f => f.IsHttps)
-                ? "https"
-                : "http";
-
             switch (EndPoint)
             {
                 case IPEndPoint _:
-                    return $"{scheme}://{IPEndPoint}";
+                    return $"{Scheme}://{IPEndPoint}";
                 case UnixDomainSocketEndPoint _:
-                    return $"{scheme}://unix:{EndPoint}";
+                    return $"{Scheme}://unix:{EndPoint}";
                 case FileHandleEndPoint _:
-                    return $"{scheme}://<file handle>";
+                    return $"{Scheme}://<file handle>";
                 default:
                     throw new InvalidOperationException();
             }

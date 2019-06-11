@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     context.Response.ContentLength = 12;
                     return context.Response.WriteAsync("Hello World!");
                 },
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1},
                 listenOptions =>
                 {
                     listenOptions.UseConnectionLogging();
