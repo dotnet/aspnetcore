@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml"));
             var frebEvents = new List<FrebLogItem>();
 
-            result.Logger.LogInformation("Number of freb files available.");
+            result.Logger.LogInformation($"Number of freb files available {xmlFiles.Length}.");
             foreach (var xmlFile in xmlFiles)
             {
                 var xDocument = XDocument.Load(xmlFile).Root;
