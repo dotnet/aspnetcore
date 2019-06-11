@@ -8,7 +8,7 @@ export interface IConnection {
     readonly features: any;
     readonly connectionId?: string;
 
-    baseUrl?: string;
+    baseUrl: string | null;
 
     start(transferFormat: TransferFormat): Promise<void>;
     send(data: string | ArrayBuffer): Promise<void>;

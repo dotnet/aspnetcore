@@ -131,6 +131,18 @@ export class HubConnection {
         return this.connection ? (this.connection.baseUrl || null) : null;
     }
 
+    set baseUrl(newUrl: string | null) {
+        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting ) {
+            throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+        }
+
+        if (!newUrl) {
+            throw new Error("The HubConnection url must be a valid url.");
+        }
+
+        this.connection.baseUrl = newUrl;
+    }
+
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
