@@ -15,10 +15,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Content Include="..\testassets\**\*" Condition="'$(IsHelixJob)' == 'true'" >
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>      
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -34,7 +30,14 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode"
+        ContinueOnError="true" />
+    <WriteLinesToFile
+        File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"
+        ContinueOnError="true" />    
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
