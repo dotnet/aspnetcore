@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
     {
         private const int _numRequests = 2000;
         private int _requestCount = 0;
-        private ManualResetEventSlim mres = new ManualResetEventSlim();
+        private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
         private RequestThrottlingMiddleware _middleware;
 
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         public void Setup()
         {
             _requestCount = 0;
-            mres.Reset();
+            _mres.Reset();
         }
 
         private async Task _incrementAndCheck(HttpContext context)
         {
             if (Interlocked.Increment(ref _requestCount) == _numRequests)
             {
-                mres.Set();
+                _mres.Set();
             }
 
             await Task.Yield();
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
                 _ = _incrementAndCheck(null);
             }
 
-            mres.Wait();
+            _mres.Wait();
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
                 _ = _middleware.Invoke(null);
             }
 
-            mres.Wait();
+            _mres.Wait();
         }
     }
 }

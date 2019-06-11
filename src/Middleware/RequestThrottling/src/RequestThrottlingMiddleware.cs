@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             if (_requestThrottlingOptions.ServerAlwaysBlocks)
             {
+                // note: this option for testing only. Blocks all requests from entering the server.
                 _requestQueue = new TailDrop(0, _requestThrottlingOptions.RequestQueueLimit);
             }
             else
