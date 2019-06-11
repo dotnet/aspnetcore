@@ -59,7 +59,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview7-27810-02</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27810-02</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclAsyncInterfaces>1.0.0-preview7.19309.5</MicrosoftBclAsyncInterfaces>
+    <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0-preview7.19309.5</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview7.19309.5</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview7.19309.5</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview7.19309.5</SystemComponentModelAnnotationsPackageVersion>
