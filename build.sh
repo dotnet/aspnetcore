@@ -59,13 +59,13 @@ Options:
     --projects             A list of projects to build. (Must be an absolute path.)
                            Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
     --no-build-deps        Do not build project-to-project references and only build the specified project.
+    --no-build-repo-tasks  Suppress building RepoTasks.
 
     --all                  Build all project types.
     --[no-]build-native    Build native projects (C, C++).
     --[no-]build-managed   Build managed projects (C#, F#, VB).
     --[no-]build-nodejs    Build NodeJS projects (TypeScript, JS).
     --[no-]build-java      Build Java projects.
-    --no-build-repo-tasks  Suppress building RepoTasks.
 
     --ci                   Apply CI specific settings and environment variables.
     --binarylog|-bl        Use a binary logger
@@ -224,6 +224,9 @@ fi
 
 msbuild_args[${#msbuild_args[*]}]="-p:Restore=$run_restore"
 msbuild_args[${#msbuild_args[*]}]="-p:Build=$run_build"
+if [ "$run_build" = false ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:NoBuild=true"
+fi
 msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
 
@@ -240,7 +243,10 @@ fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
 # Initialize global variables need to be set before the import of Arcade is imported
-$restore = $run_restore
+restore=$run_restore
+
+# Disable node reuse - this locks the RepoTasks file
+nodeReuse=false
 
 # Workaround Arcade check which asserts BinaryLog is true on CI.
 # We always use binlogs on CI, but we customize the name of the log file

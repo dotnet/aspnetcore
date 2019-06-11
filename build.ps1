@@ -203,6 +203,9 @@ $RunRestore = if ($NoRestore) { $false }
 # Target selection
 $MSBuildArguments += "/p:Restore=$RunRestore"
 $MSBuildArguments += "/p:Build=$RunBuild"
+if (-not $RunBuild) {
+    $MSBuildArguments += "/p:NoBuild=true"
+}
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
@@ -273,6 +276,9 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
+# Disable node reuse - this locks the RepoTasks file
+$nodeReuse = $false
+
 if ($ForceCoreMsbuild) {
     $msbuildEngine = 'dotnet'
 }
@@ -283,6 +289,12 @@ $tmpBinaryLog = $BinaryLog
 if ($CI) {
     $BinaryLog = $true
 }
+
+# tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
+rm variable:global:_BuildTool -ea Ignore
+rm variable:global:_DotNetInstallDir -ea Ignore
+rm variable:global:_ToolsetBuildProj -ea Ignore
+rm variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/eng/common/tools.ps1"
@@ -319,6 +331,13 @@ catch {
     Write-Host $_.ScriptStackTrace
     Write-PipelineTaskError -Message $_
     ExitWithExitCode 1
+}
+finally {
+    # tools.ps1 corrupts global state, so reset these values so they don't carry between invocations of build.ps1
+    rm variable:global:_BuildTool -ea Ignore
+    rm variable:global:_DotNetInstallDir -ea Ignore
+    rm variable:global:_ToolsetBuildProj -ea Ignore
+    rm variable:global:_MSBuildExe -ea Ignore
 }
 
 ExitWithExitCode 0
