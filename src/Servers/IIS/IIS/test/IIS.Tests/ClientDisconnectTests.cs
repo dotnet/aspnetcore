@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     requestStartedCompletionSource.SetResult(true);
                     ctx.RequestAborted.Register(() => requestAborted.SetResult(true));
 
-                    await requestAborted.Task;
+                    await requestAborted.Task.DefaultTimeout();
                     for (var i = 0; i < 1000; i++)
                     {
                         await ctx.Response.Body.WriteAsync(data);
