@@ -1,28 +1,36 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics.Tracing;
+using System.Threading;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    [EventSource(Name = "Microsoft-AspNetCore-Http-Connections")]
     internal class HttpConnectionsEventSource : EventSource
     {
         public static readonly HttpConnectionsEventSource Log = new HttpConnectionsEventSource();
 
-        private readonly EventCounter _connectionsStarted;
-        private readonly EventCounter _connectionsStopped;
-        private readonly EventCounter _connectionsTimedOut;
-        private readonly EventCounter _connectionDuration;
+        private PollingCounter _connectionsStartedCounter;
+        private PollingCounter _connectionsStoppedCounter;
+        private PollingCounter _connectionsTimedOutCounter;
+        private PollingCounter _currentConnectionsCounter;
+        private EventCounter _connectionDuration;
+
+        private long _connectionsStarted;
+        private long _connectionsStopped;
+        private long _connectionsTimedOut;
+        private long _currentConnections;
 
         private HttpConnectionsEventSource()
+            : base("Microsoft-AspNetCore-Http-Connections")
         {
-            _connectionsStarted = new EventCounter("ConnectionsStarted", this);
-            _connectionsStopped = new EventCounter("ConnectionsStopped", this);
-            _connectionsTimedOut = new EventCounter("ConnectionsTimedOut", this);
-            _connectionDuration = new EventCounter("ConnectionDuration", this);
+        }
+
+        // Used for testing
+        internal HttpConnectionsEventSource(string eventSourceName)
+            : base(eventSourceName)
+        {
         }
 
         // This has to go through NonEvent because only Primitive types are allowed
@@ -34,7 +42,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             {
                 var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
                 _connectionDuration.WriteMetric((float)duration);
-                _connectionsStopped.WriteMetric(1.0f);
+                Interlocked.Increment(ref _connectionsStopped);
+                Interlocked.Decrement(ref _currentConnections);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {
@@ -48,7 +57,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             if (IsEnabled())
             {
-                _connectionsStarted.WriteMetric(1.0f);
+                Interlocked.Increment(ref _connectionsStarted);
+                Interlocked.Increment(ref _currentConnections);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {
@@ -67,12 +77,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             if (IsEnabled())
             {
-                _connectionsTimedOut.WriteMetric(1.0f);
+                Interlocked.Increment(ref _connectionsTimedOut);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {
                     WriteEvent(3, connectionId);
                 }
+            }
+        }
+
+        protected override void OnEventCommand(EventCommandEventArgs command)
+        {
+            if (command.Command == EventCommand.Enable)
+            {
+                // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
+                // They aren't disabled afterwards...
+
+                _connectionsStartedCounter ??= new PollingCounter("ConnectionsStarted", this, () => _connectionsStarted)
+                {
+                    DisplayName = "Total Connections Started",
+                };
+                _connectionsStoppedCounter ??= new PollingCounter("ConnectionsStopped", this, () => _connectionsStopped)
+                {
+                    DisplayName = "Total Connections Stopped",
+                };
+                _connectionsTimedOutCounter ??= new PollingCounter("ConnectionsTimedOut", this, () => _connectionsTimedOut)
+                {
+                    DisplayName = "Total Connections Timed Out",
+                };
+                _currentConnectionsCounter ??= new PollingCounter("CurrentConnections", this, () => _currentConnections)
+                {
+                    DisplayName = "Current Connections",
+                };
+
+                _connectionDuration ??= new EventCounter("ConnectionDuration", this);
             }
         }
 
