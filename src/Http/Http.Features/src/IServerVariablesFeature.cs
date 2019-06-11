@@ -5,13 +5,7 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
     /// This feature provides access to request server variables set.
-    /// <para>
-    /// This feature is only available when hosting ASP.NET Core in-process with IIS or IIS Express.
-    /// </para>
     /// </summary>
-    /// <remarks>
-    /// For a list of common server variables available in IIS, see http://go.microsoft.com/fwlink/?LinkId=52471.
-    /// </remarks>
     public interface IServerVariablesFeature
     {
         /// <summary>

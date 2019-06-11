@@ -47,8 +47,11 @@ namespace TestSite
             app.Run(async context =>
             {
                 var ws = await Upgrade(context);
-
+#if FORWARDCOMPAT
+                var appLifetime = app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
                 var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+#endif
 
                 await Echo(ws, appLifetime.ApplicationStopping);
             });
