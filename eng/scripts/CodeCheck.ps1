@@ -43,7 +43,7 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/restore.cmd -ci
+        & $repoRoot/eng/common/build.ps1 -ci -prepareMachine -restore -projects $repoRoot/eng/CodeGen.proj
     }
 
     #
