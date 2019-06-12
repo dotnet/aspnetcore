@@ -243,6 +243,9 @@ $env:DOTNET_HOME = $DotNetHome
 
 # Execute
 
+# Dump running processes
+Start-Job -Name DumpProcesses -FilePath .\eng\scripts\dump_process.ps1 -ArgumentList $pwd
+
 $korebuildPath = Get-KoreBuild
 
 # Project selection
@@ -373,5 +376,7 @@ finally {
     Remove-Item env:DOTNET_HOME
     Remove-Item env:KOREBUILD_KEEPGLOBALJSON
 
+    Stop-Job -Name DumpProcesses
+    Remove-Job -Name DumpProcesses
     Write-Host "build.ps1 completed"
 }
