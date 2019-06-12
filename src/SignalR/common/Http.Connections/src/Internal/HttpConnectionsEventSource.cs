@@ -38,12 +38,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [NonEvent]
         public void ConnectionStop(string connectionId, ValueStopwatch timer)
         {
+            Interlocked.Increment(ref _connectionsStopped);
+            Interlocked.Decrement(ref _currentConnections);
+
             if (IsEnabled())
             {
                 var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
-                _connectionDuration.WriteMetric((float)duration);
-                Interlocked.Increment(ref _connectionsStopped);
-                Interlocked.Decrement(ref _currentConnections);
+                _connectionDuration.WriteMetric(duration);
 
                 if (IsEnabled(EventLevel.Informational, EventKeywords.None))
                 {
@@ -55,16 +56,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [Event(eventId: 1, Level = EventLevel.Informational, Message = "Started connection '{0}'.")]
         public ValueStopwatch ConnectionStart(string connectionId)
         {
-            if (IsEnabled())
-            {
-                Interlocked.Increment(ref _connectionsStarted);
-                Interlocked.Increment(ref _currentConnections);
+            Interlocked.Increment(ref _connectionsStarted);
+            Interlocked.Increment(ref _currentConnections);
 
-                if (IsEnabled(EventLevel.Informational, EventKeywords.None))
-                {
-                    WriteEvent(1, connectionId);
-                    return ValueStopwatch.StartNew();
-                }
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                WriteEvent(1, connectionId);
+                return ValueStopwatch.StartNew();
             }
             return default;
         }
@@ -75,14 +73,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [Event(eventId: 3, Level = EventLevel.Informational, Message = "Connection '{0}' timed out.")]
         public void ConnectionTimedOut(string connectionId)
         {
-            if (IsEnabled())
-            {
-                Interlocked.Increment(ref _connectionsTimedOut);
+            Interlocked.Increment(ref _connectionsTimedOut);
 
-                if (IsEnabled(EventLevel.Informational, EventKeywords.None))
-                {
-                    WriteEvent(3, connectionId);
-                }
+            if (IsEnabled(EventLevel.Informational, EventKeywords.None))
+            {
+                WriteEvent(3, connectionId);
             }
         }
 
