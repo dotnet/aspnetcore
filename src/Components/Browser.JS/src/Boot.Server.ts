@@ -95,7 +95,16 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     circuits.push(circuit);
   }
 
-  await reconnectTask;
+  if (!await reconnectTask) {
+    // reconnection for the initialConnection will only fail when the application is prerendered but the server no longer has state for the
+    // Circuit. One fairly trivial way to get in to this state is to have the browser reopen a closed tab with the initial render rehydrated
+    // from cache.
+    // In this event, the best thing to try would be to attempt reloading the page.
+    console.assert(!renderingFailed, 'Initial connection should not have encountered a rendering failure.');
+    console.assert(circuits.length > 0, 'Initial render should only fail if there are circuits available.');
+
+    location.reload();
+  }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
