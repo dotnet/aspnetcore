@@ -373,7 +373,7 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>3f9156d5d9b5ae4b100baeaa75011aaee88a3f4b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.ref" Version="3.0.0-preview7-27810-02">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.0.0-preview7-27810-02">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>3f9156d5d9b5ae4b100baeaa75011aaee88a3f4b</Sha>
     </Dependency>

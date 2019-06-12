@@ -14,7 +14,7 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftNETCoreAppRuntimewinx64PackageVersion=$(MicrosoftNETCoreAppRuntimewinx64PackageVersion);
+      MicrosoftNETCoreAppRuntimePackageVersion=$(MicrosoftNETCoreAppRuntimePackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

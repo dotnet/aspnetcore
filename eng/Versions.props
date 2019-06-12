@@ -56,10 +56,6 @@
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview7-27810-02</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27810-02</MicrosoftNETCoreAppRefPackageVersion>
-    <!--
-      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
-      All Runtime.$rid packages should have the same version.
-    -->
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview7-27810-02</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview7-27810-02</NETStandardLibraryRefPackageVersion>
     <!-- Packages from dotnet/corefx -->
@@ -172,6 +168,8 @@
     Versions below this comment are not managed by automation and can be changed as needed.
   -->
   <PropertyGroup Label="Manual">
+    <!-- Simplification of NetCoreApp Runtime to remove rid -->
+    <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <!-- Build tool dependencies -->
     <InternalAspNetCoreBuildTasksPackageVersion>3.0.0-build-20190530.3</InternalAspNetCoreBuildTasksPackageVersion>
     <MicrosoftSymbolUploaderBuildTaskPackageVersion>1.0.0-beta-64023-03</MicrosoftSymbolUploaderBuildTaskPackageVersion>

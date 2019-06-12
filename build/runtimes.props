@@ -1,12 +1,12 @@
 <Project>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)"
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
 
     <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
-      Include="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)"
+      Include="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       Arch="x86"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />

@@ -7,7 +7,7 @@
     <PropertyGroup>
       <PropsProperties>
         RestoreSources=$([MSBuild]::Escape("$(RestoreSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
-        MicrosoftNETCoreAppRuntimewinx64PackageVersion=$(MicrosoftNETCoreAppRuntimewinx64PackageVersion);
+        MicrosoftNETCoreAppRuntimePackageVersion=$(MicrosoftNETCoreAppRuntimePackageVersion);
         MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
         MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);

@@ -78,8 +78,8 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimewinx64PackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimewinx64PackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimePackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimePackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>
