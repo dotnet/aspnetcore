@@ -97,7 +97,8 @@
     <ProjectReference
       Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj"
       ReferenceOutputAssembly="false"
-      Targets="Pack" />
+      Private="false"
+      Targets="Build;Pack" />
   </ItemGroup>
 
   <ItemGroup>
