@@ -76,7 +76,17 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="scheme">The scheme.</param>
         /// <returns>true if the scheme was added successfully.</returns>
-        bool TryAddScheme(AuthenticationScheme scheme) => false;
+        bool TryAddScheme(AuthenticationScheme scheme)
+        {
+            try
+            {
+                AddScheme(scheme);
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Removes a scheme, preventing it from being used by <see cref="IAuthenticationService"/>.
