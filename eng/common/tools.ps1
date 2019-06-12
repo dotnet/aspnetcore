@@ -314,7 +314,6 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 }
 
 function InitializeVisualStudioEnvironmentVariables([string] $vsInstallDir, [string] $vsMajorVersion) {
-  Write-Host "Detected VS $vsMajorVersion in $vsInstallDir"
   $env:VSINSTALLDIR = $vsInstallDir
   Set-Item "env:VS$($vsMajorVersion)0COMNTOOLS" (Join-Path $vsInstallDir "Common7\Tools\")
 
@@ -378,7 +377,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   }
 
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
-  $args = @("-latest", "-prerelease", "-format", "json", "-requires", "Microsoft.Component.MSBuild")
+  $args = @("-latest", "-prerelease", "-format", "json", "-requires", "Microsoft.Component.MSBuild", "-products", "*")
 
   if (Get-Member -InputObject $vsRequirements -Name "version") {
     $args += "-version"
@@ -391,8 +390,6 @@ function LocateVisualStudio([object]$vsRequirements = $null){
       $args += $component
     }
   }
-
-  Write-Host "Running $vsWhereExe $args"
 
   $vsInfo =& $vsWhereExe $args | ConvertFrom-Json
 
