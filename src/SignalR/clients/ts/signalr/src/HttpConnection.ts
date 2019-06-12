@@ -339,6 +339,23 @@ export class HttpConnection implements IConnection {
         return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionId}`;
     }
 
+    private reduceTransports(transports: IAvailableTransport[], requestedTransport: HttpTransportType | undefined): IAvailableTransport[] {
+        const finalTransports: IAvailableTransport[] = [];
+        for (const endpoint of transports) {
+            const transport = HttpTransportType[endpoint.transport];
+            if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
+                (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
+                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
+                continue;
+            } else if (!transportMatches(requestedTransport, transport)) {
+                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
+                continue;
+            }
+            finalTransports.push(endpoint);
+        }
+        return finalTransports;
+    }
+
     private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
         let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
         if (this.isITransport(requestedTransport)) {
@@ -350,10 +367,10 @@ export class HttpConnection implements IConnection {
         }
 
         const transportExceptions: any[] = [];
-        const transports = negotiateResponse.availableTransports || [];
+        const transports = this.reduceTransports(negotiateResponse.availableTransports || [], requestedTransport);
         for (const endpoint of transports) {
             try {
-                const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+                const transport = this.resolveTransport(endpoint, requestedTransferFormat);
                 if (typeof transport === "number") {
                     this.transport = this.constructTransport(transport);
                     if (!negotiateResponse.connectionId) {
@@ -401,29 +418,18 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private resolveTransport(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | null {
+    private resolveTransport(endpoint: IAvailableTransport, requestedTransferFormat: TransferFormat): HttpTransportType | null {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
             const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
-            if (transportMatches(requestedTransport, transport)) {
-                if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
-                    if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
-                        (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
-                        this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                        throw new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
-                    } else {
-                        this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
-                        return transport;
-                    }
-                } else {
-                    this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
-                    throw new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
-                }
+            if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
+                this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
+                return transport;
             } else {
-                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                throw new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
+                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
+                throw new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
             }
         }
         return null;
