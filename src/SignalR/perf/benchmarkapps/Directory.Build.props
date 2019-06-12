@@ -1,5 +1,0 @@
-<Project>
-
-  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\sources.props" />
-
-</Project>

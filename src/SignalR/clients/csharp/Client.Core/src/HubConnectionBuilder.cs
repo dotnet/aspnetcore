@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Services = new ServiceCollection();
             Services.AddSingleton<HubConnection>();
             Services.AddLogging();
-            this.AddNewtonsoftJsonProtocol();
+            this.AddJsonProtocol();
         }
 
         /// <inheritdoc />

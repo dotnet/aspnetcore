@@ -25,7 +25,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
         }
 
+        public Action OnExceptionHandled { get; set; }
+
         public Action<RenderBatch> OnUpdateDisplay { get; set; }
+
+        public Action OnUpdateDisplayComplete { get; set; }
 
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
@@ -77,10 +81,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
             if (!ShouldHandleExceptions)
             {
-                throw exception;
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             HandledExceptions.Add(exception);
+            OnExceptionHandled?.Invoke();
         }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -97,11 +102,13 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             }
 
             // Clone other data, as underlying storage will get reused by later batches
-            capturedBatch.ReferenceFrames = renderBatch.ReferenceFrames.ToArray();
-            capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.ToList();
+            capturedBatch.ReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
+            capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.AsEnumerable().ToList();
 
             // This renderer updates the UI synchronously, like the WebAssembly one.
             // To test async UI updates, subclass TestRenderer and override UpdateDisplayAsync.
+
+            OnUpdateDisplayComplete?.Invoke();
             return Task.CompletedTask;
         }
     }

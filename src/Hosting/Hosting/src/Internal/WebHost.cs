@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -41,9 +42,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private IServiceProvider _applicationServices;
         private ExceptionDispatchInfo _applicationServicesException;
-        private ILogger<WebHost> _logger;
+        private ILogger _logger;
 
         private bool _stopped;
+        private bool _startedServer;
 
         // Used for testing only
         internal WebHostOptions Options => _options;
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             HostingEventSource.Log.HostStart();
-            _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
+            _logger = _applicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             _logger.Starting();
 
             var application = BuildApplication();
@@ -150,6 +152,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
+            _startedServer = true;
 
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
@@ -276,7 +279,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return context =>
                 {
                     context.Response.StatusCode = 500;
-                    context.Response.Headers["Cache-Control"] = "no-cache";
+                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
                     return errorPage.ExecuteAsync(context);
                 };
             }
@@ -329,13 +332,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Stopping
             _applicationLifetime?.StopApplication();
 
-            if (Server != null)
+            if (Server != null && _startedServer)
             {
                 await Server.StopAsync(cancellationToken).ConfigureAwait(false);
             }
 
             // Fire the IHostedService.Stop
-            if (_hostedServiceExecutor != null)
+            if (_hostedServiceExecutor != null && _startedServer)
             {
                 await _hostedServiceExecutor.StopAsync(cancellationToken).ConfigureAwait(false);
             }

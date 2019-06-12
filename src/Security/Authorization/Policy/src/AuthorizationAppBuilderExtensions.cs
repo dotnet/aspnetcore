@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new InvalidOperationException(Resources.FormatException_UnableToFindServices(
                     nameof(IServiceCollection),
-                    nameof(PolicyServiceCollectionExtensions.AddAuthorizationPolicyEvaluator),
+                    nameof(PolicyServiceCollectionExtensions.AddAuthorization),
                     "ConfigureServices(...)"));
             }
         }

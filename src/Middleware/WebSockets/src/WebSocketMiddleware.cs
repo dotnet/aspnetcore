@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[Constants.Headers.SecWebSocketKey]);
+                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 

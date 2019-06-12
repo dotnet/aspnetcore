@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using System.Collections.Generic;
-using DevHostServerProgram = Microsoft.AspNetCore.Blazor.Cli.Server.Program;
+using DevHostServerProgram = Microsoft.AspNetCore.Blazor.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {

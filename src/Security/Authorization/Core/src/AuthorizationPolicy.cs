@@ -176,15 +176,14 @@ namespace Microsoft.AspNetCore.Authorization
                 }
             }
 
-            var requiredPolicy = await policyProvider.GetRequiredPolicyAsync();
-            if (requiredPolicy != null)
+            // If we have no policy by now, use the fallback policy if we have one
+            if (policyBuilder == null)
             {
-                if (policyBuilder == null)
+                var fallbackPolicy = await policyProvider.GetFallbackPolicyAsync();
+                if (fallbackPolicy != null)
                 {
-                    policyBuilder = new AuthorizationPolicyBuilder();
+                    return fallbackPolicy;
                 }
-
-                policyBuilder.Combine(requiredPolicy);
             }
 
             return policyBuilder?.Build();

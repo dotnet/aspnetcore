@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class ConnectionsAppBuilderExtensions
     {
+        [System.ObsoleteAttribute("This method is obsolete and will be removed in a future version. The recommended alternative is to use MapConnections or MapConnectionHandler<TConnectionHandler> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseConnections(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder> configure) { throw null; }
     }
 }
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         public ConnectionOptionsSetup() { }
         public void Configure(Microsoft.AspNetCore.Http.Connections.ConnectionOptions options) { }
     }
+    [System.ObsoleteAttribute("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapConnection and MapConnectionHandler<TConnectionHandler> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
     public partial class ConnectionsRouteBuilder
     {
         internal ConnectionsRouteBuilder() { }
@@ -134,9 +136,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     }
     public enum HttpConnectionStatus
     {
+        Inactive = 0,
         Active = 1,
         Disposed = 2,
-        Inactive = 0,
     }
     public static partial class ServerSentEventsMessageFormatter
     {

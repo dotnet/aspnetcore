@@ -13,7 +13,6 @@ namespace CorsWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(ConfigureMvcOptions)
-                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.Configure<CorsOptions>(options =>
             {
@@ -75,6 +74,7 @@ namespace CorsWebSite
         public virtual void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
+            app.UseCors();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

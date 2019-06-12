@@ -1,9 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop.Internal;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Components
@@ -11,28 +10,29 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Represents a reference to a rendered element.
     /// </summary>
-    public readonly struct ElementRef : ICustomArgSerializer
+    public readonly struct ElementRef
     {
         static long _nextIdForWebAssemblyOnly = 1;
 
-        // The Id is unique at least within the scope of a given user/circuit
-        internal string Id { get; }
+        /// <summary>
+        /// Gets a unique identifier for <see cref="ElementRef" />.
+        /// </summary>
+        /// <remarks>
+        /// The Id is unique at least within the scope of a given user/circuit.
+        /// This property is public to support Json serialization and should not be used by user code.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string __internalId { get; }
+
+        internal string Id => __internalId;
 
         private ElementRef(string id)
         {
-            Id = id;
+            __internalId = id;
         }
 
         internal static ElementRef CreateWithUniqueId()
             => new ElementRef(CreateUniqueId());
-
-        object ICustomArgSerializer.ToJsonPrimitive()
-        {
-            return new Dictionary<string, object>
-            {
-                { "_blazorElementRef", Id }
-            };
-        }
 
         static string CreateUniqueId()
         {

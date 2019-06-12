@@ -1052,6 +1052,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                       {
                           new DefaultBindingMetadataProvider(),
                           new DataAnnotationsMetadataProvider(
+                              new MvcOptions(),
                               Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                               stringLocalizerFactory: null),
                       }),

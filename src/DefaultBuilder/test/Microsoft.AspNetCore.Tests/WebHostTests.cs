@@ -8,9 +8,11 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +57,35 @@ namespace Microsoft.AspNetCore.Tests
             await changed.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             options = monitor.CurrentValue;
             Assert.Contains("NewHost", options.AllowedHosts);
+        }
+
+        [Fact]
+        public async Task WebHostConfiguration_EnablesForwardedHeadersFromConfig()
+        {
+            using var host = WebHost.CreateDefaultBuilder()
+                .ConfigureAppConfiguration(configBuilder =>
+                {
+                    configBuilder.AddInMemoryCollection(new[]
+                    {
+                        new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
+                    });
+                })
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    Assert.True(app.Properties.ContainsKey("ForwardedHeadersAdded"), "Forwarded Headers");
+                    app.Run(context =>
+                    {
+                        Assert.Equal("https", context.Request.Scheme);
+                        return Task.CompletedTask;
+                    });
+                }).Build();
+
+            await host.StartAsync();
+            var client = host.GetTestClient();
+            client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
+            var result = await client.GetAsync("http://localhost/");
+            result.EnsureSuccessStatusCode();
         }
 
         [Fact]

@@ -1,6 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Include the sync assertions only when running under WebAssembly
             var expectedValues = expectedAsyncValues;
-            if (!_serverFixture.UsingAspNetHost)
+            if (_serverFixture.ExecutionMode == ExecutionMode.Client)
             {
                 foreach (var kvp in expectedSyncValues)
                 {

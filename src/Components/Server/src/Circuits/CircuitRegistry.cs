@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -41,15 +40,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly object CircuitRegistryLock = new object();
         private readonly CircuitOptions _options;
         private readonly ILogger _logger;
+        private readonly CircuitIdFactory _circuitIdFactory;
         private readonly PostEvictionCallbackRegistration _postEvictionCallback;
 
         public CircuitRegistry(
             IOptions<CircuitOptions> options,
-            ILogger<CircuitRegistry> logger)
+            ILogger<CircuitRegistry> logger,
+            CircuitIdFactory circuitIdFactory)
         {
             _options = options.Value;
             _logger = logger;
-
+            _circuitIdFactory = circuitIdFactory;
             ConnectedCircuits = new ConcurrentDictionary<string, CircuitHost>(StringComparer.Ordinal);
 
             DisconnectedCircuits = new MemoryCache(new MemoryCacheOptions
@@ -121,6 +122,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Debug.Assert(result, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
 
             circuitHost.Client.SetDisconnected();
+            RegisterDisconnectedCircuit(circuitHost);
+            return true;
+        }
+
+        public void RegisterDisconnectedCircuit(CircuitHost circuitHost)
+        {
             var entryOptions = new MemoryCacheEntryOptions
             {
                 AbsoluteExpiration = DateTimeOffset.UtcNow.Add(_options.DisconnectedCircuitRetentionPeriod),
@@ -129,11 +136,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, entryOptions);
-            return true;
         }
 
         public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
         {
+            if (!_circuitIdFactory.ValidateCircuitId(circuitId))
+            {
+                return null;
+            }
+
             CircuitHost circuitHost;
             bool previouslyConnected;
 

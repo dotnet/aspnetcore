@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Reactive.Linq;
@@ -168,6 +169,26 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 return channel.Reader;
             }
 
+            public async IAsyncEnumerable<int> StreamIAsyncEnumerableCount(int count)
+            {
+                await Task.Yield();
+
+                for (var i = 0; i < count; i++)
+                {
+                    yield return i;
+                }
+            }
+
+            public async IAsyncEnumerable<int> StreamIAsyncEnumerableCountCompletedTask(int count)
+            {
+                await Task.CompletedTask;
+
+                for (var i = 0; i < count; i++)
+                {
+                    yield return i;
+                }
+            }
+
             public async Task UploadStream(ChannelReader<string> channelReader)
             {
                 while (await channelReader.WaitToReadAsync())
@@ -177,63 +198,88 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     }
                 }
             }
+
+            public async Task UploadStreamIAsynEnumerable(IAsyncEnumerable<string> stream)
+            {
+                await foreach (var item in stream)
+                {
+                }
+            }
         }
 
         [Benchmark]
         public Task Invocation()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "Invocation", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "Invocation", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task InvocationAsync()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationAsync", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationAsync", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task InvocationReturnValue()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationReturnValue", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationReturnValue", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task InvocationReturnAsync()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationReturnAsync", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationReturnAsync", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task InvocationValueTaskAsync()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationValueTaskAsync", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", "InvocationValueTaskAsync", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task StreamChannelReader()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReader", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReader", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task StreamChannelReaderAsync()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderAsync", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderAsync", Array.Empty<object>()));
         }
 
         [Benchmark]
         public Task StreamChannelReaderValueTaskAsync()
         {
-           return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderValueTaskAsync", Array.Empty<object>()));
+            return _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderValueTaskAsync", Array.Empty<object>()));
         }
 
         [Benchmark]
         public async Task StreamChannelReaderCount_Zero()
         {
-           await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 0 }));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 0 }));
 
-           await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-           (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCount_Zero()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 0 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCompletedTaskCount_Zero()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 0 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
         }
 
         [Benchmark]
@@ -242,7 +288,25 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 1 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-           (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCount_One()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 1 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCompletedTaskCount_One()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 1 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
         }
 
         [Benchmark]
@@ -251,32 +315,75 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 1000 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-           (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCount_Thousand()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 1000 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task StreamIAsyncEnumerableCompletedTaskCount_Thousand()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 1000 }));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
         }
 
         [Benchmark]
         public async Task UploadStream_One()
         {
-           await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStream), Array.Empty<object>(), streamIds: new string[] { "1" }));
-           await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
-           await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStream), Array.Empty<object>(), streamIds: new string[] { "1" }));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
-           await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-           (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task UploadStreamIAsyncEnumerable_One()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStreamIAsynEnumerable), Array.Empty<object>(), streamIds: new string[] { "1" }));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
         }
 
         [Benchmark]
         public async Task UploadStream_Thousand()
         {
-           await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStream), Array.Empty<object>(), streamIds: new string[] { "1" }));
-           for (var i = 0; i < 1000; ++i)
-           {
-               await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
-           }
-           await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStream), Array.Empty<object>(), streamIds: new string[] { "1" }));
+            for (var i = 0; i < 1000; ++i)
+            {
+                await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
+            }
+            await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
-           await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-           (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+        }
+
+        [Benchmark]
+        public async Task UploadStreamIAsyncEnumerable_Thousand()
+        {
+            await _dispatcher.DispatchMessageAsync(_connectionContext, new InvocationMessage("123", nameof(TestHub.UploadStreamIAsynEnumerable), Array.Empty<object>(), streamIds: new string[] { "1" }));
+            for (var i = 0; i < 1000; ++i)
+            {
+                await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamItemMessage("1", "test"));
+            }
+            await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
+
+            await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
         }
     }
 }

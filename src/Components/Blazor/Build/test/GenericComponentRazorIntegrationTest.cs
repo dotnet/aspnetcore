@@ -121,9 +121,9 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
+<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -171,14 +171,14 @@ namespace Test
                 frame => AssertFrame.Component(frame, genericComponentType.FullName, 3, 0),
                 frame => AssertFrame.Attribute(frame, "Items", typeof(List<int>), 1),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "0", 5),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 6),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "2", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]
@@ -188,9 +188,9 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
+<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -221,9 +221,9 @@ namespace Test
 
             var assembly = CompileToAssembly("Test.cshtml", @"
 @typeparam TItem
-<GenericContext Items=""@MyItems"" ref=""_my"" />
+<GenericContext Items=""@MyItems"" @ref=""_my"" />
 
-@functions {
+@code {
     [Parameter] List<TItem> MyItems { get; set; }
     GenericContext<TItem> _my;
     void Foo() { GC.KeepAlive(_my); }

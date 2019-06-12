@@ -2254,6 +2254,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatStartAsyncBeforeGetMemory()
             => GetString("StartAsyncBeforeGetMemory");
 
+        /// <summary>
+        /// This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.
+        /// </summary>
+        internal static string Http2MinDataRateNotSupported
+        {
+            get => GetString("Http2MinDataRateNotSupported");
+        }
+
+        /// <summary>
+        /// This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.
+        /// </summary>
+        internal static string FormatHttp2MinDataRateNotSupported()
+            => GetString("Http2MinDataRateNotSupported");
+
+        /// <summary>
+        /// The request trailers are not available yet. They may not be available until the full request body is read.
+        /// </summary>
+        internal static string RequestTrailersNotAvailable
+        {
+            get => GetString("RequestTrailersNotAvailable");
+        }
+
+        /// <summary>
+        /// The request trailers are not available yet. They may not be available until the full request body is read.
+        /// </summary>
+        internal static string FormatRequestTrailersNotAvailable()
+            => GetString("RequestTrailersNotAvailable");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

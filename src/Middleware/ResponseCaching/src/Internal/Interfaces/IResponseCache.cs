@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCache
+    internal interface IResponseCache
     {
         /// <summary>
         /// Gets the cached response for the given key, if it exists.

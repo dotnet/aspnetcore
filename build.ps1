@@ -258,13 +258,12 @@ elseif ($Projects) {
 }
 # When adding new sub-group build flags, add them to this check.
 elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
-    Write-Warning "No default group of projects was specified, so building the 'managed' and 'native' subsets of projects. Run ``build.cmd -help`` for more details."
+    Write-Warning "No default group of projects was specified, so building the 'managed' subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
     # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
 
     $BuildManaged = $true
-    $BuildNative = $true
 }
 
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
@@ -303,10 +302,66 @@ $MSBuildArguments += "/p:_RunSign=$Sign"
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
+if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+    $foundJdk = $false
+    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+    $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+    if (Test-Path "$localJdkPath\bin\javac.exe") {
+        $foundJdk = $true
+        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+        $env:JAVA_HOME = $localJdkPath
+    }
+    elseif ($env:JAVA_HOME) {
+        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
+        }
+        else {
+            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+            $foundJdk = $true
+        }
+    }
+    elseif ($javac) {
+        $foundJdk = $true
+        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+        $env:JAVA_HOME = $javaHome
+        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+    }
+    else {
+        try {
+            $jdkRegistryKeys = @(
+                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+            )
+            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($jdkRegistryKey) {
+                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+                if (Test-Path "${javaHome}\bin\javac.exe") {
+                    $env:JAVA_HOME = $javaHome
+                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                    $foundJdk = $true
+                }
+            }
+        }
+        catch {
+            Write-Verbose "Failed to detect Java: $_"
+        }
+    }
+
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+    }
+
+    if (-not $foundJdk) {
+        Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+    }
+}
+
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     $env:KOREBUILD_KEEPGLOBALJSON = 1
+    $env:KOREBUILD_DISABLE_DOTNET_ARCH = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'

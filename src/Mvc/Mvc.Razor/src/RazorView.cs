@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // (including the layout page we just rendered).
             while (!string.IsNullOrEmpty(previousPage.Layout))
             {
-                if (!bodyWriter.IsBuffering)
+                if (bodyWriter.Flushed)
                 {
                     // Once a call to RazorPage.FlushAsync is made, we can no longer render Layout pages - content has
                     // already been written to the client and the layout content would be appended rather than surround
@@ -274,25 +274,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 layoutPage.EnsureRenderedBodyOrSections();
             }
 
-            if (bodyWriter.IsBuffering)
+            // We've got a bunch of content in the view buffer. How to best deal with it
+            // really depends on whether or not we're writing directly to the output or if we're writing to
+            // another buffer.
+            if (context.Writer is ViewBufferTextWriter viewBufferTextWriter)
             {
-                // If IsBuffering - then we've got a bunch of content in the view buffer. How to best deal with it
-                // really depends on whether or not we're writing directly to the output or if we're writing to
-                // another buffer.
-                var viewBufferTextWriter = context.Writer as ViewBufferTextWriter;
-                if (viewBufferTextWriter == null || !viewBufferTextWriter.IsBuffering)
+                // This means we're writing to another buffer. Use MoveTo to combine them.
+                bodyWriter.Buffer.MoveTo(viewBufferTextWriter.Buffer);
+            }
+            else
+            {
+                // This means we're writing to a 'real' writer, probably to the actual output stream.
+                // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
+                using (var writer = _bufferScope.CreateWriter(context.Writer))
                 {
-                    // This means we're writing to a 'real' writer, probably to the actual output stream.
-                    // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
-                    using (var writer = _bufferScope.CreateWriter(context.Writer))
-                    {
-                        await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
-                    }
-                }
-                else
-                {
-                    // This means we're writing to another buffer. Use MoveTo to combine them.
-                    bodyWriter.Buffer.MoveTo(viewBufferTextWriter.Buffer);
+                    await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
+                    await writer.FlushAsync();
                 }
             }
         }

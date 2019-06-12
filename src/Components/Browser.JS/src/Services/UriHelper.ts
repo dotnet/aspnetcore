@@ -1,69 +1,97 @@
 import '@dotnet/jsinterop';
 
-let hasRegisteredEventListeners = false;
+let hasRegisteredNavigationInterception = false;
+let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: { assemblyName: string, functionName: string } | null = null;
+let notifyLocationChangedCallback: { assemblyName: string; functionName: string } | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
+  listenForNavigationEvents,
   enableNavigationInterception,
   navigateTo,
   getBaseURI: () => document.baseURI,
   getLocationHref: () => location.href,
-}
+};
 
-function enableNavigationInterception(assemblyName: string, functionName: string) {
-  if (hasRegisteredEventListeners || assemblyName === undefined || functionName === undefined) {
+function listenForNavigationEvents(assemblyName: string, functionName: string) {
+  if (hasRegisteredNavigationEventListeners) {
     return;
   }
 
   notifyLocationChangedCallback = { assemblyName, functionName };
-  hasRegisteredEventListeners = true;
+
+  hasRegisteredNavigationEventListeners = true;
+  window.addEventListener('popstate', () => notifyLocationChanged(false));
+}
+
+function enableNavigationInterception() {
+  if (hasRegisteredNavigationInterception) {
+    return;
+  }
+
+  hasRegisteredNavigationInterception = true;
 
   document.addEventListener('click', event => {
+    if (event.button !== 0 || eventHasSpecialKey(event)) {
+      // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
+      return;
+    }
+
     // Intercept clicks on all <a> elements where the href is within the <base href> URI space
     // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
     const anchorTarget = findClosestAncestor(event.target as Element | null, 'A') as HTMLAnchorElement;
     const hrefAttributeName = 'href';
-    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName) && event.button === 0) {
-      const href = anchorTarget.getAttribute(hrefAttributeName)!;
-      const absoluteHref = toAbsoluteUri(href);
+    if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
       const targetAttributeValue = anchorTarget.getAttribute('target');
       const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
+      if (!opensInSameFrame) {
+        return;
+      }
 
-      // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
-      if (isWithinBaseUriSpace(absoluteHref) && !eventHasSpecialKey(event) && opensInSameFrame) {
+      const href = anchorTarget.getAttribute(hrefAttributeName)!;
+      const absoluteHref = toAbsoluteUri(href);
+
+      if (isWithinBaseUriSpace(absoluteHref)) {
         event.preventDefault();
-        performInternalNavigation(absoluteHref);
+        performInternalNavigation(absoluteHref, true);
       }
     }
   });
-
-  window.addEventListener('popstate', handleInternalNavigation);
 }
 
 export function navigateTo(uri: string, forceLoad: boolean) {
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri);
+    // It's an internal URL, so do client-side navigation
+    performInternalNavigation(absoluteUri, false);
+  } else if (forceLoad && location.href === uri) {
+    // Force-loading the same URL you're already on requires special handling to avoid
+    // triggering browser-specific behavior issues.
+    // For details about what this fixes and why, see https://github.com/aspnet/AspNetCore/pull/10839
+    const temporaryUri = uri + '?';
+    history.replaceState(null, '', temporaryUri);
+    location.replace(uri);
   } else {
+    // It's either an external URL, or forceLoad is requested, so do a full page load
     location.href = uri;
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean) {
   history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  handleInternalNavigation();
+  notifyLocationChanged(interceptedLink);
 }
 
-async function handleInternalNavigation() {
+async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
     await DotNet.invokeMethodAsync(
       notifyLocationChangedCallback.assemblyName,
       notifyLocationChangedCallback.functionName,
-      location.href
+      location.href,
+      interceptedLink
     );
   }
 }
@@ -80,7 +108,7 @@ function findClosestAncestor(element: Element | null, tagName: string) {
     ? null
     : element.tagName === tagName
       ? element
-      : findClosestAncestor(element.parentElement, tagName)
+      : findClosestAncestor(element.parentElement, tagName);
 }
 
 function isWithinBaseUriSpace(href: string) {

@@ -22,6 +22,12 @@ namespace SecurityWebSite
                     options.LogoutPath = "/Home/Logout";
                 }).AddCookie("Cookie2");
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireClaimA", policy => policy.RequireClaim("ClaimA"));
+                options.AddPolicy("RequireClaimB", policy => policy.RequireClaim("ClaimB"));
+            });
+
             services.AddMvc(o =>
             {
                 o.EnableEndpointRouting = false;

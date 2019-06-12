@@ -13,30 +13,48 @@ export class SharedMemoryRenderBatch implements RenderBatch {
   }
 
   // Keep in sync with memory layout in RenderBatch.cs
-  updatedComponents() { return platform.readStructField<Pointer>(this.batchAddress, 0) as any as ArrayRange<RenderTreeDiff>; }
-  referenceFrames() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength) as any as ArrayRange<RenderTreeDiff>; }
-  disposedComponentIds() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 2) as any as ArrayRange<number>; }
-  disposedEventHandlerIds() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 3) as any as ArrayRange<number>; }
+  updatedComponents() {
+    return platform.readStructField<Pointer>(this.batchAddress, 0) as any as ArrayRange<RenderTreeDiff>;
+  }
+
+  referenceFrames() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength) as any as ArrayRange<RenderTreeDiff>;
+  }
+
+  disposedComponentIds() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 2) as any as ArrayRange<number>;
+  }
+
+  disposedEventHandlerIds() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 3) as any as ArrayRange<number>;
+  }
 
   updatedComponentsEntry(values: ArrayValues<RenderTreeDiff>, index: number) {
     return arrayValuesEntry(values, index, diffReader.structLength);
   }
+
   referenceFramesEntry(values: ArrayValues<RenderTreeFrame>, index: number) {
     return arrayValuesEntry(values, index, frameReader.structLength);
   }
+
   disposedComponentIdsEntry(values: ArrayValues<number>, index: number) {
     const pointer = arrayValuesEntry(values, index, /* int length */ 4);
     return platform.readInt32Field(pointer as any as Pointer);
   }
+
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number) {
     const pointer = arrayValuesEntry(values, index, /* int length */ 4);
     return platform.readInt32Field(pointer as any as Pointer);
   }
 
   arrayRangeReader = arrayRangeReader;
+
   arraySegmentReader = arraySegmentReader;
+
   diffReader = diffReader;
+
   editReader = editReader;
+
   frameReader = frameReader;
 }
 
@@ -65,16 +83,17 @@ const diffReader = {
 
 // Keep in sync with memory layout in RenderTreeEdit.cs
 const editReader = {
-  structLength: 16,
+  structLength: 20,
   editType: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 0) as EditType,
   siblingIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 4),
   newTreeIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 8),
-  removedAttributeName: (edit: RenderTreeEdit) => platform.readStringField(edit as any, 12),
+  moveToSiblingIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 8),
+  removedAttributeName: (edit: RenderTreeEdit) => platform.readStringField(edit as any, 16),
 };
 
 // Keep in sync with memory layout in RenderTreeFrame.cs
 const frameReader = {
-  structLength: 28,
+  structLength: 36,
   frameType: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
   elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),

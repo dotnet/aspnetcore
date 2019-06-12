@@ -1,12 +1,13 @@
 @page "/json"
+@using System.Text.Json
 @inject IJSRuntime JSRuntime
 
 <h2>JSON performance</h2>
 
-<p><button id="reset-all" onclick=@Reset>Reset</button></p>
+<p><button id="reset-all" @onclick=@Reset>Reset</button></p>
 
-<button id="serialize-small" onclick=@SerializeSmall>Serialize (small)</button>
-<button id="serialize-large" onclick=@SerializeLarge>Serialize (large)</button>
+<button id="serialize-small" @onclick=@SerializeSmall>Serialize (small)</button>
+<button id="serialize-large" @onclick=@SerializeLarge>Serialize (large)</button>
 
 <p><pre style="border: 1px solid black; overflow: scroll;">@serializedValue</pre></p>
 @if (serializedValue != null)
@@ -14,15 +15,15 @@
     <p>Serialized length: <strong id="serialized-length">@serializedValue.Length</strong> chars</p>
 }
 
-<button id="deserialize-small" onclick=@DeserializeSmall>Deserialize (small)</button>
-<button id="deserialize-large" onclick=@DeserializeLarge>Deserialize (large)</button>
+<button id="deserialize-small" @onclick=@DeserializeSmall>Deserialize (small)</button>
+<button id="deserialize-large" @onclick=@DeserializeLarge>Deserialize (large)</button>
 
 @if (numPeopleDeserialized > 0)
 {
     <p>Deserialized <strong id="deserialized-count">@numPeopleDeserialized</strong> people</p>
 }
 
-@functions {
+@code {
     static string[] Clearances = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
     Person smallOrgChart = GenerateOrgChart(1, 4);
     Person largeOrgChart = GenerateOrgChart(5, 4);
@@ -32,8 +33,8 @@
 
     protected override void OnInit()
     {
-        smallOrgChartJson = Microsoft.JSInterop.Json.Serialize(smallOrgChart);
-        largeOrgChartJson = Microsoft.JSInterop.Json.Serialize(largeOrgChart);
+        smallOrgChartJson = JsonSerializer.ToString(smallOrgChart);
+        largeOrgChartJson = JsonSerializer.ToString(largeOrgChart);
     }
 
     protected override void OnAfterRender()
@@ -50,10 +51,10 @@
     }
 
     void SerializeSmall()
-        => serializedValue = Microsoft.JSInterop.Json.Serialize(smallOrgChart);
+        => serializedValue = JsonSerializer.ToString(smallOrgChart);
 
     void SerializeLarge()
-        => serializedValue = Microsoft.JSInterop.Json.Serialize(largeOrgChart);
+        => serializedValue = JsonSerializer.ToString(largeOrgChart);
 
     void DeserializeSmall()
         => numPeopleDeserialized = Deserialize(smallOrgChartJson);
@@ -80,7 +81,7 @@
 
     static int Deserialize(string json)
     {
-        var ceo = Microsoft.JSInterop.Json.Deserialize<Person>(json);
+        var ceo = JsonSerializer.Parse<Person>(json);
         return CountPeople(ceo);
     }
 

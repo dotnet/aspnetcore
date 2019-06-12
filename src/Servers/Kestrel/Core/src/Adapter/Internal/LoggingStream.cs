@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    internal class LoggingStream : Stream
+    internal sealed class LoggingStream : Stream
     {
         private readonly Stream _inner;
         private readonly ILogger _logger;

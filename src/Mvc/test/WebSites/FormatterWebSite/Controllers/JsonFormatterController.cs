@@ -23,7 +23,7 @@ namespace FormatterWebSite.Controllers
 
         public JsonFormatterController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool);
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
         }
 
         public IActionResult ReturnsIndentedJson()
@@ -63,6 +63,21 @@ namespace FormatterWebSite.Controllers
             }
 
             return Content(value.ToString());
+        }
+
+        [HttpPost]
+        public ActionResult<SimpleModel> RoundtripSimpleModel([FromBody] SimpleModel model)
+        {
+            return model;
+        }
+
+        public class SimpleModel
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string StreetName { get; set; }
         }
     }
 }

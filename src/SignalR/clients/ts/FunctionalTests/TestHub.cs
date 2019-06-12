@@ -34,6 +34,16 @@ namespace FunctionalTests
             return message;
         }
 
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public int GetNumRedirects()
+        {
+            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"]);
+        }
+
         public void ThrowException(string message)
         {
             throw new InvalidOperationException(message);
@@ -115,7 +125,7 @@ namespace FunctionalTests
             {
                 ByteArray = new byte[] { 0x1, 0x2, 0x3 },
                 DateTime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                GUID = new Guid("00010203-0405-0607-0706-050403020100"),
+                Guid = new Guid("00010203-0405-0607-0706-050403020100"),
                 IntArray = new int[] { 1, 2, 3 },
                 String = "hello world",
             };

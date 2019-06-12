@@ -5,6 +5,7 @@
     "Blazor",
     "Hosted"
   ],
+  "description": "A project template for creating a Blazor application that runs on WebAssembly and is hosted on an ASP.NET Core server.",
   "groupIdentity": "Microsoft.Web.Blazor.Hosted",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
@@ -13,7 +14,7 @@
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98"
   ],
   "identity": "Microsoft.Web.Blazor.Hosted.CSharp",
-  "name": "Blazor (hosted in ASP.NET server)",
+  "name": "Blazor (ASP.NET Core hosted)",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -69,12 +70,6 @@
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
-    },
-    "IncludeCustomRestoreSourcesSymbol": {
-      "type": "parameter",
-      "datatype": "bool",
-      "description": "If set, includes restore sources for the Blazor MyGet feed.",
-      "defaultValue": "${IncludeCustomRestoreSources}"
     },
     "TemplateBlazorVersionSymbol": {
       "type": "parameter",

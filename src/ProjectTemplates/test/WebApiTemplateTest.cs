@@ -22,12 +22,14 @@ namespace Templates.Test
 
         public Project Project { get; set; }
 
-        [Fact]
-        public async Task WebApiTemplateAsync()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("F#")]
+        public async Task WebApiTemplateAsync(string languageOverride)
         {
-            Project = await FactoryFixture.GetOrCreateProject("webapi", Output);
+            Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("webapi");
+            var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
@@ -46,7 +48,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/api/values");
+                await aspNetProcess.AssertOk("/api/SampleData/Weather");
                 await aspNetProcess.AssertNotFound("/");
             }
 
@@ -57,7 +59,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
 
-                await aspNetProcess.AssertOk("/api/values");
+                await aspNetProcess.AssertOk("/api/SampleData/Weather");
                 await aspNetProcess.AssertNotFound("/");
             }
         }

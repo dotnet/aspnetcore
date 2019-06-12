@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Http
                 }
                 ThrowIfReadOnly();
 
-                if (StringValues.IsNullOrEmpty(value))
+                if (value.Count == 0)
                 {
                     Store?.Remove(key);
                 }

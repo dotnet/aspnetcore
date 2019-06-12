@@ -28,6 +28,11 @@
 #define CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY      L"setCurrentDirectory"
 #define CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE        L"disableStartUpErrorPage"
 #define CS_ENABLED                                       L"enabled"
+#define CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK          L"callStartupHook"
+#define CS_ASPNETCORE_HANDLER_STACK_SIZE                 L"stackSize"
+#define CS_ASPNETCORE_DETAILEDERRORS                     L"ASPNETCORE_DETAILEDERRORS"
+#define CS_ASPNETCORE_ENVIRONMENT                        L"ASPNETCORE_ENVIRONMENT"
+#define CS_DOTNET_ENVIRONMENT                            L"DOTNET_ENVIRONMENT"
 
 class ConfigurationSection: NonCopyable
 {

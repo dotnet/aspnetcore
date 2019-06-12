@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>();
+            var result = await helper.RenderStaticComponentAsync<TestComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(new
+            var result = await helper.RenderStaticComponentAsync<GreetingComponent>(new
             {
                 Name = "Steve"
             });
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = false
             }));
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = true
             }));
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 JsInterop = true
             }));
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         }
 
         [Fact]
-        public async Task UriHelperRedirect_ThrowsInvalidOperationException()
+        public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted()
         {
             // Arrange
             var ctx = new DefaultHttpContext();
@@ -117,20 +118,46 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             ctx.Request.PathBase = "/base";
             ctx.Request.Path = "/path";
             ctx.Request.QueryString = new QueryString("?query=value");
-
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(r => r.HasStarted).Returns(true);
+            ctx.Features.Set(responseMock.Object);
             var helper = CreateHelper(ctx);
             var writer = new StringWriter();
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<RedirectComponent>(new
             {
                 RedirectUri = "http://localhost/redirect"
             }));
-
-            Assert.Equal("Redirects are not supported on a prerendering environment.", exception.Message);
+            
+            Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                exception.Message);
         }
 
+        [Fact]
+        public async Task HtmlHelper_Redirects_WhenComponentNavigates()
+        {
+            // Arrange
+            var ctx = new DefaultHttpContext();
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            ctx.Request.PathBase = "/base";
+            ctx.Request.Path = "/path";
+            ctx.Request.QueryString = new QueryString("?query=value");
+            var helper = CreateHelper(ctx);
 
+            // Act
+            await helper.RenderStaticComponentAsync<RedirectComponent>(new
+            {
+                RedirectUri = "http://localhost/redirect"
+            });
+
+            // Assert
+            Assert.Equal(302, ctx.Response.StatusCode);
+            Assert.Equal("http://localhost/redirect", ctx.Response.Headers[HeaderNames.Location]);
+        }
 
         [Fact]
         public async Task CanRender_AsyncComponent()
@@ -182,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 </table>";
 
             // Act
-            var result = await helper.RenderComponentAsync<AsyncComponent>();
+            var result = await helper.RenderStaticComponentAsync<AsyncComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -196,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             services.AddSingleton(HtmlEncoder.Default);
             services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
             services.AddSingleton<IUriHelper,HttpUriHelper>();
-            services.AddSingleton<IComponentPrerenderer, MvcRazorComponentPrerenderer>();
+            services.AddSingleton<StaticComponentRenderer>();
 
             configureServices?.Invoke(services);
 

@@ -2,7 +2,7 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title> HTTP Error 500.0 - ANCM In-Process Handler Load Failure </title>
+        <title> HTTP Error %d.%d - %s </title>
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
@@ -58,15 +58,11 @@
         </style>
     </head>
     <body>
-        <h1> HTTP Error 500.0 - ANCM In-Process Handler Load Failure </h1>
+        <h1> HTTP Error %d.%d - %s </h1>
 
-        <h2> Common causes of this issue: </h2>
+        %s
 
-        <ul>
-            <li> The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found. </li>
-            <li> The in process request handler, Microsoft.AspNetCore.Server.IIS, was not referenced in the application. </li>
-            <li> ANCM could not find dotnet. </li>
-        </ul>
+        %s
 
         <h2> Troubleshooting steps: </h2>
 

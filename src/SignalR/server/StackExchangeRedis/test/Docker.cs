@@ -81,6 +81,9 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             {
                 logger.LogError(ex, "Error starting redis docker container, retrying.");
                 Thread.Sleep(1000);
+
+                // Call stop just in case the container somehow started after the timeout so our retry logic doesn't fail
+                RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
                 Run();
             }
 
@@ -90,7 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
                 // use redis base docker image
                 // 30 second timeout to allow redis image to be downloaded, should be a rare occurrence, only happening when a new version is released
-                RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromSeconds(30));
+                RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromMinutes(1));
             }
         }
 

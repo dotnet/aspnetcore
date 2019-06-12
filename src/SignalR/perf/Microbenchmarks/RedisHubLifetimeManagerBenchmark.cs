@@ -178,7 +178,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             public string Name => _name;
 
             public int Version => _innerProtocol.Version;
-            public int MinorVersion => _innerProtocol.MinorVersion;
 
             public TransferFormat TransferFormat => _innerProtocol.TransferFormat;
 

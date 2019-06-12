@@ -5,7 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationMessageHandler : DelegatingHandler
     {
         private readonly HeaderPropagationValues _values;
-        private readonly HeaderPropagationOptions _options;
+        private readonly HeaderPropagationMessageHandlerOptions _options;
 
         /// <summary>
         /// Creates a new instance of the <see cref="HeaderPropagationMessageHandler"/>.
@@ -24,15 +24,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <param name="options">The options that define which headers are propagated.</param>
         /// <param name="values">The values of the headers to be propagated populated by the
         /// <see cref="HeaderPropagationMiddleware"/>.</param>
-        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
+        public HeaderPropagationMessageHandler(HeaderPropagationMessageHandlerOptions options, HeaderPropagationValues values)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            _options = options.Value;
-
+            _options = options ?? throw new ArgumentNullException(nameof(options));
             _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
@@ -49,15 +43,47 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <returns>The task object representing the asynchronous operation.</returns>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            foreach ((var headerName, var entry) in _options.Headers)
+            var captured = _values.Headers;
+            if (captured == null)
             {
-                var outputName = string.IsNullOrEmpty(entry?.OutboundHeaderName) ? headerName : entry.OutboundHeaderName;
+                var message =
+                    $"The {nameof(HeaderPropagationValues)}.{nameof(HeaderPropagationValues.Headers)} property has not been " +
+                    $"initialized. Register the header propagation middleware by adding 'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}() " +
+                    $"in the 'Configure(...)' method.";
+                throw new InvalidOperationException(message);
+            }
 
-                if (!request.Headers.Contains(outputName) &&
-                    _values.Headers.TryGetValue(headerName, out var values) &&
-                    !StringValues.IsNullOrEmpty(values))
+            // Perf: We iterate _options.Headers instead of iterating _values.Headers because iterating an IDictionary
+            // will allocate. Also avoiding foreach since we don't define a struct-enumerator.
+            var entries = _options.Headers;
+            for (var i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                var hasContent = request.Content != null;
+
+                if (!request.Headers.TryGetValues(entry.OutboundHeaderName, out var _) &&
+                    !(hasContent && request.Content.Headers.TryGetValues(entry.OutboundHeaderName, out var _)))
                 {
-                    request.Headers.TryAddWithoutValidation(outputName, (string[])values);
+                    if (captured.TryGetValue(entry.CapturedHeaderName, out var stringValues) &&
+                        !StringValues.IsNullOrEmpty(stringValues))
+                    {
+                        if (stringValues.Count == 1)
+                        {
+                            var value = (string)stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value) && hasContent)
+                            {
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value);
+                            }
+                        }
+                        else
+                        {
+                            var values = (string[])stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values) && hasContent)
+                            {
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values);
+                            }
+                        }
+                    }
                 }
             }
 

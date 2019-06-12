@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class PublishedApplicationPublisher: ApplicationPublisher
     {
@@ -42,7 +42,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private string GetProjectReferencePublishLocation(DeploymentParameters deploymentParameters)
         {
+// Deployers do not work in distributed environments
+// see https://github.com/aspnet/AspNetCore/issues/10268 and https://github.com/aspnet/Extensions/issues/1697
+#pragma warning disable 0618
             var testAssetsBasePath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "IIS", "test", "testassets", _applicationName);
+#pragma warning restore 0618
             var configuration = this.GetType().GetTypeInfo().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration;
             var path = Path.Combine(testAssetsBasePath, "bin", configuration, deploymentParameters.TargetFramework, "publish", GetProfileName(deploymentParameters));
             return path;

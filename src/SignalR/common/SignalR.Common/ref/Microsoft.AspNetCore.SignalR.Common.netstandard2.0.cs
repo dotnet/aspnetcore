@@ -61,11 +61,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public partial class HandshakeResponseMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
         public static readonly Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage Empty;
-        public HandshakeResponseMessage(int minorVersion) { }
-        public HandshakeResponseMessage(int? minorVersion, string error) { }
         public HandshakeResponseMessage(string error) { }
         public string Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int MinorVersion { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public abstract partial class HubInvocationMessage : Microsoft.AspNetCore.SignalR.Protocol.HubMessage
     {
@@ -101,7 +98,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     }
     public partial interface IHubProtocol
     {
-        int MinorVersion { get; }
         string Name { get; }
         Microsoft.AspNetCore.Connections.TransferFormat TransferFormat { get; }
         int Version { get; }

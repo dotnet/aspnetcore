@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    internal class LocalhostListenOptions : ListenOptions
+    internal sealed class LocalhostListenOptions : ListenOptions
     {
         internal LocalhostListenOptions(int port)
             : base(new IPEndPoint(IPAddress.Loopback, port))
@@ -76,9 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
             {
-                HandleType = HandleType,
                 KestrelServerOptions = KestrelServerOptions,
-                NoDelay = NoDelay,
                 Protocols = Protocols,
             };
 

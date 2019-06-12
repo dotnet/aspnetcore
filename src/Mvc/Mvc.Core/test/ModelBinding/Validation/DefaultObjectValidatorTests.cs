@@ -1328,6 +1328,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Assert.NotNull(ex.HelpLink);
         }
 
+        [Theory]
+        [InlineData(false, ModelValidationState.Unvalidated)]
+        [InlineData(true, ModelValidationState.Invalid)]
+        public void Validate_RespectsMvcOptionsConfiguration_WhenChildValidationFails(bool optionValue, ModelValidationState expectedParentValidationState)
+        {
+            // Arrange
+            _options.ValidateComplexTypesIfChildValidationFails = optionValue;
+
+            var actionContext = new ActionContext();
+            var validationState = new ValidationStateDictionary();
+            var validator = CreateValidator();
+
+            var model = (object)new SelfValidatableModelContainer
+            {
+                IsParentValid = false,
+                ValidatableModelProperty = new ValidatableModel()
+            };
+
+            // Act
+            validator.Validate(actionContext, validationState, prefix: string.Empty, model);
+
+            // Assert
+            var modelState = actionContext.ModelState;
+            Assert.False(modelState.IsValid);
+            Assert.Equal(expectedParentValidationState, modelState.Root.ValidationState);
+        }
+
         [Fact]
         public void Validate_TypeWithoutValidators()
         {
@@ -1520,6 +1547,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             [Display(Name = "Never valid")]
             public ValidatableModel ValidatableModelProperty { get; set; }
+        }
+
+        private class SelfValidatableModelContainer : IValidatableObject
+        {
+            public bool IsParentValid { get; set; } = true;
+
+            [Display(Name = "Never valid")]
+            public ValidatableModel ValidatableModelProperty { get; set; }
+
+            public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            {
+                if (!IsParentValid)
+                {
+                    yield return new ValidationResult("Parent not valid");
+                }
+            }
         }
 
         private class TypeThatOverridesEquals

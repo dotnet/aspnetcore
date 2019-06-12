@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Diagnostics.Abstractions.netcoreapp3.0.cs" />
-    
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
   </ItemGroup>
 </Project>

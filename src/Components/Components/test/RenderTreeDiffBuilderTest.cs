@@ -104,6 +104,417 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RecognizesKeyedElementInsertions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("retained key");
+            oldTree.AddContent(1, "Existing");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("new key");
+            newTree.AddContent(1, "Inserted");
+            newTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("retained key");
+            newTree.AddContent(1, "Existing");
+            newTree.CloseElement();
+
+            // Without the key, it would change the text "Existing" to "Inserted", then insert a new "Existing" below it
+            // With the key, it just inserts a new "Inserted" at the top
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                });
+        }
+
+        [Fact]
+        public void RecognizesKeyedElementDeletions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("will delete");
+            oldTree.AddContent(1, "First");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("will retain");
+            oldTree.AddContent(1, "Second");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("will retain");
+            newTree.AddContent(1, "Second");
+            newTree.CloseElement();
+
+            // Without the key, it changes the text content of "First" to "Second", then deletes the other "Second"
+            // With the key, it just deletes "First"
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
+        public void RecognizesSimultaneousKeyedElementInsertionsAndDeletions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("original key");
+            oldTree.AddContent(1, "Original");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("new key");
+            newTree.AddContent(1, "Inserted");
+            newTree.CloseElement();
+
+            // Without the key, it would change the text "Original" to "Inserted"
+            // With the key, it deletes the old element and inserts the new element
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void RecognizesKeyedComponentInsertions()
+        {
+            // Arrange
+            oldTree.OpenComponent<CaptureSetParametersComponent>(0);
+            oldTree.SetKey("retained key");
+            oldTree.AddAttribute(1, "ParamName", "Param old value");
+            oldTree.CloseComponent();
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            var oldComponent = GetComponents<CaptureSetParametersComponent>(oldTree).Single();
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("new key");
+            newTree.AddAttribute(1, "ParamName", "New component param value");
+            newTree.CloseComponent();
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("retained key");
+            newTree.AddAttribute(1, "ParamName", "Param new value");
+            newTree.CloseComponent();
+
+            // Without the key, it would modify the param on the first component,
+            // then insert a new second component.
+            // With the key, it inserts a new first component, then modifies the
+            // param on the second component.
+
+            // Act
+            var batch = GetRenderedBatch(initializeFromFrames: false);
+            var newComponents = GetComponents<CaptureSetParametersComponent>(newTree);
+
+            // Assert: Inserts new component at position 0
+            Assert.Equal(1, batch.UpdatedComponents.Count);
+            Assert.Collection(batch.UpdatedComponents.Array[0].Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
+
+            // Assert: Retains old component instance in position 1, and updates its params
+            Assert.Same(oldComponent, newComponents[1]);
+            Assert.Equal(2, oldComponent.SetParametersCallCount);
+        }
+
+        [Fact]
+        public void RecognizesKeyedComponentDeletions()
+        {
+            // Arrange
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("will delete");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Anything");
+            oldTree.CloseComponent();
+
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("will retain");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+            oldTree.CloseComponent();
+
+            // Instantiate initial components
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            var oldComponents = GetComponents(oldTree);
+
+            newTree.OpenComponent<FakeComponent>(0);
+            newTree.SetKey("will retain");
+            newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+            newTree.CloseComponent();
+
+            // Without the key, it updates the param on the first component, then
+            // deletes the second.
+            // With the key, it just deletes the first.
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var newComponent = GetComponents(newTree).Single();
+
+            // Assert
+            Assert.Same(oldComponents[1], newComponent);
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
+        public void RecognizesSimultaneousKeyedComponentInsertionsAndDeletions()
+        {
+            // Arrange
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("original key");
+            oldTree.CloseComponent();
+
+            // Instantiate initial component
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            var oldComponent = GetComponents(oldTree).Single();
+            Assert.NotNull(oldComponent);
+
+            newTree.OpenComponent<FakeComponent>(0);
+            newTree.SetKey("new key");
+            newTree.CloseComponent();
+
+            // Without the key, it would retain the component
+            // With the key, it deletes the old component and inserts the new component
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var newComponent = GetComponents(newTree).Single();
+
+            // Assert
+            Assert.NotNull(newComponent);
+            Assert.NotSame(oldComponent, newComponent);
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ComponentKey);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void HandlesClashingKeys_FirstUsage()
+        {
+            // This scenario is problematic for the algorithm if it uses a "first key
+            // usage wins" policy for duplicate keys. It would not end up with attrib1b
+            // anywhere in the output, because whenever it sees key1 in oldTree, it tries
+            // to diff against the first usage of key1 in newTree, which has attrib1a.
+
+            // However, because of the actual "duplicated keys are excluded from the
+            // dictionary match" policy, we don't preserve any of the key1 items, and
+            // the diff is valid.
+
+            // Arrange
+            AddWithKey(oldTree, "key3", "attrib3");
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key2", "attrib2");
+
+            AddWithKey(newTree, "key1", "attrib1a");
+            AddWithKey(newTree, "key2", "attrib2");
+            AddWithKey(newTree, "key1", "attrib1b");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Insert key1+attrib1a at the top
+                edit =>
+                {
+                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
+                },
+                // Delete key3+attrib3
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
+                // Delete key1+attrib1a
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
+                // Delete the other key1+attrib1a
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
+                // Insert key1+attrib1b at the bottom
+                edit =>
+                {
+                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
+                    Assert.Equal("attrib1b", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
+                });
+        }
+
+        [Fact]
+        public void HandlesClashingKeys_LastUsage()
+        {
+            // This scenario is problematic for the algorithm if it uses a "last key
+            // usage wins" policy for duplicate keys. It would not end up with attrib1b
+            // anywhere in the output, because when it sees key1 in oldTree, it tries
+            // to diff against the last usage of key1 in newTree, which has attrib1a.
+
+            // However, because of the actual "duplicated keys are excluded from the
+            // dictionary match" policy, we don't preserve any of the key1 items, and
+            // the diff is valid.
+
+            // Arrange
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key2", "attrib2");
+            AddWithKey(oldTree, "key1", "attrib1b");
+
+            AddWithKey(newTree, "key2", "attrib2");
+            AddWithKey(newTree, "key1", "attrib1b");
+            AddWithKey(newTree, "key1", "attrib1a");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Delete key1+attrib1a
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
+                // Insert a new key1+attrib1a at the bottom
+                edit =>
+                {
+                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
+                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
+                });
+        }
+
+        [Fact]
+        public void HandlesInsertionOfUnkeyedItemsAroundKey()
+        {
+            // The fact that the new sequence numbers are descending makes this
+            // problematic if it prefers matching by sequence over key.
+            // However, since the policy is to prefer key over sequence, it works OK.
+
+            // Arrange
+            oldTree.OpenElement(1, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(2, "other");
+            newTree.CloseElement();
+
+            newTree.OpenElement(1, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            newTree.OpenElement(0, "other 2");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0),
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 2));
+        }
+
+        [Fact]
+        public void HandlesDeletionOfUnkeyedItemsAroundKey()
+        {
+            // The fact that the old sequence numbers are descending makes this
+            // problematic if it prefers matching by sequence over key.
+            // However, since the policy is to prefer key over sequence, it works OK.
+
+            // Arrange
+            oldTree.OpenElement(2, "other");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(1, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(0, "other 2");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(1, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void HandlesKeyBeingAdded()
+        {
+            // This is an anomolous situation that can't occur with .razor components.
+            // It represents the case where, for the same sequence number, we have an
+            // old frame without a key and a new frame with a key.
+
+            // Arrange
+            oldTree.OpenElement(0, "el");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Insert new
+                edit =>
+                {
+                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal("some key", referenceFrames[edit.ReferenceFrameIndex].ElementKey);
+                },
+                // Delete old
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void HandlesKeyBeingRemoved()
+        {
+            // This is an anomolous situation that can't occur with .razor components.
+            // It represents the case where, for the same sequence number, we have an
+            // old frame with a key and a new frame without a key.
+
+            // Arrange
+            oldTree.OpenElement(0, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "el");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Insert new
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0),
+                // Delete old
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
         public void RecognizesTrailingSequenceWithinLoopBlockBeingRemoved()
         {
             // Arrange
@@ -486,7 +897,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
             Assert.Equal(
                 new[] { removedEventHandlerFrame.AttributeEventHandlerId },
-                batch.DisposedEventHandlerIDs);
+                batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1114,7 +1525,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderBatch = GetRenderedBatch();
 
             // Assert
-            var diff = renderBatch.UpdatedComponents.Single();
+            var diff = renderBatch.UpdatedComponents.AsEnumerable().Single();
             Assert.Collection(diff.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.StepIn, 1),
                 entry =>
@@ -1145,7 +1556,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var renderBatch = GetRenderedBatch();
-            var componentInstance = newTree.GetFrames().First().Component as FakeComponent;
+            var componentInstance = newTree.GetFrames().AsEnumerable().First().Component as FakeComponent;
 
             // Assert
             Assert.Equal(1, renderBatch.UpdatedComponents.Count);
@@ -1216,7 +1627,7 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs);
+            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1243,7 +1654,7 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs);
+            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1492,6 +1903,254 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Empty(referenceFrames);
         }
 
+        [Fact]
+        public void RecognizesKeyedElementMoves()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("first key");
+            oldTree.AddContent(1, "First");
+            oldTree.CloseElement();
+
+            oldTree.AddContent(2, "Unkeyed item");
+
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("second key");
+            oldTree.AddContent(1, "Second");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("second key");
+            newTree.AddContent(1, "Second");
+            newTree.CloseElement();
+
+            newTree.AddContent(2, "Unkeyed item");
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("first key");
+            newTree.AddContent(1, "First modified");
+            newTree.CloseElement();
+
+            // Without the key, it changes the text contents of both
+            // With the key, it reorders them and just updates the text content of one
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // First we update the modified descendants in place
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 0),
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("First modified", referenceFrames[entry.ReferenceFrameIndex].TextContent);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
+
+                // Then we have the permutation list
+                entry => AssertPermutationListEntry(entry, 0, 2),
+                entry => AssertPermutationListEntry(entry, 2, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void RecognizesKeyedComponentMoves()
+        {
+            // Arrange
+            oldTree.OpenComponent<CaptureSetParametersComponent>(0);
+            oldTree.SetKey("first key");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "First param");
+            oldTree.CloseComponent();
+
+            oldTree.AddContent(2, "Unkeyed item");
+
+            oldTree.OpenComponent<CaptureSetParametersComponent>(0);
+            oldTree.SetKey("second key");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Second param");
+            oldTree.CloseComponent();
+
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            var oldComponents = GetComponents<CaptureSetParametersComponent>(oldTree);
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("second key");
+            newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Second param");
+            newTree.CloseComponent();
+
+            newTree.AddContent(2, "Unkeyed item");
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("first key");
+            newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "First param modified");
+            newTree.CloseComponent();
+
+            // Without the key, it changes the parameter on both
+            // With the key, it reorders them and just updates the parameter of one
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var newComponents = GetComponents<CaptureSetParametersComponent>(newTree);
+
+            // Assert: Retains component instances
+            Assert.Same(oldComponents[0], newComponents[1]);
+            Assert.Same(oldComponents[1], newComponents[0]);
+
+            // Assert: Supplies updated params only to (originally) first component
+            Assert.Equal(2, oldComponents[0].SetParametersCallCount);
+            Assert.Equal(1, oldComponents[1].SetParametersCallCount);
+
+            // Assert: Correct diff
+            Assert.Collection(result.Edits,
+                entry => AssertPermutationListEntry(entry, 0, 2),
+                entry => AssertPermutationListEntry(entry, 2, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void CanMoveBeforeInsertedItem()
+        {
+            // Arrange
+            AddWithKey(oldTree, "will retain");
+            AddWithKey(oldTree, "will move");
+
+            AddWithKey(newTree, "will move");
+            AddWithKey(newTree, "newly inserted");
+            AddWithKey(newTree, "will retain");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("newly inserted", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                },
+                entry => AssertPermutationListEntry(entry, 0, 2),
+                entry => AssertPermutationListEntry(entry, 2, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void CanMoveBeforeDeletedItem()
+        {
+            // Arrange
+            AddWithKey(oldTree, "will retain");
+            AddWithKey(oldTree, "will delete");
+            AddWithKey(oldTree, "will move");
+
+            AddWithKey(newTree, "will move");
+            AddWithKey(newTree, "will retain");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1),
+                entry => AssertPermutationListEntry(entry, 0, 1),
+                entry => AssertPermutationListEntry(entry, 1, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void CanMoveAfterInsertedItem()
+        {
+            // Arrange
+            AddWithKey(oldTree, "will move");
+            AddWithKey(oldTree, "will retain");
+
+            AddWithKey(newTree, "newly inserted");
+            AddWithKey(newTree, "will retain");
+            AddWithKey(newTree, "will move");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("newly inserted", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                },
+                entry => AssertPermutationListEntry(entry, 1, 2),
+                entry => AssertPermutationListEntry(entry, 2, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void CanMoveAfterDeletedItem()
+        {
+            // Arrange
+            AddWithKey(oldTree, "will move");
+            AddWithKey(oldTree, "will delete");
+            AddWithKey(oldTree, "will retain");
+
+            AddWithKey(newTree, "will retain");
+            AddWithKey(newTree, "will move");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1),
+                entry => AssertPermutationListEntry(entry, 0, 1),
+                entry => AssertPermutationListEntry(entry, 1, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
+        }
+
+        [Fact]
+        public void CanChangeFrameTypeWithMatchingSequenceNumber()
+        {
+            oldTree.OpenElement(0, "some elem");
+            oldTree.AddContent(1, "Hello!");
+            oldTree.CloseElement();
+
+            newTree.AddContent(0, "some text");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("some text", referenceFrames[entry.ReferenceFrameIndex].TextContent);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void CanChangeFrameTypeWithMatchingKey()
+        {
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.CloseComponent();
+
+            newTree.OpenElement(0, "some elem");
+            newTree.SetKey("my key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("some elem", referenceFrames[entry.ReferenceFrameIndex].ElementName);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
         private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
         {
             var result = GetSingleUpdatedComponentWithBatch(initializeFromFrames);
@@ -1503,7 +2162,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var batch = GetRenderedBatch(initializeFromFrames);
             var diffsInBatch = batch.UpdatedComponents;
             Assert.Equal(1, diffsInBatch.Count);
-            return (diffsInBatch.Array[0], batch.ReferenceFrames.ToArray(), batch);
+            return (diffsInBatch.Array[0], batch.ReferenceFrames.AsEnumerable().ToArray(), batch);
         }
 
         private RenderBatch GetRenderedBatch(bool initializeFromFrames = false)
@@ -1522,6 +2181,28 @@ namespace Microsoft.AspNetCore.Components.Test
             var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             return batchBuilder.ToBatch();
+        }
+
+        private static IList<IComponent> GetComponents(RenderTreeBuilder builder)
+            => GetComponents<IComponent>(builder);
+
+        private static IList<T> GetComponents<T>(RenderTreeBuilder builder) where T : IComponent
+            => builder.GetFrames().AsEnumerable()
+                .Where(x => x.FrameType == RenderTreeFrameType.Component)
+                .Select(x => (T)x.Component)
+                .ToList();
+
+        private static void AddWithKey(RenderTreeBuilder builder, object key, string attributeValue = null)
+        {
+            builder.OpenElement(0, "el");
+            builder.SetKey(key);
+
+            if (attributeValue != null)
+            {
+                builder.AddAttribute(1, "attrib", attributeValue);
+            }
+
+            builder.CloseElement();
         }
 
         private class FakeRenderer : Renderer
@@ -1612,6 +2293,16 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             Assert.Equal(type, edit.Type);
             Assert.Equal(siblingIndex, edit.SiblingIndex);
+        }
+
+        private static void AssertPermutationListEntry(
+            RenderTreeEdit edit,
+            int fromSiblingIndex,
+            int toSiblingIndex)
+        {
+            Assert.Equal(RenderTreeEditType.PermutationListEntry, edit.Type);
+            Assert.Equal(fromSiblingIndex, edit.SiblingIndex);
+            Assert.Equal(toSiblingIndex, edit.MoveToSiblingIndex);
         }
     }
 }

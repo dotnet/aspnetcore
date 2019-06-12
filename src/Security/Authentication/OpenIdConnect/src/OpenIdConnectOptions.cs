@@ -48,14 +48,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ClaimActions.DeleteClaim("aud");
             ClaimActions.DeleteClaim("azp");
             ClaimActions.DeleteClaim("acr");
-            ClaimActions.DeleteClaim("amr");
             ClaimActions.DeleteClaim("iss");
             ClaimActions.DeleteClaim("iat");
             ClaimActions.DeleteClaim("nbf");
             ClaimActions.DeleteClaim("exp");
             ClaimActions.DeleteClaim("at_hash");
             ClaimActions.DeleteClaim("c_hash");
-            ClaimActions.DeleteClaim("auth_time");
             ClaimActions.DeleteClaim("ipaddr");
             ClaimActions.DeleteClaim("platf");
             ClaimActions.DeleteClaim("ver");
@@ -298,6 +296,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             get => _nonceCookieBuilder;
             set => _nonceCookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard.
+        /// This only applies when the <see cref="ResponseType"/> is set to <see cref="OpenIdConnectResponseType.Code"/>.
+        /// See https://tools.ietf.org/html/rfc7636.
+        /// The default value is `true`.
+        /// </summary>
+        public bool UsePkce { get; set; } = true;
 
         private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
         {

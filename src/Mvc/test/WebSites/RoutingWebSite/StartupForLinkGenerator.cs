@@ -44,6 +44,8 @@ namespace RoutingWebSite
             {
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapRazorPages();
+
+                endpoints.MapControllerRoute("routewithnomvcparameters", "/routewithnomvcparameters/{custom}");
             });
         }
     }

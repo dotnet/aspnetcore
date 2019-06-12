@@ -3,11 +3,12 @@ import { AutoReconnectCircuitHandler } from "../src/Platform/Circuits/AutoReconn
 import { UserSpecifiedDisplay } from "../src/Platform/Circuits/UserSpecifiedDisplay";
 import { DefaultReconnectDisplay } from "../src/Platform/Circuits/DefaultReconnectDisplay";
 import { ReconnectDisplay } from "../src/Platform/Circuits/ReconnectDisplay";
+import { NullLogger} from '../src/Platform/Logging/Loggers';
 import '../src/GlobalExports';
 
 describe('AutoReconnectCircuitHandler', () => {
     it('creates default element', () => {
-        const handler = new AutoReconnectCircuitHandler();
+        const handler = new AutoReconnectCircuitHandler(NullLogger.instance);
 
         document.dispatchEvent(new Event('DOMContentLoaded'));
         expect(handler.reconnectDisplay).toBeInstanceOf(DefaultReconnectDisplay);
@@ -17,7 +18,7 @@ describe('AutoReconnectCircuitHandler', () => {
         const element = document.createElement('div');
         element.id = 'components-reconnect-modal';
         document.body.appendChild(element);
-        const handler = new AutoReconnectCircuitHandler();
+        const handler = new AutoReconnectCircuitHandler(NullLogger.instance);
 
         document.dispatchEvent(new Event('DOMContentLoaded'));
         expect(handler.reconnectDisplay).toBeInstanceOf(UserSpecifiedDisplay);
@@ -32,7 +33,7 @@ describe('AutoReconnectCircuitHandler', () => {
     }));
 
     it('hides display on connection up', () => {
-        const handler = new AutoReconnectCircuitHandler();
+        const handler = new AutoReconnectCircuitHandler(NullLogger.instance);
         const testDisplay = new TestDisplay();
         handler.reconnectDisplay = testDisplay;
 
@@ -43,7 +44,7 @@ describe('AutoReconnectCircuitHandler', () => {
     });
 
     it('shows display on connection down', async () => {
-        const handler = new AutoReconnectCircuitHandler();
+        const handler = new AutoReconnectCircuitHandler(NullLogger.instance);
         handler.delay = () => Promise.resolve();
         const reconnect = jest.fn().mockResolvedValue(true);
         window['Blazor'].reconnect = reconnect;
@@ -59,7 +60,7 @@ describe('AutoReconnectCircuitHandler', () => {
     });
 
     it('invokes failed if reconnect fails', async () => {
-        const handler = new AutoReconnectCircuitHandler();
+        const handler = new AutoReconnectCircuitHandler(NullLogger.instance);
         handler.delay = () => Promise.resolve();
         const reconnect = jest.fn().mockRejectedValue(new Error('some error'));
         window.console.error = jest.fn();

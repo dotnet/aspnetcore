@@ -81,15 +81,21 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private void InitializeLocalEndpoint()
         {
             var localEndPoint = GetLocalEndPoint();
-            LocalIpAddress = localEndPoint.GetIPAddress();
-            LocalPort = localEndPoint.GetPort();
+            if (localEndPoint != null)
+            {
+                LocalIpAddress = localEndPoint.GetIPAddress();
+                LocalPort = localEndPoint.GetPort();
+            }
         }
 
         private void InitializeRemoteEndpoint()
         {
             var remoteEndPoint = GetRemoteEndPoint();
-            RemoteIpAddress = remoteEndPoint.GetIPAddress();
-            RemotePort = remoteEndPoint.GetPort();
+            if (remoteEndPoint != null)
+            {
+                RemoteIpAddress = remoteEndPoint.GetIPAddress();
+                RemotePort = remoteEndPoint.GetPort();
+            }
         }
 
         private void InitializeConnectionId()

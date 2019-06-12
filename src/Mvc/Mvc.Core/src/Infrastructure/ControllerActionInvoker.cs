@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private Dictionary<string, object> _arguments;
 
-        private ActionExecutingContext _actionExecutingContext;
-        private ActionExecutedContext _actionExecutedContext;
+        private ActionExecutingContextSealed _actionExecutingContext;
+        private ActionExecutedContextSealed _actionExecutedContext;
 
         internal ControllerActionInvoker(
             ILogger logger,
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.FilterAsync;
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.Filter;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // If we get here then the filter didn't call 'next' indicating a short circuit.
                             _logger.ActionFilterShortCircuited(filter);
 
-                            _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutedContext = new ActionExecutedContextSealed(
                                 _controllerContext,
                                 _filters,
                                 _instance)
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by setting a result.
                             _logger.ActionFilterShortCircuited(filter);
 
-                            _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutedContext = new ActionExecutedContextSealed(
                                 _actionExecutingContext,
                                 _filters,
                                 _instance)
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutedContext == null)
                             {
-                                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
+                                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
                                 {
                                     Result = _result,
                                 };
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeNextActionFilterAsync()
+        private Task InvokeNextActionFilterAsync()
         {
             try
             {
@@ -292,26 +292,75 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var isCompleted = false;
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
             {
-                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
+                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
             }
 
             Debug.Assert(_actionExecutedContext != null);
+            return Task.CompletedTask;
+
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._actionExecutedContext = new ActionExecutedContextSealed(invoker._controllerContext, invoker._filters, invoker._instance)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._actionExecutedContext != null);
+            }
         }
 
-        private async Task<ActionExecutedContext> InvokeNextActionFilterAwaitedAsync()
+        private Task<ActionExecutedContext> InvokeNextActionFilterAwaitedAsync()
         {
             Debug.Assert(_actionExecutingContext != null);
             if (_actionExecutingContext.Result != null)
             {
                 // If we get here, it means that an async filter set a result AND called next(). This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextActionFilterAsync();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_actionExecutedContext != null);
+            return Task.FromResult<ActionExecutedContext>(_actionExecutedContext);
+
+            static async Task<ActionExecutedContext> Awaited(ControllerActionInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._actionExecutedContext != null);
+                return invoker._actionExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ActionExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncActionFilter_InvalidShortCircuit(
                     typeof(IAsyncActionFilter).Name,
                     nameof(ActionExecutingContext.Result),
@@ -320,73 +369,123 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextActionFilterAsync();
-
-            Debug.Assert(_actionExecutedContext != null);
-            return _actionExecutedContext;
+#pragma warning restore CS1998
         }
 
-        private async Task InvokeActionMethodAsync()
+        private Task InvokeActionMethodAsync()
         {
-            var controllerContext = _controllerContext;
-            var objectMethodExecutor = _cacheEntry.ObjectMethodExecutor;
-            var controller = _instance;
-            var arguments = _arguments;
-            var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
-            var orderedArguments = PrepareArguments(arguments, objectMethodExecutor);
-
-            var diagnosticListener = _diagnosticListener;
-            var logger = _logger;
-
-            IActionResult result = null;
-            try
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Trace))
             {
-                diagnosticListener.BeforeActionMethod(
-                    controllerContext,
-                    arguments,
-                    controller);
-                logger.ActionMethodExecuting(controllerContext, orderedArguments);
-                var stopwatch = ValueStopwatch.StartNew();
-                var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, controller, orderedArguments);
-                if (actionResultValueTask.IsCompletedSuccessfully)
-                {
-                    result = actionResultValueTask.Result;
-                }
-                else
-                {
-                    result = await actionResultValueTask;
-                }
-
-                _result = result;
-                logger.ActionMethodExecuted(controllerContext, result, stopwatch.GetElapsedTime());
+                return Logged(this);
             }
-            finally
+
+            var objectMethodExecutor = _cacheEntry.ObjectMethodExecutor;
+            var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
+            var orderedArguments = PrepareArguments(_arguments, objectMethodExecutor);
+
+            var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance, orderedArguments);
+            if (actionResultValueTask.IsCompletedSuccessfully)
             {
-                diagnosticListener.AfterActionMethod(
-                    controllerContext,
-                    arguments,
-                    controllerContext,
-                    result);
+                _result = actionResultValueTask.Result;
+            }
+            else
+            {
+                return Awaited(this, actionResultValueTask);
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(ControllerActionInvoker invoker, ValueTask<IActionResult> actionResultValueTask)
+            {
+                invoker._result = await actionResultValueTask;
+            }
+
+            static async Task Logged(ControllerActionInvoker invoker)
+            {
+                var controllerContext = invoker._controllerContext;
+                var objectMethodExecutor = invoker._cacheEntry.ObjectMethodExecutor;
+                var controller = invoker._instance;
+                var arguments = invoker._arguments;
+                var actionMethodExecutor = invoker._cacheEntry.ActionMethodExecutor;
+                var orderedArguments = PrepareArguments(arguments, objectMethodExecutor);
+
+                var diagnosticListener = invoker._diagnosticListener;
+                var logger = invoker._logger;
+
+                IActionResult result = null;
+                try
+                {
+                    diagnosticListener.BeforeActionMethod(
+                        controllerContext,
+                        arguments,
+                        controller);
+                    logger.ActionMethodExecuting(controllerContext, orderedArguments);
+                    var stopwatch = ValueStopwatch.StartNew();
+                    var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller, orderedArguments);
+                    if (actionResultValueTask.IsCompletedSuccessfully)
+                    {
+                        result = actionResultValueTask.Result;
+                    }
+                    else
+                    {
+                        result = await actionResultValueTask;
+                    }
+
+                    invoker._result = result;
+                    logger.ActionMethodExecuted(controllerContext, result, stopwatch.GetElapsedTime());
+                }
+                finally
+                {
+                    diagnosticListener.AfterActionMethod(
+                        controllerContext,
+                        arguments,
+                        controllerContext,
+                        result);
+                }
             }
         }
 
         /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
         /// variables in this method represent.</remarks>
-        protected override async Task InvokeInnerFilterAsync()
+        protected override Task InvokeInnerFilterAsync()
         {
-            var next = State.ActionBegin;
-            var scope = Scope.Invoker;
-            var state = (object)null;
-            var isCompleted = false;
-
-            while (!isCompleted)
+            try
             {
-                await Next(ref next, ref scope, ref state, ref isCompleted);
+                var next = State.ActionBegin;
+                var scope = Scope.Invoker;
+                var state = (object)null;
+                var isCompleted = false;
+
+                while (!isCompleted)
+                {
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task, 
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
-        private static void Rethrow(ActionExecutedContext context)
+        private static void Rethrow(ActionExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -467,6 +566,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ActionSyncEnd,
             ActionInside,
             ActionEnd,
+        }
+
+        private sealed class ActionExecutingContextSealed : ActionExecutingContext
+        {
+            public ActionExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IDictionary<string, object> actionArguments, object controller) : base(actionContext, filters, actionArguments, controller) { }
+        }
+
+        private sealed class ActionExecutedContextSealed : ActionExecutedContext
+        {
+            public ActionExecutedContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, object controller) : base(actionContext, filters, controller) { }
         }
     }
 }

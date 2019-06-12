@@ -40,11 +40,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
         /// in <see cref="RouteConstraintMatcher"/>.</param>
         /// <param name="version">The version of this route.</param>
+        [Obsolete("This constructor will be marked obsolete in a future release. Use the TreeRouterBuilder to create instances of TreeRouter.")]
         public TreeRouter(
             UrlMatchingTree[] trees,
             IEnumerable<OutboundRouteEntry> linkGenerationEntries,
             UrlEncoder urlEncoder,
+#pragma warning disable CS0618, PUB0001 // Type or member is obsolete
             ObjectPool<UriBuildingContext> objectPool,
+#pragma warning restore CS0618, PUB0001 // Type or member is obsolete
             ILogger routeLogger,
             ILogger constraintLogger,
             int version)

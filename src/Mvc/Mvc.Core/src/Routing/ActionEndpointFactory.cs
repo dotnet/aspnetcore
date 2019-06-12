@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         public void AddEndpoints(
             List<Endpoint> endpoints,
+            HashSet<string> routeNames,
             ActionDescriptor action,
             IReadOnlyList<ConventionalRouteEntry> routes,
             IReadOnlyList<Action<EndpointBuilder>> conventions)
@@ -39,6 +41,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (routeNames == null)
+            {
+                throw new ArgumentNullException(nameof(routeNames));
             }
 
             if (action == null)
@@ -58,14 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             if (action.AttributeRouteInfo == null)
             {
-                // In traditional conventional routing setup, the routes defined by a user have a static order
-                // defined by how they are added into the list. We would like to maintain the same order when building
-                // up the endpoints too.
-                //
-                // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
-                // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-                var conventionalRouteOrder = 1;
-
                 // Check each of the conventional patterns to see if the action would be reachable.
                 // If the action and pattern are compatible then create an endpoint with action
                 // route values on the pattern.
@@ -80,15 +79,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         continue;
                     }
 
+                    // We suppress link generation for each conventionally routed endpoint. We generate a single endpoint per-route
+                    // to handle link generation.
                     var builder = CreateEndpoint(
+                        routeNames,
                         action,
                         updatedRoutePattern,
                         route.RouteName,
-                        conventionalRouteOrder++,
+                        route.Order,
                         route.DataTokens,
-                        suppressLinkGeneration: false,
+                        suppressLinkGeneration: true,
                         suppressPathMatching: false,
-                        conventions);
+                        conventions,
+                        route.Conventions);
                     endpoints.Add(builder);
                 }
             }
@@ -107,6 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var endpoint = CreateEndpoint(
+                    routeNames,
                     action,
                     updatedRoutePattern,
                     action.AttributeRouteInfo.Name,
@@ -114,9 +118,96 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     dataTokens: null,
                     action.AttributeRouteInfo.SuppressLinkGeneration,
                     action.AttributeRouteInfo.SuppressPathMatching,
-                    conventions);
+                    conventions,
+                    perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
                 endpoints.Add(endpoint);
             }
+        }
+
+        public void AddConventionalLinkGenerationRoute(
+            List<Endpoint> endpoints,
+            HashSet<string> routeNames,
+            HashSet<string> keys,
+            ConventionalRouteEntry route,
+            IReadOnlyList<Action<EndpointBuilder>> conventions)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (keys == null)
+            {
+                throw new ArgumentNullException(nameof(keys));
+            }
+
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            var requiredValues = new RouteValueDictionary();
+            foreach (var key in keys)
+            {
+                if (route.Pattern.GetParameter(key) != null)
+                {
+                    // Parameter (allow any)
+                    requiredValues[key] = RoutePattern.RequiredValueAny;
+                }
+                else if (route.Pattern.Defaults.TryGetValue(key, out var value))
+                {
+                    requiredValues[key] = value;
+                }
+                else
+                {
+                    requiredValues[key] = null;
+                }
+            }
+
+            // We have to do some massaging of the pattern to try and get the
+            // required values to be correct.
+            var pattern = _routePatternTransformer.SubstituteRequiredValues(route.Pattern, requiredValues);
+            if (pattern == null)
+            {
+                // We don't expect this to happen, but we want to know if it does because it will help diagnose the bug.
+                throw new InvalidOperationException("Failed to create a conventional route for pattern: " + route.Pattern);
+            }
+
+            var builder = new RouteEndpointBuilder(context => Task.CompletedTask, pattern, route.Order)
+            {
+                DisplayName = "Route: " + route.Pattern.RawText,
+                Metadata =
+                {
+                    new SuppressMatchingMetadata(),
+                },
+            };
+
+            if (route.RouteName != null)
+            {
+                builder.Metadata.Add(new RouteNameMetadata(route.RouteName));
+            }
+
+            // See comments on the other usage of EndpointNameMetadata in this class.
+            //
+            // The set of cases for a conventional route are much simpler. We don't need to check
+            // for Endpoint Name already exising here because there's no way to add an attribute to
+            // a conventional route.
+            if (route.RouteName != null && routeNames.Add(route.RouteName))
+            {
+                builder.Metadata.Add(new EndpointNameMetadata(route.RouteName));
+            }
+
+            for (var i = 0; i < conventions.Count; i++)
+            {
+                conventions[i](builder);
+            }
+
+            for (var i = 0; i < route.Conventions.Count; i++)
+            {
+                route.Conventions[i](builder);
+            }
+
+            endpoints.Add((RouteEndpoint)builder.Build());
         }
 
         private static (RoutePattern resolvedRoutePattern, IDictionary<string, string> resolvedRequiredValues) ResolveDefaultsAndRequiredValues(ActionDescriptor action, RoutePattern attributeRoutePattern)
@@ -172,6 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         private RouteEndpoint CreateEndpoint(
+            HashSet<string> routeNames,
             ActionDescriptor action,
             RoutePattern routePattern,
             string routeName,
@@ -179,7 +271,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching,
-            IReadOnlyList<Action<EndpointBuilder>> conventions)
+            IReadOnlyList<Action<EndpointBuilder>> conventions,
+            IReadOnlyList<Action<EndpointBuilder>> perRouteConventions)
         {
 
             // We don't want to close over the retrieve the Invoker Factory in ActionEndpointFactory as
@@ -193,7 +286,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             RequestDelegate requestDelegate = (context) =>
             {
-                var routeData = context.GetRouteData();
+                var routeData = new RouteData();
+                routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
+
                 var actionContext = new ActionContext(context, routeData, action);
 
                 if (invokerFactory == null)
@@ -220,6 +315,27 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             builder.Metadata.Add(action);
+
+            // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
+            //
+            // The case for this looks like:
+            //
+            //  [HttpGet]
+            //  [HttpPost]
+            //  [Route("/Foo", Name = "Foo")]
+            //  public void DoStuff() { }
+            //
+            // However, Endpoint Routing requires Endpoint Names to be unique.
+            //
+            // We can use the route name as the endpoint name if it's not set. Note that there's no
+            // attribute for this today so it's unlikley. Using endpoint name on a 
+            if (routeName != null && 
+                !suppressLinkGeneration && 
+                routeNames.Add(routeName) &&
+                builder.Metadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName == null)
+            {
+                builder.Metadata.Add(new EndpointNameMetadata(routeName));
+            }
 
             if (dataTokens != null)
             {
@@ -277,6 +393,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < conventions.Count; i++)
             {
                 conventions[i](builder);
+            }
+
+            for (var i = 0; i < perRouteConventions.Count; i++)
+            {
+                perRouteConventions[i](builder);
             }
 
             return (RouteEndpoint)builder.Build();

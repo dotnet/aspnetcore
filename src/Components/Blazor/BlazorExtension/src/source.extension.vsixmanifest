@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Microsoft.VisualStudio.BlazorExtension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
+        <Identity Id="Microsoft.VisualStudio.BlazorExtension" Version="|%CurrentProject%;GetVsixVersion|" Language="en-US" Publisher="Microsoft" />
         <DisplayName>Blazor</DisplayName>
         <Description xml:space="preserve">Provides Visual Studio support for Blazor</Description>
         <License>Content\LICENSE.txt</License>
@@ -12,11 +12,8 @@
         <PreviewImage>Content\WebConfiguration.png</PreviewImage>
     </Metadata>
     <Installation AllUsers="true">
-         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
+         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.2,)" />
     </Installation>
-    <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
-    </Dependencies>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.VsPackage"  d:Source="File" Path="Templates.pkgdef" />

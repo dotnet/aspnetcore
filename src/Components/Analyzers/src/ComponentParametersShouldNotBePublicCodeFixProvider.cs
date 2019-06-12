@@ -1,15 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
+using System.Composition;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_FixTitle), Resources.ResourceManager, typeof(Resources));
 
         public override ImmutableArray<string> FixableDiagnosticIds
-            => ImmutableArray.Create(ComponentParametersShouldNotBePublicAnalyzer.DiagnosticId);
+            => ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

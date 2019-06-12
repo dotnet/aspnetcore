@@ -15,7 +15,7 @@
       </PropsProperties>
     </PropertyGroup>
 
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)\TemplateTests.props.in"
       Properties="$(PropsProperties)"
       OutputPath="$(TestTemplateTestsProps)" />

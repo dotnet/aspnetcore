@@ -8,7 +8,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class PrerenderingTest : ServerTestBase<AspNetSiteServerFixture>
     {
@@ -48,8 +48,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Browser.Equal("No value yet", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
 
-            // Once connected, we can
             BeginInteractivity();
+
+            // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }

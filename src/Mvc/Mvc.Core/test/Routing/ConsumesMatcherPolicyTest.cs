@@ -13,15 +13,17 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
+    // There are some unit tests here for the IEndpointSelectorPolicy implementation.
+    // The INodeBuilderPolicy implementation is well-tested by functional tests.
     public class ConsumesMatcherPolicyTest
     {
         [Fact]
-        public void AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
+        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[] { CreateEndpoint("/", null), };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsFalse()
+        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsFalse()
         {
             // Arrange
             var endpoints = new[]
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>())),
             };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
+        public void INodeBuilderPolicy_AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
         {
             // Arrange
             var endpoints = new[]
@@ -58,13 +60,103 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 CreateEndpoint("/", new ConsumesMetadata(new[] { "application/json", })),
             };
 
-            var policy = CreatePolicy();
+            var policy = (INodeBuilderPolicy)CreatePolicy();
 
             // Act
             var result = policy.AppliesToEndpoints(endpoints);
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        public void INodeBuilderPolicy_AppliesToEndpoints_WithDynamicMetadata_ReturnsFalse()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>()), new DynamicEndpointMetadata()),
+                CreateEndpoint("/", new ConsumesMetadata(new[] { "application/json", })),
+            };
+
+            var policy = (INodeBuilderPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutMetadata_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[] { CreateEndpoint("/", null, new DynamicEndpointMetadata()), };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointWithoutContentTypes_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>()), new DynamicEndpointMetadata()),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToEndpoints_EndpointHasContentTypes_ReturnsTrue()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>()), new DynamicEndpointMetadata()),
+                CreateEndpoint("/", new ConsumesMetadata(new[] { "application/json", })),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IEndpointSelectorPolicy_AppliesToEndpoints_WithoutDynamicMetadata_ReturnsFalse()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>())),
+                CreateEndpoint("/", new ConsumesMetadata(new[] { "application/json", })),
+            };
+
+            var policy = (IEndpointSelectorPolicy)CreatePolicy();
+
+            // Act
+            var result = policy.AppliesToEndpoints(endpoints);
+
+            // Assert
+            Assert.False(result);
         }
 
         [Fact]
@@ -224,12 +316,302 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal(expected, actual);
         }
 
-        private static RouteEndpoint CreateEndpoint(string template, ConsumesMetadata consumesMetadata)
+        [Fact]
+        public async Task ApplyAsync_EndpointWithoutMetadata_MatchWithoutContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", null),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext();
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointAllowsAnyContentType_MatchWithoutContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>())),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext();
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointHasWildcardContentType_MatchWithoutContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "*/*" })),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext();
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointWithoutMetadata_MatchWithAnyContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", null),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "text/plain",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointAllowsAnyContentType_MatchWithAnyContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(Array.Empty<string>())),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "text/plain",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointHasWildcardContentType_MatchWithAnyContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "*/*" })),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "text/plain",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointHasSubTypeWildcard_MatchWithValidContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "application/*+json", })),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "application/project+json",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointHasMultipleContentType_MatchWithValidContentType()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "text/xml", "application/xml", })),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "application/xml",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointDoesNotMatch_Returns415()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "text/xml", "application/xml", })),
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "application/json",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.False(candidates.IsValidCandidate(0));
+            Assert.NotNull(httpContext.GetEndpoint());
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointDoesNotMatch_DoesNotReturns415WithContentTypeObliviousEndpoint()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "text/xml", "application/xml", })),
+                CreateEndpoint("/", null)
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "application/json",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.False(candidates.IsValidCandidate(0));
+            Assert.Null(httpContext.GetEndpoint());
+        }
+
+        [Fact]
+        public async Task ApplyAsync_EndpointDoesNotMatch_DoesNotReturns415WithContentTypeWildcardEndpoint()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "text/xml", "application/xml", })),
+                CreateEndpoint("/", new ConsumesMetadata(new string[] { "*/*", }))
+            };
+
+            var candidates = CreateCandidateSet(endpoints);
+            var httpContext = new DefaultHttpContext()
+            {
+                Request =
+                {
+                    ContentType = "application/json",
+                },
+            };
+
+            var policy = CreatePolicy();
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.False(candidates.IsValidCandidate(0));
+            Assert.True(candidates.IsValidCandidate(1));
+            Assert.Null(httpContext.GetEndpoint());
+        }
+
+        private static RouteEndpoint CreateEndpoint(string template, ConsumesMetadata consumesMetadata, params object[] more)
         {
             var metadata = new List<object>();
             if (consumesMetadata != null)
             {
                 metadata.Add(consumesMetadata);
+            }
+
+            if (more != null)
+            {
+                metadata.AddRange(more);
             }
 
             return new RouteEndpoint(
@@ -240,9 +622,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 $"test: {template} - {string.Join(", ", consumesMetadata?.ContentTypes ?? Array.Empty<string>())}");
         }
 
+        private static CandidateSet CreateCandidateSet(Endpoint[] endpoints)
+        {
+            return new CandidateSet(endpoints, new RouteValueDictionary[endpoints.Length], new int[endpoints.Length]);
+        }
+
         private static ConsumesMatcherPolicy CreatePolicy()
         {
             return new ConsumesMatcherPolicy();
+        }
+
+        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        {
+            public bool IsDynamic => true;
         }
     }
 }

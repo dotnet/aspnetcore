@@ -19,7 +19,4 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
 </Project>

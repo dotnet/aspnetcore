@@ -1,8 +1,14 @@
 {
   "sdk": {
-    "version": "3.0.100-preview4-010309"
+    "version": "3.0.100-preview5-011568"
+  },
+  "tools": {
+    "dotnet": "3.0.100-preview5-011568",
+    "jdk": "11.0.3"
   },
   "msbuild-sdks": {
-    "Yarn.MSBuild": "1.13.0"
+    "Yarn.MSBuild": "1.15.2",
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.19302.2",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19302.2"
   }
 }

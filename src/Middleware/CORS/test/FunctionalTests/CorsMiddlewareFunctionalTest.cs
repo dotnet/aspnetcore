@@ -68,7 +68,10 @@ namespace FunctionalTests
 
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
+            // https://github.com/aspnet/AspNetCore/issues/7990
+#pragma warning disable 0618
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
+#pragma warning restore 0618
 
             var configuration =
 #if RELEASE

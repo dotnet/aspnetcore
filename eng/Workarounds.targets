@@ -25,4 +25,22 @@
           BeforeTargets="PrepareForRazorComponentGenerate"
           DependsOnTargets="GenerateSourceLinkFile" />
 
+  <!-- Workaround https://github.com/aspnet/websdk/pull/646. If merged, once we update to a websdk with this fix, we can move the setting below to Directory.Build.props. -->
+  <PropertyGroup>
+    <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+  </PropertyGroup>
+
+
+  <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+
 </Project>

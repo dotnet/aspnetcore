@@ -1,25 +1,37 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
+import { toLogicalElement, LogicalElement } from './LogicalElements';
 
-type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
+interface BrowserRendererRegistry {
+  [browserRendererId: number]: BrowserRenderer;
+}
 const browserRenderers: BrowserRendererRegistry = {};
 
-export function attachRootComponentToElement(browserRendererId: number, elementSelector: string, componentId: number) {
-  const element = document.querySelector(elementSelector);
-  if (!element) {
-    throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
-  }
+export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
 
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
-  browserRenderer.attachRootComponentToElement(componentId, element);
+
+  browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement);
 }
 
-export function renderBatch(browserRendererId: number, batch: RenderBatch) {
+export function attachRootComponentToElement(browserRendererId: number, elementSelector: string, componentId: number): void {
+
+  const element = document.querySelector(elementSelector);
+  if (!element) {
+    throw new Error(`Could not find any element matching selector '${elementSelector}'.`);
+  }
+
+  // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
+  attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId);
+}
+
+export function renderBatch(browserRendererId: number, batch: RenderBatch): void {
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);

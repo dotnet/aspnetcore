@@ -501,4 +501,7 @@
     <value>Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of '{3}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.</value>
     <comment>{0} is MvcOptions, {1} is MaxModelBindingRecursionDepth, {2} is option value, {3} is (loopy or deeply nested) top-level model type.</comment>
   </data>
+  <data name="Property_MustBeInstanceOfType" xml:space="preserve">
+    <value>Property '{0}.{1}' must be an instance of type '{2}'.</value>
+  </data>  
 </root>

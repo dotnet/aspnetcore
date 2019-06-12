@@ -6,12 +6,8 @@
   <Target Name="BuildAzureIntegration">
     <PropertyGroup>
       <AzureIntegrationProjProperties>
-        AspNetUniverseBuildOffline=true;
-        RepositoryRoot=$(AzureIntegrationProjectRoot);
-        VersionSuffix=$(VersionSuffix);
-        BuildNumberSuffix=$(BuildNumberSuffix);
+        RepoRoot=$(AzureIntegrationProjectRoot);
         Configuration=$(Configuration);
-        IsFinalBuild=$(IsFinalBuild);
       </AzureIntegrationProjProperties>
     </PropertyGroup>
 

@@ -310,6 +310,25 @@ namespace Microsoft.AspNetCore.WebUtilities
             base.Dispose(disposing);
         }
 
+        public override async ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                try
+                {
+                    await FlushInternalAsync(flushEncoder: true);
+                }
+                finally
+                {
+                    _bytePool.Return(_byteBuffer);
+                    _charPool.Return(_charBuffer);
+                }
+            }
+
+            await base.DisposeAsync();
+        }
+
         // Note: our FlushInternal method does NOT flush the underlying stream. This would result in
         // chunking.
         private void FlushInternal(bool flushEncoder)

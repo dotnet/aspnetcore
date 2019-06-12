@@ -1,14 +1,14 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+<EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
     <DataAnnotationsValidator />
 
     <p class="user-name">
-        User name: <input bind="@UserName" class="@context.FieldClass(() => UserName)" />
+        User name: <input @bind="@UserName" class="@context.FieldClass(() => UserName)" />
     </p>
     <p class="accepts-terms">
-        Accept terms: <input type="checkbox" bind="@AcceptsTerms" class="@context.FieldClass(() => AcceptsTerms)" />
+        Accept terms: <input type="checkbox" @bind="@AcceptsTerms" class="@context.FieldClass(() => AcceptsTerms)" />
     </p>
 
     <button type="submit">Submit</button>
@@ -28,7 +28,7 @@
     <span id="last-callback">@lastCallback</span>
 }
 
-@functions {
+@code {
     string lastCallback;
 
     [Required(ErrorMessage = "Please choose a username")]

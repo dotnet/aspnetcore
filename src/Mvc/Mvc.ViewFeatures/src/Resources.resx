@@ -289,4 +289,10 @@
   <data name="SerializingTempData" xml:space="preserve">
     <value>Serializing TempDataDictionary</value>
   </data>
+  <data name="TempData_CannotSerializeType" xml:space="preserve">
+    <value>The '{0}' cannot serialize an object of type '{1}'.</value>
+  </data>
+  <data name="TempData_CannotDeserializeType" xml:space="preserve">
+    <value>Unsupported data type '{0}'.</value>
+  </data>
 </root>

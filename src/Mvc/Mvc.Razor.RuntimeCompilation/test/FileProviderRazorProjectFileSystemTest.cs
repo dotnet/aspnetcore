@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var fileSystem = GetRazorProjectFileSystem(fileProvider);
 
             // Act
-            var item = fileSystem.GetItem("/File3.cshtml");
+            var item = fileSystem.GetItem("/File3.cshtml", fileKind: null);
 
             // Assert
             Assert.True(item.Exists);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var fileSystem = GetRazorProjectFileSystem(fileProvider);
 
             // Act
-            var item = fileSystem.GetItem("/File3.cshtml");
+            var item = fileSystem.GetItem("/File3.cshtml", fileKind: null);
 
             // Assert
             Assert.True(item.Exists);
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var fileSystem = GetRazorProjectFileSystem(fileProvider);
 
             // Act
-            var item = fileSystem.GetItem("/NotFound.cshtml");
+            var item = fileSystem.GetItem("/NotFound.cshtml", fileKind: null);
 
             // Assert
             Assert.False(item.Exists);

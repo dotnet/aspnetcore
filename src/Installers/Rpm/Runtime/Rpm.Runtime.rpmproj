@@ -6,10 +6,13 @@
 
   <PropertyGroup>
     <RpmPackageInstallRoot>/usr/share/dotnet/</RpmPackageInstallRoot>
-    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.rpm</TargetFileName>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <Import Project="..\Rpm.Runtime.Common.targets" />
 
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <PropertyGroup>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.rpm</TargetFileName>
+    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
+  </PropertyGroup>
 </Project>

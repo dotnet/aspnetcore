@@ -246,14 +246,16 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
             {
-                var pool = context.RequestServices.GetRequiredService<ObjectPool<UriBuildingContext>>();
-                _binder = new TemplateBinder(UrlEncoder.Default, pool, ParsedTemplate, Defaults);
+                var binderFactory = context.RequestServices.GetRequiredService<TemplateBinderFactory>();
+                _binder = binderFactory.Create(ParsedTemplate, Defaults);
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private void EnsureLoggers(HttpContext context)
         {

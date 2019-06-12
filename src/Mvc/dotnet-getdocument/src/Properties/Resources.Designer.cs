@@ -11,20 +11,6 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             = new ResourceManager("Microsoft.Extensions.ApiDescription.Tool.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The configuration to use.
-        /// </summary>
-        internal static string ConfigurationDescription
-        {
-            get => GetString("ConfigurationDescription");
-        }
-
-        /// <summary>
-        /// The configuration to use.
-        /// </summary>
-        internal static string FormatConfigurationDescription()
-            => GetString("ConfigurationDescription");
-
-        /// <summary>
         /// dotnet-getdocument
         /// </summary>
         internal static string CommandFullName
@@ -39,7 +25,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => GetString("CommandFullName");
 
         /// <summary>
-        /// The target framework.
+        /// The target framework to use. Required.
         /// </summary>
         internal static string TargetFrameworkDescription
         {
@@ -47,69 +33,27 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// The target framework.
+        /// The target framework to use. Required.
         /// </summary>
         internal static string FormatTargetFrameworkDescription()
             => GetString("TargetFrameworkDescription");
 
         /// <summary>
-        /// Unable to retrieve project metadata. If you are using custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, use the --projectExtensionsPath option.
+        /// Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.1 or higher.
         /// </summary>
-        internal static string GetMetadataFailed
+        internal static string OldNETCoreAppProject
         {
-            get => GetString("GetMetadataFailed");
+            get => GetString("OldNETCoreAppProject");
         }
 
         /// <summary>
-        /// Unable to retrieve project metadata. If you are using custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, use the --projectExtensionsPath option.
+        /// Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.1 or higher.
         /// </summary>
-        internal static string FormatGetMetadataFailed()
-            => GetString("GetMetadataFailed");
+        internal static string FormatOldNETCoreAppProject(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("OldNETCoreAppProject"), p0, p1);
 
         /// <summary>
-        /// More than one project was found in the current working directory. Use the --project option.
-        /// </summary>
-        internal static string MultipleProjects
-        {
-            get => GetString("MultipleProjects");
-        }
-
-        /// <summary>
-        /// More than one project was found in the current working directory. Use the --project option.
-        /// </summary>
-        internal static string FormatMultipleProjects()
-            => GetString("MultipleProjects");
-
-        /// <summary>
-        /// More than one project was found in directory '{0}'. Specify one using its file name.
-        /// </summary>
-        internal static string MultipleProjectsInDirectory
-        {
-            get => GetString("MultipleProjectsInDirectory");
-        }
-
-        /// <summary>
-        /// More than one project was found in directory '{0}'. Specify one using its file name.
-        /// </summary>
-        internal static string FormatMultipleProjectsInDirectory(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MultipleProjectsInDirectory"), p0);
-
-        /// <summary>
-        /// Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.0 or higher.
-        /// </summary>
-        internal static string NETCoreApp1Project
-        {
-            get => GetString("NETCoreApp1Project");
-        }
-
-        /// <summary>
-        /// Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.0 or higher.
-        /// </summary>
-        internal static string FormatNETCoreApp1Project(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("NETCoreApp1Project"), p0, p1);
-
-        /// <summary>
-        /// Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.
+        /// Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, update this project to target .NET Core and / or .NET Framework.
         /// </summary>
         internal static string NETStandardProject
         {
@@ -117,13 +61,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.
+        /// Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, update this project to target .NET Core and / or .NET Framework.
         /// </summary>
         internal static string FormatNETStandardProject(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("NETStandardProject"), p0);
 
         /// <summary>
-        /// Do not colorize output.
+        /// Do not colorize console output.
         /// </summary>
         internal static string NoColorDescription
         {
@@ -131,41 +75,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Do not colorize output.
+        /// Do not colorize console output.
         /// </summary>
         internal static string FormatNoColorDescription()
             => GetString("NoColorDescription");
 
         /// <summary>
-        /// No project was found. Change the current working directory or use the --project option.
-        /// </summary>
-        internal static string NoProject
-        {
-            get => GetString("NoProject");
-        }
-
-        /// <summary>
-        /// No project was found. Change the current working directory or use the --project option.
-        /// </summary>
-        internal static string FormatNoProject()
-            => GetString("NoProject");
-
-        /// <summary>
-        /// No project was found in directory '{0}'.
-        /// </summary>
-        internal static string NoProjectInDirectory
-        {
-            get => GetString("NoProjectInDirectory");
-        }
-
-        /// <summary>
-        /// No project was found in directory '{0}'.
-        /// </summary>
-        internal static string FormatNoProjectInDirectory(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("NoProjectInDirectory"), p0);
-
-        /// <summary>
-        /// Prefix output with level.
+        /// Prefix console output with logging level.
         /// </summary>
         internal static string PrefixDescription
         {
@@ -173,13 +89,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Prefix output with level.
+        /// Prefix console output with logging level.
         /// </summary>
         internal static string FormatPrefixDescription()
             => GetString("PrefixDescription");
 
         /// <summary>
-        /// The project to use.
+        /// The project name. Required.
         /// </summary>
         internal static string ProjectDescription
         {
@@ -187,24 +103,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// The project to use.
+        /// The project name. Required.
         /// </summary>
         internal static string FormatProjectDescription()
             => GetString("ProjectDescription");
-
-        /// <summary>
-        /// The MSBuild project extensions path. Defaults to "obj".
-        /// </summary>
-        internal static string ProjectExtensionsPathDescription
-        {
-            get => GetString("ProjectExtensionsPathDescription");
-        }
-
-        /// <summary>
-        /// The MSBuild project extensions path. Defaults to "obj".
-        /// </summary>
-        internal static string FormatProjectExtensionsPathDescription()
-            => GetString("ProjectExtensionsPathDescription");
 
         /// <summary>
         /// The runtime identifier to use.
@@ -235,20 +137,6 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedFramework"), p0, p1);
 
         /// <summary>
-        /// Using project '{0}'.
-        /// </summary>
-        internal static string UsingProject
-        {
-            get => GetString("UsingProject");
-        }
-
-        /// <summary>
-        /// Using project '{0}'.
-        /// </summary>
-        internal static string FormatUsingProject(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingProject"), p0);
-
-        /// <summary>
         /// Show verbose output.
         /// </summary>
         internal static string VerboseDescription
@@ -263,60 +151,60 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => GetString("VerboseDescription");
 
         /// <summary>
-        /// Writing '{0}'...
+        /// The project assets file to use.
         /// </summary>
-        internal static string WritingFile
+        internal static string AssetsFileDescription
         {
-            get => GetString("WritingFile");
+            get => GetString("AssetsFileDescription");
         }
 
         /// <summary>
-        /// Writing '{0}'...
+        /// The project assets file to use.
         /// </summary>
-        internal static string FormatWritingFile(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("WritingFile"), p0);
+        internal static string FormatAssetsFileDescription()
+            => GetString("AssetsFileDescription");
 
         /// <summary>
-        /// Project output not found. Project must be up-to-date when using this tool.
+        /// Missing required option '--{0}'.
         /// </summary>
-        internal static string MustBuild
+        internal static string MissingOption
         {
-            get => GetString("MustBuild");
+            get => GetString("MissingOption");
         }
 
         /// <summary>
-        /// Project output not found. Project must be up-to-date when using this tool.
+        /// Missing required option '--{0}'.
         /// </summary>
-        internal static string FormatMustBuild()
-            => GetString("MustBuild");
+        internal static string FormatMissingOption(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MissingOption"), p0);
 
         /// <summary>
-        /// The file to write the result to.
+        /// The platform to use.
         /// </summary>
-        internal static string OutputDescription
+        internal static string PlatformDescription
         {
-            get => GetString("OutputDescription");
+            get => GetString("PlatformDescription");
         }
 
         /// <summary>
-        /// The file to write the result to.
+        /// The platform to use.
         /// </summary>
-        internal static string FormatOutputDescription()
-            => GetString("OutputDescription");
+        internal static string FormatPlatformDescription()
+            => GetString("PlatformDescription");
 
         /// <summary>
-        /// Unable to retrieve '{0}' project metadata. Ensure '$({1})' is set.
+        /// The assembly path to use. Required.
         /// </summary>
-        internal static string GetMetadataValueFailed
+        internal static string AssemblyDescription
         {
-            get => GetString("GetMetadataValueFailed");
+            get => GetString("AssemblyDescription");
         }
 
         /// <summary>
-        /// Unable to retrieve '{0}' project metadata. Ensure '$({1})' is set.
+        /// The assembly path to use. Required.
         /// </summary>
-        internal static string FormatGetMetadataValueFailed(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("GetMetadataValueFailed"), p0, p1);
+        internal static string FormatAssemblyDescription()
+            => GetString("AssemblyDescription");
 
         private static string GetString(string name, params string[] formatterNames)
         {

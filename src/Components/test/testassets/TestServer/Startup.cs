@@ -1,8 +1,9 @@
 using BasicTestApp;
-using BasicTestApp.RouterTest;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,14 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("NameMustStartWithB", policy =>
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,36 +46,40 @@ namespace TestServer
                 app.UseDeveloperExceptionPage();
             }
 
-            AllowCorsForAnyLocalhostPort(app);
+            // It's not enough just to return "Access-Control-Allow-Origin: *", because
+            // browsers don't allow wildcards in conjunction with credentials. So we must
+            // specify explicitly which origin we want to allow.
+            app.UseCors(policy =>
+            {
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("MyCustomHeader")
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
 
-            app.UseRouting();
+            app.UseAuthentication();
 
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
-                // The following two lines are equivalent to:
-                //     endpoints.MapComponentsHub<Index>();
-                //
-                // However it's expressed using routing as a way of checking that
-                // we're not relying on any extra magic inside MapComponentsHub, since it's
-                // important that people can set up these bits of middleware manually (e.g., to
-                // swap in UseAzureSignalR instead of UseSignalR).
+                subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
                 subdirApp.UseRouting();
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath).AddComponent<Index>(selector: "root");
+                    endpoints.MapBlazorHub(typeof(Index), selector: "root");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });
-
-                subdirApp.MapWhen(
-                    ctx => ctx.Features.Get<IEndpointFeature>()?.Endpoint == null,
-                    blazorBuilder => blazorBuilder.UseBlazor<BasicTestApp.Startup>());
             });
+
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
 
             // Separately, mount a prerendered server-side Blazor app on /prerendered
@@ -79,32 +91,8 @@ namespace TestServer
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapComponentHub<TestRouter>("app");
+                    endpoints.MapBlazorHub();
                 });
-            });
-        }
-
-        private static void AllowCorsForAnyLocalhostPort(IApplicationBuilder app)
-        {
-            // It's not enough just to return "Access-Control-Allow-Origin: *", because
-            // browsers don't allow wildcards in conjunction with credentials. So we must
-            // specify explicitly which origin we want to allow.
-            app.Use((context, next) =>
-            {
-                if (context.Request.Headers.TryGetValue("origin", out var incomingOriginValue))
-                {
-                    var origin = incomingOriginValue.ToArray()[0];
-                    if (origin.StartsWith("http://localhost:") || origin.StartsWith("http://127.0.0.1:"))
-                    {
-                        context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
-                        context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-                        context.Response.Headers.Add("Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,DELETE,OPTIONS");
-                        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type,TestHeader,another-header");
-                        context.Response.Headers.Add("Access-Control-Expose-Headers", "MyCustomHeader,TestHeader,another-header");
-                    }
-                }
-
-                return next();
             });
         }
     }

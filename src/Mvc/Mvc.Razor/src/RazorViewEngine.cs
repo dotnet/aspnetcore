@@ -249,15 +249,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 isMainPage);
             Dictionary<string, string> expanderValues = null;
 
-            if (_options.ViewLocationExpanders.Count > 0)
+            var expanders = _options.ViewLocationExpanders;
+            // Read interface .Count once rather than per iteration
+            var expandersCount = expanders.Count;
+            if (expandersCount > 0)
             {
                 expanderValues = new Dictionary<string, string>(StringComparer.Ordinal);
                 expanderContext.Values = expanderValues;
 
                 // Perf: Avoid allocations
-                for (var i = 0; i < _options.ViewLocationExpanders.Count; i++)
+                for (var i = 0; i < expandersCount; i++)
                 {
-                    _options.ViewLocationExpanders[i].PopulateValues(expanderContext);
+                    expanders[i].PopulateValues(expanderContext);
                 }
             }
 
@@ -350,9 +353,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var viewLocations = GetViewLocationFormats(expanderContext);
 
-            for (var i = 0; i < _options.ViewLocationExpanders.Count; i++)
+            var expanders = _options.ViewLocationExpanders;
+            // Read interface .Count once rather than per iteration
+            var expandersCount = expanders.Count;
+            for (var i = 0; i < expandersCount; i++)
             {
-                viewLocations = _options.ViewLocationExpanders[i].ExpandViewLocations(expanderContext, viewLocations);
+                viewLocations = expanders[i].ExpandViewLocations(expanderContext, viewLocations);
             }
 
             ViewLocationCacheResult cacheResult = null;
@@ -404,9 +410,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewDescriptor = factoryResult.ViewDescriptor;
             if (viewDescriptor?.ExpirationTokens != null)
             {
-                for (var i = 0; i < viewDescriptor.ExpirationTokens.Count; i++)
+                var viewExpirationTokens = viewDescriptor.ExpirationTokens;
+                // Read interface .Count once rather than per iteration
+                var viewExpirationTokensCount = viewExpirationTokens.Count;
+                for (var i = 0; i < viewExpirationTokensCount; i++)
                 {
-                    expirationTokens.Add(viewDescriptor.ExpirationTokens[i]);
+                    expirationTokens.Add(viewExpirationTokens[i]);
                 }
             }
 

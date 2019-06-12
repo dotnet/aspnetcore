@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,6 +34,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         internal DefaultUIContext WithCookieConsent() =>
             new DefaultUIContext(this) { CookiePolicyAccepted = true };
+
+        internal DefaultUIContext WithRealEmailSender() =>
+            new DefaultUIContext(this) { HasRealEmailSender = true };
 
         public string AuthenticatorKey
         {
@@ -92,6 +95,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             get => GetValue<bool>(nameof(CookiePolicyAccepted));
             set => SetValue(nameof(CookiePolicyAccepted), value);
+        }
+
+        public bool HasRealEmailSender
+        {
+            get => GetValue<bool>(nameof(HasRealEmailSender));
+            set => SetValue(nameof(HasRealEmailSender), value);
         }
     }
 }

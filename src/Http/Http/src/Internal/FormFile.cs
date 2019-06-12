@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
@@ -30,8 +31,8 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// </summary>
         public string ContentDisposition
         {
-            get { return Headers["Content-Disposition"]; }
-            set { Headers["Content-Disposition"] = value; }
+            get { return Headers[HeaderNames.ContentDisposition]; }
+            set { Headers[HeaderNames.ContentDisposition] = value; }
         }
 
         /// <summary>
@@ -39,8 +40,8 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// </summary>
         public string ContentType
         {
-            get { return Headers["Content-Type"]; }
-            set { Headers["Content-Type"] = value; }
+            get { return Headers[HeaderNames.ContentType]; }
+            set { Headers[HeaderNames.ContentType] = value; }
         }
 
         /// <summary>

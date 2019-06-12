@@ -3,7 +3,10 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
 using Newtonsoft.Json.Linq;
@@ -49,7 +52,7 @@ namespace Templates.Test.SpaTemplateTest
             // multiple NPM installs run concurrently which otherwise causes errors when
             // tests run in parallel.
             var clientAppSubdirPath = Path.Combine(Project.TemplateOutputDir, "ClientApp");
-            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+            ValidatePackageJson(clientAppSubdirPath);
 
             var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
             if (usesAuth && !useLocalDb)
@@ -79,11 +82,20 @@ namespace Templates.Test.SpaTemplateTest
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
+            // localdb is not installed on the CI machines, so skip it.
+            var shouldVisitFetchData = !useLocalDb;
+
             if (usesAuth)
             {
                 var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
                 Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
                 Project.AssertEmptyMigration(template);
+
+                if (shouldVisitFetchData)
+                {
+                    var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
+                    Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", Project, dbUpdateResult));
+                }
             }
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
@@ -97,8 +109,9 @@ namespace Templates.Test.SpaTemplateTest
 
                 if (BrowserFixture.IsHostAutomationSupported())
                 {
-                    aspNetProcess.VisitInBrowser(Browser);
-                    TestBasicNavigation(visitFetchData: !usesAuth);
+                    var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.build");
+                    aspNetProcess.VisitInBrowser(browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
                 }
             }
 
@@ -118,10 +131,22 @@ namespace Templates.Test.SpaTemplateTest
 
                 if (BrowserFixture.IsHostAutomationSupported())
                 {
-                    aspNetProcess.VisitInBrowser(Browser);
-                    TestBasicNavigation(visitFetchData: !usesAuth);
+                    var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.publish");
+                    aspNetProcess.VisitInBrowser(browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
                 }
             }
+        }
+
+        private void ValidatePackageJson(string clientAppSubdirPath)
+        {
+            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+            var packageJson = JObject.Parse(ReadFile(clientAppSubdirPath, "package.json"));
+
+            // NPM package names must match ^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$
+            var packageName = (string)packageJson["name"];
+            Regex regex = new Regex("^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$");
+            Assert.True(regex.IsMatch(packageName), "package.json name is invalid format");
         }
 
         private static async Task WarmUpServer(AspNetProcess aspNetProcess)
@@ -166,39 +191,64 @@ namespace Templates.Test.SpaTemplateTest
             File.WriteAllText(Path.Combine(Project.TemplatePublishDir, "appsettings.json"), testAppSettings);
         }
 
-        private void TestBasicNavigation(bool visitFetchData)
+        private void TestBasicNavigation(bool visitFetchData, bool usesAuth, IWebDriver browser, ILogs logs)
         {
-            Browser.WaitForElement("ul");
+            browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
-            Assert.Contains(Project.ProjectGuid, Browser.Title);
+            browser.Contains(Project.ProjectGuid, () => browser.Title);
 
             // Initially displays the home page
-            Assert.Equal("Hello, world!", Browser.GetText("h1"));
+            browser.Equal("Hello, world!", () => browser.FindElement(By.TagName("h1")).Text);
 
             // Can navigate to the counter page
-            Browser.Click(By.PartialLinkText("Counter"));
-            Browser.WaitForUrl("counter");
+            browser.FindElement(By.PartialLinkText("Counter")).Click();
+            browser.Contains("counter", () => browser.Url);
 
-            Assert.Equal("Counter", Browser.GetText("h1"));
+            browser.Equal("Counter", () => browser.FindElement(By.TagName("h1")).Text);
 
             // Clicking the counter button works
-            var counterComponent = Browser.FindElement("h1").Parent();
-            Assert.Equal("0", counterComponent.GetText("strong"));
-            Browser.Click(counterComponent, "button");
-            Assert.Equal("1", counterComponent.GetText("strong"));
+            browser.Equal("0", () => browser.FindElement(By.CssSelector("p>strong")).Text);
+            browser.FindElement(By.CssSelector("p+button")).Click();
+            browser.Equal("1", () => browser.FindElement(By.CssSelector("p>strong")).Text);
 
             if (visitFetchData)
             {
+                browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+
+                if (usesAuth)
+                {
+                    // We will be redirected to the identity UI
+                    browser.Contains("/Identity/Account/Login", () => browser.Url);
+                    browser.FindElement(By.PartialLinkText("Register as a new user")).Click();
+
+                    var userName = $"{Guid.NewGuid()}@example.com";
+                    var password = $"!Test.Password1$";
+                    browser.Exists(By.Name("Input.Email"));
+                    browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
+                    browser.FindElement(By.Name("Input.Password")).SendKeys(password);
+                    browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
+                    browser.FindElement(By.Id("registerSubmit")).Click();
+                }
+
                 // Can navigate to the 'fetch data' page
-                Browser.Click(By.PartialLinkText("Fetch data"));
-                Browser.WaitForUrl("fetch-data");
-                Assert.Equal("Weather forecast", Browser.GetText("h1"));
+                browser.Contains("fetch-data", () => browser.Url);
+                browser.Equal("Weather forecast", () => browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                var fetchDataComponent = Browser.FindElement("h1").Parent();
-                Browser.WaitForElement("table>tbody>tr");
-                var table = Browser.FindElement(fetchDataComponent, "table", timeoutSeconds: 5);
-                Assert.Equal(5, table.FindElements(By.CssSelector("tbody tr")).Count);
+                browser.Exists(By.CssSelector("table>tbody>tr"));
+                browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+            }
+
+            foreach (var logKind in logs.AvailableLogTypes)
+            {
+                var entries = logs.GetLog(logKind);
+                var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));
+
+                badEntries = badEntries.Where(e =>
+                    !e.Message.Contains("failed: WebSocket is closed before the connection is established.")
+                    && !e.Message.Contains("[WDS] Disconnected!"));
+
+                Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }
         }
 

@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval) { }
+        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval, int streamBufferCapacity) { }
         public virtual System.Threading.CancellationToken ConnectionAborted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public virtual string ConnectionId { get { throw null; } }
         public virtual Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
@@ -202,6 +203,7 @@ namespace Microsoft.AspNetCore.SignalR
         public System.TimeSpan? HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan? KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long? MaximumReceiveMessageSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int? StreamBufferCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IList<string> SupportedProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class HubOptions<THub> : Microsoft.AspNetCore.SignalR.HubOptions where THub : Microsoft.AspNetCore.SignalR.Hub

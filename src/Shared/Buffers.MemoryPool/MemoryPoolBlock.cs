@@ -42,11 +42,7 @@ namespace System.Buffers
 
         ~MemoryPoolBlock()
         {
-            if (Slab != null && Slab.IsActive)
-            {
-                // Need to make a new object because this one is being finalized
-                Pool.Return(new MemoryPoolBlock(Pool, Slab, _offset, _length));
-            }
+            Pool.RefreshBlock(Slab, _offset, _length);
         }
 
         public void Dispose()

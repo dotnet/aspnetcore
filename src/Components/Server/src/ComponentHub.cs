@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    public sealed class ComponentHub : Hub
+    internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
@@ -67,6 +68,16 @@ namespace Microsoft.AspNetCore.Components.Server
         public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
+            if (DefaultCircuitFactory.ResolveComponentMetadata(Context.GetHttpContext(), circuitClient).Count == 0)
+            {
+                var endpointFeature = Context.GetHttpContext().Features.Get<IEndpointFeature>();
+                var endpoint = endpointFeature?.Endpoint;
+
+                _logger.LogDebug($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
+
+                // No components preregistered so return. This is totally normal if the components were prerendered.
+                return null;
+            }
 
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 Context.GetHttpContext(),
@@ -99,10 +110,8 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 CircuitHost = circuitHost;
 
-                // Dispatch any buffered renders we accumulated during a disconnect.
-                // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
-                // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-                _ = circuitHost.Renderer.ProcessBufferedRenderBatches();
+                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
+                circuitHost.SendPendingBatches();
                 return true;
             }
 
@@ -122,6 +131,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
+            _logger.LogDebug($"Received confirmation for batch {renderId}.");
             EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 

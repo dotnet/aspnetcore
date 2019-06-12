@@ -507,7 +507,7 @@ Products: Book1, Book2 (1)";
 
             // Act - 3
             // Trigger an expiration of the nested content.
-            var content = @"[{ productName: ""Music Systems"" },{ productName: ""Televisions"" }]";
+            var content = @"[{ ""productName"": ""Music Systems"" },{ ""productName"": ""Televisions"" }]";
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/categories/Electronics");
             requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
             (await Client.SendAsync(requestMessage)).EnsureSuccessStatusCode();

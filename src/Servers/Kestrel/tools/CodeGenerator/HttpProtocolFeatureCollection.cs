@@ -19,11 +19,14 @@ namespace CodeGenerator
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
 
             var commonFeatures = new[]
             {
                 "IHttpAuthenticationFeature",
+                "IHttpRequestTrailersFeature",
                 "IQueryFeature",
                 "IFormFeature",
             };
@@ -67,10 +70,14 @@ namespace CodeGenerator
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestLifetimeFeature",
+                "IHttpRequestTrailersFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
+                "IHttpMinRequestBodyDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature"
+                "IHttpResponseStartFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
             
             var usings = $@"

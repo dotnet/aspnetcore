@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void PlatformManifestListsAllFiles()
         {
-            var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "Microsoft.AspNetCore.App.PlatformManifest.txt");
+            var platformManifestPath = Path.Combine(_targetingPackRoot, "data", "PlatformManifest.txt");
             var expectedAssemblies = TestData.GetSharedFxDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
                 .ToHashSet();

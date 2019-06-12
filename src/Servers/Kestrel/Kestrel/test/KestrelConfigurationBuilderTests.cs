@@ -133,7 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
                 opt.Protocols = HttpProtocols.Http2;
             });
 
@@ -156,13 +155,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     Assert.True(opt.IsHttps);
                     Assert.NotNull(opt.HttpsOptions.ServerCertificate);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
                     Assert.Equal(HttpProtocols.Http2, opt.ListenOptions.Protocols);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
                     Assert.Equal(HttpProtocols.Http2, opt.Protocols);
                 })
                 .Load();
@@ -181,7 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
                 opt.UseHttps(TestResources.GetTestCertificate());
             });
 
@@ -202,12 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     ran1 = true;
                     Assert.True(opt.IsHttps);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
                 })
                 .Load();
 

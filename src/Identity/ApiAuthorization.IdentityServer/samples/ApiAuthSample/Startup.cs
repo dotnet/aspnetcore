@@ -67,6 +67,7 @@ namespace ApiAuthSample
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToPage("/Index");
             });
         }
     }

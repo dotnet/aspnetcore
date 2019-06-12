@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -19,6 +20,26 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 services.AddSingleton<IServer, TestServer>();
             });
+        }
+
+        /// <summary>
+        /// Retrieves the TestServer from the host services.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static TestServer GetTestServer(this IWebHost host)
+        {
+            return (TestServer)host.Services.GetRequiredService<IServer>();
+        }
+
+        /// <summary>
+        /// Retrieves the test client from the TestServer in the host services.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static HttpClient GetTestClient(this IWebHost host)
+        {
+            return host.GetTestServer().CreateClient();
         }
 
         public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)

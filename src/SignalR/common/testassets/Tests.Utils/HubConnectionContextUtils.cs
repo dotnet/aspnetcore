@@ -22,20 +22,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
             {
-                Protocol = protocol ?? new NewtonsoftJsonHubProtocol(),
+                Protocol = protocol ?? new JsonHubProtocol(),
                 UserIdentifier = userIdentifier,
             };
         }
 
         public static MockHubConnectionContext CreateMock(ConnectionContext connection)
         {
-            return new MockHubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15));
+            return new MockHubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15), streamBufferCapacity: 10);
         }
 
         public class MockHubConnectionContext : HubConnectionContext
         {
-            public MockHubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval)
-                : base(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval)
+            public MockHubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
+                : base(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval, streamBufferCapacity)
             {
 
             }

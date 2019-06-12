@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    internal class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
@@ -103,8 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryConnection CreateConnection()
         {
-            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log);
-            _ = HandleConnection(transportConnection);
+            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
+            _transportFactory.AddConnection(transportConnection);
             return new InMemoryConnection(transportConnection);
         }
 
@@ -129,34 +128,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             return services.BuildServiceProvider();
         }
 
-        private async Task HandleConnection(InMemoryTransportConnection transportConnection)
+        public async ValueTask DisposeAsync()
         {
-            try
-            {
-                var middlewareTask = _transportFactory.ConnectionDispatcher.OnConnection(transportConnection);
-                var transportTask = CancellationTokenAsTask(transportConnection.ConnectionClosed);
-
-                await transportTask;
-                await middlewareTask;
-
-                transportConnection.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Debug.Assert(false, $"Unexpected exception: {ex}.");
-            }
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
+            // The concrete WebHost implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
+            _memoryPool.Dispose();
         }
     }
 }

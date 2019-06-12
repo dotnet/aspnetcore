@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     }
     public partial class NewtonsoftJsonOutputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter
     {
-        public NewtonsoftJsonOutputFormatter(Newtonsoft.Json.JsonSerializerSettings serializerSettings, System.Buffers.ArrayPool<char> charPool) { }
+        public NewtonsoftJsonOutputFormatter(Newtonsoft.Json.JsonSerializerSettings serializerSettings, System.Buffers.ArrayPool<char> charPool, Microsoft.AspNetCore.Mvc.MvcOptions mvcOptions) { }
         protected Newtonsoft.Json.JsonSerializerSettings SerializerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected virtual Newtonsoft.Json.JsonSerializer CreateJsonSerializer() { throw null; }
         protected virtual Newtonsoft.Json.JsonSerializer CreateJsonSerializer(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) { throw null; }

@@ -57,7 +57,7 @@ namespace MusicStore
 
             // Add EF services to the services container
             services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                options.UseSqlite("Data Source=MusicStore.db"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()

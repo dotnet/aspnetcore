@@ -1,6 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore
+{
+    public static partial class StaticWebAssetsWebHostBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Hosting
 {
     public partial class DelegateStartup : Microsoft.AspNetCore.Hosting.StartupBase<Microsoft.Extensions.DependencyInjection.IServiceCollection>
@@ -145,7 +152,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
     }
-    [System.Diagnostics.Tracing.EventSourceAttribute(Name="Microsoft-AspNetCore-Hosting")]
     public sealed partial class HostingEventSource : System.Diagnostics.Tracing.EventSource
     {
         internal HostingEventSource() { }
@@ -154,6 +160,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void HostStart() { }
         [System.Diagnostics.Tracing.EventAttribute(2, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void HostStop() { }
+        protected override void OnEventCommand(System.Diagnostics.Tracing.EventCommandEventArgs command) { }
         [System.Diagnostics.Tracing.EventAttribute(3, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void RequestStart(string method, string path) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.Tracing.EventAttribute(4, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
@@ -206,6 +213,14 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
         public ServerAddressesFeature() { }
         public System.Collections.Generic.ICollection<string> Addresses { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool PreferHostingUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
+{
+    public partial class StaticWebAssetsLoader
+    {
+        public StaticWebAssetsLoader() { }
+        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment) { }
     }
 }
 namespace Microsoft.Extensions.Hosting

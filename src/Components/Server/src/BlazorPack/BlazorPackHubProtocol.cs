@@ -27,16 +27,12 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
         private const int NonVoidResult = 3;
 
         private static readonly int ProtocolVersion = 1;
-        private static readonly int ProtocolMinorVersion = 0;
 
         /// <inheritdoc />
         public string Name => ProtocolName;
 
         /// <inheritdoc />
         public int Version => ProtocolVersion;
-
-        /// <inheritdoc />
-        public int MinorVersion => ProtocolMinorVersion;
 
         /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Binary;
@@ -430,6 +426,10 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 
                 case byte[] byteArray:
                     writer.Write(byteArray);
+                    break;
+
+                case Exception exception:
+                    writer.Write(exception.ToString());
                     break;
 
                 default:

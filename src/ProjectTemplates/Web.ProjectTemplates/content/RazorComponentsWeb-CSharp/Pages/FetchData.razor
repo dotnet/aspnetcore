@@ -1,5 +1,5 @@
 @page "/fetchdata"
-@using RazorComponentsWeb_CSharp.Services
+@using RazorComponentsWeb_CSharp.Data
 @inject WeatherForecastService ForecastService
 
 <h1>Weather forecast</h1>
@@ -35,7 +35,7 @@ else
     </table>
 }
 
-@functions {
+@code {
     WeatherForecast[] forecasts;
 
     protected override async Task OnInitAsync()

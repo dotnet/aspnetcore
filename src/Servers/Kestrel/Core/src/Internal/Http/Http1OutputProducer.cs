@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
             lock (_contextLock)
             {
@@ -481,10 +481,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(_currentSegmentOwner == null);
             Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
-            _autoChunk = false;
-            _startCalled = false;
-            _currentChunkMemoryUpdated = false;
+            // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
+            _autoChunk = false;
+            _currentChunkMemoryUpdated = false;
+            _startCalled = false;
         }
 
         private ValueTask<FlushResult> WriteAsync(

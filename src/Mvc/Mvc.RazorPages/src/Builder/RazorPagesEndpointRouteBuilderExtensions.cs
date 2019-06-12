@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds endpoints for Razor Pages to the <see cref="IEndpointRouteBuilder"/>.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
-        public static IEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder endpoints)
+        /// <returns>An <see cref="PageActionEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
+        public static PageActionEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder endpoints)
         {
             if (endpoints == null)
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
 
             EnsureRazorPagesServices(endpoints);
 
-            return GetOrCreateDataSource(endpoints);
+            return GetOrCreateDataSource(endpoints).DefaultBuilder;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder
         /// will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
+        public static IEndpointConventionBuilder MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
         {
             if (endpoints == null)
             {
@@ -78,11 +78,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -113,7 +115,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToPage(
+        public static IEndpointConventionBuilder MapFallbackToPage(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             string page)
@@ -142,11 +144,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -174,7 +178,7 @@ namespace Microsoft.AspNetCore.Builder
         /// will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaPage(
+        public static IEndpointConventionBuilder MapFallbackToAreaPage(
             this IEndpointRouteBuilder endpoints,
             string page,
             string area)
@@ -198,11 +202,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             });
+            return builder;
         }
 
         /// <summary>
@@ -234,7 +240,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaPage(
+        public static IEndpointConventionBuilder MapFallbackToAreaPage(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             string page,
@@ -264,11 +270,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
             });
+            return builder;
         }
 
         private static DynamicPageMetadata CreateDynamicPageMetadata(string page, string area)

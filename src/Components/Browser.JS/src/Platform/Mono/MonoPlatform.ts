@@ -21,7 +21,7 @@ export const monoPlatform: Platform = {
 
       // mono.js assumes the existence of this
       window['Browser'] = {
-        init: () => { }
+        init: () => { },
       };
       // Emscripten works by expecting the module config to be a global
       window['Module'] = createEmscriptenModuleInstance(loadAssemblyUrls, resolve, reject);
@@ -60,7 +60,7 @@ export const monoPlatform: Platform = {
     try {
       const argsBuffer = Module.stackAlloc(args.length);
       const exceptionFlagManagedInt = Module.stackAlloc(4);
-      for (var i = 0; i < args.length; ++i) {
+      for (let i = 0; i < args.length; ++i) {
         Module.setValue(argsBuffer + i * 4, args[i], 'i32');
       }
       Module.setValue(exceptionFlagManagedInt, 0, 'i32');
@@ -80,8 +80,8 @@ export const monoPlatform: Platform = {
 
   toJavaScriptString: function toJavaScriptString(managedString: System_String) {
     // Comments from original Mono sample:
-    //FIXME this is wastefull, we could remove the temp malloc by going the UTF16 route
-    //FIXME this is unsafe, cuz raw objects could be GC'd.
+    // FIXME this is wastefull, we could remove the temp malloc by going the UTF16 route
+    // FIXME this is unsafe, cuz raw objects could be GC'd.
 
     const utf8 = mono_string_get_utf8(managedString);
     const res = Module.UTF8ToString(utf8);
@@ -206,11 +206,27 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
-    const mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
+    const mono_wasm_add_assembly = Module.cwrap('mono_wasm_add_assembly', null, [
+      'string',
+      'number',
+      'number',
+    ]);
     assembly_load = Module.cwrap('mono_wasm_assembly_load', 'number', ['string']);
-    find_class = Module.cwrap('mono_wasm_assembly_find_class', 'number', ['number', 'string', 'string']);
-    find_method = Module.cwrap('mono_wasm_assembly_find_method', 'number', ['number', 'string', 'number']);
-    invoke_method = Module.cwrap('mono_wasm_invoke_method', 'number', ['number', 'number', 'number']);
+    find_class = Module.cwrap('mono_wasm_assembly_find_class', 'number', [
+      'number',
+      'string',
+      'string',
+    ]);
+    find_method = Module.cwrap('mono_wasm_assembly_find_method', 'number', [
+      'number',
+      'string',
+      'number',
+    ]);
+    invoke_method = Module.cwrap('mono_wasm_invoke_method', 'number', [
+      'number',
+      'number',
+      'number',
+    ]);
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
@@ -246,6 +262,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   });
 
   module.postRun.push(() => {
+    MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE","true");
     const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     load_runtime(appBinDirName, hasDebuggingEnabled() ? 1 : 0);
     MONO.mono_wasm_runtime_is_ready = true;
@@ -264,12 +281,12 @@ function toAbsoluteUrl(possiblyRelativeUrl: string) {
 
 function asyncLoad(url) {
   return new Promise<Uint8Array>((resolve, reject) => {
-    var xhr = new XMLHttpRequest;
+    const xhr = new XMLHttpRequest();
     xhr.open('GET', url, /* async: */ true);
     xhr.responseType = 'arraybuffer';
     xhr.onload = function xhr_onload() {
       if (xhr.status == 200 || xhr.status == 0 && xhr.response) {
-        var asm = new Uint8Array(xhr.response);
+        const asm = new Uint8Array(xhr.response);
         resolve(asm);
       } else {
         reject(xhr);
@@ -295,12 +312,12 @@ function attachInteropInvoker() {
       const assemblyNameOrDotNetObjectId = dotNetObjectId
         ? dotNetObjectId.toString()
         : assemblyName;
-      
+
       monoPlatform.callMethod(dotNetDispatcherBeginInvokeMethodHandle, null, [
         callId ? monoPlatform.toDotNetString(callId.toString()) : null,
         monoPlatform.toDotNetString(assemblyNameOrDotNetObjectId!),
         monoPlatform.toDotNetString(methodIdentifier),
-        monoPlatform.toDotNetString(argsJson)
+        monoPlatform.toDotNetString(argsJson),
       ]);
     },
 
@@ -309,7 +326,7 @@ function attachInteropInvoker() {
         assemblyName ? monoPlatform.toDotNetString(assemblyName) : null,
         monoPlatform.toDotNetString(methodIdentifier),
         dotNetObjectId ? monoPlatform.toDotNetString(dotNetObjectId.toString()) : null,
-        monoPlatform.toDotNetString(argsJson)
+        monoPlatform.toDotNetString(argsJson),
       ]) as System_String;
       return resultJsonStringPtr
         ? monoPlatform.toJavaScriptString(resultJsonStringPtr)

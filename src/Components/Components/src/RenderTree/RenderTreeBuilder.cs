@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>(10);
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
+        private bool _hasSeenAddMultipleAttributes;
+        private Dictionary<string, int> _seenAttributeNames;
 
         /// <summary>
         /// The reserved parameter name used for supplying child content.
@@ -52,6 +55,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="elementName">A value representing the type of the element.</param>
         public void OpenElement(int sequence, string elementName)
         {
+            // We are entering a new scope, since we track the "duplicate attributes" per
+            // element/component we might need to clean them up now.
+            if (_hasSeenAddMultipleAttributes)
+            {
+                var indexOfLastElementOrComponent = _openElementIndices.Peek();
+                ProcessDuplicateAttributes(first: indexOfLastElementOrComponent + 1);
+            }
+
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Element(sequence, elementName));
         }
@@ -63,6 +74,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CloseElement()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
+
+            // We might be closing an element with only attributes, run the duplicate cleanup pass
+            // if necessary.
+            if (_hasSeenAddMultipleAttributes)
+            {
+                ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
+            }
+
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
             entry = entry.WithElementSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
@@ -157,6 +176,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // or absence of an attribute, and false => "False" which isn't falsy in js.
                 Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
             }
+            else
+            {
+                TrackAttributeName(name);
+            }
         }
 
         /// <summary>
@@ -177,6 +200,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
+            }
+            else
+            {
+                TrackAttributeName(name);
             }
         }
 
@@ -275,6 +302,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
             }
+            else
+            {
+                TrackAttributeName(name);
+            }
         }
 
         /// <summary>
@@ -308,11 +339,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // so we can get it out on the other side.
                 Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
             }
-            else
+            else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
                 Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+            }
+            else
+            {
+                // Track the attribute name if needed since we elided the frame.
+                TrackAttributeName(name);
             }
         }
 
@@ -347,11 +383,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // need to preserve the type of an EventCallback<T> when it's invoked from the DOM.
                 Append(RenderTreeFrame.Attribute(sequence, name, (object)value.AsUntyped()));
             }
-            else
+            else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
                 Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+            }
+            else
+            {
+                // Track the attribute name if needed since we elided the frame.
+                TrackAttributeName(name);
             }
         }
 
@@ -372,7 +413,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (value == null)
                 {
-                    // Do nothing, treat 'null' attribute values for elements as a conditional attribute.
+                    // Treat 'null' attribute values for elements as a conditional attribute.
+                    TrackAttributeName(name);
                 }
                 else if (value is bool boolValue)
                 {
@@ -380,8 +422,22 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
                     }
-
-                    // Don't add anything for false bool value.
+                    else
+                    {
+                        // Don't add anything for false bool value.
+                        TrackAttributeName(name);
+                    }
+                }
+                else if (value is IEventCallback callbackValue)
+                {
+                    if (callbackValue.HasDelegate)
+                    {
+                        Append(RenderTreeFrame.Attribute(sequence, name, callbackValue.UnpackForRenderTree()));
+                    }
+                    else
+                    {
+                        TrackAttributeName(name);
+                    }
                 }
                 else if (value is MulticastDelegate)
                 {
@@ -395,6 +451,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
+                // If this is a component, we always want to preserve the original type.
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
             }
             else
@@ -426,6 +483,40 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// Adds frames representing multiple attributes with the same sequence number.
+        /// </summary>
+        /// <typeparam name="T">The attribute value type.</typeparam>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="attributes">A collection of key-value pairs representing attributes.</param>
+        public void AddMultipleAttributes<T>(int sequence, IEnumerable<KeyValuePair<string, T>> attributes)
+        {
+            // NOTE: The IEnumerable<KeyValuePair<string, T>> is the simplest way to support a variety of
+            // different types like IReadOnlyDictionary<>, Dictionary<>, and IDictionary<>.
+            //
+            // None of those types are contravariant, and since we want to support attributes having a value
+            // of type object, the simplest thing to do is drop down to IEnumerable<KeyValuePair<>> which
+            // is contravariant. This also gives us things like List<KeyValuePair<>> and KeyValuePair<>[]
+            // for free even though we don't expect those types to be common.
+
+            // Calling this up-front just to make sure we validate before mutating anything.
+            AssertCanAddAttribute();
+
+            if (attributes != null)
+            {
+                _hasSeenAddMultipleAttributes = true;
+
+                foreach (var attribute in attributes)
+                {
+                    // This will call the AddAttribute(int, string, object) overload.
+                    //
+                    // This is fine because we try to make the object overload behave identically
+                    // to the others.
+                    AddAttribute(sequence, attribute.Key, attribute.Value);
+                }
+            }
+        }
+
+        /// <summary>
         /// Appends a frame representing a child component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
@@ -448,8 +539,48 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             OpenComponentUnchecked(sequence, componentType);
         }
 
+        /// <summary>
+        /// Assigns the specified key value to the current element or component.
+        /// </summary>
+        /// <param name="value">The value for the key.</param>
+        public void SetKey(object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var parentFrameIndex = GetCurrentParentFrameIndex();
+            if (!parentFrameIndex.HasValue)
+            {
+                throw new InvalidOperationException("Cannot set a key outside the scope of a component or element.");
+            }
+
+            var parentFrameIndexValue = parentFrameIndex.Value;
+            ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+            switch (parentFrame.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    parentFrame = parentFrame.WithElementKey(value); // It's a ref var, so this writes to the array
+                    break;
+                case RenderTreeFrameType.Component:
+                    parentFrame = parentFrame.WithComponentKey(value); // It's a ref var, so this writes to the array
+                    break;
+                default:
+                    throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
+            }
+        }
+
         private void OpenComponentUnchecked(int sequence, Type componentType)
         {
+            // We are entering a new scope, since we track the "duplicate attributes" per
+            // element/component we might need to clean them up now.
+            if (_hasSeenAddMultipleAttributes)
+            {
+                var indexOfLastElementOrComponent = _openElementIndices.Peek();
+                ProcessDuplicateAttributes(first: indexOfLastElementOrComponent + 1);
+            }
+
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.ChildComponent(sequence, componentType));
         }
@@ -461,6 +592,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CloseComponent()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
+
+            // We might be closing a component with only attributes. Run the attribute cleanup pass
+            // if necessary.
+            if (_hasSeenAddMultipleAttributes)
+            {
+                ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
+            }
+
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
             entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
@@ -547,6 +686,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _entries.Clear();
             _openElementIndices.Clear();
             _lastNonAttributeFrameType = null;
+            _hasSeenAddMultipleAttributes = false;
+            _seenAttributeNames?.Clear();
         }
 
         /// <summary>
@@ -558,13 +699,111 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private void Append(in RenderTreeFrame frame)
         {
+            var frameType = frame.FrameType;
             _entries.Append(frame);
 
-            var frameType = frame.FrameType;
             if (frameType != RenderTreeFrameType.Attribute)
             {
                 _lastNonAttributeFrameType = frame.FrameType;
             }
+        }
+
+        // Internal for testing
+        internal void ProcessDuplicateAttributes(int first)
+        {
+            Debug.Assert(_hasSeenAddMultipleAttributes);
+
+            // When AddMultipleAttributes method has been called, we need to postprocess attributes while closing
+            // the element/component. However, we also don't know the end index we should look at because it
+            // will contain nested content.
+            var buffer = _entries.Buffer;
+            var last = _entries.Count - 1;
+
+            for (var i = first; i <= last; i++)
+            {
+                if (buffer[i].FrameType != RenderTreeFrameType.Attribute)
+                {
+                    last = i - 1;
+                    break;
+                }
+            }
+
+            // Now that we've found the last attribute, we can iterate backwards and process duplicates.
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            for (var i = last; i >= first; i--)
+            {
+                ref var frame = ref buffer[i];
+                Debug.Assert(frame.FrameType == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameType} at {i}");
+
+                if (!seenAttributeNames.TryGetValue(frame.AttributeName, out var index))
+                {
+                    // This is the first time seeing this attribute name. Add to the dictionary and move on.
+                    seenAttributeNames.Add(frame.AttributeName, i);
+                }
+                else if (index < i)
+                {
+                    // This attribute is overriding a "silent frame" where we didn't create a frame for an AddAttribute call.
+                    // This is the case for a null event handler, or bool false value.
+                    //
+                    // We need to update our tracking, in case the attribute appeared 3 or more times.
+                    seenAttributeNames[frame.AttributeName] = i;
+                }
+                else if (index > i)
+                {
+                    // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
+                    // later to wipe it out.
+                    frame = default;
+                }
+                else
+                {
+                    // OK so index == i. How is that possible? Well it's possible for a "silent frame" immediately
+                    // followed by setting the same attribute. Think of it this way, when we create a "silent frame"
+                    // we have to track that attribute name with *some* index.
+                    //
+                    // The only index value we can safely use is _entries.Count (next available). This is fine because
+                    // we never use these indexes to look stuff up, only for comparison.
+                    //
+                    // That gets you here, and there's no action to take.
+                }
+            }
+
+            // This is the pass where we cleanup attributes that have been wiped out.
+            //
+            // We copy the entries we're keeping into the earlier parts of the list (preserving order).
+            //
+            // Note that we iterate to the end of the list here, there might be additional frames after the attributes
+            // (ref) or content) that need to move to the left.
+            var offset = first;
+            for (var i = first; i < _entries.Count; i++)
+            {
+                ref var frame = ref buffer[i];
+                if (frame.FrameType != RenderTreeFrameType.None)
+                {
+                    buffer[offset++] = frame;
+                }
+            }
+
+            // Clean up now unused space at the end of the list.
+            var residue = _entries.Count - offset;
+            for (var i = 0; i < residue; i++)
+            {
+                _entries.RemoveLast();
+            }
+
+            seenAttributeNames.Clear();
+            _hasSeenAddMultipleAttributes = false;
+        }
+
+        // Internal for testing
+        internal void TrackAttributeName(string name)
+        {
+            if (!_hasSeenAddMultipleAttributes)
+            {
+                return;
+            }
+
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
     }
 }

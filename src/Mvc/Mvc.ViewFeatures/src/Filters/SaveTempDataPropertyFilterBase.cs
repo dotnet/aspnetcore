@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             Type type)
         {
             List<LifecycleProperty> results = null;
+            var errorMessages = new List<string>();
 
             var propertyHelpers = PropertyHelper.GetVisibleProperties(type: type);
             for (var i = 0; i < propertyHelpers.Length; i++)
@@ -93,9 +95,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
                 var propertyHelper = propertyHelpers[i];
                 var property = propertyHelper.Property;
                 var tempDataAttribute = property.GetCustomAttribute<TempDataAttribute>();
-                if (tempDataAttribute != null)
+                if (tempDataAttribute != null && ValidateProperty(tempDataSerializer, errorMessages, propertyHelper.Property))
                 {
-                    ValidateProperty(tempDataSerializer, propertyHelper.Property);
                     if (results == null)
                     {
                         results = new List<LifecycleProperty>();
@@ -111,28 +112,41 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
                 }
             }
 
+            if (errorMessages.Count > 0)
+            {
+                throw new InvalidOperationException(string.Join(Environment.NewLine, errorMessages));
+            }
+
             return results;
         }
 
-        private static void ValidateProperty(TempDataSerializer tempDataSerializer, PropertyInfo property)
+        private static bool ValidateProperty(TempDataSerializer tempDataSerializer, List<string> errorMessages, PropertyInfo property)
         {
             if (!(property.SetMethod != null &&
                 property.SetMethod.IsPublic &&
                 property.GetMethod != null &&
                 property.GetMethod.IsPublic))
             {
-                throw new InvalidOperationException(
+                errorMessages.Add(
                     Resources.FormatTempDataProperties_PublicGetterSetter(property.DeclaringType.FullName, property.Name, nameof(TempDataAttribute)));
+
+                return false;
             }
 
             if (!tempDataSerializer.CanSerializeType(property.PropertyType))
             {
-                throw new InvalidOperationException(Resources.FormatTempDataProperties_InvalidType(
+                var errorMessage = Resources.FormatTempDataProperties_InvalidType(
                     tempDataSerializer.GetType().FullName,
                     TypeNameHelper.GetTypeDisplayName(property.DeclaringType),
                     property.Name,
-                    TypeNameHelper.GetTypeDisplayName(property.PropertyType)));
+                    TypeNameHelper.GetTypeDisplayName(property.PropertyType));
+
+                errorMessages.Add(errorMessage);
+
+                return false;
             }
+
+            return true;
         }
     }
 }
