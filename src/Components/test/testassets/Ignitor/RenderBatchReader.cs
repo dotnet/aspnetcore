@@ -3,13 +3,18 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ignitor
 {
     public static class RenderBatchReader
     {
+        private static readonly Renderer Renderer = new FakeRenderer();
+
         public static RenderBatch Read(ReadOnlySpan<byte> data)
         {
             var sections = Sections.Parse(data);
@@ -146,7 +151,9 @@ namespace Ignitor
                     case RenderTreeFrameType.Component:
                         var componentSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
                         var componentId = BitConverter.ToInt32(frameData.Slice(8, 4)); // Nowhere to put this without creating a ComponentState
-                        result[i / 16] = RenderTreeFrame.ChildComponent(0, componentType: null).WithComponentSubtreeLength(componentSubtreeLength);
+                        result[i / 16] = RenderTreeFrame.ChildComponent(0, componentType: null)
+                            .WithComponentSubtreeLength(componentSubtreeLength)
+                            .WithComponent(new ComponentState(Renderer, componentId, new FakeComponent(), null));
                         break;
 
                     case RenderTreeFrameType.ComponentReferenceCapture:
@@ -161,8 +168,9 @@ namespace Ignitor
                         break;
 
                     case RenderTreeFrameType.ElementReferenceCapture:
-                        // Client doesn't process these, skip.
-                        result[i / 16] = RenderTreeFrame.ElementReferenceCapture(0, null);
+                        var referenceCaptureId = ReadString(frameData.Slice(4, 4), strings);
+                        result[i / 16] = RenderTreeFrame.ElementReferenceCapture(0, null)
+                            .WithElementReferenceCaptureId(referenceCaptureId);
                         break;
 
                     case RenderTreeFrameType.Region:
@@ -268,6 +276,32 @@ namespace Ignitor
                 // This is a contiguous array of integers delimited by the end of the data section.
                 return data.Slice(_strings, data.Length - 20 - _strings);
             }
+        }
+
+        public class FakeRenderer : Renderer
+        {
+            public FakeRenderer()
+                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
+            {
+            }
+
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+                => throw new NotImplementedException();
+        }
+
+
+        public class FakeComponent : IComponent
+        {
+            public void Configure(RenderHandle renderHandle)
+                => throw new NotImplementedException();
+
+            public Task SetParametersAsync(ParameterCollection parameters)
+                => throw new NotImplementedException();
         }
     }
 }
