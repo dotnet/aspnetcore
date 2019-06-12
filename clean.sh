@@ -35,4 +35,4 @@ done
 
 # This incantation avoids unbound variable issues if git_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-git clean -dix -e .dotnet/ -e .tools/ -e src/SignalR/clients/ts/FunctionalTests/node_modules/ ${git_args[@]+"${git_args[@]}"}
+git clean -dix -e .dotnet/ -e .tools/ ${git_args[@]+"${git_args[@]}"}
