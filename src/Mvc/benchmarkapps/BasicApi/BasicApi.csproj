@@ -36,7 +36,7 @@
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
 
     <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
     <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
