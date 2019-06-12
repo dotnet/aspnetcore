@@ -85,8 +85,6 @@
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
     <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)')" CertificateName="None" />
-    <FileSignInfo Include="hostpolicy.dll" CertificateName="None" />
-    <FileSignInfo Include="hostfxr.dll" CertificateName="None" />
   </ItemGroup>
 
 </Project>
