@@ -12,7 +12,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class QueueStrategiesServiceCollectionExtensions
+    /// <summary>
+    /// Contains methods for adding Q
+    /// </summary>
+    public static class QueuePolicyServiceCollectionExtensions
     {
         /// <summary>
         /// Tells <see cref="RequestThrottlingMiddleware"/> to use a TailDrop queue as its queueing strategy.
@@ -24,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<TailDropOptions> configure)
         {
             services.Configure<TailDropOptions>(configure);
-            services.AddSingleton<IRequestQueue, TailDrop>();
+            services.AddSingleton<IQueuePolicy, TailDrop>();
             return services;
         }
     }

@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             using var s = TestUtils.CreateTailDropQueue(2);
 
-            var t1 = s.TryEnterQueueAsync();
+            var t1 = s.TryEnterAsync();
             Assert.True(t1.IsCompleted);
 
-            var t2 = s.TryEnterQueueAsync();
+            var t2 = s.TryEnterAsync();
             Assert.True(t2.IsCompleted);
 
-            var t3 = s.TryEnterQueueAsync();
+            var t3 = s.TryEnterAsync();
             Assert.False(t3.IsCompleted);
         }
 
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async Task WaitsIfNoSpaceAvailible()
         {
             using var s = TestUtils.CreateTailDropQueue(1);
-            Assert.True(await s.TryEnterQueueAsync().OrTimeout());
+            Assert.True(await s.TryEnterAsync().OrTimeout());
 
-            var waitingTask = s.TryEnterQueueAsync();
+            var waitingTask = s.TryEnterAsync();
             Assert.False(waitingTask.IsCompleted);
 
             s.OnExit();
@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             using var s1 = TestUtils.CreateTailDropQueue(1);
             using var s2 = TestUtils.CreateTailDropQueue(1);
 
-            Assert.True(await s1.TryEnterQueueAsync().OrTimeout());
-            Assert.True(await s2.TryEnterQueueAsync().OrTimeout());
+            Assert.True(await s1.TryEnterAsync().OrTimeout());
+            Assert.True(await s2.TryEnterAsync().OrTimeout());
         }
     }
 }

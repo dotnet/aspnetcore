@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Strategies
 {
+    /// <summary>
+    /// Specifies options for the <see cref="TailDrop"/>
+    /// </summary>
     public class TailDropOptions
     {
         /// <summary>

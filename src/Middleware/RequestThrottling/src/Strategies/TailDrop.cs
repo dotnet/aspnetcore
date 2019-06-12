@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    public class TailDrop : IRequestQueue, IDisposable
+    internal class TailDrop : IQueuePolicy, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 
-        public async Task<bool> TryEnterQueueAsync()
+        public async Task<bool> TryEnterAsync()
         {
             // a return value of 'false' indicates that the request is rejected
             // a return value of 'true' indicates that the request may proceed

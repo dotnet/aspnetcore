@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.RequestThrottling.Tests;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
@@ -24,16 +23,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            var options = new RequestThrottlingOptions
-            {
-                MaxConcurrentRequests = MaxConcurrentRequests,
-                RequestQueueLimit = _numRequests
-            };
-
-            _middleware = new RequestThrottlingMiddleware(
-                    next: (RequestDelegate)_incrementAndCheck,
-                    loggerFactory: NullLoggerFactory.Instance,
-                    options: Options.Create(options)
+            _middleware = TestUtils.CreateTestMiddleware_TailDrop(
+                maxConcurrentRequests: MaxConcurrentRequests,
+                requestQueueLimit: _numRequests,
+                next: (RequestDelegate)_incrementAndCheck
                 );
         }
 

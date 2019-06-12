@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.RequestThrottling.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.RequestThrottling" />
-    <Reference Include="Microsoft.AspNetCore.RequestThrottling.Tests" />
   </ItemGroup>
 </Project>

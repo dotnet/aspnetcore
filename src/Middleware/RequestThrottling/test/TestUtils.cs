@@ -1,23 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RequestThrottling.Strategies;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using System.Threading;
-using System.Reflection.Metadata.Ecma335;
-using System;
-using Microsoft.AspNetCore.RequestThrottling.Strategies;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
-    static class TestUtils
+    public static class TestUtils
     {
-        public static RequestThrottlingMiddleware CreateTestMiddleware(IRequestQueue queue=null, RequestDelegate onRejected=null, RequestDelegate next=null)
+        public static RequestThrottlingMiddleware CreateTestMiddleware(IQueuePolicy queue = null, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
-            var options = Options.Create(new RequestThrottlingOptions {
+            var options = Options.Create(new RequestThrottlingOptions
+            {
                 OnRejected = onRejected ?? (context => Task.CompletedTask),
             });
 
@@ -29,19 +28,28 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLength = 5000)
+        public static RequestThrottlingMiddleware CreateTestMiddleware_TailDrop(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        {
+            return CreateTestMiddleware(
+                queue: CreateTailDropQueue(maxConcurrentRequests, requestQueueLimit),
+                onRejected: onRejected,
+                next: next
+                );
+        }
+
+        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 5000)
         {
             var options = Options.Create(new TailDropOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
-                RequestQueueLimit = requestQueueLength
+                RequestQueueLimit = requestQueueLimit
             });
 
             return new TailDrop(options);
         }
     }
 
-    public class TestStrategy : IRequestQueue
+    public class TestStrategy : IQueuePolicy
     {
         private Func<Task<bool>> _invoke { get; }
         private Action _onExit { get; }
@@ -58,9 +66,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 await Task.CompletedTask;
                 return invoke();
             },
-            onExit) { }
+            onExit)
+        { }
 
-        public async Task<bool> TryEnterQueueAsync()
+        public async Task<bool> TryEnterAsync()
         {
             await Task.CompletedTask;
             return await _invoke();

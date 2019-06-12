@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Schema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,7 +15,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly IRequestQueue _requestQueue;
+        private readonly IQueuePolicy _requestQueue;
         private readonly RequestDelegate _next;
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
@@ -32,7 +29,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <param name="queue">The queueing strategy to use for the server.</param>
         /// <param name="options">The options for the middleware, currently containing the 'OnRejected' callback.</param>
-        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IRequestQueue queue, IOptions<RequestThrottlingOptions> options)
+        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IQueuePolicy queue, IOptions<RequestThrottlingOptions> options)
         {
             if (options.Value.OnRejected == null)
             {
@@ -53,34 +50,34 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             Interlocked.Increment(ref _totalRequests);
-            var success = await _requestQueue.TryEnterQueueAsync();
-
-            if (!success)
-            {
-                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
-                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                try
-                {
-                    await _onRejected(context);
-                }
-                finally
-                {
-                    Interlocked.Decrement(ref _totalRequests);
-                }
-                return;
-            }
 
             try
             {
-                await _next(context);
+                var success = await _requestQueue.TryEnterAsync();
+                if (success)
+                {
+                    try
+                    {
+                        await _next(context);
+                    }
+                    finally
+                    {
+                        _requestQueue.OnExit();
+                    }
+                }
+                else
+                {
+                    RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                    await _onRejected(context);
+                }
             }
             finally
             {
-                _requestQueue.OnExit();
                 Interlocked.Decrement(ref _totalRequests);
             }
         }
-
+        
         /// <summary>
         /// The total number of requests (queued and active) within the server
         /// </summary>
