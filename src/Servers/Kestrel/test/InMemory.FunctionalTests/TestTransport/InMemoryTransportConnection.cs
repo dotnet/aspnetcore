@@ -54,6 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             Input.Complete(abortReason);
 
+            OnClosed();
+
             AbortReason = abortReason;
         }
 

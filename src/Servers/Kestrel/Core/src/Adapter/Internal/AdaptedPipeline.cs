@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         private readonly int _minAllocBufferSize;
 
         private readonly IDuplexPipe _transport;
+        private readonly CancellationTokenSource _readingTokenSource = new CancellationTokenSource();
 
         public AdaptedPipeline(IDuplexPipe transport,
                                Pipe inputPipe,
@@ -44,8 +47,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             var inputTask = ReadInputAsync(stream);
             var outputTask = WriteOutputAsync(stream);
 
-            await inputTask;
             await outputTask;
+            _readingTokenSource.Cancel();
+            await inputTask;
+        }
+
+        public void Complete()
+        {
+            Output.Writer.Complete();
+            Input.Reader.Complete();
         }
 
         private async Task WriteOutputAsync(Stream stream)
@@ -97,7 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Output.Reader.Complete();
-                _transport.Output.Complete();
             }
         }
 
@@ -115,9 +124,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
                 while (true)
                 {
-
                     var outputBuffer = Input.Writer.GetMemory(_minAllocBufferSize);
-                    var bytesRead = await stream.ReadAsync(outputBuffer);
+                    var bytesRead = await stream.ReadAsync(outputBuffer, _readingTokenSource.Token);
                     Input.Writer.Advance(bytesRead);
 
                     if (bytesRead == 0)
@@ -134,6 +142,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     }
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                // Propagate the exception if it's ConnectionAbortedException
+                error = ex is ConnectionAbortedException ? ex : null;
+            }
             catch (Exception ex)
             {
                 // Don't rethrow the exception. It should be handled by the Pipeline consumer.
@@ -142,9 +155,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Input.Writer.Complete(error);
-                // The application could have ended the input pipe so complete
-                // the transport pipe as well
-                _transport.Input.Complete();
             }
         }
     }

@@ -402,7 +402,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _pipeWriterCompleted = true;
                 _completed = true;
-                _pipeWriter.Complete();
             }
         }
 

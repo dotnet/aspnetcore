@@ -160,18 +160,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         }
                     }
 
-                    _context.Transport.Input.OnWriterCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
+                    var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnInputOrOutputCompleted(), this);
 
-                    _context.Transport.Output.OnReaderCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
-
-                    if (requestProcessor != null)
+                    // We don't care about callbacks once all requests are processed
+                    using (closedRegistration)
                     {
-                        await requestProcessor.ProcessRequestsAsync(httpApplication);
+                        if (requestProcessor != null)
+                        {
+                            await requestProcessor.ProcessRequestsAsync(httpApplication);
+                        }
                     }
+
+                    // Complete the pipeline after the method runs
+                    adaptedPipeline?.Complete();
 
                     await adaptedPipelineTask;
                 }
@@ -367,12 +368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
         {
-            Debug.Assert(_adaptedTransport != null);
-
             _context.ConnectionContext.Abort(abortReason);
-
-            _adaptedTransport.Input.Complete();
-            _adaptedTransport.Output.Complete();
         }
 
         public void OnTimeout(TimeoutReason reason)
