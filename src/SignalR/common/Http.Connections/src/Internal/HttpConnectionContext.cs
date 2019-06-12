@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        public bool TryActivatePersistentConnection(
+        internal bool TryActivatePersistentConnection(
             ConnectionDelegate connectionDelegate,
             IHttpTransport transport,
             ILogger dispatcherLogger)

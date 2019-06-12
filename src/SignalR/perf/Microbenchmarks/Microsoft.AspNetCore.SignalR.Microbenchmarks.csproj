@@ -20,7 +20,7 @@
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
+    <!--<Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />-->
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
