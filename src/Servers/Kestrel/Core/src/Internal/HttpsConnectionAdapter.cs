@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
             if (options.HttpProtocols == HttpProtocols.Http2 && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                throw new NotSupportedException("HTTP/2 over TLS is not supported on OSX due to missing ALPN support.");
+                throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
             }
 
             // capture the certificate now so it can't be switched after validation
