@@ -372,4 +372,6 @@ finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
     Remove-Item env:DOTNET_HOME
     Remove-Item env:KOREBUILD_KEEPGLOBALJSON
+
+    Write-Host "build.ps1 completed"
 }
