@@ -133,19 +133,20 @@ export class HubConnection {
     }
 
     /**
-     * Sets a new url for the HubConnection.
+     * Sets a new url for the HubConnection. Note that the url can only be changed when the connection is in either the Disconnected or
+     * Reconnecting states.
      * @param {string} newUrl The url to connect to.
      */
-    set baseUrl(newUrl: string) {
+    set baseUrl(url: string) {
         if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting) {
             throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
         }
 
-        if (!newUrl) {
+        if (!url) {
             throw new Error("The HubConnection url must be a valid url.");
         }
 
-        this.connection.baseUrl = newUrl;
+        this.connection.baseUrl = url;
     }
 
     /** Starts the connection.
