@@ -24,6 +24,6 @@
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
-    <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersion.Split('-')[0])" />
+    <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimeVersion.Split('-')[0])" />
   </ItemGroup>
 </Project>

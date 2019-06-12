@@ -9,7 +9,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
-    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostingStartupRuntimeFrameworkVersion>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRuntimeVersion)</HostingStartupRuntimeFrameworkVersion>
 
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
