@@ -2,17 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.SignalR.Client;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Ignitor
 {
@@ -65,27 +64,24 @@ namespace Ignitor
             var circuitId = json.RootElement.GetProperty("circuitId").GetString();
 
             var builder = new HubConnectionBuilder();
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
             builder.WithUrl(new Uri(uri, "_blazor/"));
             builder.ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Trace));
             var hive = new ElementHive();
 
-            await using (var connection = builder.Build())
-            {
-                await connection.StartAsync(CancellationToken);
-                Console.WriteLine("Connected");
+            await using var connection = builder.Build();
+            await connection.StartAsync(CancellationToken);
+            Console.WriteLine("Connected");
 
-                connection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
-                connection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
-                connection.On<Error>("JS.OnError", OnError);
-                connection.Closed += OnClosedAsync;
+            connection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
+            connection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+            connection.On<Error>("JS.OnError", OnError);
+            connection.Closed += OnClosedAsync;
 
-                // Now everything is registered so we can start the circuit.
-                var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId);
+            // Now everything is registered so we can start the circuit.
+            var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId);
 
-                await TaskCompletionSource.Task;
-
-            }
+            await TaskCompletionSource.Task;
 
             void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
             {
@@ -96,7 +92,9 @@ namespace Ignitor
             {
                 var batch = RenderBatchReader.Read(batchData);
                 hive.Update(batch);
-                Console.WriteLine();
+
+                // This will click the Counter component repeatedly resulting in infinite requests.
+                _ = ClickAsync("thecounter", hive, connection);
             }
 
             void OnError(Error error)
@@ -117,6 +115,17 @@ namespace Ignitor
 
                 return Task.CompletedTask;
             }
+        }
+
+        private static async Task ClickAsync(string id, ElementHive hive, HubConnection connection)
+        {
+            if (!hive.TryFindElementById(id, out var elementNode))
+            {
+                Console.WriteLine("Could not find the counter to perform a click. Exiting.");
+                return;
+            }
+
+            await elementNode.ClickAsync(connection);
         }
 
         public void Cancel()

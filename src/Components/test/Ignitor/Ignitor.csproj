@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="AngleSharp" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="System.Text.Json" />

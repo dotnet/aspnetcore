@@ -51,18 +51,6 @@ namespace Ignitor
                             SerializeTextNode(textNode);
                             break;
                         }
-                    case CommentNode commentNode:
-                        {
-                            if (commentNode.CommentContent != "!")
-                            {
-                                SerializeCommentNode(commentNode);
-                            }
-                            else
-                            {
-                                SerializeChildren(commentNode);
-                            }
-                            break;
-                        }
                     case MarkupNode markupNode:
                         {
                             SerializeMarkupNode(markupNode);
@@ -81,12 +69,6 @@ namespace Ignitor
                             break;
                         }
                 }
-            }
-
-            private void SerializeCommentNode(CommentNode commentNode)
-            {
-                Write("Comment: ");
-                WriteLine(commentNode.CommentContent);
             }
 
             private void SerializeMarkupNode(MarkupNode markupNode)
@@ -134,6 +116,21 @@ namespace Ignitor
                             Write(properties.Value.ToString());
                             Write("\"");
                         }
+                    }
+                    Write("]");
+                }
+
+                if (elementNode.Events.Count > 0)
+                {
+                    Write("  Events: [");
+
+                    foreach (var evt in elementNode.Events)
+                    {
+                        Write(" ");
+                        Write(evt.Value.EventName);
+                        Write("(");
+                        Write(evt.Value.EventId.ToString());
+                        Write(")");
                     }
                     Write("]");
                 }

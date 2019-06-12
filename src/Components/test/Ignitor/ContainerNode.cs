@@ -19,7 +19,7 @@ namespace Ignitor
 
         public void InsertLogicalChild(Node child, int childIndex)
         {
-            if (child is CommentNode comment && comment.Children.Count > 0)
+            if (child is LogicalContainerNode comment && comment.Children.Count > 0)
             {
                 // There's nothing to stop us implementing support for this scenario, and it's not difficult
                 // (after inserting 'child' itself, also iterate through its logical children and physically
@@ -54,7 +54,7 @@ namespace Ignitor
 
         public ContainerNode CreateAndInsertContainer(int childIndex)
         {
-            var containerElement = new CommentNode("!");
+            var containerElement = new LogicalContainerNode();
             InsertLogicalChild(containerElement, childIndex);
             return containerElement;
         }
@@ -72,12 +72,11 @@ namespace Ignitor
             _children.RemoveAt(childIndex);
 
             // If it's a logical container, also remove its descendants
-            if (childToRemove is CommentNode comment) {
-
-                var grandchildrenArray = comment.Children;
-                while (grandchildrenArray.Count > 0)
+            if (childToRemove is LogicalContainerNode container)
+            {
+                while (container.Children.Count > 0)
                 {
-                    comment.RemoveLogicalChild(0);
+                    container.RemoveLogicalChild(0);
                 }
             }
         }

@@ -5,6 +5,6 @@ namespace Ignitor
 {
     internal abstract class Node
     {
-        public virtual Node Parent { get; set; }
+        public virtual ContainerNode Parent { get; set; }
     }
 }
