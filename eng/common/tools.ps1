@@ -107,11 +107,11 @@ function Write-PipelineTaskError {
 
     if(!$ci) {
       if($Type -eq 'error') {
-        Write-Error $Message
+        Write-Host $Message -ForegroundColor Red
         return
       }
       elseif ($Type -eq 'warning') {
-        Write-Warning $Message
+        Write-Host $Message -ForegroundColor Yellow
         return
       }
     }
@@ -138,7 +138,8 @@ function Write-PipelineSetVariable {
     if($ci) {
       Write-LoggingCommand -Area 'task' -Event 'setvariable' -Data $Value -Properties @{
         'variable' = $Name
-        'issecret' = $Secret
+        'isSecret' = $Secret
+        'isOutput' = 'true'
       } -AsOutput:$AsOutput
     }
 }
@@ -475,11 +476,13 @@ function GetSdkTaskProject([string]$taskName) {
 
 function InitializeNativeTools() {
   if (Get-Member -InputObject $GlobalJson -Name "native-tools") {
-    $nativeArgs=""
+    $nativeArgs= @{}
     if ($ci) {
-      $nativeArgs = "-InstallDirectory $ToolsDir"
+      $nativeArgs = @{
+        InstallDirectory = "$ToolsDir"
+      }
     }
-    Invoke-Expression "& `"$PSScriptRoot/init-tools-native.ps1`" $nativeArgs"
+    & "$PSScriptRoot/init-tools-native.ps1" @nativeArgs
   }
 }
 
