@@ -4,10 +4,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.RequestThrottling.Strategies;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    internal class TailDrop : IRequestQueue
+    public class TailDrop : IRequestQueue, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -16,10 +18,20 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public TailDrop(int maxConcurrentRequests, int requestQueueLimit)
+        public TailDrop(IOptions<TailDropOptions> options)
         {
-            _maxConcurrentRequests = maxConcurrentRequests;
-            _requestQueueLimit = requestQueueLimit;
+            _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
+            if (_maxConcurrentRequests <= 0)
+            {
+                throw new ArgumentException(nameof(_maxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
+            }
+
+            _requestQueueLimit = options.Value.RequestQueueLimit;
+            if (_requestQueueLimit < 0)
+            {
+                throw new ArgumentException(nameof(_requestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
+            }
+
             _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 

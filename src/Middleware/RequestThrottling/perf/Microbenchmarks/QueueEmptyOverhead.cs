@@ -25,14 +25,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-            var queue = 
-            TestUtils.Create()
-            var options = new RequestThrottlingOptions
-            {
-                MaxConcurrentRequests = 8,
-                RequestQueueLimit = _numRequests
-            };
-
             _middleware = new RequestThrottlingMiddleware(
                     next: _restOfServer,
                     loggerFactory: NullLoggerFactory.Instance,

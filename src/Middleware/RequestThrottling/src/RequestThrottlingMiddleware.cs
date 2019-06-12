@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Schema;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -24,26 +23,26 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
 
-        private int _activeRequests;
+        private int _totalRequests;
 
         /// <summary>
         /// Creates a new <see cref="RequestThrottlingMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-        /// <param name="queue">The queueing strategy to use.</param>
+        /// <param name="queue">The queueing strategy to use for the server.</param>
         /// <param name="options">The options for the middleware, currently containing the 'OnRejected' callback.</param>
-        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IRequestQueue queue, RequestThrottlingOptions options)
+        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IRequestQueue queue, IOptions<RequestThrottlingOptions> options)
         {
-            if (options.OnRejected == null)
+            if (options.Value.OnRejected == null)
             {
                 throw new ArgumentException("The value of 'options.OnRejected' must not be null.", nameof(options));
             }
 
             _next = next;
-            _onRejected = options.OnRejected;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _requestQueue = queue; 
+            _onRejected = options.Value.OnRejected;
+            _requestQueue = queue;
         }
 
         /// <summary>
@@ -53,35 +52,41 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
+            Interlocked.Increment(ref _totalRequests);
             var success = await _requestQueue.TryEnterQueueAsync();
 
             if (!success)
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                await _onRejected(context);
+                try
+                {
+                    await _onRejected(context);
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _totalRequests);
+                }
                 return;
             }
 
             try
             {
-                Interlocked.Increment(ref _activeRequests);
                 await _next(context);
             }
             finally
             {
-                Interlocked.Decrement(ref _activeRequests);
                 _requestQueue.OnExit();
+                Interlocked.Decrement(ref _totalRequests);
             }
         }
 
         /// <summary>
-        /// The number of requests currently on the server.
-        /// Cannot exceeed the sum of <see cref="RequestThrottlingOptions.RequestQueueLimit"> and </see>/><see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
+        /// The total number of requests (queued and active) within the server
         /// </summary>
-        public int ActiveRequestCount
+        public int TotalRequestCount
         {
-            get => _activeRequests;
+            get => _totalRequests;
         }
 
         private static class RequestThrottlingLog

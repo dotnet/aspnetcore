@@ -7,41 +7,81 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using System.Threading;
+using System.Reflection.Metadata.Ecma335;
+using System;
+using Microsoft.AspNetCore.RequestThrottling.Strategies;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
-    public static class TestUtils
+    static class TestUtils
     {
-        private static RequestThrottlingMiddleware CreateTestMiddleware(IRequestQueue queue, RequestDelegate onRejected, RequestDelegate next)
+        public static RequestThrottlingMiddleware CreateTestMiddleware(IRequestQueue queue=null, RequestDelegate onRejected=null, RequestDelegate next=null)
         {
-            var options = new RequestThrottlingOptions { OnRejected = onRejected ?? (context => Task.CompletedTask) };
+            var options = Options.Create(new RequestThrottlingOptions {
+                OnRejected = onRejected ?? (context => Task.CompletedTask),
+            });
 
             return new RequestThrottlingMiddleware(
                     next: next ?? (context => Task.CompletedTask),
                     loggerFactory: NullLoggerFactory.Instance,
-                    queue: queue,
+                    queue: queue ?? CreateTailDropQueue(1, 0),
                     options: options
                 );
         }
 
-        internal static IRequestQueue CreateRequestQueue(int maxConcurrentRequests) => new TailDrop(maxConcurrentRequests, 5000);
+        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLength = 5000)
+        {
+            var options = Options.Create(new TailDropOptions
+            {
+                MaxConcurrentRequests = maxConcurrentRequests,
+                RequestQueueLimit = requestQueueLength
+            });
+
+            return new TailDrop(options);
+        }
     }
 
-    class AlwaysBlockStrategy : IRequestQueue
+    public class TestStrategy : IRequestQueue
     {
+        private Func<Task<bool>> _invoke { get; }
+        private Action _onExit { get; }
+
+        public TestStrategy(Func<Task<bool>> invoke, Action onExit = null)
+        {
+            _invoke = invoke;
+            _onExit = onExit ?? (() => { });
+        }
+
+        public TestStrategy(Func<bool> invoke, Action onExit = null)
+            : this(async () =>
+            {
+                await Task.CompletedTask;
+                return invoke();
+            },
+            onExit) { }
+
         public async Task<bool> TryEnterQueueAsync()
         {
-            // just wait forever; never return
-            Thread.Sleep(Timeout.Infinite);
             await Task.CompletedTask;
-            return true;
+            return await _invoke();
         }
 
-        public void OnExit() { }
-
-        public void Dispose()
+        public void OnExit()
         {
-            // do the threads really get cleaned up?? let's see
+            _onExit();
         }
+
+        public static TestStrategy AlwaysReject =
+            new TestStrategy(() => false);
+
+        public static TestStrategy AlwaysPass =
+            new TestStrategy(() => true);
+
+        public static TestStrategy AlwaysBlock =
+            new TestStrategy(async () =>
+            {
+                await new SemaphoreSlim(0).WaitAsync();
+                return false;
+            });
     }
 }

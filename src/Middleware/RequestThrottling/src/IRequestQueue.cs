@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    public interface IRequestQueue : IDisposable
+    public interface IRequestQueue
     {
         Task<bool> TryEnterQueueAsync();
 

@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.RequestThrottling.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            using var s = TestUtils.CreateRequestQueue(2);
+            using var s = TestUtils.CreateTailDropQueue(2);
 
             var t1 = s.TryEnterQueueAsync();
             Assert.True(t1.IsCompleted);
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            using var s = TestUtils.CreateRequestQueue(1);
+            using var s = TestUtils.CreateTailDropQueue(1);
             Assert.True(await s.TryEnterQueueAsync().OrTimeout());
 
             var waitingTask = s.TryEnterQueueAsync();
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task IsEncapsulated()
         {
-            using var s1 = TestUtils.CreateRequestQueue(1);
-            using var s2 = TestUtils.CreateRequestQueue(1);
+            using var s1 = TestUtils.CreateTailDropQueue(1);
+            using var s2 = TestUtils.CreateTailDropQueue(1);
 
             Assert.True(await s1.TryEnterQueueAsync().OrTimeout());
             Assert.True(await s2.TryEnterQueueAsync().OrTimeout());
