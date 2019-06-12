@@ -570,18 +570,4 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return descriptor.ParameterTypes;
         }
     }
-
-    public struct HubAuthorizationContext
-    {
-        public HubAuthorizationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
-        {
-            HubMethodName = hubMethodName;
-            HubMethodArguments = hubMethodArguments;
-            Context = context;
-        }
-
-        public HubCallerContext Context { get; }
-        public string HubMethodName { get; }
-        public IReadOnlyList<object> HubMethodArguments { get; }
-    }
 }

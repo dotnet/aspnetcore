@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -2211,6 +2212,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal("World!", resource.HubMethodArguments[1]);
                 Assert.NotNull(resource.Context);
                 Assert.Equal(context.User, resource.Context.User);
+                Assert.NotNull(resource.Context.GetHttpContext());
 
                 return Task.CompletedTask;
             }
@@ -2240,6 +2242,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+                    // Setup a HttpContext to make sure it flows to the AuthHandler correctly
+                    var httpConnectionContext = new HttpConnectionContext("", null);
+                    httpConnectionContext.HttpContext = new DefaultHttpContext();
+                    client.Connection.Features.Set<IHttpContextFeature>(httpConnectionContext);
+
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                     await client.Connected.OrTimeout();
