@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var registry = CreateRegistry(circuitIdFactory);
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
-            registry.DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
+            registry.RegisterDisconnectedCircuit(circuitHost);
 
             var newClient = Mock.Of<IClientProxy>();
             var newConnectionId = "new-id";
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var registry = CreateRegistry(circuitIdFactory);
             var handler = new Mock<CircuitHandler> { CallBase = true };
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
-            registry.DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
+            registry.RegisterDisconnectedCircuit(circuitHost);
 
             var newClient = Mock.Of<IClientProxy>();
             var newConnectionId = "new-id";
