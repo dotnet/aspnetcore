@@ -24,8 +24,8 @@
       <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>MicrosoftNETCoreAppPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppPackageVersion)</_Parameter2>
+      <_Parameter1>MicrosoftNETCoreAppRuntimewinx64PackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>SharedFxDependencies</_Parameter1>

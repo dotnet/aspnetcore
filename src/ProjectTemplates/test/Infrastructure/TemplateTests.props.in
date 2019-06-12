@@ -11,9 +11,9 @@
   <ItemGroup>
     <KnownFrameworkReference
       Update="Microsoft.NETCore.App"
-      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppPackageVersion}" />
+      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimewinx64PackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimewinx64PackageVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"

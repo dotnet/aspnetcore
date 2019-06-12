@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore
     {
         public static string GetSharedFxVersion() => GetTestDataValue("SharedFxVersion");
 
-        public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppPackageVersion");
+        public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimewinx64PackageVersion");
 
         public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
 

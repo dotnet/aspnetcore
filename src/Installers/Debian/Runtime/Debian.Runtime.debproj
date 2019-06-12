@@ -11,7 +11,7 @@
     <PackageId>$(RuntimeInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
-    <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</DotnetRuntimeDependencyVersion>
     <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
 
     <PackageSummary>$(SharedFxProductName)</PackageSummary>
