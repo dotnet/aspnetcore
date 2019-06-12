@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.Tracing;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -47,32 +49,64 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 });
         }
 
+        [Fact]
+        public void ConnectionStop()
+        {
+            // Arrange
+            var expectedEventId = 2;
+            var eventListener = new TestEventListener(expectedEventId);
+            var httpConnectionsEventSource = GetHttpConnectionEventSource();
+            eventListener.EnableEvents(httpConnectionsEventSource, EventLevel.Informational);
+
+            // Act
+            var stopWatch = ValueStopwatch.StartNew();
+            httpConnectionsEventSource.ConnectionStop("1", stopWatch);
+
+            // Assert
+            var eventData = eventListener.EventData;
+            Assert.NotNull(eventData);
+            Assert.Equal(expectedEventId, eventData.EventId);
+            Assert.Equal("ConnectionStop", eventData.EventName);
+            Assert.Equal(EventLevel.Informational, eventData.Level);
+            Assert.Same(httpConnectionsEventSource, eventData.EventSource);
+            Assert.Equal("Stopped connection '{0}'.", eventData.Message);
+            Assert.Collection(eventData.Payload,
+                arg =>
+                {
+                    Assert.Equal("1", arg);
+                });
+        }
+
+        [Fact]
+        public void ConnectionTimedOut()
+        {
+            // Arrange
+            var expectedEventId = 3;
+            var eventListener = new TestEventListener(expectedEventId);
+            var httpConnectionsEventSource = GetHttpConnectionEventSource();
+            eventListener.EnableEvents(httpConnectionsEventSource, EventLevel.Informational);
+
+            // Act
+            httpConnectionsEventSource.ConnectionTimedOut("1");
+
+            // Assert
+            var eventData = eventListener.EventData;
+            Assert.NotNull(eventData);
+            Assert.Equal(expectedEventId, eventData.EventId);
+            Assert.Equal("ConnectionTimedOut", eventData.EventName);
+            Assert.Equal(EventLevel.Informational, eventData.Level);
+            Assert.Same(httpConnectionsEventSource, eventData.EventSource);
+            Assert.Equal("Connection '{0}' timed out.", eventData.Message);
+            Assert.Collection(eventData.Payload,
+                arg =>
+                {
+                    Assert.Equal("1", arg);
+                });
+        }
+
         private static HttpConnectionsEventSource GetHttpConnectionEventSource()
         {
             return new HttpConnectionsEventSource(Guid.NewGuid().ToString());
-        }
-
-        // TODO: Shared source
-        private class TestEventListener : EventListener
-        {
-            private readonly int _eventId;
-
-            public TestEventListener(int eventId)
-            {
-                _eventId = eventId;
-            }
-
-            public EventWrittenEventArgs EventData { get; private set; }
-
-            protected override void OnEventWritten(EventWrittenEventArgs eventData)
-            {
-                // The tests here run in parallel, capture the EventData that a test is explicitly
-                // looking for and not give back other tests' data.
-                if (eventData.EventId == _eventId)
-                {
-                    EventData = eventData;
-                }
-            }
         }
     }
 }
