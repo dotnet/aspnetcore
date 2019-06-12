@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETSTANDARD2_1 || NETCOREAPP3_0
+#if NETSTANDARD2_1
                     // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETSTANDARD2_1 || NETCOREAPP3_0
+#if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #elif NETSTANDARD2_0
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 #else
 #error TFMs need to be updated
 #endif
-                    // Need to check again for netcoreapp3.0 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);

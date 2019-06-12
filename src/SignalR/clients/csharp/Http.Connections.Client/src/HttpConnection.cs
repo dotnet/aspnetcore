@@ -583,7 +583,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP3_0 || NETSTANDARD2_1
+#if NETSTANDARD2_1
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else

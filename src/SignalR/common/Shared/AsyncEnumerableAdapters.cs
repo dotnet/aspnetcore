@@ -32,9 +32,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 #else
+        // System.Threading.Channels.ReadAllAsync() is not available on netstandard2.0 and netstandard2.1
+        // But this is the exact same code that it uses
         public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            while (await channel.WaitToReadAsync(cancellationToken))
+            while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 while (channel.TryRead(out var item))
                 {
