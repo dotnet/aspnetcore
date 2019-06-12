@@ -2,7 +2,10 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
-{
+{    
+    /// <summary>
+    /// See https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code for reference
+    /// </summary>
     public class MicrosoftChallengeProperties : OAuthChallengeProperties
     {
         /// <summary>
