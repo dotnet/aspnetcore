@@ -15,11 +15,12 @@ if [[ $arch == arm* ]]; then
 else
     arch="x64"
 fi
+echo "$arch"
 osname=`uname -s`
 if [ "$osname" = "Darwin" ]; then
-   platformarch='darwin-$arch'
+   platformarch="darwin-$arch"
 else
-   platformarch='linux-$arch'
+   platformarch="linux-$arch"
 fi
 echo "PlatformArch: $platformarch"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
