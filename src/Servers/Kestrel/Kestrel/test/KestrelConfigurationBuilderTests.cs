@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         public void DefaultConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected)
             => DefaultConfigSectionCanSetProtocols(input, expected);
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran3);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         public void EndpointConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected) =>
             EndpointConfigSectionCanSetProtocols(input, expected);
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
