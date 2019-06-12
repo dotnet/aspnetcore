@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.SignalR
 {
     public abstract class HubDispatcher<THub> where THub : Hub
     {

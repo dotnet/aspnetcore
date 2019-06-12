@@ -20,7 +20,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+    internal partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
     {
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
         private readonly IServiceScopeFactory _serviceScopeFactory;

@@ -6,9 +6,9 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections
 {
-    internal static class ServerSentEventsMessageFormatter
+    public static class ServerSentEventsMessageFormatter
     {
         private static readonly byte[] DataPrefix = { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
         private static readonly byte[] Newline = { (byte)'\r', (byte)'\n' };
