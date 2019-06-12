@@ -201,6 +201,10 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 return;
             }
 
+            // Even though we're not on the renderer sync context here, it's safe to assume ordered execution of the following
+            // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
+            // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
+            // at the same time on different threads.
             if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incomingBatchId)
             {
                 HandleException(
