@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
@@ -313,15 +314,107 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
         }
 
+        [Fact]
+        public void CircuitRegistryUsesConfiguredMaxRetainedDisconnectedCircuitsValue()
+        {
+            // Arrange
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+            var maxCircuits = 3;
+            var circuitOptions = new CircuitOptions
+            {
+                MaxRetainedDisconnectedCircuits = maxCircuits,
+            };
+            var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
+            var hosts = Enumerable.Range(0, maxCircuits + 2)
+                .Select(_ => TestCircuitHost.Create())
+                .ToArray();
+
+            // Act
+            for (var i = 0; i < hosts.Length; i++)
+            {
+                registry.RegisterDisconnectedCircuit(hosts[i]);
+            }
+
+            // Assert
+            for (var i = 0; i < maxCircuits; i++)
+            {
+                Assert.True(registry.DisconnectedCircuits.TryGetValue(hosts[i].CircuitId, out var _));
+            }
+
+            // Additional circuits do not get registered.
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(hosts[maxCircuits].CircuitId, out var _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(hosts[maxCircuits + 1].CircuitId, out var _));
+        }
+
+        [Fact]
+        public async Task DisconnectedCircuitIsRemovedAfterConfiguredTimeout()
+        {
+            // Arrange
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+            var circuitOptions = new CircuitOptions
+            {
+                DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(3),
+            };
+            var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
+            var mre = new ManualResetEventSlim();
+
+            registry.OnAfterEntryEvicted = () =>
+            {
+                mre.Set();
+            };
+            var circuitHost = TestCircuitHost.Create();
+
+            registry.RegisterDisconnectedCircuit(circuitHost);
+
+            // Act
+            // Verify it's present in the dictionary.
+            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+            await Task.Run(() => Assert.True(mre.Wait(TimeSpan.FromSeconds(10))));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+        }
+
+        [Fact]
+        public async Task ReconnectBeforeTimeoutDoesNotGetEntryToBeEvicted()
+        {
+            // Arrange
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+            var circuitOptions = new CircuitOptions
+            {
+                DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(8),
+            };
+            var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
+            var mre = new ManualResetEventSlim();
+
+            registry.OnAfterEntryEvicted = () =>
+            {
+                mre.Set();
+            };
+            var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
+
+            registry.RegisterDisconnectedCircuit(circuitHost);
+            await registry.ConnectAsync(circuitHost.CircuitId, Mock.Of<IClientProxy>(), "new-connection", default);
+
+            // Act
+            await Task.Run(() => Assert.True(mre.Wait(TimeSpan.FromSeconds(10))));
+
+            // Verify it's still connected
+            Assert.True(registry.ConnectedCircuits.TryGetValue(circuitHost.CircuitId, out var cacheValue));
+            Assert.Same(circuitHost, cacheValue);
+            // Nothing should be disconnected.
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+        }
+
         private class TestCircuitRegistry : CircuitRegistry
         {
-            public TestCircuitRegistry(CircuitIdFactory factory)
-                : base(Options.Create(new CircuitOptions()), NullLogger<CircuitRegistry>.Instance, factory)
+            public TestCircuitRegistry(CircuitIdFactory factory, CircuitOptions circuitOptions = null)
+                : base(Options.Create(circuitOptions ?? new CircuitOptions()), NullLogger<CircuitRegistry>.Instance, factory)
             {
             }
 
             public ManualResetEventSlim BeforeConnect { get; set; }
             public ManualResetEventSlim BeforeDisconnect { get; set; }
+
+            public Action OnAfterEntryEvicted { get; set; }
 
             protected override (CircuitHost, bool) ConnectCore(string circuitId, IClientProxy clientProxy, string connectionId)
             {
@@ -341,6 +434,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
 
                 return base.DisconnectCore(circuitHost, connectionId);
+            }
+
+            protected override void OnEntryEvicted(object key, object value, EvictionReason reason, object state)
+            {
+                base.OnEntryEvicted(key, value, reason, state);
+                OnAfterEntryEvicted();
             }
         }
 
