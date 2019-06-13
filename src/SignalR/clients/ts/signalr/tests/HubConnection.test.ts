@@ -41,6 +41,58 @@ describe("HubConnection", () => {
             });
         });
 
+        it("can change url", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+                    await hubConnection.stop();
+                    hubConnection.baseUrl = "http://newurl.com";
+                    expect(hubConnection.baseUrl).toBe("http://newurl.com");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("can change url in onclose", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    expect(hubConnection.baseUrl).toBe("http://example.com");
+                    hubConnection.onclose(() => {
+                        hubConnection.baseUrl = "http://newurl.com";
+                    });
+
+                    await hubConnection.stop();
+                    expect(hubConnection.baseUrl).toBe("http://newurl.com");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("changing url while active throws", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    expect(() => {
+                        hubConnection.baseUrl = "http://newurl.com";
+                    }).toThrow("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
         it("state connected", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
@@ -1076,7 +1128,7 @@ describe("HubConnection", () => {
                     hubConnection.stream("testMethod").subscribe(NullSubscriber.instance);
 
                     // Send completion to trigger observer.complete()
-                    // Expectation is connection.receive will not to throw
+                    // Expectation is connection.receive will not throw
                     connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
                 } finally {
                     await hubConnection.stop();
