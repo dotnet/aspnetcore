@@ -14,14 +14,6 @@
     <Yarn Command="install --mutex network" />
   </Target>
 
-  <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
-    <ItemGroup>
-      <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
-        <Targets>EnsureNodeJSRestored</Targets>
-      </CustomRestoreTargets>
-    </ItemGroup>
-  </Target>
-
   <Target
     Name="WarnSeleniumNotSupported"
     BeforeTargets="Build"
