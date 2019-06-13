@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionManager
+    internal partial class HttpConnectionManager
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _ = ExecuteTimerLoop();
         }
 
-        public bool TryGetConnection(string id, out HttpConnectionContext connection)
+        internal bool TryGetConnection(string id, out HttpConnectionContext connection)
         {
             connection = null;
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return false;
         }
 
-        public HttpConnectionContext CreateConnection()
+        internal HttpConnectionContext CreateConnection()
         {
             return CreateConnection(PipeOptions.Default, PipeOptions.Default);
         }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
             var id = MakeNewConnectionId();
 
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
         }
 
-        public async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
+        internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
         {
             try
             {
