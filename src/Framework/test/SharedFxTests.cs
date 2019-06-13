@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore
 
             Assert.Equal("Microsoft.NETCore.App", (string)runtimeConfig["runtimeOptions"]["framework"]["name"]);
             Assert.Equal(_expectedTfm, (string)runtimeConfig["runtimeOptions"]["tfm"]);
+            Assert.Equal("LatestPatch", (string)runtimeConfig["runtimeOptions"]["rollForward"]);
 
             Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), (string)runtimeConfig["runtimeOptions"]["framework"]["version"]);
         }

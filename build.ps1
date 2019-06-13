@@ -71,6 +71,9 @@ You can also use -NoBuildInstallers to suppress this project type.
 .PARAMETER BinaryLog
 Enable the binary logger
 
+.PARAMETER Verbosity
+MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -139,8 +142,12 @@ param(
     # MSBuild for .NET Core
     [switch]$ForceCoreMsbuild,
 
+    # Diagnostics
     [Alias('bl')]
     [switch]$BinaryLog,
+    [Alias('v')]
+    [string]$Verbosity = 'minimal',
+    [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
 
     # Other lifecycle targets
     [switch]$Help, # Show help
@@ -156,6 +163,11 @@ $ErrorActionPreference = 'Stop'
 if ($Help) {
     Get-Help $PSCommandPath
     exit 1
+}
+
+if ($DumpProcesses -or $CI) {
+    # Dump running processes
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
 }
 
 # Project selection
@@ -355,6 +367,11 @@ finally {
     rm variable:global:_DotNetInstallDir -ea Ignore
     rm variable:global:_ToolsetBuildProj -ea Ignore
     rm variable:global:_MSBuildExe -ea Ignore
+
+    if ($DumpProcesses -or $ci) {
+        Stop-Job -Name DumpProcesses
+        Remove-Job -Name DumpProcesses
+    }
 
     if ($ci) {
         & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"

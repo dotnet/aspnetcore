@@ -48,11 +48,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public ConnectionAbortedException AbortReason { get; private set; }
 
+        public Task WaitForCloseTask => _waitForCloseTcs.Task;
+
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _logger.LogDebug(@"Connection id ""{ConnectionId}"" closing because: ""{Message}""", ConnectionId, abortReason?.Message);
 
             Input.Complete(abortReason);
+
+            OnClosed();
 
             AbortReason = abortReason;
         }
