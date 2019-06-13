@@ -280,7 +280,13 @@ if [[ -a "$configure_toolset_script" ]]; then
   . "$configure_toolset_script"
 fi
 
+# Set this global property so Arcade will always initialize the toolset
+_tmp_restore=$restore
+restore=true
+
 InitializeToolset
+
+restore=$_tmp_restore=
 
 if [ "$build_repo_tasks" = true ]; then
     MSBuild $_InitializeToolset \

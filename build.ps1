@@ -318,7 +318,13 @@ try {
       . $configureToolsetScript
     }
 
+    # Set this global property so Arcade will always initialize the toolset
+    $tmpRestore = $restore
+    $restore = $true
+
     $toolsetBuildProj = InitializeToolset
+
+    $restore = $tmpRestore
 
     if (-not $NoBuildRepoTasks) {
         MSBuild $toolsetBuildProj `
