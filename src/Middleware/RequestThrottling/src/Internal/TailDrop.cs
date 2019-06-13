@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Internal
 {
-    internal class RequestQueue : IDisposable
+    internal class TailDrop : IRequestQueue
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
+        public TailDrop(int maxConcurrentRequests, int requestQueueLimit)
         {
             _maxConcurrentRequests = maxConcurrentRequests;
             _requestQueueLimit = requestQueueLimit;

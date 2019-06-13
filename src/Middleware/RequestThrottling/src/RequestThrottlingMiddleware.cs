@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly RequestQueue _requestQueue;
+        private readonly IRequestQueue _requestQueue;
         private readonly RequestDelegate _next;
         private readonly RequestThrottlingOptions _requestThrottlingOptions;
         private readonly ILogger _logger;
@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
-            if (_requestThrottlingOptions.MaxConcurrentRequests < 0)
+            if (_requestThrottlingOptions.MaxConcurrentRequests <= 0)
             {
-                throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be a positive integer.", nameof(options));
+                throw new ArgumentOutOfRangeException(nameof(options), "The value of `options.MaxConcurrentRequests` must be a positive integer.");
             }
             if (_requestThrottlingOptions.RequestQueueLimit < 0)
             {
@@ -51,9 +51,16 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _requestQueue = new RequestQueue(
-                _requestThrottlingOptions.MaxConcurrentRequests.Value,
-                _requestThrottlingOptions.RequestQueueLimit);
+
+            if (_requestThrottlingOptions.ServerAlwaysBlocks)
+            {
+                // note: this option for testing only. Blocks all requests from entering the server.
+                _requestQueue = new TailDrop(0, _requestThrottlingOptions.RequestQueueLimit);
+            }
+            else
+            {
+                _requestQueue = new TailDrop(_requestThrottlingOptions.MaxConcurrentRequests.Value, _requestThrottlingOptions.RequestQueueLimit);
+            }
         }
 
         /// <summary>
@@ -64,24 +71,24 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
-            if (waitInQueueTask.IsCompletedSuccessfully && !waitInQueueTask.Result)
+
+            if (waitInQueueTask.IsCompletedSuccessfully && waitInQueueTask.Result)
+            {
+                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
+            }
+            else
+            {
+                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
+                await waitInQueueTask;
+                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
+            }
+
+            if (!waitInQueueTask.Result)
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 await _requestThrottlingOptions.OnRejected(context);
                 return;
-            }
-            else if (!waitInQueueTask.IsCompletedSuccessfully)
-            {
-                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
-                var result = await waitInQueueTask;
-                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
-
-                Debug.Assert(result);
-            }
-            else
-            {
-                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
             }
 
             try
@@ -98,7 +105,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// The number of requests currently on the server.
         /// Cannot exceeed the sum of <see cref="RequestThrottlingOptions.RequestQueueLimit"> and </see>/><see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
-        internal int ActiveRequestCount
+        public int ActiveRequestCount
         {
             get => _requestQueue.TotalRequests;
         }
