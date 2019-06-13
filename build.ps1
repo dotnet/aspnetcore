@@ -244,7 +244,7 @@ $env:DOTNET_HOME = $DotNetHome
 # Execute
 
 # Dump running processes
-Start-Job -Name DumpProcesses -FilePath .\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
 
 $korebuildPath = Get-KoreBuild
 
