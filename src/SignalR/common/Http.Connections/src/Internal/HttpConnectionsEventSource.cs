@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private long _currentConnections;
 
         internal HttpConnectionsEventSource()
-            : base("Microsoft-AspNetCore-Http-Connections")
+            : base("Microsoft.AspNetCore.Http.Connections")
         {
         }
 
@@ -88,24 +88,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
                 // They aren't disabled afterwards...
 
-                _connectionsStartedCounter ??= new PollingCounter("ConnectionsStarted", this, () => _connectionsStarted)
+                _connectionsStartedCounter ??= new PollingCounter("connections-started", this, () => _connectionsStarted)
                 {
                     DisplayName = "Total Connections Started",
                 };
-                _connectionsStoppedCounter ??= new PollingCounter("ConnectionsStopped", this, () => _connectionsStopped)
+                _connectionsStoppedCounter ??= new PollingCounter("connections-stopped", this, () => _connectionsStopped)
                 {
                     DisplayName = "Total Connections Stopped",
                 };
-                _connectionsTimedOutCounter ??= new PollingCounter("ConnectionsTimedOut", this, () => _connectionsTimedOut)
+                _connectionsTimedOutCounter ??= new PollingCounter("connections-timed-out", this, () => _connectionsTimedOut)
                 {
                     DisplayName = "Total Connections Timed Out",
                 };
-                _currentConnectionsCounter ??= new PollingCounter("CurrentConnections", this, () => _currentConnections)
+                _currentConnectionsCounter ??= new PollingCounter("current-connections", this, () => _currentConnections)
                 {
                     DisplayName = "Current Connections",
                 };
 
-                _connectionDuration ??= new EventCounter("ConnectionDuration", this);
+                _connectionDuration ??= new EventCounter("connections-duration", this);
             }
         }
 

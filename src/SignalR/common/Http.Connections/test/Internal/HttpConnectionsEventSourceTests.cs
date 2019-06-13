@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var eventSource = new HttpConnectionsEventSource();
 
             // Assert
-            Assert.Equal("Microsoft-AspNetCore-Http-Connections", eventSource.Name);
-            Assert.Equal(Guid.Parse("a81dd8b5-9721-5e7a-d465-d5b9caa864dc"), eventSource.Guid);
+            Assert.Equal("Microsoft.AspNetCore.Http.Connections", eventSource.Name);
+            Assert.Equal(Guid.Parse("c26fe4b6-8790-5d41-5900-0f2b6b74efaa"), eventSource.Guid);
         }
 
         [Fact]
