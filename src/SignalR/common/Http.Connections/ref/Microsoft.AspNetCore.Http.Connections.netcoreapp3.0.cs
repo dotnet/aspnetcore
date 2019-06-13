@@ -61,6 +61,11 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         public NegotiateMetadata() { }
     }
+    public static partial class ServerSentEventsMessageFormatter
+    {
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task WriteMessageAsync(System.Buffers.ReadOnlySequence<byte> payload, System.IO.Stream output) { throw null; }
+    }
     public partial class WebSocketOptions
     {
         public WebSocketOptions() { }
@@ -110,7 +115,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
         public bool TryActivateLongPollingConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.HttpContext nonClonedContext, System.TimeSpan pollTimeout, System.Threading.Tasks.Task currentRequestTask, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
-        public bool TryActivatePersistentConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport transport, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {
@@ -139,38 +143,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         Inactive = 0,
         Active = 1,
         Disposed = 2,
-    }
-    public static partial class ServerSentEventsMessageFormatter
-    {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task WriteMessageAsync(System.Buffers.ReadOnlySequence<byte> payload, System.IO.Stream output) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
-{
-    public partial interface IHttpTransport
-    {
-        System.Threading.Tasks.Task ProcessRequestAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Threading.CancellationToken token);
-    }
-    public partial class LongPollingTransport : Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport
-    {
-        public LongPollingTransport(System.Threading.CancellationToken timeoutToken, System.IO.Pipelines.PipeReader application, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task ProcessRequestAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Threading.CancellationToken token) { throw null; }
-    }
-    public partial class ServerSentEventsTransport : Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport
-    {
-        public ServerSentEventsTransport(System.IO.Pipelines.PipeReader application, string connectionId, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task ProcessRequestAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Threading.CancellationToken token) { throw null; }
-    }
-    public partial class WebSocketsTransport : Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport
-    {
-        public WebSocketsTransport(Microsoft.AspNetCore.Http.Connections.WebSocketOptions options, System.IO.Pipelines.IDuplexPipe application, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task ProcessRequestAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Threading.CancellationToken token) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task ProcessSocketAsync(System.Net.WebSockets.WebSocket socket) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Internal
