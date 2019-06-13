@@ -221,7 +221,7 @@ describe("HttpConnection", () => {
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
-    it("negotiate called again when transport fails to start and fallsback", async () => {
+    it("negotiate called again when transport fails to start and falls back", async () => {
         await VerifyLogger.run(async (loggerImpl) => {
             let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
