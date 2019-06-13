@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private async Task<Stream> ApplyConnectionAdaptersAsync()
         {
             var connectionAdapters = _context.ConnectionAdapters;
-            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
+            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output, throwOnCancelled: true);
             var adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 

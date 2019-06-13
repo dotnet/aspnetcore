@@ -14,11 +14,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
     {
         private readonly PipeReader _input;
         private readonly PipeWriter _output;
+        private readonly bool _throwOnCancelled;
 
-        public RawStream(PipeReader input, PipeWriter output)
+        public RawStream(PipeReader input, PipeWriter output, bool throwOnCancelled = false)
         {
             _input = input;
             _output = output;
+            _throwOnCancelled = throwOnCancelled;
         }
 
         public override bool CanRead => true;
@@ -113,6 +115,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 var readableBuffer = result.Buffer;
                 try
                 {
+                    if (_throwOnCancelled && result.IsCanceled)
+                    {
+                        throw new OperationCanceledException();
+                    }
+
                     if (!readableBuffer.IsEmpty)
                     {
                         // buffer.Count is int

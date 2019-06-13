@@ -843,11 +843,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
-            var testContext = new TestServiceContext(LoggerFactory)
-            {
-                // FIN callbacks are scheduled so run inline to make this test more reliable
-                Scheduler = PipeScheduler.Inline
-            };
+            var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
             {
@@ -856,6 +852,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send(
                         "POST / HTTP/1.1");
                     connection.ShutdownSend();
+                    await connection.TransportConnection.WaitForCloseTask;
                     await connection.ReceiveEnd();
                 }
 
@@ -866,6 +863,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "Content-Length: 7");
                     connection.ShutdownSend();
+                    await connection.TransportConnection.WaitForCloseTask;
                     await connection.ReceiveEnd();
                 }
             }

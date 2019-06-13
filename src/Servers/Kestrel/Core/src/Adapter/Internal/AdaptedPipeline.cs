@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -17,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         private readonly int _minAllocBufferSize;
 
         private readonly IDuplexPipe _transport;
-        private readonly CancellationTokenSource _readingTokenSource = new CancellationTokenSource();
 
         public AdaptedPipeline(IDuplexPipe transport,
                                Pipe inputPipe,
@@ -48,7 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             var outputTask = WriteOutputAsync(stream);
 
             await outputTask;
-            _readingTokenSource.Cancel();
+            // Yield the current request
+            _transport.Input.CancelPendingRead();
             await inputTask;
         }
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 while (true)
                 {
                     var outputBuffer = Input.Writer.GetMemory(_minAllocBufferSize);
-                    var bytesRead = await stream.ReadAsync(outputBuffer, _readingTokenSource.Token);
+                    var bytesRead = await stream.ReadAsync(outputBuffer);
                     Input.Writer.Advance(bytesRead);
 
                     if (bytesRead == 0)
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             catch (OperationCanceledException ex)
             {
                 // Propagate the exception if it's ConnectionAbortedException
-                error = ex is ConnectionAbortedException ? ex : null;
+                error = ex as ConnectionAbortedException;
             }
             catch (Exception ex)
             {
