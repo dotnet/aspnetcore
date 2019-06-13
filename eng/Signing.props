@@ -4,12 +4,14 @@
 
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
+    <ItemsToSign Remove="@(ItemsToSign)" />
     <StrongNameSignInfo Remove="@(StrongNameSignInfo)" />
     <FileExtensionSignInfo Remove="@(FileExtensionSignInfo)" />
   </ItemGroup>
 
   <ItemGroup Label="Signing config">
-    <!-- Arcade picks up .nupkg and .vsix by default. List other signable build outputs here. -->
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
+    <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <ItemsToSign Include="$(InstallersOutputPath)**\*.zip" />
 

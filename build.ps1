@@ -24,6 +24,9 @@ Suppress re-compile projects. (Implies -NoRestore)
 .PARAMETER NoBuildDeps
 Do not build project-to-project references and only build the specified project.
 
+.PARAMETER NoBuildRepoTasks
+Skip building eng/tools/RepoTasks/
+
 .PARAMETER Pack
 Produce packages.
 
@@ -32,6 +35,9 @@ Run tests.
 
 .PARAMETER Sign
 Run code signing.
+
+.PARAMETER Publish
+Generate manifests for publishing a build.
 
 .PARAMETER Configuration
 Debug or Release
@@ -101,6 +107,7 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
+    [switch]$Publish, # Generate publish manifests
 
     [Alias('c')]
     [ValidateSet('Debug', 'Release')]
@@ -129,7 +136,6 @@ param(
     [switch]$NoBuildJava,
     [switch]$NoBuildInstallers,
 
-    # Skip building eng/tools/RepoTasks/
     [switch]$NoBuildRepoTasks,
 
     # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
@@ -209,6 +215,7 @@ if (-not $RunBuild) {
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
+$MSBuildArguments += "/p:Publish=$Publish"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"

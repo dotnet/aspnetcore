@@ -18,6 +18,7 @@ run_restore=''
 run_build=true
 run_pack=false
 run_tests=false
+run_publish=false
 build_all=false
 build_deps=true
 build_repo_tasks=true
@@ -55,6 +56,7 @@ Options:
     --[no-]build           Compile projects. (Implies --no-restore)
     --[no-]pack            Produce packages.
     --[no-]test            Run tests.
+    --publish              Generate manifests for publishing a build.
 
     --projects             A list of projects to build. (Must be an absolute path.)
                            Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
@@ -145,6 +147,9 @@ while [[ $# -gt 0 ]]; do
         -no-test|-notest)
             run_tests=false
             ;;
+        -publish)
+            run_publish=true
+            ;;
         -projects)
             shift
             build_projects="${1:-}"
@@ -229,6 +234,7 @@ if [ "$run_build" = false ]; then
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
+msbuild_args[${#msbuild_args[*]}]="-p:Publish=$run_publish"
 
 msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
 msbuild_args[${#msbuild_args[*]}]="-p:TargetOsName=$target_os_name"
