@@ -352,7 +352,7 @@ export class HttpConnection implements IConnection {
         const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
         for (const endpoint of transports) {
-            const transportOrError = this.tryResolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+            const transportOrError = this.resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
@@ -409,7 +409,7 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private tryResolveTransport(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | Error {
+    private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | Error {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
