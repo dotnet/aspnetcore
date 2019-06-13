@@ -338,6 +338,10 @@ finally {
     rm variable:global:_DotNetInstallDir -ea Ignore
     rm variable:global:_ToolsetBuildProj -ea Ignore
     rm variable:global:_MSBuildExe -ea Ignore
+
+    if ($ci) {
+        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+    }
 }
 
 ExitWithExitCode 0
