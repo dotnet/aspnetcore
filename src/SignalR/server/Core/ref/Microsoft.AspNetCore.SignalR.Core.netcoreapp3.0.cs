@@ -214,6 +214,16 @@ namespace Microsoft.AspNetCore.SignalR
         public int? StreamBufferCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IList<string> SupportedProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
+    {
+        public HubOptionsSetup(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> protocols) { }
+        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions options) { }
+    }
+    public partial class HubOptionsSetup<THub> : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> where THub : Microsoft.AspNetCore.SignalR.Hub
+    {
+        public HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> options) { }
+        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions<THub> options) { }
+    }
     public partial class HubOptions<THub> : Microsoft.AspNetCore.SignalR.HubOptions where THub : Microsoft.AspNetCore.SignalR.Hub
     {
         public HubOptions() { }
@@ -301,19 +311,6 @@ namespace Microsoft.AspNetCore.SignalR
     public static partial class SignalRConnectionBuilderExtensions
     {
         public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHub<THub>(this Microsoft.AspNetCore.Connections.IConnectionBuilder connectionBuilder) where THub : Microsoft.AspNetCore.SignalR.Hub { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.SignalR.Internal
-{
-    public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
-    {
-        public HubOptionsSetup(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> protocols) { }
-        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions options) { }
-    }
-    public partial class HubOptionsSetup<THub> : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> where THub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        public HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> options) { }
-        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions<THub> options) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
