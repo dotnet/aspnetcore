@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
-    public class RequestQueueTests
+    public class TailDropTests
     {
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()

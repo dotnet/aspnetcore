@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Xml.Schema;
 using Microsoft.AspNetCore.RequestThrottling;
-using Microsoft.AspNetCore.RequestThrottling.Strategies;
+using Microsoft.AspNetCore.RequestThrottling.Policies;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

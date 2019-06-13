@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
             _middleware = TestUtils.CreateTestMiddleware_TailDrop(
-                maxConcurrentRequests: 8,
-                requestQueueLimit: 2000,
+                maxConcurrentRequests: 1,
+                requestQueueLimit: 0,
                 next: _restOfServer);
         }
 

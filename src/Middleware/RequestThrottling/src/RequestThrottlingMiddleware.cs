@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
 
-        private int _totalRequests;
+        private int _queuedRequests;
 
         /// <summary>
         /// Creates a new <see cref="RequestThrottlingMiddleware"/>.
@@ -49,41 +50,43 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            Interlocked.Increment(ref _totalRequests);
+            Interlocked.Increment(ref _queuedRequests);
 
+            var success = false;
             try
             {
-                var success = await _queuePolicy.TryEnterAsync();
-                if (success)
-                {
-                    try
-                    {
-                        await _next(context);
-                    }
-                    finally
-                    {
-                        _queuePolicy.OnExit();
-                    }
-                }
-                else
-                {
-                    RequestThrottlingLog.RequestRejectedQueueFull(_logger);
-                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                    await _onRejected(context);
-                }
+                success = await _queuePolicy.TryEnterAsync();
             }
             finally
             {
-                Interlocked.Decrement(ref _totalRequests);
+                Interlocked.Decrement(ref _queuedRequests);
+            }
+
+            if (success)
+            {
+                try
+                {
+                    await _next(context);
+                }
+                finally
+                {
+                    _queuePolicy.OnExit();
+                }
+            }
+            else
+            {
+                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                await _onRejected(context);
             }
         }
-        
+
         /// <summary>
-        /// The total number of requests (queued and active) within the server
+        /// The total number of requests waiting within the middleware
         /// </summary>
-        public int TotalRequestCount
+        public int QueuedRequestCount
         {
-            get => _totalRequests;
+            get => _queuedRequests;
         }
 
         private static class RequestThrottlingLog

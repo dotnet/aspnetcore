@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             _middleware = TestUtils.CreateTestMiddleware_TailDrop(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
-                next: (RequestDelegate)_incrementAndCheck
+                next: IncrementAndCheck
                 );
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             _mres.Reset();
         }
 
-        private async Task _incrementAndCheck(HttpContext context)
+        private async Task IncrementAndCheck(HttpContext context)
         {
             if (Interlocked.Increment(ref _requestCount) == _numRequests)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                _ = _incrementAndCheck(null);
+                _ = IncrementAndCheck(null);
             }
 
             _mres.Wait();

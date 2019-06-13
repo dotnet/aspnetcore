@@ -76,13 +76,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var middleware = TestUtils.CreateTestMiddleware(
                 queue: TestStrategy.AlwaysBlock);
 
-            Assert.Equal(0, middleware.TotalRequestCount);
+            Assert.Equal(0, middleware.QueuedRequestCount);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.TotalRequestCount);
+            Assert.Equal(1, middleware.QueuedRequestCount);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, middleware.TotalRequestCount);
+            Assert.Equal(2, middleware.QueuedRequestCount);
         }
 
         [Fact]
@@ -99,10 +99,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     throw new DivideByZeroException();
                 });
 
-            Assert.Equal(0, middleware.TotalRequestCount);
+            Assert.Equal(0, middleware.QueuedRequestCount);
             await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
-            Assert.Equal(0, middleware.TotalRequestCount);
+            Assert.Equal(0, middleware.QueuedRequestCount);
             Assert.True(flag);
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.True(thirdRequest.IsCompletedSuccessfully);
 
-            Assert.Equal(0, middleware.TotalRequestCount);
+            Assert.Equal(0, middleware.QueuedRequestCount);
         }
     }
 }
