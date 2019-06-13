@@ -16,6 +16,12 @@
     <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TestRunnerName Condition="'$(TestRunnerName)' == 'XUnit'">XUnitWithTimeout</TestRunnerName>
+    <!-- 15 minutes -->
+    <TestTimeoutMilliseconds>900000</TestTimeoutMilliseconds>
+  </PropertyGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <!-- Properties which should be set after the project has been evaluated -->
 
