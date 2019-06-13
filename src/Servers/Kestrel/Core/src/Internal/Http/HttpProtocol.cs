@@ -635,6 +635,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Run the application code for this request
                     await application.ProcessRequestAsync(context);
 
+                    // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                    // already failed. If an OnStarting callback throws we can go through
+                    // our normal error handling in ProduceEnd.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
+                    {
+                        await FireOnStarting();
+                    }
+
                     if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
                     {
                         ReportApplicationError(lengthException);
@@ -654,15 +663,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 KestrelEventSource.Log.RequestStop(this);
-
-                // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                // already failed. If an OnStarting callback throws we can go through
-                // our normal error handling in ProduceEnd.
-                // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
-                {
-                    await FireOnStarting();
-                }
 
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
@@ -942,7 +942,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public Task InitializeResponseAsync(int firstWriteByteCount, bool appCompleted = false)
+        public Task InitializeResponseAsync(int firstWriteByteCount)
         {
             var startingTask = FireOnStarting();
             // If return is Task.CompletedTask no awaiting is required
@@ -953,7 +953,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             VerifyInitializeState(firstWriteByteCount);
 
-            ProduceStart(appCompleted: appCompleted);
+            ProduceStart(appCompleted: false);
 
             return Task.CompletedTask;
         }
@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteSuffix();
         }
 
-        protected Task WriteSuffix()
+        private Task WriteSuffix()
         {
             if (HasResponseCompleted)
             {

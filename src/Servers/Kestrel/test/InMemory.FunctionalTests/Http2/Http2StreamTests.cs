@@ -3484,7 +3484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => completionFeature.CompleteAsync().DefaultTimeout());
                     Assert.Equal(CoreStrings.FormatTooFewBytesWritten(0, 25), ex.Message);
 
-                    Assert.False(startingTcs.Task.IsCompleted); // OnStarting did not get called.
+                    Assert.True(startingTcs.Task.IsCompletedSuccessfully);
                     Assert.False(context.Response.Headers.IsReadOnly);
                     Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 

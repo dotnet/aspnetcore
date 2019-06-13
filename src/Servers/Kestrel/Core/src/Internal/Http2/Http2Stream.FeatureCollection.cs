@@ -59,12 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Finalize headers
             if (!HasResponseStarted)
             {
-                if (!VerifyResponseContentLength(out var lengthException))
-                {
-                    throw lengthException;
-                }
-
-                await InitializeResponseAsync(0, appCompleted: true);
+                await FireOnStarting();
             }
 
             // Flush headers, body, trailers...
@@ -75,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw lengthException;
                 }
 
-                await WriteSuffix();
+                await ProduceEnd();
             }
         }
     }
