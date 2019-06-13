@@ -3,7 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -233,6 +233,45 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var modelError = formatterContext.ModelState[modelStateKey].Errors.Single();
             Assert.Equal(expectedMessage, modelError.ErrorMessage);
+        }
+
+        [Theory]
+        [InlineData("[5,7,3]", 0)]
+        [InlineData("[5, 'seven', 3]", 1)]
+        [InlineData("[5, 'seven', 3, 'notnum']", 2)]
+        public async Task ReadAsync_AllowMultipleErrors(string content, int failCount)
+        {
+            // Arrange
+            var failTotal = 0;
+            var serializerSettings = new JsonSerializerSettings
+            {
+                Error = delegate (object sender, ErrorEventArgs args)
+                {
+                    args.ErrorContext.Handled = true;
+                }
+            };
+
+            var formatter = CreateFormatter(serializerSettings: serializerSettings, allowInputFormatterExceptionMessages: true);
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(List<int>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            foreach (var modelState in formatterContext.ModelState)
+            {
+                foreach (var error in modelState.Value.Errors)
+                {
+                    failTotal++;
+                    Assert.StartsWith("Could not convert string to integer:", error.ErrorMessage);
+                }
+            }
+
+            Assert.Equal(failCount, failTotal);
         }
 
         [Fact]

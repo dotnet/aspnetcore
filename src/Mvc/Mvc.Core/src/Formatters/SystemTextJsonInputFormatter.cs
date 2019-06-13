@@ -83,6 +83,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     path = path.Substring(2);
                 }
 
+                if (path.StartsWith("$[", StringComparison.Ordinal))
+                {
+                    path = path.Substring(1);
+                }
+
                 // Handle path combinations such as ""+"Property", "Parent"+"Property", or "Parent"+"[12]".
                 var key = ModelNames.CreatePropertyModelName(context.ModelName, path);
 
