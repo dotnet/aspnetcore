@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
-    <TestGroupName>Caching.Memory</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
