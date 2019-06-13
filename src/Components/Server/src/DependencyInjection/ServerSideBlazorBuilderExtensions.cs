@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Provides options for configuring Server-Side Blazor.
     /// </summary>
-    public static class ServerSizeBlazorBuilderExtensions
+    public static class ServerSideBlazorBuilderExtensions
     {
         /// <summary>
         /// Adds options to configure circuits.
