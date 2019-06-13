@@ -363,6 +363,7 @@ export class HttpConnection implements IConnection {
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
                 } else if (transportOrError instanceof Error) {
+                    // Store the error and continue, we don't want to cause a re-negotiate in these cases
                     transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
                 }
             } catch (ex) {
