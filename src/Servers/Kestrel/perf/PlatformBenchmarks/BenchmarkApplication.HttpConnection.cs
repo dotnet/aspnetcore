@@ -100,7 +100,10 @@ namespace PlatformBenchmarks
                 if (state == State.Headers)
                 {
                     var reader = new SequenceReader<byte>(buffer);
-                    if (Parser.ParseHeaders(new ParsingAdapter(this), ref reader))
+                    var success = Parser.ParseHeaders(new ParsingAdapter(this), ref reader);
+
+                    consumed = reader.Position;
+                    if (success)
                     {
                         examined = consumed;
                         state = State.Body;
@@ -110,7 +113,6 @@ namespace PlatformBenchmarks
                         examined = buffer.End;
                     }
 
-                    consumed = reader.Position;
                     buffer = buffer.Slice(consumed);
                 }
 

@@ -14,9 +14,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// </summary>
     public static partial class HubConnectionExtensions
     {
-
-#if NETCOREAPP3_0
-
         /// <summary>
         /// Invokes a streaming hub method on the server using the specified method name and return type.
         /// </summary>
@@ -236,7 +233,5 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 }, cancellationToken);
         }
-#endif
-
     }
 }

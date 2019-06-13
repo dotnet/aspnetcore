@@ -245,6 +245,36 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         }
 
         [Fact]
+        public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MicrosoftTest"));
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = stateFormat;
+            });
+            var transaction = await server.SendAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+
+            // verify query arguments
+            var query = QueryHelpers.ParseQuery(transaction.Response.Headers.Location.Query);
+            Assert.Equal("https://graph.microsoft.com/user.read", query["scope"]);
+            Assert.Equal("consumers", query["domain_hint"]);
+            Assert.Equal("username", query["login_hint"]);
+            Assert.Equal("select_account", query["prompt"]);
+            Assert.Equal("query", query["response_mode"]);
+
+            // verify that the passed items were not serialized
+            var stateProperties = stateFormat.Unprotect(query["state"]);
+            Assert.DoesNotContain("scope", stateProperties.Items.Keys);
+            Assert.DoesNotContain("domain_hint", stateProperties.Items.Keys);
+            Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
+            Assert.DoesNotContain("prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("response_mode", stateProperties.Items.Keys);
+        }
+
+        [Fact]
         public async Task PkceSentToTokenEndpoint()
         {
             var server = CreateServer(o =>
@@ -324,7 +354,14 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                         var res = context.Response;
                         if (req.Path == new PathString("/challenge"))
                         {
-                            await context.ChallengeAsync("Microsoft", new AuthenticationProperties() { RedirectUri = "/me" } );
+                            await context.ChallengeAsync("Microsoft", new MicrosoftChallengeProperties
+                            {
+                                Prompt = "select_account",
+                                LoginHint = "username",
+                                DomainHint = "consumers",
+                                ResponseMode = "query",
+                                RedirectUri = "/me"
+                            });
                         }
                         else if (req.Path == new PathString("/challengeWithOtherScope"))
                         {
