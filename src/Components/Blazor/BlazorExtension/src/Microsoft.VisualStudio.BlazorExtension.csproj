@@ -52,7 +52,7 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
 
-  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems">
+  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems" Condition="'$(IsPackable)' == 'true'">
     <ItemGroup>
       <_TemplatePackage Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg" />
     </ItemGroup>
@@ -97,7 +97,8 @@
     <ProjectReference
       Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj"
       ReferenceOutputAssembly="false"
-      Targets="Pack" />
+      Private="false"
+      Targets="Build;Pack" />
   </ItemGroup>
 
   <ItemGroup>

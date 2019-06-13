@@ -60,6 +60,14 @@
   <!--
     Well-known metadata of the code generator item groups.
   -->
+  <ItemGroup>
+    <AvailableItemName Include="OpenApiReference" />
+    <AvailableItemName Include="OpenApiProjectReference" />
+  </ItemGroup>
+
+  <!--
+    Well-known metadata of the code generator item groups.
+  -->
   <ItemDefinitionGroup>
     <!-- OpenApiProjectReference items may also include OpenApiReference metadata. -->
     <OpenApiProjectReference />

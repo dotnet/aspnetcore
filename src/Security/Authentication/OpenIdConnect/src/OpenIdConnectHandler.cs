@@ -1309,12 +1309,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Logger.ResponseError(message.Error, description, errorUri);
             }
 
-            return new OpenIdConnectProtocolException(string.Format(
+            var ex = new OpenIdConnectProtocolException(string.Format(
                 CultureInfo.InvariantCulture,
                 Resources.MessageContainsError,
                 message.Error,
                 description,
                 errorUri));
+            ex.Data["error"] = message.Error;
+            ex.Data["error_description"] = description;
+            ex.Data["error_uri"] = errorUri;
+            return ex;
         }
     }
 }

@@ -127,6 +127,28 @@ export class HubConnection {
         return this.connection ? (this.connection.connectionId || null) : null;
     }
 
+    /** Indicates the url of the {@link HubConnection} to the server. */
+    get baseUrl(): string {
+        return this.connection.baseUrl || "";
+    }
+
+    /**
+     * Sets a new url for the HubConnection. Note that the url can only be changed when the connection is in either the Disconnected or
+     * Reconnecting states.
+     * @param {string} url The url to connect to.
+     */
+    set baseUrl(url: string) {
+        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting) {
+            throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+        }
+
+        if (!url) {
+            throw new Error("The HubConnection url must be a valid url.");
+        }
+
+        this.connection.baseUrl = url;
+    }
+
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.

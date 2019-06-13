@@ -750,6 +750,36 @@ describe("hubConnection", () => {
                 }
             });
         });
+
+        it("can change url in reconnecting state", async (done) => {
+            try {
+                const reconnectingPromise = new PromiseSource();
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withAutomaticReconnect()
+                    .build();
+
+                hubConnection.onreconnecting(() => {
+                    hubConnection.baseUrl = "http://example123.com";
+                    reconnectingPromise.resolve();
+                });
+
+                await hubConnection.start();
+
+                // Induce reconnect
+                (hubConnection as any).serverTimeout();
+
+                await reconnectingPromise;
+
+                expect(hubConnection.baseUrl).toBe("http://example123.com");
+
+                await hubConnection.stop();
+
+                done();
+            } catch (err) {
+                fail(err);
+                done();
+            }
+        });
     });
 
     it("can reconnect after negotiate redirect", async (done) => {

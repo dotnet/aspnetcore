@@ -71,27 +71,40 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 // Since it's a frequent scenario (that is not caused by incorrect configuration),
                 // denied errors are handled differently using HandleAccessDeniedErrorAsync().
                 // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
+                var errorDescription = query["error_description"];
+                var errorUri = query["error_uri"];
                 if (StringValues.Equals(error, "access_denied"))
                 {
                     var result = await HandleAccessDeniedErrorAsync(properties);
-                    return !result.None ? result
-                        : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
+                    if (!result.None)
+                    {
+                        return result;
+                    }
+                    var deniedEx = new Exception("Access was denied by the resource owner or by the remote server.");
+                    deniedEx.Data["error"] = error.ToString();
+                    deniedEx.Data["error_description"] = errorDescription.ToString();
+                    deniedEx.Data["error_uri"] = errorUri.ToString();
+
+                    return HandleRequestResult.Fail(deniedEx, properties);
                 }
 
                 var failureMessage = new StringBuilder();
                 failureMessage.Append(error);
-                var errorDescription = query["error_description"];
                 if (!StringValues.IsNullOrEmpty(errorDescription))
                 {
                     failureMessage.Append(";Description=").Append(errorDescription);
                 }
-                var errorUri = query["error_uri"];
                 if (!StringValues.IsNullOrEmpty(errorUri))
                 {
                     failureMessage.Append(";Uri=").Append(errorUri);
                 }
 
-                return HandleRequestResult.Fail(failureMessage.ToString(), properties);
+                var ex = new Exception(failureMessage.ToString());
+                ex.Data["error"] = error.ToString();
+                ex.Data["error_description"] = errorDescription.ToString();
+                ex.Data["error_uri"] = errorUri.ToString();
+
+                return HandleRequestResult.Fail(ex, properties);
             }
 
             var code = query["code"];

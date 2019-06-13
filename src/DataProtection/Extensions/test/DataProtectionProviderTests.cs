@@ -115,7 +115,6 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2177", FlakyOn.AzP.Windows)]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
         public void System_UsesProvidedDirectoryAndCertificate()
@@ -133,7 +132,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 var certificateStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
                 certificateStore.Open(OpenFlags.ReadWrite);
                 var certificate = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
-
+                Assert.True(certificate.HasPrivateKey, "Cert should have a private key");
                 try
                 {
                     // Step 1: directory should be completely empty
@@ -186,7 +185,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     certificateStore.Open(OpenFlags.ReadWrite);
                     var certInStore = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
                     Assert.NotNull(certInStore);
-                    Assert.False(certInStore.HasPrivateKey);
+                    Assert.False(certInStore.HasPrivateKey, "Cert should not have private key");
 
                     try
                     {
