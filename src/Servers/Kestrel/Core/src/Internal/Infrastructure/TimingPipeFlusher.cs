@@ -61,13 +61,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // Pipelines don't support multiple awaiters on flush.
             lock (_flushLock)
             {
-                if (!_lastFlushTask.IsCompleted)
+                if (_lastFlushTask.IsCompleted)
                 {
-                    _lastFlushTask = AwaitLastFlushAndTimeFlushAsync(_lastFlushTask, minRate, count, outputAborter, cancellationToken);
+                    _lastFlushTask = TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
                 }
                 else
                 {
-                    _lastFlushTask = TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
+                    _lastFlushTask = AwaitLastFlushAndTimeFlushAsync(_lastFlushTask, minRate, count, outputAborter, cancellationToken);
                 }
 
                 return _lastFlushTask;
