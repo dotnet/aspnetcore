@@ -246,7 +246,7 @@ $env:DOTNET_HOME = $DotNetHome
 
 # Execute
 
-if ($DumpProcesses)
+if ($DumpProcesses -or $CI)
 {
     # Dump running processes
     Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
@@ -382,13 +382,13 @@ finally {
     Remove-Item env:DOTNET_HOME
     Remove-Item env:KOREBUILD_KEEPGLOBALJSON
 
-    if ($DumpProcesses)
+    if ($DumpProcesses -or $CI)
     {
         Stop-Job -Name DumpProcesses
         Remove-Job -Name DumpProcesses
     }
 
-    if ($ci) {
+    if ($CI) {
         & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
     }
 
