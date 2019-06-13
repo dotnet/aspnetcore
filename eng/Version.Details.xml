@@ -293,7 +293,7 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>60e7a31b8d3bdf84cc8a6bf053ee81ac8aefe37d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0-preview7.19309.5" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.0.0-preview7.19310.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>8135319caa7e457ed61053ca1418313b88057b51</Sha>
     </Dependency>
