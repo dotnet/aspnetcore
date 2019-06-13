@@ -46,6 +46,8 @@ try {
         & $repoRoot/restore.cmd -ci -NoBuildNodeJS
     }
 
+    . "$repoRoot/activate.ps1"
+
     #
     # Duplicate .csproj files can cause issues with a shared build output folder
     #
@@ -160,17 +162,13 @@ try {
     }
 
     Write-Host "Re-generating package baselines"
-    $dotnet = 'dotnet'
-    if ($ci) {
-        $dotnet = "$repoRoot/.dotnet/dotnet.exe"
-    }
     Invoke-Block {
-        & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
+        & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
     Write-Host "Re-generating Browser.JS files"
     Invoke-Block {
-        & $dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
+        & dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
     }
 
     Write-Host "Run git diff to check for pending changes"
