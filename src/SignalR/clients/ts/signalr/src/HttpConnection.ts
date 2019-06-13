@@ -339,21 +339,6 @@ export class HttpConnection implements IConnection {
         return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionId}`;
     }
 
-    private reduceTransports(transports: IAvailableTransport[], requestedTransport: HttpTransportType | undefined): IAvailableTransport[] {
-        return transports.filter((endpoint) => {
-            const transport = HttpTransportType[endpoint.transport];
-            if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
-                (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
-                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                return false;
-            } else if (!transportMatches(requestedTransport, transport)) {
-                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                return false;
-            }
-            return true;
-        });
-    }
-
     private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
         let connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
         if (this.isITransport(requestedTransport)) {
@@ -365,18 +350,20 @@ export class HttpConnection implements IConnection {
         }
 
         const transportExceptions: any[] = [];
-        const transports = this.reduceTransports(negotiateResponse.availableTransports || [], requestedTransport);
+        const transports = negotiateResponse.availableTransports || [];
         for (const endpoint of transports) {
             try {
-                const transport = this.resolveTransport(endpoint, requestedTransferFormat);
-                if (typeof transport === "number") {
-                    this.transport = this.constructTransport(transport);
+                const transportOrError = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+                if (typeof transportOrError === "number") {
+                    this.transport = this.constructTransport(transportOrError);
                     if (!negotiateResponse.connectionId) {
                         negotiateResponse = await this.getNegotiationResponse(url);
                         connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
                     }
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
+                } else if (transportOrError instanceof Error) {
+                    transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
                 }
             } catch (ex) {
                 this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
@@ -416,21 +403,32 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private resolveTransport(endpoint: IAvailableTransport, requestedTransferFormat: TransferFormat): HttpTransportType | null {
+    private resolveTransport(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | Error {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
+            return new Error(`Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
-            const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
-            if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
-                this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
-                return transport;
+            if (transportMatches(requestedTransport, transport)) {
+                const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
+                if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
+                    if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
+                        (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
+                        this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
+                        return new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
+                    } else {
+                        this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
+                        return transport;
+                    }
+                } else {
+                    this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
+                    return new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
+                }
             } else {
-                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
-                throw new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
+                this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
+                return new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
             }
         }
-        return null;
     }
 
     private isITransport(transport: any): transport is ITransport {
