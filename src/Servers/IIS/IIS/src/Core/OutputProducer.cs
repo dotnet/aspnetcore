@@ -13,10 +13,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class OutputProducer
     {
-        // This locks access to to all of the below fields
+        // This locks access to _completed.
         private readonly object _contextLock = new object();
-
-        private ValueTask<FlushResult> _flushTask;
         private bool _completed = false;
 
         private readonly Pipe _pipe;
