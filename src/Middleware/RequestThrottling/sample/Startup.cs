@@ -20,7 +20,7 @@ namespace RequestThrottlingSample
         {
             services.AddTailDropQueue((options) =>
             {
-                options.MaxConcurrentRequests = 2;
+                options.MaxConcurrentRequests = 4;
                 options.RequestQueueLimit = 0;
             });
 

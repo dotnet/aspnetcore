@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly IQueuePolicy _requestQueue;
+        private readonly IQueuePolicy _queuePolicy;
         private readonly RequestDelegate _next;
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _onRejected = options.Value.OnRejected;
-            _requestQueue = queue;
+            _queuePolicy = queue;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             try
             {
-                var success = await _requestQueue.TryEnterAsync();
+                var success = await _queuePolicy.TryEnterAsync();
                 if (success)
                 {
                     try
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
                     }
                     finally
                     {
-                        _requestQueue.OnExit();
+                        _queuePolicy.OnExit();
                     }
                 }
                 else

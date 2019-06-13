@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Strategies
+namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
     /// <summary>
     /// Specifies options for the <see cref="TailDrop"/>

@@ -4,10 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.RequestThrottling.Strategies;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.RequestThrottling
+namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
     internal class TailDrop : IQueuePolicy, IDisposable
     {
