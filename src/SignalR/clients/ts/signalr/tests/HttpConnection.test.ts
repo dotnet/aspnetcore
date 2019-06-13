@@ -252,6 +252,39 @@ describe("HttpConnection", () => {
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
+    it("failed re-negotiate fails start", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
+                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        if (negotiateCount === 2) {
+                            throw new Error("negotiate failed");
+                        }
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("negotiate failed");
+
+            expect(negotiateCount).toEqual(2);
+        },
+        "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
+        "Failed to complete negotiation with the server: Error: negotiate failed",
+        "Failed to start the connection: Error: negotiate failed");
+    });
+
     it("can stop a non-started connection", async () => {
         await VerifyLogger.run(async (logger) => {
             const connection = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
