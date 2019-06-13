@@ -124,6 +124,9 @@ param(
     # MSBuild for .NET Core
     [switch]$ForceCoreMsbuild,
 
+    # Diagnostics
+    [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
+
     # Other lifecycle targets
     [switch]$Help, # Show help
 
@@ -243,8 +246,11 @@ $env:DOTNET_HOME = $DotNetHome
 
 # Execute
 
-# Dump running processes
-Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+if ($DumpProcesses)
+{
+    # Dump running processes
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+}
 
 $korebuildPath = Get-KoreBuild
 
@@ -376,7 +382,15 @@ finally {
     Remove-Item env:DOTNET_HOME
     Remove-Item env:KOREBUILD_KEEPGLOBALJSON
 
-    Stop-Job -Name DumpProcesses
-    Remove-Job -Name DumpProcesses
+    if ($DumpProcesses)
+    {
+        Stop-Job -Name DumpProcesses
+        Remove-Job -Name DumpProcesses
+    }
+
+    if ($ci) {
+        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+    }
+
     Write-Host "build.ps1 completed"
 }
