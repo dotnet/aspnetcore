@@ -5,6 +5,7 @@
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
@@ -24,7 +25,6 @@
 
   <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
     <PropertyGroup>
-      <PackageTags>$(PackageTags.Replace(';',' '))</PackageTags>
       <_OutputBinary>@(BuiltProjectOutputGroupOutput)</_OutputBinary>
       <_OutputSymbol>@(DebugSymbolsProjectOutputGroupOutput)</_OutputSymbol>
       <_OutputDocumentation>@(DocumentationProjectOutputGroupOutput)</_OutputDocumentation>
@@ -37,7 +37,7 @@
       <NuspecProperty Include="OutputDocumentation=$(_OutputDocumentation)"/>
       <!-- Include the assembly and symbols from the tasks project -->
       <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
-      <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb"/>
+      <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
     </ItemGroup>
   </Target>
 </Project>

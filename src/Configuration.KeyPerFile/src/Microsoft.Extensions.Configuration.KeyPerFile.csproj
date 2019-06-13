@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Configuration provider that uses files in a directory for Microsoft.Extensions.Configuration.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
