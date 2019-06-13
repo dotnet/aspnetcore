@@ -8,8 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>

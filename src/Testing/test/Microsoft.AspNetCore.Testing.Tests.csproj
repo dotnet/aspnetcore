@@ -14,10 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.Testing.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 
