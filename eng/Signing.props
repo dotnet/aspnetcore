@@ -9,12 +9,19 @@
   </ItemGroup>
 
   <ItemGroup Label="Signing config">
-    <!-- Arcade picks up .nupkg and .vsix by default -->
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar" CertificateName="MicrosoftJARSHA2" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar" CertificateName="MicrosoftJARSHA2" />
+    <!-- Arcade picks up .nupkg and .vsix by default. List other signable build outputs here. -->
+    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
+    <ItemsToSign Include="$(InstallersOutputPath)**\*.zip" />
 
-    <!-- "None" means don't sign the .zip file itself, but still scan the contents of the .zip for signable files. -->
-    <ItemsToSign Include="$(InstallersOutputPath)**\*.zip" CertificateName="None" />
+    <!--
+      Map file extensions to a code-sign cert.
+      "None" means don't sign the file itself, but still scan the contents for signable files.
+    -->
+    <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJARSHA2" />
+    <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
+    <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
+    <FileExtensionSignInfo Include=".zip" CertificateName="None" />
 
     <!--
       Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.

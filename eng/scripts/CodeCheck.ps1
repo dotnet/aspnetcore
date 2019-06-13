@@ -43,7 +43,7 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/restore.cmd -ci
+        & $repoRoot/restore.cmd -ci -NoBuildNodeJS
     }
 
     #
@@ -55,7 +55,7 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
-        | ? { $_.FullName -notmatch 'submodules' } `
+        | ? { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
         | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
         | % {
             $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -121,10 +121,6 @@ try {
             "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/aspnet/AspNetCore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
             -filepath "$repoRoot\eng\Versions.props"
     }
-
-    #
-    # Solutions
-    #
 
     Write-Host "Checking that solutions are up to date"
 
