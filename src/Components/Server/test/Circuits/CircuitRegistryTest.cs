@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -356,11 +357,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(3),
             };
             var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
-            var mre = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<object>();
 
             registry.OnAfterEntryEvicted = () =>
             {
-                mre.Set();
+                tcs.TrySetResult(new object());
             };
             var circuitHost = TestCircuitHost.Create();
 
@@ -369,7 +370,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Act
             // Verify it's present in the dictionary.
             Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
-            await Task.Run(() => Assert.True(mre.Wait(TimeSpan.FromSeconds(10))));
+            await Task.Run(() => tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
             Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
         }
 
@@ -383,11 +384,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(8),
             };
             var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
-            var mre = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<object>();
 
             registry.OnAfterEntryEvicted = () =>
             {
-                mre.Set();
+                tcs.TrySetResult(new object());
             };
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
 
@@ -395,7 +396,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             await registry.ConnectAsync(circuitHost.CircuitId, Mock.Of<IClientProxy>(), "new-connection", default);
 
             // Act
-            await Task.Run(() => Assert.True(mre.Wait(TimeSpan.FromSeconds(10))));
+            await Task.Run(() => tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
 
             // Verify it's still connected
             Assert.True(registry.ConnectedCircuits.TryGetValue(circuitHost.CircuitId, out var cacheValue));
