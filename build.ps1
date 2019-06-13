@@ -318,7 +318,9 @@ try {
       . $configureToolsetScript
     }
 
-    # Set this global property so Arcade will always initialize the toolset
+    # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
+    # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing
+    # the toolset is a better default behavior.
     $tmpRestore = $restore
     $restore = $true
 

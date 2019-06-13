@@ -1,18 +1,5 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-  <!-- Workaround https://github.com/Microsoft/msbuild/issues/4150 -->
-  <!-- Evaluate this import here so we can override WixTargetsPath before wix.targets is imported -->
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
-    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
-    <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition=" '$(MSBuildProjectExtension)' == '.wixproj' " />
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
-    <!-- Suppress double-import in eng/targets/Wix.Common.props -->
-    <_ProjectExtensionsWereImported>true</_ProjectExtensionsWereImported>
-    <WixTargetsPath>$(WixInstallPath)\wix2010.targets</WixTargetsPath>
-  </PropertyGroup>
-
   <PropertyGroup>
     <!-- Reset this to the Microsoft.NET.Sdk default to workaround Arcade's defaults, which sets IsPackable=false by default. -->
     <IsPackable />
