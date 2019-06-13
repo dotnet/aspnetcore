@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.DotNet.Build.Tasks;
 using Microsoft.Extensions.DependencyModel;
 
 namespace RepoTasks
@@ -61,7 +60,7 @@ namespace RepoTasks
                 var filePath = reference.ItemSpec;
                 var fileName = Path.GetFileName(filePath);
                 var fileVersion = FileUtilities.GetFileVersion(filePath)?.ToString() ?? string.Empty;
-                var assemblyVersion = FileUtilities.TryGetAssemblyVersion(filePath);
+                var assemblyVersion = FileUtilities.GetAssemblyName(filePath)?.Version;
                 if (assemblyVersion == null)
                 {
                     var nativeFile = new RuntimeFile(fileName, null, fileVersion);

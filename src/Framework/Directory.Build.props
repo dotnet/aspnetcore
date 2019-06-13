@@ -5,7 +5,16 @@
     <ManifestsPackagePath>data/</ManifestsPackagePath>
     <!-- Shared between targeting pack and runtime build. -->
     <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
+    <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
     <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkListRootAttributes Include="Name" Value="$(AspNetCoreAppFrameworkBrandName)" />
+    <FrameworkListRootAttributes Include="TargetFrameworkIdentifier" Value="$(NETCoreAppFrameworkIdentifier)" />
+    <FrameworkListRootAttributes Include="TargetFrameworkVersion" Value="$(AspNetCoreMajorMinorVersion)" />
+    <FrameworkListRootAttributes Include="FrameworkName" Value="$(SharedFxName)" />
+  </ItemGroup>
 
 </Project>

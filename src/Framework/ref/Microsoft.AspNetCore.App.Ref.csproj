@@ -36,6 +36,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <!-- Platform manifest data -->
+    <PlatformManifestTargetPath>$(ManifestsPackagePath)FrameworkList.txt</PlatformManifestTargetPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -113,6 +116,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
       <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
 
       <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
@@ -172,6 +176,22 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(TarArchiveOutputPath) ."
       WorkingDirectory="$(TargetingPackLayoutRoot)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
+  </Target>
+
+   <Target Name="IncludeFrameworkListFile"
+          BeforeTargets="_BatchCopyToLayoutTargetDir"
+          Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(File)"
+      TargetFile="$(FrameworkListOutputPath)"
+      TargetFilePrefixes="ref/;runtimes/"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <File Include="$(FrameworkListFile)">
+        <TargetPath>$(ManifestsPackagePath)</TargetPath>
+      </File>
+    </ItemGroup>
   </Target>
 
 </Project>
