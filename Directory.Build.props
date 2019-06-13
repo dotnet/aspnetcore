@@ -18,7 +18,9 @@
     <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
   </PropertyGroup>
 
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
 
