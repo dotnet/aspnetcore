@@ -35,9 +35,23 @@
     <ProjectReference Include="..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
-    <Content Include="..\testassets\**\*" Condition="'$(IsHelixJob)' == 'true'" LinkBase="%(RecursiveDir)" />
   </ItemGroup>
 
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(ArtifactsBinDir)AzureAD.WebSite\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
+      <_testFiles Include="..\testassets\**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)"
+      ContinueOnError="true" />
+    <Copy
+      SourceFiles="@(_testFiles)"
+      DestinationFolder="$(PublishDir)\%(RecursiveDir)"
+      ContinueOnError="true" />
+  </Target>
+   
   <ItemGroup>
     <HelixPreCommand Include="call npm i yarn;call node_modules\.bin\yarn install" />
     <HelixContent Include="package.json" />
