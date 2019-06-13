@@ -26,6 +26,7 @@ build_managed=''
 build_native=''
 build_nodejs=''
 build_java=''
+build_installers=''
 build_projects=''
 target_arch='x64'
 configuration=''
@@ -45,33 +46,34 @@ __usage() {
     echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <Arguments>...]
 
 Arguments:
-    <Arguments>...         Arguments passed to the command. Variable number of arguments allowed.
+    <Arguments>...            Arguments passed to the command. Variable number of arguments allowed.
 
 Options:
-    --configuration|-c     The build configuration (Debug, Release). Default=Debug
-    --arch                 The CPU architecture to build for (x64, arm, arm64). Default=$target_arch
-    --os-name              The base runtime identifier to build for (linux, osx, linux-musl). Default=$target_os_name
+    --configuration|-c        The build configuration (Debug, Release). Default=Debug
+    --arch                    The CPU architecture to build for (x64, arm, arm64). Default=$target_arch
+    --os-name                 The base runtime identifier to build for (linux, osx, linux-musl). Default=$target_os_name
 
-    --[no-]restore         Run restore.
-    --[no-]build           Compile projects. (Implies --no-restore)
-    --[no-]pack            Produce packages.
-    --[no-]test            Run tests.
-    --publish              Generate manifests for publishing a build.
+    --[no-]restore            Run restore.
+    --[no-]build              Compile projects. (Implies --no-restore)
+    --[no-]pack               Produce packages.
+    --[no-]test               Run tests.
+    --publish                 Generate manifests for publishing a build.
 
-    --projects             A list of projects to build. (Must be an absolute path.)
-                           Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
-    --no-build-deps        Do not build project-to-project references and only build the specified project.
-    --no-build-repo-tasks  Suppress building RepoTasks.
+    --projects                A list of projects to build. (Must be an absolute path.)
+                              Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+    --no-build-deps           Do not build project-to-project references and only build the specified project.
+    --no-build-repo-tasks     Suppress building RepoTasks.
 
-    --all                  Build all project types.
-    --[no-]build-native    Build native projects (C, C++).
-    --[no-]build-managed   Build managed projects (C#, F#, VB).
-    --[no-]build-nodejs    Build NodeJS projects (TypeScript, JS).
-    --[no-]build-java      Build Java projects.
+    --all                     Build all project types.
+    --[no-]build-native       Build native projects (C, C++).
+    --[no-]build-managed      Build managed projects (C#, F#, VB).
+    --[no-]build-nodejs       Build NodeJS projects (TypeScript, JS).
+    --[no-]build-java         Build Java projects.
+    --[no-]build-installers   Build Java projects.
 
-    --ci                   Apply CI specific settings and environment variables.
-    --binarylog|-bl        Use a binary logger
-    --verbosity|-v         MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --ci                      Apply CI specific settings and environment variables.
+    --binarylog|-bl           Use a binary logger
+    --verbosity|-v            MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -182,6 +184,12 @@ while [[ $# -gt 0 ]]; do
         -no-build-native|-nobuildnative)
             build_native=false
             ;;
+        -build-installers|-buildinstallers)
+            build_installers=true
+            ;;
+        -no-build-installers|-nobuildinstallers)
+            build_installers=false
+            ;;
         -no-build-repo-tasks|-nobuildrepotasks)
             build_repo_tasks=false
             ;;
@@ -207,7 +215,7 @@ if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 elif [ ! -z "$build_projects" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:ProjectToBuild=$build_projects"
-elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ]; then
+elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ] && [ -z "$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh --help`` for more details."
@@ -223,6 +231,7 @@ fi
 [ ! -z "$build_native" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNative=$build_native"
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
+[ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
 
 # Run restore by default unless --no-restore or --no-build was specified.
 [ -z "$run_restore" ] && run_restore=true
