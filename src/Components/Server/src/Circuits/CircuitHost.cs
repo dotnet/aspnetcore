@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public event UnhandledExceptionEventHandler UnhandledException;
 
         public CircuitHost(
-            string circuitId,
+            CircuitId circuitId,
             IServiceScope scope,
             CircuitClientProxy client,
             RendererRegistry rendererRegistry,
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
         }
 
-        public string CircuitId { get; }
+        public CircuitId CircuitId { get; }
 
         public Circuit Circuit { get; }
 
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public async ValueTask DisposeAsync()
         {
-            Log.DisposingCircuit(_logger, CircuitId);
+            Log.DisposingCircuit(_logger, CircuitId.RequestToken);
 
             await Renderer.InvokeAsync(async () =>
             {

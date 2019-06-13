@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var newConnectionId = "new-id";
 
             // Act
-            var result = await registry.ConnectAsync(circuitHost.CircuitId, newClient, newConnectionId, default);
+            var result = await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, newClient, newConnectionId, default);
 
             // Assert
             Assert.Same(circuitHost, result);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var newConnectionId = "new-id";
 
             // Act
-            var result = await registry.ConnectAsync(circuitHost.CircuitId, newClient, newConnectionId, default);
+            var result = await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, newClient, newConnectionId, default);
 
             // Assert
             Assert.Same(circuitHost, result);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var actual = Assert.Single(registry.ConnectedCircuits.Values);
             Assert.Same(circuitHost, actual);
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.RequestToken, out _));
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var newConnectionId = "new-id";
 
             // Act
-            var result = await registry.ConnectAsync(circuitHost.CircuitId, newClient, newConnectionId, default);
+            var result = await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, newClient, newConnectionId, default);
 
             // Assert
             Assert.NotNull(result);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var newConnectionId = "new-id";
 
             // Act
-            var result = await registry.ConnectAsync(circuitHost.CircuitId, newClient, newConnectionId, default);
+            var result = await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, newClient, newConnectionId, default);
 
             // Assert
             Assert.NotNull(result);
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Arrange
             var registry = CreateRegistry();
             var circuitHost = TestCircuitHost.Create();
-            registry.DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
+            registry.DisconnectedCircuits.Set(circuitHost.CircuitId.RequestToken, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
 
             // Act
             await registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
 
             // Assert
             Assert.Empty(registry.ConnectedCircuits.Values);
-            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.RequestToken, out _));
         }
 
         [Fact]
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 registry.BeforeDisconnect.Set();
                 await tcs.Task;
-                await registry.ConnectAsync(circuitHost.CircuitId, client, newId, default);
+                await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, client, newId, default);
             });
             registry.BeforeDisconnect.Set();
             await Task.WhenAll(disconnect, connect);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Same(client, circuitHost.Client.Client);
             Assert.Equal(newId, circuitHost.Client.ConnectionId);
 
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.RequestToken, out _));
         }
 
         [Fact]
@@ -274,13 +274,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 registry.BeforeDisconnect.Set();
                 await tcs.Task;
-                await registry.ConnectAsync(circuitHost.CircuitId, client, newId, default);
+                await registry.ConnectAsync(circuitHost.CircuitId.RequestToken, client, newId, default);
             });
             await Task.WhenAll(disconnect, connect);
 
             // Assert
             Assert.Single(registry.ConnectedCircuits.Values);
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.RequestToken, out _));
 
             Assert.True(circuitHandler.OnConnectionDownExecuted, "OnConnectionDownAsync should have been executed.");
             Assert.True(circuitHandler.OnConnectionUpExecuted, "OnConnectionUpAsync should have been executed.");
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var newId = "new-connection";
 
             // Act
-            var connect = Task.Run(() => registry.ConnectAsync(circuitHost.CircuitId, client, newId, default));
+            var connect = Task.Run(() => registry.ConnectAsync(circuitHost.CircuitId.RequestToken, client, newId, default));
             var disconnect = Task.Run(() => registry.DisconnectAsync(circuitHost, oldId));
             registry.BeforeConnect.Set();
             await Task.WhenAll(connect, disconnect);
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Same(client, circuitHost.Client.Client);
             Assert.Equal(newId, circuitHost.Client.ConnectionId);
 
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.RequestToken, out _));
         }
 
         [Fact]

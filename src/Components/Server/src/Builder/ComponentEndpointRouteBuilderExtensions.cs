@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
+            endpoints.MapStartCircuitEndpoint(ComponentHub.DefaultPath + "/start");
             return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions));
         }
 
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(path, configureOptions)).AddComponent(componentType, selector);
+            return endpoints.MapBlazorHub(configureOptions).AddComponent(componentType, selector);
         }
     }
 }

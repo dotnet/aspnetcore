@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                     return uriHelper;
                 });
                 var serviceScope = serviceCollection.BuildServiceProvider().CreateScope();
-                return TestCircuitHost.Create(Guid.NewGuid().ToString(), serviceScope);
+                return TestCircuitHost.Create(new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()), serviceScope);
             }
         }
 

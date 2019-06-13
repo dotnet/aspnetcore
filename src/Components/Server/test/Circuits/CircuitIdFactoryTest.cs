@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Xunit;
@@ -20,9 +21,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var id = factory.CreateCircuitId();
 
             // Assert
-            Assert.NotNull(id);
+            Assert.NotNull(id.CookieToken);
+            Assert.NotNull(id.RequestToken);
+
             // This is the magic data protection header that validates its protected
-            Assert.StartsWith("CfDJ", id);
+            Assert.StartsWith("CfDJ", id.CookieToken);
         }
 
         [Fact]
@@ -35,8 +38,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var ids = Enumerable.Range(0, 100).Select(i => factory.CreateCircuitId()).ToArray();
 
             // Assert
-            Assert.All(ids, id => Assert.NotNull(id));
-            Assert.Equal(100, ids.Distinct(StringComparer.Ordinal).Count());
+            Assert.All(ids, id => Assert.NotNull(id.CookieToken));
+            Assert.Equal(100, ids.Select(id => id.CookieToken).Distinct(StringComparer.Ordinal).Count());
         }
 
         [Fact]
@@ -47,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var id = factory.CreateCircuitId();
 
             // Act
-            var isValid = factory.ValidateCircuitId(id);
+            var isValid = factory.ValidateCircuitId(id.CookieToken, new ClaimsPrincipal());
 
             // Assert
             Assert.True(isValid, "Failed to validate id");
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
-            var isValid = factory.ValidateCircuitId("$%@&==");
+            var isValid = factory.ValidateCircuitId("$%@&==", new ClaimsPrincipal());
 
             // Assert
             Assert.False(isValid, "Accepted an invalid payload");
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Arrange
             var factory = TestCircuitIdFactory.CreateTestFactory();
             var id = factory.CreateCircuitId();
-            var protectedBytes = Base64UrlTextEncoder.Decode(id);
+            var protectedBytes = Base64UrlTextEncoder.Decode(id.CookieToken);
             for (int i = protectedBytes.Length - 10; i < protectedBytes.Length; i++)
             {
                 protectedBytes[i] = 0;
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var tamperedId = Base64UrlTextEncoder.Encode(protectedBytes);
 
             // Act
-            var isValid = factory.ValidateCircuitId(tamperedId);
+            var isValid = factory.ValidateCircuitId(tamperedId,new ClaimsPrincipal());
 
             // Assert
             Assert.False(isValid, "Accepted a tampered payload");

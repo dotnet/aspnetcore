@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
 
             var result = (new[] {
-                $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
+                $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId.RequestToken}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
             }).Concat(renderResult.Tokens).Concat(
                 new[] {
                     $"<!-- M.A.C.Component: {renderResult.ComponentId} -->"

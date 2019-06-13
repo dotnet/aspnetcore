@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Extension methods to configure an <see cref="IServiceCollection"/> for components.
     /// </summary>
-    public static class ComponentServiceCollectionExtensions
+    public static partial class ComponentServiceCollectionExtensions
     {
         /// <summary>
         /// Adds Server-Side Blazor services to the service collection.
@@ -46,6 +47,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.SupportedProtocols.Clear();
                 options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
             });
+
+            services.AddAuthentication()
+                .AddScheme<CircuitAuthenticationOptions, CircuitAuthenticationHandler>(
+                CircuitAuthenticationHandler.AuthenticationType,
+                _ => { });
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthorizationOptions>, ConfigureCircuitAuthorization>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CircuitOptions>, ConfigureCircuitAuthenticationPolicy>());
 
             // Register the Blazor specific hub protocol
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());

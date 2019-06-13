@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
+    [Authorize(CircuitAuthenticationHandler.AuthenticationType)]
     internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
@@ -26,10 +28,13 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Intended for framework use only. Applications should not instantiate
         /// this class directly.
         /// </summary>
-        public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
+        public ComponentHub(
+            IServiceProvider services,
+            ILogger<ComponentHub> logger)
         {
             _circuitFactory = services.GetRequiredService<CircuitFactory>();
             _circuitRegistry = services.GetRequiredService<CircuitRegistry>();
+
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -97,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             CircuitHost = circuitHost;
 
-            return circuitHost.CircuitId;
+            return circuitHost.CircuitId.RequestToken;
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -74,10 +75,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// </summary>
         public void Register(CircuitHost circuitHost)
         {
-            if (!ConnectedCircuits.TryAdd(circuitHost.CircuitId, circuitHost))
+            if (!ConnectedCircuits.TryAdd(circuitHost.CircuitId.RequestToken, circuitHost))
             {
                 // This will likely never happen, except perhaps in unit tests, since CircuitIds are unique.
-                throw new ArgumentException($"Circuit with identity {circuitHost.CircuitId} is already registered.");
+                throw new ArgumentException($"Circuit with identity {circuitHost.CircuitId.RequestToken} is already registered.");
             }
         }
 
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         protected virtual bool DisconnectCore(CircuitHost circuitHost, string connectionId)
         {
-            var circuitId = circuitHost.CircuitId;
+            var circuitId = circuitHost.CircuitId.RequestToken;
             if (!ConnectedCircuits.TryGetValue(circuitId, out circuitHost))
             {
                 Log.CircuitNotActive(_logger, circuitId);
@@ -151,14 +152,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             var entry = new DisconnectedCircuitEntry(circuitHost, cancellationTokenSource);
-            DisconnectedCircuits.Set(circuitHost.CircuitId, entry, entryOptions);
+            DisconnectedCircuits.Set(circuitHost.CircuitId.RequestToken, entry, entryOptions);
         }
 
         public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
         {
             Log.CircuitConnectStarted(_logger, circuitId);
 
-            if (!_circuitIdFactory.ValidateCircuitId(circuitId))
+            if (!_circuitIdFactory.ValidateCircuitId(circuitId, new ClaimsPrincipal()))
             {
                 Log.InvalidCircuitId(_logger, circuitId);
                 return null;
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // b) out of order connection-up \ connection-down events e.g. a client that disconnects as soon it finishes reconnecting.
 
                 // Dispatch the circuit handlers inside the sync context to ensure the order of execution. CircuitHost executes circuit handlers inside of
-                // 
+                //
                 circuitHandlerTask = circuitHost.Dispatcher.InvokeAsync(async () =>
                 {
                     if (previouslyConnected)

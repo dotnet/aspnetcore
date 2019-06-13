@@ -51,9 +51,15 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   });
 
   // pass options.configureSignalR to configure the signalR.HubConnectionBuilder
-  const initialConnection = await initializeConnection(options, circuitHandlers, logger);
-
   const circuits = discoverPrerenderedCircuits(document);
+  if (circuits.length > 1){
+    throw new Error('Can\'t have multiple circuits per connection');
+  }
+
+  const circuitId = circuits.length > 0 ? circuits[0].circuitId : await getNewCircuitId();
+
+  const initialConnection = await initializeConnection(options, circuitHandlers, circuitId, logger);
+
   for (let i = 0; i < circuits.length; i++) {
     const circuit = circuits[i];
     for (let j = 0; j < circuit.components.length; j++) {
@@ -65,9 +71,9 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   // Ensure any embedded resources have been loaded before starting the app
   await embeddedResourcesPromise;
 
-  const circuit = await startCircuit(initialConnection);
+  const renderedComponents = await startCircuit(initialConnection);
 
-  if (!circuit) {
+  if (!renderedComponents) {
     logger.log(LogLevel.Information, 'No preregistered components to render.');
   }
 
@@ -76,7 +82,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
       // We can't reconnect after a failure, so exit early.
       return false;
     }
-    const reconnection = existingConnection || await initializeConnection(options, circuitHandlers, logger);
+    const reconnection = existingConnection || await initializeConnection(options, circuitHandlers, circuitId, logger);
     const results = await Promise.all(circuits.map(circuit => circuit.reconnect(reconnection)));
 
     if (reconnectionFailed(results)) {
@@ -89,13 +95,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
   window['Blazor'].reconnect = reconnect;
 
-  const reconnectTask = reconnect(initialConnection);
-
-  if (circuit) {
-    circuits.push(circuit);
-  }
-
-  await reconnectTask;
+  await reconnect(initialConnection);
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
@@ -104,13 +104,20 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 }
 
-async function initializeConnection(options: Required<BlazorOptions>, circuitHandlers: CircuitHandler[], logger: ILogger): Promise<signalR.HubConnection> {
+async function getNewCircuitId(): Promise<string> {
+  const response = await fetch('_blazor/start');
+  const responseBody = await response.json() as { id: string };
+
+  return responseBody.id;
+}
+
+async function initializeConnection(options: Required<BlazorOptions>, circuitHandlers: CircuitHandler[], circuitId: string, logger: ILogger): Promise<signalR.HubConnection> {
 
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new signalR.HubConnectionBuilder()
-    .withUrl('_blazor')
+    .withUrl(`_blazor?circuitId=${circuitId}`)
     .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);

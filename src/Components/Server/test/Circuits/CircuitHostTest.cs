@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
+                new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()),
                 serviceScope.Object,
                 remoteRenderer);
 

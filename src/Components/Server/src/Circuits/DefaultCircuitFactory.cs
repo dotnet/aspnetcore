@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography.Xml;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -94,6 +97,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 jsRuntime,
                 circuitHandlers,
                 _loggerFactory.CreateLogger<CircuitHost>());
+
+            CircuitAuthenticationHandler.AttachCircuitId(httpContext, circuitHost.CircuitId);
 
             // Initialize per - circuit data that services need
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
