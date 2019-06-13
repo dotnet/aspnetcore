@@ -36,9 +36,6 @@ Run tests.
 .PARAMETER Sign
 Run code signing.
 
-.PARAMETER Publish
-Generate manifests for publishing a build.
-
 .PARAMETER Configuration
 Debug or Release
 
@@ -107,7 +104,6 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
-    [switch]$Publish, # Generate publish manifests
 
     [Alias('c')]
     [ValidateSet('Debug', 'Release')]
@@ -215,7 +211,6 @@ if (-not $RunBuild) {
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
-$MSBuildArguments += "/p:Publish=$Publish"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
@@ -285,6 +280,11 @@ $restore = $RunRestore
 
 # Disable node reuse - this locks the RepoTasks file
 $nodeReuse = $false
+
+# Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
+# conditions in building C++
+# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
+$warnAsError = $false
 
 if ($ForceCoreMsbuild) {
     $msbuildEngine = 'dotnet'
