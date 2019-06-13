@@ -840,10 +840,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This test is racy and requires a product change.")]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                Scheduler = PipeScheduler.Inline
+            };
 
             await using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
             {

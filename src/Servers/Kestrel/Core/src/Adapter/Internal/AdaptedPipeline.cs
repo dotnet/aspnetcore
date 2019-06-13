@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
     {
         private readonly int _minAllocBufferSize;
 
-        private readonly IDuplexPipe _transport;
+        private Task _inputTask;
+        private Task _outputTask;
 
         public AdaptedPipeline(IDuplexPipe transport,
                                Pipe inputPipe,
@@ -23,12 +24,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                                IKestrelTrace log,
                                int minAllocBufferSize)
         {
-            _transport = transport;
+            TransportStream = new RawStream(transport.Input, transport.Output, throwOnCancelled: true);
             Input = inputPipe;
             Output = outputPipe;
             Log = log;
             _minAllocBufferSize = minAllocBufferSize;
         }
+
+        public RawStream TransportStream { get; }
 
         public Pipe Input { get; }
 
@@ -40,21 +43,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         PipeWriter IDuplexPipe.Output => Output.Writer;
 
-        public async Task RunAsync(Stream stream)
+        public void RunAsync(Stream stream)
         {
-            var inputTask = ReadInputAsync(stream);
-            var outputTask = WriteOutputAsync(stream);
-
-            await outputTask;
-            // Yield the current request
-            _transport.Input.CancelPendingRead();
-            await inputTask;
+            _inputTask = ReadInputAsync(stream);
+            _outputTask = WriteOutputAsync(stream);
         }
 
-        public void Complete()
+        public async Task CompleteAsync()
         {
             Output.Writer.Complete();
             Input.Reader.Complete();
+
+            if (_outputTask == null)
+            {
+                return;
+            }
+
+            // Wait for the output task to complete, this ensures that we've copied
+            // the application data to the underlying stream
+            await _outputTask;
+
+            // Cancel the underlying stream so that the input task yields
+            TransportStream.CancelPendingRead();
+
+            // The input task should yield now that we've cancelled it
+            await _inputTask;
         }
 
         private async Task WriteOutputAsync(Stream stream)

@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             try
             {
                 AdaptedPipeline adaptedPipeline = null;
-                var adaptedPipelineTask = Task.CompletedTask;
 
                 // _adaptedTransport must be set prior to wiring up callbacks
                 // to allow the connection to be aborted prior to protocol selection.
@@ -120,8 +119,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     if (adaptedPipeline != null)
                     {
                         // Stream can be null here and run async will close the connection in that case
-                        var stream = await ApplyConnectionAdaptersAsync();
-                        adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
+                        var stream = await ApplyConnectionAdaptersAsync(adaptedPipeline.TransportStream);
+                        adaptedPipeline.RunAsync(stream);
                     }
 
                     IRequestProcessor requestProcessor = null;
@@ -172,9 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
 
                     // Complete the pipeline after the method runs
-                    adaptedPipeline?.Complete();
-
-                    await adaptedPipelineTask;
+                    await (adaptedPipeline?.CompleteAsync() ?? Task.CompletedTask);
                 }
             }
             catch (Exception ex)
@@ -278,10 +275,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task<Stream> ApplyConnectionAdaptersAsync()
+        private async Task<Stream> ApplyConnectionAdaptersAsync(RawStream stream)
         {
             var connectionAdapters = _context.ConnectionAdapters;
-            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output, throwOnCancelled: true);
             var adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 

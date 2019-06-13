@@ -225,14 +225,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 if (status == LibuvConstants.EOF)
                 {
                     Log.ConnectionReadFin(ConnectionId);
-
-                    FireConnectionClosed();
                 }
                 else
                 {
                     handle.Libuv.Check(status, out var uvError);
                     error = LogAndWrapReadError(uvError);
                 }
+
+                FireConnectionClosed();
 
                 // Complete after aborting the connection
                 Input.Complete(error);

@@ -15,12 +15,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         private readonly PipeReader _input;
         private readonly PipeWriter _output;
         private readonly bool _throwOnCancelled;
+        private volatile bool _cancelCalled;
 
         public RawStream(PipeReader input, PipeWriter output, bool throwOnCancelled = false)
         {
             _input = input;
             _output = output;
             _throwOnCancelled = throwOnCancelled;
+        }
+
+        public void CancelPendingRead()
+        {
+            _cancelCalled = true;
+            _input.CancelPendingRead();
         }
 
         public override bool CanRead => true;
@@ -115,8 +122,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 var readableBuffer = result.Buffer;
                 try
                 {
-                    if (_throwOnCancelled && result.IsCanceled)
+                    if (_throwOnCancelled && result.IsCanceled && _cancelCalled)
                     {
+                        // Reset the bool
+                        _cancelCalled = false;
                         throw new OperationCanceledException();
                     }
 
