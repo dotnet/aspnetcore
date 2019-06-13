@@ -105,7 +105,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     DisplayName = "Current Connections",
                 };
 
-                _connectionDuration ??= new EventCounter("connections-duration", this);
+                _connectionDuration ??= new EventCounter("connections-duration", this)
+                {
+                    DisplayName = "Average Connection Duration",
+                };
             }
         }
 
