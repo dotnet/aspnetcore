@@ -13,6 +13,29 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServerSizeBlazorBuilderExtensions
     {
         /// <summary>
+        /// Adds options to configure circuits.
+        /// </summary>
+        /// <param name="builder">The <see cref="IServerSideBlazorBuilder"/>.</param>
+        /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
+        /// <returns>The <see cref="IServerSideBlazorBuilder"/>.</returns>
+        public static IServerSideBlazorBuilder AddCircuitOptions(this IServerSideBlazorBuilder builder, Action<CircuitOptions> configure)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            builder.Services.Configure<CircuitOptions>(configure);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds hub options for the configuration of the SignalR Hub used by Server-Side Blazor.
         /// </summary>
         /// <param name="builder">The <see cref="IServerSideBlazorBuilder"/>.</param>
