@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == ''">$(_NonFlakyRunAdditionalArgs)</TestRunnerAdditionalArguments>
-    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == 'true'">$(_FlakyRunAdditionalArgs)</TestRunnerAdditionalArguments>
+    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == ''">$(_NonFlakyRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
+    <TestRunnerAdditionalArguments Condition="'$(RunFlakyTests)' == 'true'">$(_FlakyRunAdditionalArgs) $(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
   </PropertyGroup>
 </Project>

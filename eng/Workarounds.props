@@ -44,4 +44,16 @@
   <PropertyGroup>
     <PublishWindowsPdb>false</PublishWindowsPdb>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Xunit output is piped into a file anyways, so color codes aren't useful. -->
+    <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) -nocolor</TestRunnerAdditionalArguments>
+  </PropertyGroup>
+
+  <!-- Workaround https://github.com/dotnet/roslyn/issues/27975 -->
+  <PropertyGroup>
+    <!-- We use the compiler toolset that comes from NuGet Packages rather than the SDK built-in.
+    This one sets UseSharedCompilation to false by default. -->
+    <UseSharedCompilation>true</UseSharedCompilation>
+  </PropertyGroup>
 </Project>

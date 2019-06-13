@@ -59,8 +59,8 @@
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
-    <!-- These project types are disabled because the presence of a PackageReference causes issues for NuGet. -->
-    <DisableSourceLink Condition="'$(MSBuildProjectExtension)' == '.debproj' OR '$(MSBuildProjectExtension)' == '.rpmproj'">true</DisableSourceLink>
+    <!-- Disable source link on local builds for faster local builds. -->
+    <EnableSourceLink Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(OfficialBuildId)' == ''">false</EnableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup>

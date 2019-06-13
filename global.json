@@ -5,8 +5,11 @@
   "tools": {
     "dotnet": "3.0.100-preview5-011568",
     "runtimes": {
-      "dotnet": [
-        "$(MicrosoftNETCoreAppPackageVersion)"
+      "dotnet/x64": [
+        "$(MicrosoftNETCoreAppRuntimeVersion)"
+      ],
+      "dotnet/x86": [
+        "$(MicrosoftNETCoreAppRuntimeVersion)"
       ]
     },
     "jdk": "11.0.3",
