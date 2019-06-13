@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testHttpHandler.OnNegotiate(async (request, cancellationToken) =>
                     {
                         // Wait here for the test code to cancel the "outer" token
-                        await negotiateSyncPoint.WaitToContinue();
+                        await negotiateSyncPoint.WaitToContinue().OrTimeout();
 
                         // Cancel
                         cancellationToken.ThrowIfCancellationRequested();
@@ -411,9 +411,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                             // Wait for the connection to get to the "WaitToContinue" call above,
                             // which means it has gotten to Negotiate
-                            await negotiateSyncPoint.WaitForSyncPoint();
+                            await negotiateSyncPoint.WaitForSyncPoint().OrTimeout();
 
-                            // Assert that StartAsync has not yet been cancelled
+                            // Assert that StartAsync has not yet been canceled
                             Assert.False(startTask.IsCanceled);
 
                             // Cancel StartAsync, then "release" the SyncPoint
@@ -421,8 +421,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             cts.Cancel();
                             negotiateSyncPoint.Continue();
 
-                            // Assert that StartAsync was cancelled
-                            await Assert.ThrowsAsync<OperationCanceledException>(() => startTask);
+                            // Assert that StartAsync was canceled
+                            await Assert.ThrowsAsync<OperationCanceledException>(() => startTask).OrTimeout();
                         });
                 }
             }
