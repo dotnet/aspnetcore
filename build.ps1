@@ -276,8 +276,9 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Disable node reuse - this locks the RepoTasks file
+# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 $nodeReuse = $false
+$env:MSBUILDDISABLENODEREUSE=1
 
 # Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
 # conditions in building C++
@@ -307,6 +308,9 @@ rm variable:global:_MSBuildExe -ea Ignore
 if ($tmpBinaryLog) {
     $MSBuildArguments += "/bl:$LogDir/Build.binlog"
 }
+
+# Capture MSBuild crash logs
+$env:MSBUILDDEBUGPATH = $LogDir
 
 try {
     # Import custom tools configuration, if present in the repo.

@@ -254,8 +254,9 @@ msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
 
-# Disable node reuse - this locks the RepoTasks file
+# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 nodeReuse=false
+export MSBUILDDISABLENODEREUSE=1
 
 # Our build often has warnings that we can't fix
 # Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
@@ -267,12 +268,20 @@ if [ "$ci" = true ]; then
   binary_log=true
 fi
 
+# increase file descriptor limit on macOS
+if [ "$(uname)" = "Darwin" ]; then
+    ulimit -n 10000
+fi
+
 # Import Arcade
 . "$DIR/eng/common/tools.sh"
 
 if [ "$use_default_binary_log" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-bl:\"$log_dir/Build.binlog\""
 fi
+
+# Capture MSBuild crash logs
+export MSBUILDDEBUGPATH="$log_dir"
 
 # Import custom tools configuration, if present in the repo.
 configure_toolset_script="$eng_root/configure-toolset.sh"
