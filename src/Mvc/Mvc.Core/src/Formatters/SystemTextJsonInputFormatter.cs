@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return new TranscodingReadStream(httpContext.Request.Body, encoding);
         }
 
-        // Keep in sync with NewtonsoftJsonInputFormatter.GetPatMetadata
+        // Keep in sync with NewtonsoftJsonInputFormatter.GetPathMetadata
         private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
         {
             var index = 0;

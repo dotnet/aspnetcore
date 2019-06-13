@@ -1876,7 +1876,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     }
     public partial class SystemTextJsonInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter, Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy
     {
-        public SystemTextJsonInputFormatter(Microsoft.AspNetCore.Mvc.JsonOptions options) { }
+        public SystemTextJsonInputFormatter(Microsoft.AspNetCore.Mvc.JsonOptions options, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter> logger) { }
         Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy { get { throw null; } }
         public System.Text.Json.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
