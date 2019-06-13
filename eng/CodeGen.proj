@@ -1,13 +1,15 @@
 <Project>
 
-  <Import Project="Build.props" />
-
   <PropertyGroup>
-    <BuildDependsOn Condition="'$(GenerateProjectList)' == 'true'">$(BuildDependsOn);GenerateProjectList</BuildDependsOn>
-    <BuildDependsOn Condition="'$(GenerateReferenceSources)' == 'true'">$(BuildDependsOn);GenerateReferenceSources</BuildDependsOn>
+    <BuildManaged>true</BuildManaged>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
   </PropertyGroup>
 
+  <Import Project="Build.props" />
+
   <Target Name="GenerateProjectList">
+    <Message Importance="High" Text="Analyzing @(ProjectToBuild->Count()) projects" />
+
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="GetReferencesProvided"
              BuildInParallel="true"
@@ -45,6 +47,7 @@
                       File="$(ProjectListFile)" Lines="$([MSBuild]::Escape($(ProjectListContent)))" Overwrite="true" />
     <Exec Condition="'$(OS)' != 'Windows_NT'"
           Command="echo '$(ProjectListContent.Replace('\t','\\t'))' > $(ProjectListFile)" />
+    <Message Importance="High" Text="Generated $(ProjectListFile)" />
 
     <PropertyGroup>
       <SharedFxDepList>$(MSBuildThisFileDirectory)SharedFramework.Local.props</SharedFxDepList>
@@ -71,6 +74,7 @@
     </PropertyGroup>
 
     <WriteLinesToFile File="$(SharedFxDepList)" Lines="$(SharedFxDepListContent)" Overwrite="true" />
+    <Message Importance="High" Text="Generated $(SharedFxDepList)" />
   </Target>
 
   <Target Name="GenerateReferenceSources">
@@ -80,8 +84,5 @@
           SkipNonexistentTargets="true"
           SkipNonexistentProjects="true" />
   </Target>
-
-  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
-  <Target Name="Restore" />
 
 </Project>

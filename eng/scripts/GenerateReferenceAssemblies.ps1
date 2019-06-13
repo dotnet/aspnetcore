@@ -5,4 +5,6 @@ $ErrorActionPreference = 'stop'
 
 $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 
-& "$repoRoot\build.ps1" -ci:$ci -nobuild -BuildManaged -NoBuildNodeJS -projects "$repoRoot/eng/CodeGen.proj" /p:GenerateReferenceSources=true
+& "$repoRoot\eng\common\msbuild.ps1" -ci:$ci "$repoRoot/eng/CodeGen.proj" `
+    /t:GenerateReferenceSources `
+    /bl:artifacts/log/genrefassemblies.binlog

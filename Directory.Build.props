@@ -1,4 +1,9 @@
 ﻿<Project>
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
@@ -23,7 +28,6 @@
   <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
-
     <Product>Microsoft ASP.NET Core</Product>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
@@ -53,9 +57,6 @@
 
   <!-- Source code settings -->
   <PropertyGroup>
-    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
     <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->

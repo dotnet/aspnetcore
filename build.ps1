@@ -220,59 +220,57 @@ if (-not $Configuration) {
 }
 $MSBuildArguments += "/p:Configuration=$Configuration"
 
-if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    $foundJdk = $false
-    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-    $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
-    if (Test-Path "$localJdkPath\bin\javac.exe") {
-        $foundJdk = $true
-        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
-        $env:JAVA_HOME = $localJdkPath
-    }
-    elseif ($env:JAVA_HOME) {
-        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
-            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
-        }
-        else {
-            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
-            $foundJdk = $true
-        }
-    }
-    elseif ($javac) {
-        $foundJdk = $true
-        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
-        $env:JAVA_HOME = $javaHome
-        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+$foundJdk = $false
+$javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+$localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+if (Test-Path "$localJdkPath\bin\javac.exe") {
+    $foundJdk = $true
+    Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+    $env:JAVA_HOME = $localJdkPath
+}
+elseif ($env:JAVA_HOME) {
+    if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+        Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
     }
     else {
-        try {
-            $jdkRegistryKeys = @(
-                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
-                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
-            )
-            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
-            if ($jdkRegistryKey) {
-                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
-                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-                if (Test-Path "${javaHome}\bin\javac.exe") {
-                    $env:JAVA_HOME = $javaHome
-                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
-                    $foundJdk = $true
-                }
+        Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+        $foundJdk = $true
+    }
+}
+elseif ($javac) {
+    $foundJdk = $true
+    $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+    $env:JAVA_HOME = $javaHome
+    Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+}
+else {
+    try {
+        $jdkRegistryKeys = @(
+            "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+            "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+        )
+        $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($jdkRegistryKey) {
+            $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+            $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+            if (Test-Path "${javaHome}\bin\javac.exe") {
+                $env:JAVA_HOME = $javaHome
+                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                $foundJdk = $true
             }
         }
-        catch {
-            Write-Verbose "Failed to detect Java: $_"
-        }
     }
+    catch {
+        Write-Verbose "Failed to detect Java: $_"
+    }
+}
 
-    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
-        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
-    }
+if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+    $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+}
 
-    if (-not $foundJdk) {
-        Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
-    }
+if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+    Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
 }
 
 # Initialize global variables need to be set before the import of Arcade is imported
