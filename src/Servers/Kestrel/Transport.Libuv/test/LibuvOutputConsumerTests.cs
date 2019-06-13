@@ -75,8 +75,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 // At least one run of this test should have a MaxResponseBufferSize < 1 MB.
                 var bufferSize = 1024 * 1024;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -113,8 +114,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 // Don't want to allocate anything too huge for perf. This is at least larger than the default buffer.
                 var bufferSize = 1024 * 1024;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -163,8 +165,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 var bufferSize = 1;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
@@ -221,8 +224,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 var bufferSize = maxResponseBufferSize - 1;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
@@ -287,8 +291,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     useSynchronizationContext: false
                 );
 
-                using (var outputProducer = CreateOutputProducer(pipeOptions))
+                await using (var processor = CreateOutputProducer(pipeOptions))
                 {
+                    var outputProducer = processor.OutputProducer;
                     var bufferSize = maxResponseBufferSize / 2;
                     var data = new byte[bufferSize];
                     var halfWriteBehindBuffer = new ArraySegment<byte>(data, 0, bufferSize);
@@ -355,8 +360,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     useSynchronizationContext: false
                 );
 
-                using (var outputProducer = CreateOutputProducer(pipeOptions, abortedSource))
+                await using (var processor = CreateOutputProducer(pipeOptions, abortedSource))
                 {
+                    var outputProducer = processor.OutputProducer;
                     var bufferSize = maxResponseBufferSize - 1;
 
                     var data = new byte[bufferSize];
@@ -450,8 +456,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     useSynchronizationContext: false
                 );
 
-                using (var outputProducer = CreateOutputProducer(pipeOptions))
+                await using (var processor = CreateOutputProducer(pipeOptions))
                 {
+                    var outputProducer = processor.OutputProducer;
                     var bufferSize = maxResponseBufferSize - 1;
 
                     var data = new byte[bufferSize];
@@ -536,8 +543,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     useSynchronizationContext: false
                 );
 
-                using (var outputProducer = CreateOutputProducer(pipeOptions))
+                await using (var processor = CreateOutputProducer(pipeOptions))
                 {
+                    var outputProducer = processor.OutputProducer;
                     var bufferSize = maxResponseBufferSize;
 
                     var data = new byte[bufferSize];
@@ -620,8 +628,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 var bufferSize = maxResponseBufferSize - 1;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
 
@@ -683,8 +692,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 useSynchronizationContext: false
             );
 
-            using (var outputProducer = CreateOutputProducer(pipeOptions))
+            await using (var processor = CreateOutputProducer(pipeOptions))
             {
+                var outputProducer = processor.OutputProducer;
                 _mockLibuv.KestrelThreadBlocker.Reset();
 
                 var buffer = new ArraySegment<byte>(new byte[1]);
@@ -712,7 +722,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
         }
 
-        private Http1OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
+        private LibuvOuputProcessor CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
             var pair = DuplexPipe.CreateConnectionPair(pipeOptions, pipeOptions);
 
@@ -745,9 +755,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 http1Connection.RequestAborted.Register(cts.Cancel);
             }
 
-            var ignore = WriteOutputAsync(consumer, pair.Application.Input, http1Connection);
+            var outputTask = WriteOutputAsync(consumer, pair.Application.Input, http1Connection);
 
-            return (Http1OutputProducer)http1Connection.Output;
+            var processor = new LibuvOuputProcessor
+            {
+                ProcessingTask = outputTask,
+                OutputProducer = (Http1OutputProducer)http1Connection.Output
+            };
+
+            return processor;
+        }
+
+        private class LibuvOuputProcessor
+        {
+            public Http1OutputProducer OutputProducer { get; set; }
+            public Task ProcessingTask { get; set; }
+
+            public async ValueTask DisposeAsync()
+            {
+                OutputProducer.PipeWriter.Complete();
+
+                await ProcessingTask;
+            }
         }
 
         private async Task WriteOutputAsync(LibuvOutputConsumer consumer, PipeReader outputReader, Http1Connection http1Connection)
