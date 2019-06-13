@@ -195,6 +195,7 @@ describe("HttpConnection", () => {
     it("all transport failure error get aggregated", async () => {
         await VerifyLogger.run(async (loggerImpl) => {
             const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("An error"); },
                 WebSocket: false,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
@@ -203,18 +204,17 @@ describe("HttpConnection", () => {
                     .on("DELETE", () => new HttpResponse(202)),
 
                 logger: loggerImpl,
-                transport: HttpTransportType.WebSockets,
+                transport: HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents,
             } as IHttpConnectionOptions;
 
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: An error");
         },
         "Failed to start the transport 'WebSockets': null",
-        "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
-        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client.",
-        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        "Failed to start the transport 'ServerSentEvents': Error: An error",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: An error");
     });
 
     it("can stop a non-started connection", async () => {
@@ -341,11 +341,9 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow(`Unable to connect to the server with any of the available transports. ${negotiateResponse.availableTransports[0].transport} failed: Error: '${negotiateResponse.availableTransports[0].transport}' is disabled by the client.` +
-                    ` ${negotiateResponse.availableTransports[1].transport} failed: Error: '${negotiateResponse.availableTransports[1].transport}' is disabled by the client.`);
+                    .toThrow("None of the transports supported by the client are supported by the server.");
             },
-            /Failed to start the connection: Error: Unable to connect to the server with any of the available transports. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client./,
-            /Failed to start the transport '[a-zA-Z]+': Error: '[a-zA-Z]+' is disabled by the client./);
+            "Failed to start the connection: Error: None of the transports supported by the client are supported by the server.");
         });
 
         it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async () => {
@@ -381,11 +379,10 @@ describe("HttpConnection", () => {
                     await connection.start(TransferFormat.Text);
                     fail("Expected connection.start to throw!");
                 } catch (e) {
-                    expect(e.message).toBe(`Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
+                    expect(e.message).toBe("None of the transports supported by the client are supported by the server.");
                 }
             },
-                `Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`,
-                `Failed to start the transport '${HttpTransportType[requestedTransport]}': Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
+            "Failed to start the connection: Error: None of the transports supported by the client are supported by the server.");
         });
     });
 

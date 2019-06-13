@@ -340,20 +340,18 @@ export class HttpConnection implements IConnection {
     }
 
     private reduceTransports(transports: IAvailableTransport[], requestedTransport: HttpTransportType | undefined): IAvailableTransport[] {
-        const finalTransports: IAvailableTransport[] = [];
-        for (const endpoint of transports) {
+        return transports.filter((endpoint) => {
             const transport = HttpTransportType[endpoint.transport];
             if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
                 (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
                 this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                continue;
+                return false;
             } else if (!transportMatches(requestedTransport, transport)) {
                 this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                continue;
+                return false;
             }
-            finalTransports.push(endpoint);
-        }
-        return finalTransports;
+            return true;
+        });
     }
 
     private async createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
