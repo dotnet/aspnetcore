@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <TestGroupName>Analyzers</TestGroupName>
+    <!-- Analyzers tests can't find netfx ref assemblies from a package -->
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' == 'Windows_NT'">false</UsingToolNetFrameworkReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
