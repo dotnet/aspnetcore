@@ -210,6 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool RequestTrailersAvailable { get; set; }
         public Stream RequestBody { get; set; }
         public PipeReader RequestBodyPipeReader { get; set; }
+        public HttpResponseTrailers ResponseTrailers { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -287,7 +288,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseStarted => _requestProcessingStatus >= RequestProcessingStatus.HeadersCommitted;
 
-        public bool HasFlushedHeaders => _requestProcessingStatus == RequestProcessingStatus.HeadersFlushed;
+        public bool HasFlushedHeaders => _requestProcessingStatus >= RequestProcessingStatus.HeadersFlushed;
+
+        public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
         protected HttpRequestHeaders HttpRequestHeaders { get; }
 
@@ -632,9 +635,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Run the application code for this request
                     await application.ProcessRequestAsync(context);
 
-                    if (!_connectionAborted)
+                    if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
                     {
-                        VerifyResponseContentLength();
+                        ReportApplicationError(lengthException);
                     }
                 }
                 catch (BadHttpRequestException ex)
@@ -898,7 +901,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void VerifyResponseContentLength()
+        protected bool VerifyResponseContentLength(out Exception ex)
         {
             var responseHeaders = HttpResponseHeaders;
 
@@ -915,9 +918,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _keepAlive = false;
                 }
 
-                ReportApplicationError(new InvalidOperationException(
-                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value)));
+                ex = new InvalidOperationException(
+                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value));
+                return false;
             }
+
+            ex = null;
+            return true;
         }
 
         public void ProduceContinue()
@@ -935,7 +942,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public Task InitializeResponseAsync(int firstWriteByteCount)
+        public Task InitializeResponseAsync(int firstWriteByteCount, bool appCompleted = false)
         {
             var startingTask = FireOnStarting();
             // If return is Task.CompletedTask no awaiting is required
@@ -946,7 +953,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             VerifyInitializeState(firstWriteByteCount);
 
-            ProduceStart(appCompleted: false);
+            ProduceStart(appCompleted: appCompleted);
 
             return Task.CompletedTask;
         }
@@ -1043,8 +1050,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteSuffix();
         }
 
-        private Task WriteSuffix()
+        protected Task WriteSuffix()
         {
+            if (HasResponseCompleted)
+            {
+                return Task.CompletedTask;
+            }
+
             // _autoChunk should be checked after we are sure ProduceStart() has been called
             // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
@@ -1064,7 +1076,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!HasFlushedHeaders)
             {
-                _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+                _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
                 return FlushAsyncInternal();
             }
 
@@ -1079,6 +1091,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
 
             await Output.WriteStreamSuffixAsync();
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
             {
@@ -1244,6 +1258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = HttpResponseHeaders;
             responseHeaders.Reset();
+            ResponseTrailers?.Reset();
             var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
 
             responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
