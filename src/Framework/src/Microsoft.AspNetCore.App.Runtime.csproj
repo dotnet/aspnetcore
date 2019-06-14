@@ -100,6 +100,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
     <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
+
+    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -448,7 +451,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       WorkingDirectory="$(RedistSharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
-  
+
   <Target Name="IncludeFrameworkListFile"
           Condition="'$(ManifestsPackagePath)' != ''">
     <RepoTasks.CreateFrameworkListFile
