@@ -35,6 +35,9 @@
      public class HttpResponseStreamWriter : TextWriter {
 +        public override ValueTask DisposeAsync();
      }
+     public static class WebEncoders {
++        public static string Base64UrlEncode(ReadOnlySpan<byte> input);
+     }
  }
 ```
 

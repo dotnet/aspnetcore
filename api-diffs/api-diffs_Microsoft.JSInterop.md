@@ -11,9 +11,9 @@
 +    public static class DotNetObjectRef {
 +        public static DotNetObjectRef<TValue> Create<TValue>(TValue value) where TValue : class;
 +    }
-+    public sealed class DotNetObjectRef<TValue> : IDisposable where TValue : class {
++    public sealed class DotNetObjectRef<TValue> : IDisposable, IDotNetObjectRef where TValue : class {
 +        public DotNetObjectRef();
-+        public TValue Value { get; }
++        public TValue Value { get; private set; }
 +        public long __dotNetObject { get; set; }
 +        public void Dispose();
 +    }

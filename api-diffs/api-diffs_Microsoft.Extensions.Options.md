@@ -18,6 +18,9 @@
 +    public class OptionsMonitor<TOptions> : IDisposable, IOptionsMonitor<TOptions> where TOptions : class, new() {
 +        public void Dispose();
      }
+     public class OptionsValidationException : Exception {
++        public override string Message { get; }
+     }
      public class OptionsWrapper<TOptions> : IOptions<TOptions> where TOptions : class, new() {
 -        public void Add(string name, TOptions options);
 
@@ -76,6 +79,10 @@
 +        public Func<TOptions, TDep1, TDep2, TDep3, TDep4, TDep5, bool> Validation { get; }
 +        public ValidateOptionsResult Validate(string name, TOptions options);
 +    }
+     public class ValidateOptionsResult {
++        public IEnumerable<string> Failures { get; protected set; }
++        public static ValidateOptionsResult Fail(IEnumerable<string> failures);
+     }
  }
 ```
 

@@ -2,8 +2,7 @@
 
 ``` diff
  namespace Microsoft.AspNetCore.Mvc.Formatters {
--    public class FormatFilter : IFilterMetadata, IFormatFilter, IResourceFilter, IResultFilter {
-+    public class FormatFilter : IFilterMetadata, IResourceFilter, IResultFilter {
+     public class FormatFilter : IFilterMetadata, IFormatFilter, IResourceFilter, IResultFilter {
 -        public FormatFilter(IOptions<MvcOptions> options);
 
      }

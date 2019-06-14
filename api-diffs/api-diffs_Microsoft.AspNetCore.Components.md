@@ -16,16 +16,16 @@
 +    public class AuthorizeView : AuthorizeViewCore {
 +        public AuthorizeView();
 +        public string Policy { get; private set; }
-+        public object Resource { get; private set; }
 +        public string Roles { get; private set; }
 +        protected override IAuthorizeData[] GetAuthorizeData();
 +    }
 +    public abstract class AuthorizeViewCore : ComponentBase {
-+        public AuthorizeViewCore();
++        protected AuthorizeViewCore();
 +        public RenderFragment<AuthenticationState> Authorized { get; private set; }
 +        public RenderFragment Authorizing { get; private set; }
 +        public RenderFragment<AuthenticationState> ChildContent { get; private set; }
 +        public RenderFragment<AuthenticationState> NotAuthorized { get; private set; }
++        public object Resource { get; private set; }
 +        protected override void BuildRenderTree(RenderTreeBuilder builder);
 +        protected abstract IAuthorizeData[] GetAuthorizeData();
 +        protected override Task OnParametersSetAsync();
@@ -83,7 +83,7 @@
 +        public CascadingParameterAttribute();
 +        public string Name { get; set; }
 +    }
-+    public class CascadingValue<T> : IComponent {
++    public class CascadingValue<T> : ICascadingValueComponent, IComponent {
 +        public CascadingValue();
 +        public RenderFragment ChildContent { get; private set; }
 +        public bool IsFixed { get; private set; }
@@ -121,14 +121,14 @@
 +    public readonly struct ElementRef {
 +        public string __internalId { get; }
 +    }
-+    public readonly struct EventCallback {
++    public readonly struct EventCallback : IEventCallback {
 +        public static readonly EventCallback Empty;
 +        public static readonly EventCallbackFactory Factory;
 +        public EventCallback(IHandleEvent receiver, MulticastDelegate @delegate);
 +        public bool HasDelegate { get; }
 +        public Task InvokeAsync(object arg);
 +    }
-+    public readonly struct EventCallback<T> {
++    public readonly struct EventCallback<T> : IEventCallback {
 +        public EventCallback(IHandleEvent receiver, MulticastDelegate @delegate);
 +        public bool HasDelegate { get; }
 +        public Task InvokeAsync(T arg);
@@ -249,6 +249,15 @@
 +    public class NavigationException : Exception {
 +        public NavigationException(string uri);
 +        public string Location { get; }
++    }
++    public class PageDisplay : IComponent {
++        public PageDisplay();
++        public RenderFragment AuthorizingContent { get; private set; }
++        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
++        public Type Page { get; private set; }
++        public IDictionary<string, object> PageParameters { get; private set; }
++        public void Configure(RenderHandle renderHandle);
++        public Task SetParametersAsync(ParameterCollection parameters);
 +    }
 +    public readonly struct Parameter {
 +        public bool Cascading { get; }

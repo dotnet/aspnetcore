@@ -40,7 +40,12 @@
 -        public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception);
 
 -    }
++    public enum ConsoleLoggerFormat {
++        Default = 0,
++        Systemd = 1,
++    }
      public class ConsoleLoggerOptions {
++        public ConsoleLoggerFormat Format { get; set; }
 +        public LogLevel LogToStandardErrorThreshold { get; set; }
 +        public string TimestampFormat { get; set; }
      }

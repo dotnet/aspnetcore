@@ -53,8 +53,7 @@
      public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult> {
 +        public ViewComponentResultExecutor(IOptions<MvcViewOptions> mvcHelperOptions, ILoggerFactory loggerFactory, HtmlEncoder htmlEncoder, IModelMetadataProvider modelMetadataProvider, ITempDataDictionaryFactory tempDataDictionaryFactory, IHttpResponseStreamWriterFactory writerFactory);
      }
--    public class ViewDataDictionaryControllerPropertyActivator : IControllerPropertyActivator
-+    public class ViewDataDictionaryControllerPropertyActivator
+     public class ViewDataDictionaryControllerPropertyActivator : IControllerPropertyActivator
      public class ViewExecutor {
 +        protected ViewExecutor(IHttpResponseStreamWriterFactory writerFactory, ICompositeViewEngine viewEngine, DiagnosticListener diagnosticListener);
 -        protected ViewExecutor(IHttpResponseStreamWriterFactory writerFactory, ICompositeViewEngine viewEngine, DiagnosticSource diagnosticSource);

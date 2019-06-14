@@ -7,6 +7,7 @@
 -        public override AuthenticationManager Authentication { get; }
 
 +        public FormOptions FormOptions { get; set; }
++        public HttpContext HttpContext { get; }
 +        public IServiceScopeFactory ServiceScopeFactory { get; set; }
 -        public virtual void Initialize(IFeatureCollection features);
 +        public void Initialize(IFeatureCollection features);
@@ -59,6 +60,9 @@
 +        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory);
 +        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor);
      }
++    public static class HttpContextServerVariableExtensions {
++        public static string GetServerVariable(this HttpContext context, string variableName);
++    }
      public abstract class HttpRequest {
 +        public virtual PipeReader BodyReader { get; }
 +        public virtual RouteValueDictionary RouteValues { get; set; }
