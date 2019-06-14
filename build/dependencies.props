@@ -6,9 +6,6 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.5</MicrosoftNETCoreDotNetAppHostPackageVersion>
   </PropertyGroup>
 
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
-  <Import Project="dependencies.folderbuilds.props" Condition=" '$(IsUniverseBuild)' != 'true' AND '$(DotNetPackageVersionPropsPath)' == ''" />
-
   <PropertyGroup>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>2.2.4</MicrosoftEntityFrameworkCorePackageVersion>
@@ -17,6 +14,9 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.4</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.4</MicrosoftEntityFrameworkCoreToolsPackageVersion>
   </PropertyGroup>
+
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+  <Import Project="dependencies.folderbuilds.props" Condition=" '$(IsUniverseBuild)' != 'true' AND '$(DotNetPackageVersionPropsPath)' == ''" />
 
   <PropertyGroup>
     <!-- Assign this variable last because it may be updated from DotNetPackageVersionPropsPath as MicrosoftNETCoreAppPackageVersion. -->
