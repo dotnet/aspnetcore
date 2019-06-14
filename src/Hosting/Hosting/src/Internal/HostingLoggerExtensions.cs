@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -13,9 +14,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string activityId)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, Activity activity)
         {
-            return logger.BeginScope(new HostingLogScope(httpContext, activityId));
+            return logger.BeginScope(new HostingLogScope(httpContext, activity));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -96,7 +97,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             private readonly string _path;
             private readonly string _traceIdentifier;
-            private readonly string _activityId;
+            private readonly string _traceId;
+            private readonly string _parentId;
+            private readonly string _spanId;
 
             private string _cachedToString;
 
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 get
                 {
-                    return 3;
+                    return 5;
                 }
             }
 
@@ -122,20 +125,40 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
                     else if (index == 2)
                     {
-                        return new KeyValuePair<string, object>("ActivityId", _activityId);
+                        return new KeyValuePair<string, object>("SpanId", _spanId);
+                    }
+                    else if (index == 3)
+                    {
+                        return new KeyValuePair<string, object>("TraceId", _traceId);
+                    }
+                    else if (index == 4)
+                    {
+                        return new KeyValuePair<string, object>("ParentId", _parentId);
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext, string activityId)
+            public HostingLogScope(HttpContext httpContext, Activity activity)
             {
                 _traceIdentifier = httpContext.TraceIdentifier;
                 _path = (httpContext.Request.PathBase.HasValue 
                          ? httpContext.Request.PathBase + httpContext.Request.Path 
                          : httpContext.Request.Path).ToString();
-                _activityId = activityId;
+
+                if (activity.IdFormat == ActivityIdFormat.W3C)
+                {
+                    _traceId = activity.TraceId.ToHexString();
+                    _spanId = activity.SpanId.ToHexString();
+                    _parentId = activity.ParentId;
+                }
+                else
+                {
+                    _traceId = activity.RootId;
+                    _spanId = activity.Id;
+                    _parentId = activity.ParentId;
+                }
             }
 
             public override string ToString()
@@ -144,10 +167,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
-                        "RequestPath:{0} RequestId:{1}, ActivityId:{2}",
+                        "RequestPath:{0} RequestId:{1}, SpanId:{2}, TraceId:{3}, ParentId:{4}",
                         _path,
                         _traceIdentifier,
-                        _activityId);
+                        _spanId,
+                        _traceId,
+                        _parentId);
                 }
 
                 return _cachedToString;
