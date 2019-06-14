@@ -4,8 +4,6 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,20 +15,15 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class Http1WritingBenchmark
+    public class Http1LargeWritingBenchmark
     {
-        // Standard completed task
-        private static readonly Func<object, Task> _syncTaskFunc = (obj) => Task.CompletedTask;
-        // Non-standard completed task
-        private static readonly Task _pseudoAsyncTask = Task.FromResult(27);
-        private static readonly Func<object, Task> _pseudoAsyncTaskFunc = (obj) => _pseudoAsyncTask;
-
         private TestHttp1Connection _http1Connection;
         private DuplexPipe.DuplexPipePair _pair;
         private MemoryPool<byte> _memoryPool;
         private Task _consumeResponseBodyTask;
 
-        private readonly byte[] _writeData = Encoding.ASCII.GetBytes("Hello, World!");
+        // Keep this divisable by 10 so it can be evenly segmented.
+        private readonly byte[] _writeData = new byte[10 * 1024 * 1024];
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -40,65 +33,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _consumeResponseBodyTask = ConsumeResponseBody();
         }
 
-        [Params(true, false)]
-        public bool WithHeaders { get; set; }
-
-        [Params(true, false)]
-        public bool Chunked { get; set; }
-
-        [Params(Startup.None, Startup.Sync, Startup.Async)]
-        public Startup OnStarting { get; set; }
-
         [IterationSetup]
         public void Setup()
         {
             _http1Connection.Reset();
-            if (Chunked)
-            {
-                _http1Connection.RequestHeaders.Add("Transfer-Encoding", "chunked");
-            }
-            else
-            {
-                _http1Connection.RequestHeaders.ContentLength = _writeData.Length;
-            }
-
-            if (!WithHeaders)
-            {
-                _http1Connection.FlushAsync().GetAwaiter().GetResult();
-            }
-
-            ResetState();
-        }
-
-        private void ResetState()
-        {
-            if (WithHeaders)
-            {
-                _http1Connection.ResetState();
-
-                switch (OnStarting)
-                {
-                    case Startup.Sync:
-                        _http1Connection.OnStarting(_syncTaskFunc, null);
-                        break;
-                    case Startup.Async:
-                        _http1Connection.OnStarting(_pseudoAsyncTaskFunc, null);
-                        break;
-                }
-            }
+            _http1Connection.RequestHeaders.ContentLength = _writeData.Length;
+            _http1Connection.FlushAsync().GetAwaiter().GetResult();
         }
 
         [Benchmark]
         public Task WriteAsync()
         {
-            ResetState();
+            return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default);
+        }
 
-            return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
+        [Benchmark]
+        public Task WriteSegmentsUnawaitedAsync()
+        {
+            // Write a 10th the of the data at a time
+            var segmentSize = _writeData.Length / 10;
+
+            for (int i = 0; i < 9; i++)
+            {
+                // Ignore the first nine tasks.
+                _ = _http1Connection.ResponseBody.WriteAsync(_writeData, i * segmentSize, segmentSize, default);
+            }
+
+            return _http1Connection.ResponseBody.WriteAsync(_writeData, 9 * segmentSize, segmentSize, default);
         }
 
         private TestHttp1Connection MakeHttp1Connection()
         {
-            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var options = new PipeOptions(_memoryPool, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             _pair = pair;
 
@@ -138,13 +104,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
 
             reader.Complete();
-        }
-
-        public enum Startup
-        {
-            None,
-            Sync,
-            Async
         }
 
         [GlobalCleanup]
