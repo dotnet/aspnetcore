@@ -38,11 +38,12 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
+      <_SelectedArchs>@(HelixProjectArch)</_SelectedPlatforms>
     </PropertyGroup>
 
     <ItemGroup>
       <!-- Include default queues based on platform -->
-      <_HelixProjectTargetQueue Include="@(HelixAvailableTargetQueue)" Condition="'$(_SelectedPlatforms)' != '' AND '$(_SelectedPlatforms.Contains(%(HelixAvailableTargetQueue.Platform)))' == 'true' AND '%(HelixAvailableTargetQueue.EnableByDefault)' == 'true'" />
+      <_HelixProjectTargetQueue Include="@(HelixAvailableTargetQueue)" Condition="'$(_SelectedPlatforms)' != '' AND '$(_SelectedPlatforms.Contains(%(HelixAvailableTargetQueue.Platform)))' == 'true' AND '%(HelixAvailableTargetQueue.EnableByDefault)' == 'true' AND '$(_SelectedArchs)' != '' AND '$(_SelectedArchs.Contains(%(HelixAvailableTargetQueue.Arch)))' == 'true'" />
 
       <_HelixApplicableTargetQueue Include="@(_HelixProjectTargetQueue)" Condition="'%(_HelixProjectTargetQueue.Identity)' == '$(HelixTargetQueue)' AND '%(_HelixProjectTargetQueue.Arch)' == '$(TargetArchitecture)'" />
     </ItemGroup>
