@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.Empty(client.AllowedCorsOrigins);
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);
-            Assert.Equal(GrantTypes.Implicit.ToArray(), client.AllowedGrantTypes.ToArray());
+            Assert.Equal(GrantTypes.Code.ToArray(), client.AllowedGrantTypes.ToArray());
         }
 
         [Fact]
