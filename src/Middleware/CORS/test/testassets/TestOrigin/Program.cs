@@ -13,7 +13,7 @@ namespace SampleOrigin
     {
         public static void Main(string[] args)
         {
-            using (var host = WebHost.CreateDefaultBuilder(args).UseStartup<Startup>().Build())
+            using (var host = WebHost.CreateDefaultBuilder(args).UseUrls("http://+:0").UseStartup<Startup>().Build())
             {
                 host.Run();
             }

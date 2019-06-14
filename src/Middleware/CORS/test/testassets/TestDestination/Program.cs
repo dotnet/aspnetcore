@@ -15,6 +15,7 @@ namespace SampleDestination
         public static void Main(string[] args)
         {
             using (var host = WebHost.CreateDefaultBuilder(args)
+                .UseUrls("http://+:0")
                 .UseStartup(GetStartupType())
                 .Build())
             {

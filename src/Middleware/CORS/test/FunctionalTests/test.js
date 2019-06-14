@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const os = require("os");
-const hostname = "localhost";
+const hostname = os.hostname();
 const originPortVar = process.env.ORIGIN_PORT;
 const destinationPortVar = process.env.DESTINATION_PORT;
 const secondOriginPortVar = process.env.SECOND_ORIGIN_PORT;

@@ -16,7 +16,7 @@ namespace SampleDestination
 {
     public class Startup
     {
-        private static readonly string DefaultAllowedOrigin = $"http://localhost:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
+        private static readonly string DefaultAllowedOrigin = $"http://{Dns.GetHostName()}:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
         private readonly ILogger<Startup> _logger;
 
         public Startup(ILoggerFactory loggerFactory)
