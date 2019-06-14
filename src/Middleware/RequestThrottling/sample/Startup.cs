@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,11 +21,11 @@ namespace RequestThrottlingSample
         {
             services.AddTailDropQueue((options) =>
             {
-                options.MaxConcurrentRequests = 4;
-                options.RequestQueueLimit = 0;
+                options.MaxConcurrentRequests = 8;
+                options.RequestQueueLimit = 50;
             });
 
-            services.AddLogging();
+            //services.AddLogging();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
@@ -34,7 +35,7 @@ namespace RequestThrottlingSample
             app.Run(async context =>
             {
                 await context.Response.WriteAsync("Hello Request Throttling! If you refresh this page a bunch, it will 503.");
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
             });
         }
 
@@ -44,11 +45,11 @@ namespace RequestThrottlingSample
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
-                .ConfigureLogging(factory =>
-                {
-                    factory.SetMinimumLevel(LogLevel.Debug);
-                    factory.AddConsole();
-                })
+                //.ConfigureLogging(factory =>
+                //{
+                //    factory.SetMinimumLevel(LogLevel.Debug);
+                //    factory.AddConsole();
+                //})
                 .UseStartup<Startup>()
                 .Build();
 

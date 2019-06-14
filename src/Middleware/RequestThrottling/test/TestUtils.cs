@@ -37,7 +37,27 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 5000)
+        public static RequestThrottlingMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        {
+            return CreateTestMiddleware(
+                queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
+                onRejected: onRejected,
+                next: next
+                );
+        }
+
+        internal static StackPolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        {
+            var options = Options.Create(new TailDropOptions
+            {
+                MaxConcurrentRequests = maxConcurrentRequests,
+                RequestQueueLimit = requestsQueuelimit
+            });
+
+            return new StackPolicy(options);
+        }
+
+        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new TailDropOptions
             {

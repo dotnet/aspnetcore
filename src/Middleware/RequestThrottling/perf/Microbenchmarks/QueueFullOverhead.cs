@@ -11,11 +11,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
     public class QueueFullOverhead
     {
-        private const int _numRequests = 2000;
+        private const int _numRequests = 20000;
         private int _requestCount = 0;
         private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
-        private RequestThrottlingMiddleware _middleware;
+        private RequestThrottlingMiddleware _middleware_FIFO;
+        private RequestThrottlingMiddleware _middleware_LIFO;
 
         [Params(8)]
         public int MaxConcurrentRequests;
@@ -23,7 +24,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _middleware = TestUtils.CreateTestMiddleware_TailDrop(
+            _middleware_FIFO = TestUtils.CreateTestMiddleware_TailDrop(
+                maxConcurrentRequests: MaxConcurrentRequests,
+                requestQueueLimit: _numRequests,
+                next: IncrementAndCheck
+                );
+
+            _middleware_LIFO = TestUtils.CreateTestMiddleware_StackPolicy(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
                 next: IncrementAndCheck
@@ -59,14 +66,26 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void QueueingAll()
+        public void QueueingAll_FIFO()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                _ = _middleware.Invoke(null);
+                _ = _middleware_FIFO.Invoke(null);
             }
 
             _mres.Wait();
         }
+
+        [Benchmark(OperationsPerInvoke = _numRequests)]
+        public void QueueingAll_LIFO()
+        {
+            for (int i = 0; i < _numRequests; i++)
+            {
+                _ = _middleware_LIFO.Invoke(null);
+            }
+
+            _mres.Wait();
+        }
+
     }
 }
