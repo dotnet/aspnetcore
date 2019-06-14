@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="..\src\**\*.cs"
              Exclude="
+              ..\src\ReferenceAssemblyInfo.cs;
               ..\src\BenchmarkRunner\**\*.cs;
               ..\src\StackTrace\ExceptionDetails\**\*.cs;
               " />
