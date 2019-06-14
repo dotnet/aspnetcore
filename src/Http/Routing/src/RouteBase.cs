@@ -262,8 +262,8 @@ namespace Microsoft.AspNetCore.Routing
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger(typeof(RouteBase).FullName);
                 _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+                _logger = factory.CreateLogger(typeof(RouteBase).FullName);
             }
         }
 
