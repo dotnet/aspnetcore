@@ -13,7 +13,7 @@ namespace SampleDestination
 {
     public class StartupWithoutEndpointRouting
     {
-        private static readonly string DefaultAllowedOrigin = $"http://${Dns.GetHostName()}:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
+        private static readonly string DefaultAllowedOrigin = $"http://{Dns.GetHostName()}:{Environment.GetEnvironmentVariable("ORIGIN_PORT")}";
         private readonly ILogger<StartupWithoutEndpointRouting> _logger;
 
         public StartupWithoutEndpointRouting(ILoggerFactory loggerFactory)
