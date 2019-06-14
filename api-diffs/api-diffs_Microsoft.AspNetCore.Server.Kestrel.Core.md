@@ -18,7 +18,7 @@
      }
 -    public class ListenOptions : IConnectionBuilder, IEndPointInformation {
 +    public class ListenOptions : IConnectionBuilder {
-+        public EndPoint EndPoint { get; internal set; }
++        public EndPoint EndPoint { get; }
 -        public FileHandleType HandleType { get; set; }
 
 -        public IPEndPoint IPEndPoint { get; set; }

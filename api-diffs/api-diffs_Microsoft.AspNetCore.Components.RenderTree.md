@@ -91,10 +91,6 @@
 +        public readonly int Sequence;
 +        [System.Runtime.InteropServices.FieldOffsetAttribute(24)]
 +        public readonly object AttributeValue;
-+        [System.Runtime.InteropServices.FieldOffsetAttribute(32)]
-+        public readonly object ComponentKey;
-+        [System.Runtime.InteropServices.FieldOffsetAttribute(24)]
-+        public readonly object ElementKey;
 +        [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
 +        public readonly string AttributeName;
 +        [System.Runtime.InteropServices.FieldOffsetAttribute(16)]

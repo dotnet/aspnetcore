@@ -216,7 +216,7 @@
 +        public override string ToString();
      }
 -    public sealed class ServiceProvider : IDisposable, IServiceProvider, IServiceProviderEngineCallback {
-+    public sealed class ServiceProvider : IAsyncDisposable, IDisposable, IServiceProvider, IServiceProviderEngineCallback {
++    public sealed class ServiceProvider : IAsyncDisposable, IDisposable, IServiceProvider {
 +        public ValueTask DisposeAsync();
      }
      public class ServiceProviderOptions {

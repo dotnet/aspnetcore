@@ -12,7 +12,8 @@
      public enum CompatibilityVersion {
 +        Version_3_0 = 3,
      }
-     public class ConsumesAttribute : Attribute, IActionConstraint, IActionConstraintMetadata, IApiRequestMetadataProvider, IConsumesActionConstraint, IFilterMetadata, IResourceFilter
+-    public class ConsumesAttribute : Attribute, IActionConstraint, IActionConstraintMetadata, IApiRequestMetadataProvider, IConsumesActionConstraint, IFilterMetadata, IResourceFilter
++    public class ConsumesAttribute : Attribute, IActionConstraint, IActionConstraintMetadata, IApiRequestMetadataProvider, IFilterMetadata, IResourceFilter
      public abstract class Controller : ControllerBase, IActionFilter, IAsyncActionFilter, IDisposable, IFilterMetadata {
 -        public virtual JsonResult Json(object data, JsonSerializerSettings serializerSettings);
 

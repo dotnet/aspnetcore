@@ -2,18 +2,21 @@
 
 ``` diff
  namespace Microsoft.AspNetCore.Connections {
-     public abstract class ConnectionContext {
+-    public abstract class ConnectionContext {
++    public abstract class ConnectionContext : IAsyncDisposable {
 +        public virtual CancellationToken ConnectionClosed { get; set; }
 +        public virtual EndPoint LocalEndPoint { get; set; }
 +        public virtual EndPoint RemoteEndPoint { get; set; }
 +        public virtual ValueTask DisposeAsync();
      }
 -    public class DefaultConnectionContext : ConnectionContext, IConnectionIdFeature, IConnectionItemsFeature, IConnectionLifetimeFeature, IConnectionTransportFeature, IConnectionUserFeature, IDisposable {
-+    public class DefaultConnectionContext : ConnectionContext, IConnectionEndPointFeature, IConnectionIdFeature, IConnectionItemsFeature, IConnectionLifetimeFeature, IConnectionTransportFeature, IConnectionUserFeature, IDisposable {
++    public class DefaultConnectionContext : ConnectionContext, IConnectionEndPointFeature, IConnectionIdFeature, IConnectionItemsFeature, IConnectionLifetimeFeature, IConnectionTransportFeature, IConnectionUserFeature {
 -        public CancellationToken ConnectionClosed { get; set; }
 +        public override CancellationToken ConnectionClosed { get; set; }
 +        public override EndPoint LocalEndPoint { get; set; }
 +        public override EndPoint RemoteEndPoint { get; set; }
+-        public void Dispose();
+
 +        public override ValueTask DisposeAsync();
      }
 +    public class FileHandleEndPoint : EndPoint {
@@ -26,10 +29,9 @@
 +        Pipe = 2,
 +        Tcp = 1,
 +    }
-+    public interface IConnectionListener {
++    public interface IConnectionListener : IAsyncDisposable {
 +        EndPoint EndPoint { get; }
 +        ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default(CancellationToken));
-+        ValueTask DisposeAsync();
 +        ValueTask UnbindAsync(CancellationToken cancellationToken = default(CancellationToken));
 +    }
 +    public interface IConnectionListenerFactory {

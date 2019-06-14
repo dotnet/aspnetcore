@@ -64,9 +64,9 @@
 +        protected string CssClass { get; }
 +        protected T CurrentValue { get; set; }
 +        protected string CurrentValueAsString { get; set; }
-+        protected EditContext EditContext { get; private set; }
++        protected EditContext EditContext { get; }
 +        protected string FieldClass { get; }
-+        protected FieldIdentifier FieldIdentifier { get; private set; }
++        protected FieldIdentifier FieldIdentifier { get; }
 +        public string Id { get; private set; }
 +        public T Value { get; private set; }
 +        public EventCallback<T> ValueChanged { get; private set; }

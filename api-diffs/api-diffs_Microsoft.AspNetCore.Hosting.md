@@ -15,6 +15,9 @@
 +        IFileProvider WebRootFileProvider { get; set; }
 +        string WebRootPath { get; set; }
 +    }
++    public static class StaticWebAssetsWebHostBuilderExtensions {
++        public static IWebHostBuilder UseStaticWebAssets(this IWebHostBuilder builder);
++    }
      public class WebHostBuilderContext {
 -        public IHostingEnvironment HostingEnvironment { get; set; }
 +        public IWebHostEnvironment HostingEnvironment { get; set; }
