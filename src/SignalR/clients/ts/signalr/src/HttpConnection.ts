@@ -356,30 +356,29 @@ export class HttpConnection implements IConnection {
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
-            }
-            try {
-                if (typeof transportOrError === "number") {
-                    this.transport = this.constructTransport(transportOrError);
-                    if (!negotiateResponse.connectionId) {
-                        try {
-                            negotiateResponse = await this.getNegotiationResponse(url);
-                        } catch (ex) {
-                            return Promise.reject(ex);
-                        }
-                        connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+            } else if (this.isITransport(transportOrError)) {
+                this.transport = transportOrError;
+                if (!negotiateResponse.connectionId) {
+                    try {
+                        negotiateResponse = await this.getNegotiationResponse(url);
+                    } catch (ex) {
+                        return Promise.reject(ex);
                     }
+                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                }
+                try {
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
-                }
-            } catch (ex) {
-                this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
-                negotiateResponse.connectionId = undefined;
-                transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
+                } catch (ex) {
+                    this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
+                    negotiateResponse.connectionId = undefined;
+                    transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
 
-                if (this.connectionState !== ConnectionState.Connecting) {
-                    const message = "Failed to select transport before stop() was called.";
-                    this.logger.log(LogLevel.Debug, message);
-                    return Promise.reject(new Error(message));
+                    if (this.connectionState !== ConnectionState.Connecting) {
+                        const message = "Failed to select transport before stop() was called.";
+                        this.logger.log(LogLevel.Debug, message);
+                        return Promise.reject(new Error(message));
+                    }
                 }
             }
         }
@@ -390,7 +389,7 @@ export class HttpConnection implements IConnection {
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
-    private constructTransport(transport: HttpTransportType) {
+    private constructTransport(transport: HttpTransportType): ITransport {
         switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this.options.WebSocket) {
@@ -409,7 +408,7 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | Error {
+    private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
@@ -424,7 +423,11 @@ export class HttpConnection implements IConnection {
                         return new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
                     } else {
                         this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
-                        return transport;
+                        try {
+                            return this.constructTransport(transport);
+                        } catch (ex) {
+                            return ex;
+                        }
                     }
                 } else {
                     this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
