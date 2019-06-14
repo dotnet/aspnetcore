@@ -12,15 +12,33 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     public class RedirectToWwwRule : IRule
     {
         public readonly int _statusCode;
+        public readonly string[] _domains;
 
         public RedirectToWwwRule(int statusCode)
         {
             _statusCode = statusCode;
         }
 
+        public RedirectToWwwRule(int statusCode, params string[] domains)
+        {
+            if (domains == null)
+            {
+                throw new ArgumentNullException(nameof(domains));
+            }
+
+            if (domains.Length < 1)
+            {
+                throw new ArgumentException(nameof(domains));
+            }
+
+            _domains = domains;
+            _statusCode = statusCode;
+        }
+
         public virtual void ApplyRule(RewriteContext context)
         {
             var req = context.HttpContext.Request;
+
             if (req.Host.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
             {
                 context.Result = RuleResult.ContinueRules;
@@ -31,6 +49,26 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             {
                 context.Result = RuleResult.ContinueRules;
                 return;
+            }
+
+            if (_domains != null)
+            {
+                var isHostInDomains = false;
+
+                foreach (var domain in _domains)
+                {
+                    if (domain.Equals(req.Host.Host, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isHostInDomains = true;
+                        break;
+                    }
+                }
+
+                if (!isHostInDomains)
+                {
+                    context.Result = RuleResult.ContinueRules;
+                    return;
+                }
             }
 
             var wwwHost = new HostString($"www.{req.Host.Value}");

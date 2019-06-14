@@ -12,15 +12,17 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
+    <app>@(await Html.RenderComponentAsync<App>(new { Name = "Guest" }))</app>
 
-    <app>@(await Html.RenderComponentAsync<App>(new { Name="Guest" }))</app>
-
-    <script src="_framework/components.server.js" autostart="false"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         Blazor.start({
             configureSignalR: function (builder) {
                 builder.configureLogging(2); // LogLevel.Information
-            }
+            },
+            logLevel: 2 // LogLevel.Information
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__started__'] = true;
         });
     </script>
 </body>

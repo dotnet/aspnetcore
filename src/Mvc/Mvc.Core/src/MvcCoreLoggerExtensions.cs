@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
+        private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
         private static readonly Action<ILogger, string, string, Exception> _pageExecuting;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
 
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _actionMethodExecuting;
-        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecutingWithArguments;
+        private static readonly Action<ILogger, string, string[], Exception> _actionMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, double, Exception> _actionMethodExecuted;
 
         private static readonly Action<ILogger, string, string[], Exception> _logFilterExecutionPlan;
@@ -159,6 +160,11 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(1, "ActionExecuting"),
                 "Route matched with {RouteData}. Executing action {ActionName}");
 
+            _controllerActionExecuting = LoggerMessage.Define<string, MethodInfo, string, string>(
+                LogLevel.Information,
+                new EventId(3, "ControllerActionExecuting"),
+                "Route matched with {RouteData}. Executing controller action with signature {MethodInfo} on controller {Controller} ({AssemblyName}).");
+
             _actionExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
                 new EventId(2, "ActionExecuted"),
@@ -189,10 +195,10 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(1, "ActionMethodExecuting"),
                 "Executing action method {ActionName} - Validation state: {ValidationState}");
 
-            _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[], ModelValidationState>(
-                LogLevel.Information,
+            _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
+                LogLevel.Trace,
                 new EventId(1, "ActionMethodExecutingWithArguments"),
-                "Executing action method {ActionName} with arguments ({Arguments}) - Validation state: {ValidationState}");
+                "Executing action method {ActionName} with arguments ({Arguments})");
 
             _actionMethodExecuted = LoggerMessage.Define<string, string, double>(
                 LogLevel.Information,
@@ -689,10 +695,12 @@ namespace Microsoft.AspNetCore.Mvc
             _selectingFirstCanWriteFormatter(logger, null);
         }
 
-        public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
+#nullable enable
+        public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
         {
             return logger.BeginScope(new ActionLogScope(action));
         }
+#nullable restore
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)
         {
@@ -713,13 +721,29 @@ namespace Microsoft.AspNetCore.Mvc
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
+
                 if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
                     _pageExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
                 }
                 else
                 {
-                    _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                    if (action is ControllerActionDescriptor controllerActionDescriptor)
+                    {
+                        var controllerType = controllerActionDescriptor.ControllerTypeInfo.AsType();
+                        var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+                        _controllerActionExecuting(
+                            logger,
+                            stringBuilder.ToString(),
+                            controllerActionDescriptor.MethodInfo,
+                            controllerName,
+                            controllerType.Assembly.GetName().Name,
+                            null);
+                    }
+                    else
+                    {
+                        _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                    }
                 }
             }
         }
@@ -858,21 +882,17 @@ namespace Microsoft.AspNetCore.Mvc
                 var actionName = context.ActionDescriptor.DisplayName;
 
                 var validationState = context.ModelState.ValidationState;
+                _actionMethodExecuting(logger, actionName, validationState, null);
 
-                string[] convertedArguments;
-                if (arguments == null)
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
                 {
-                    _actionMethodExecuting(logger, actionName, validationState, null);
-                }
-                else
-                {
-                    convertedArguments = new string[arguments.Length];
+                    var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
                         convertedArguments[i] = Convert.ToString(arguments[i]);
                     }
 
-                    _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, validationState, null);
+                    _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, null);
                 }
             }
         }

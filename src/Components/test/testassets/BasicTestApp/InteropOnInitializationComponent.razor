@@ -1,5 +1,5 @@
 @page "/prerendered-interop"
-@using Microsoft.AspNetCore.Components.Services
+@using Microsoft.AspNetCore.Components
 @using Microsoft.JSInterop
 @inject IComponentContext ComponentContext
 @inject IJSRuntime JSRuntime
@@ -19,10 +19,10 @@
 
 <p>
     Value set via JS interop call:
-    <input id="val-set-by-interop" ref="@myElem" />
+    <input id="val-set-by-interop" @ref="@myElem" />
 </p>
 
-@functions {
+@code {
     string infoFromJs;
     ElementRef myElem;
 

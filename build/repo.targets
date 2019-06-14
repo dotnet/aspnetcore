@@ -4,9 +4,6 @@
   <Import Project="CodeSign.targets" />
 
   <PropertyGroup>
-    <!-- Some projects need access to tasks bundled in KoreBuild. -->
-    <BuildProperties>$(BuildProperties);BuildToolsTaskAssembly=$(_BuildToolsAssembly)</BuildProperties>
-
     <!-- Reset the default korebuild lifecycle. -->
     <BuildDependsOn>Prepare</BuildDependsOn>
     <!-- Map bootstrapper flags to KoreBuild targets -->
@@ -80,8 +77,8 @@
 -->
 <Project>
   <ItemGroup>
-    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepositoryRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
-    @(_ProjectReferenceProviderWithRefAssembly->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepositoryRoot)%(ProjectFileRelativePath)" RefProjectPath="%24(RepositoryRoot)%(ReferenceAssemblyProjectFileRelativePath)" />', '%0A    ')
+    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
+    @(_ProjectReferenceProviderWithRefAssembly->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" RefProjectPath="%24(RepoRoot)%(ReferenceAssemblyProjectFileRelativePath)" />', '%0A    ')
   </ItemGroup>
 </Project>
 ]]></ProjectListContent>
@@ -137,7 +134,8 @@
 
     <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
       Files="@(_BuildOutput)"
-      FrameworkOnlyPackages="@(AspNetCoreAppReference)" />
+      FrameworkOnlyPackages="@(AspNetCoreAppReference)"
+      SharedFrameworkTargetFramework="netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" />
   </Target>
 
   <Target Name="GenerateBuildAssetManifest">
@@ -151,7 +149,7 @@
              Properties="$(BuildProperties);__DummyTarget=GenerateBuildAssetManifest" />
   </Target>
 
-  <Target Name="Helix" DependsOnTargets="Restore">
+  <Target Name="Helix">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
              Targets="Test"
              Properties="$(BuildProperties);$(SolutionProperties);"

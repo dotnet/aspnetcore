@@ -85,6 +85,25 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public async Task CreateUpdatesSecurityStampStore()
+        {
+            // Setup
+            var store = new Mock<IUserSecurityStampStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo", SecurityStamp = "sssss" };
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetSecurityStampAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.SecurityStamp)).Verifiable();
+            store.Setup(s => s.SetSecurityStampAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+            // Act
+            var result = await userManager.CreateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
         public async Task CreateCallsUpdateEmailStore()
         {
             // Setup
@@ -960,12 +979,20 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorBlocksCreate()
         {
-            // TODO: Can switch to Mock eventually
+            var manager = MockHelpers.TestUserManager(new EmptyStore());
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>(true));
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"),
+                BadPasswordValidator<PocoUser>.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task PasswordValidatorWithoutErrorsBlocksCreate()
+        {
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
             manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>());
-            IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"),
-                BadPasswordValidator<PocoUser>.ErrorMessage);
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"));
         }
 
         [Fact]
@@ -1156,10 +1183,22 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            private IdentityResult badResult;
+
+            public BadPasswordValidator(bool includeErrorMessage = false)
             {
-                return Task.FromResult(IdentityResult.Failed(ErrorMessage));
+                if (includeErrorMessage)
+                {
+                    badResult = IdentityResult.Failed(ErrorMessage);
+                }
+                else
+                {
+                    badResult = IdentityResult.Failed();
+                }
             }
+
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+                => Task.FromResult(badResult);
         }
 
         private class EmptyStore :

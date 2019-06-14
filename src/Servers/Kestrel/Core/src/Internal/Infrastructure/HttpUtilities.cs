@@ -84,6 +84,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+        public static unsafe string GetHeaderName(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                }
+            }
+
+            return asciiString;
+        }
+
         public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
         {
             if (span.IsEmpty)

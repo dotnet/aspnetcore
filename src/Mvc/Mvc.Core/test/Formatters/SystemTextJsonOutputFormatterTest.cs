@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         protected override TextOutputFormatter GetOutputFormatter()
         {
-            return new SystemTextJsonOutputFormatter(new MvcOptions());
+            return new SystemTextJsonOutputFormatter(new JsonOptions());
         }
 
         [Theory]

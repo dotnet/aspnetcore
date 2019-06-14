@@ -30,9 +30,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal void CopyTo(ref BufferWriter<PipeWriter> buffer)
         {
             CopyToFast(ref buffer);
-            if (MaybeUnknown != null)
+
+            var extraHeaders = MaybeUnknown;
+            if (extraHeaders != null && extraHeaders.Count > 0)
             {
-                foreach (var kv in MaybeUnknown)
+                // Only reserve stack space for the enumartors if there are extra headers
+                CopyExtraHeaders(ref buffer, extraHeaders);
+            }
+
+            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
+            {
+                foreach (var kv in headers)
                 {
                     foreach (var value in kv.Value)
                     {
@@ -64,10 +72,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
+        {
+            ValidateHeaderNameCharacters(key);
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

@@ -83,6 +83,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorPagesRazorViewEngineOptionsSetup>());
 
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
+
             // Routing
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
@@ -109,6 +112,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, ViewDataAttributePageApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, ResponseCacheFilterApplicationModelProvider>());
+
+            services.TryAddSingleton<IPageApplicationModelPartsProvider, DefaultPageApplicationModelPartsProvider>();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());

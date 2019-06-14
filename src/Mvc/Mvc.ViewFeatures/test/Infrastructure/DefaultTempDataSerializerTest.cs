@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
         protected override TempDataSerializer GetTempDataSerializer() => new DefaultTempDataSerializer();
 
         [Fact]
-        public void RoundTripTest_StringThatLooksLikeCompliantDateTime()
+        public void RoundTripTest_NonStandardDateTimeStringFormat_RoundTripsAsString()
         {
-            // This is an unintentional side-effect of trying to support a compat with JSON.NET.
-            // Any string that looks like a compliant DateTime object will be parsed as a DateTime.
-            // This test documents this behavior.
+            // DateTime that do not match the format that System.Text.Json uses for round-tripping
+            // should round-trip as strings.
+
             // Arrange
             var key = "test-key";
             var testProvider = GetTempDataSerializer();
@@ -31,56 +31,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             var values = testProvider.Deserialize(bytes);
 
             // Assert
-            var roundTripValue = Assert.IsType<DateTime>(values[key]);
-            Assert.Equal(value, roundTripValue);
+            var roundTripValue = Assert.IsType<string>(values[key]);
+            Assert.Equal(value.ToString("r"), roundTripValue);
         }
 
         [Fact]
-        public void RoundTripTest_StringThatIsNotCompliantDateTime()
+        public override void RoundTripTest_DictionaryOfInt()
         {
-            // This is an unintentional side-effect of trying to support a compat with JSON.NET.
-            // Any string that looks like a compliant DateTime object will be parsed as a DateTime.
-            // This test documents this behavior.
             // Arrange
             var key = "test-key";
             var testProvider = GetTempDataSerializer();
-            var value = new DateTime(2009, 1, 1, 12, 37, 43);
+            var value = new Dictionary<string, int>
+            {
+                { "Key1", 7 },
+                { "Key2", 24 },
+            };
             var input = new Dictionary<string, object>
             {
-                { key, value.ToString() }
+                { key, value }
             };
 
             // Act
-            var bytes = testProvider.Serialize(input);
-            var values = testProvider.Deserialize(bytes);
-
-            // Assert
-            var roundTripValue = Assert.IsType<string>(values[key]);
-            Assert.Equal(value.ToString(), roundTripValue);
-        }
-
-        [Fact]
-        public void RoundTripTest_StringThatIsNotCompliantGuid()
-        {
-            // This is an unintentional side-effect of trying to support a compat with JSON.NET.
-            // Any string that looks like a compliant DateTime object will be parsed as a DateTime.
-            // This test documents this behavior.
-            // Arrange
-            var key = "test-key";
-            var testProvider = GetTempDataSerializer();
-            var value = Guid.NewGuid();
-            var input = new Dictionary<string, object>
-            {
-                { key, value.ToString() }
-            };
-
-            // Act
-            var bytes = testProvider.Serialize(input);
-            var values = testProvider.Deserialize(bytes);
-
-            // Assert
-            var roundTripValue = Assert.IsType<string>(values[key]);
-            Assert.Equal(value.ToString(), roundTripValue);
+            var ex = Assert.Throws<InvalidOperationException>(() => testProvider.Serialize(input));
+            Assert.Equal($"The '{testProvider.GetType()}' cannot serialize an object of type '{value.GetType()}'.", ex.Message);
         }
     }
 }

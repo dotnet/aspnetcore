@@ -6,7 +6,6 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalSetup]
         public void Setup()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             var pipe = new Pipe(new PipeOptions(_memoryPool));
             _reader = pipe.Reader;
             _writer = pipe.Writer;

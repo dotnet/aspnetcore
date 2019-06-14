@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,10 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
     public class RemoteRendererTest : HtmlRendererTestBase
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         protected override HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
         {
             return GetRemoteRenderer(serviceProvider, new CircuitClientProxy());
@@ -50,6 +55,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         public async Task ProcessBufferedRenderBatches_WritesRenders()
         {
             // Arrange
+            var @event = new ManualResetEventSlim();
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
             var renderIds = new List<long>();
 
@@ -78,7 +84,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
             renderer.OnRenderCompleted(2, null);
+
+            @event.Reset();
             firstBatchTCS.SetResult(null);
+
+            // Waiting is required here because the continuations of SetResult will not execute synchronously.
+            @event.Wait(Timeout);
 
             circuitClient.SetDisconnected();
             component.TriggerRender();
@@ -261,7 +272,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 NullLogger.Instance);
         }
 
-        private class TestComponent : IComponent
+        private class TestComponent : IComponent, IHandleAfterRender
         {
             private RenderHandle _renderHandle;
             private RenderFragment _renderFragment = (builder) =>
@@ -280,9 +291,17 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 _renderFragment = renderFragment;
             }
 
+            public Action OnAfterRenderComplete { get; set; }
+
             public void Configure(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
+            }
+
+            public Task OnAfterRenderAsync()
+            {
+                OnAfterRenderComplete?.Invoke();
+                return Task.CompletedTask;
             }
 
             public Task SetParametersAsync(ParameterCollection parameters)

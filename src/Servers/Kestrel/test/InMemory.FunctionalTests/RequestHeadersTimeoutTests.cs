@@ -28,10 +28,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
+                    await connection.TransportConnection.WaitForReadTask;
+
                     await connection.Send(
                         "GET / HTTP/1.1",
                         headers);
@@ -42,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -52,10 +53,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
+                    await connection.TransportConnection.WaitForReadTask;
+
                     await connection.Send(
                         "POST / HTTP/1.1",
                         "Host:",
@@ -72,7 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveResponse(connection, testContext);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -84,10 +86,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
+                    await connection.TransportConnection.WaitForReadTask;
+
                     await connection.Send(requestLine);
 
                     // Min amount of time between requests that triggers a request headers timeout.
@@ -96,7 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -109,10 +112,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             // Disable response rate, so we can finish the send loop without timing out the response.
             testContext.ServerOptions.Limits.MinResponseDataRate = null;
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
+                    await connection.TransportConnection.WaitForReadTask;
+
                     foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
                     {
                         await connection.Send(ch.ToString());
@@ -125,7 +130,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
         }
 

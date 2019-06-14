@@ -3,6 +3,19 @@
 
 namespace Microsoft.AspNetCore.Components
 {
+    public partial class AuthenticationState
+    {
+        public AuthenticationState(System.Security.Claims.ClaimsPrincipal user) { }
+        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task);
+    public abstract partial class AuthenticationStateProvider
+    {
+        protected AuthenticationStateProvider() { }
+        public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync();
+        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
+    }
     [Microsoft.AspNetCore.Components.BindElementAttribute("select", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
@@ -92,10 +105,11 @@ namespace Microsoft.AspNetCore.Components
         public string[] Types { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ElementRef : Microsoft.JSInterop.Internal.ICustomArgSerializer
+    public readonly partial struct ElementRef
     {
         private readonly object _dummy;
-        object Microsoft.JSInterop.Internal.ICustomArgSerializer.ToJsonPrimitive() { throw null; }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public string __internalId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback
@@ -141,6 +155,7 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int> setter, int existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long> setter, long existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool?> setter, bool? existingValue) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal?> setter, decimal? existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double?> setter, double? existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int?> setter, int? existingValue) { throw null; }
@@ -148,7 +163,7 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string> setter, string existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue) where T : struct, System.Enum { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue) { throw null; }
     }
     public static partial class EventCallbackFactoryUIEventArgsExtensions
     {
@@ -200,8 +215,6 @@ namespace Microsoft.AspNetCore.Components
         public string AttributeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Type EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("gotpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("lostpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onabort", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforeactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
@@ -236,6 +249,7 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfocusout", typeof(Microsoft.AspNetCore.Components.UIFocusEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenerror", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ongotpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninput", typeof(Microsoft.AspNetCore.Components.UIChangeEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninvalid", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onkeydown", typeof(Microsoft.AspNetCore.Components.UIKeyboardEventArgs))]
@@ -246,6 +260,7 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadedmetadata", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadend", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadstart", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onlostpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onmousedown", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onmousemove", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onmouseout", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
@@ -256,8 +271,16 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpause", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplay", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplaying", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointercancel", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerdown", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerenter", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerleave", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockerror", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointermove", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerout", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerover", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerup", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onprogress", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onratechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onreadystatechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
@@ -283,14 +306,6 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onvolumechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onwaiting", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onwheel", typeof(Microsoft.AspNetCore.Components.UIWheelEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointercancel", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerdown", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerenter", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerleave", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointermove", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerout", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerover", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("pointerup", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     public static partial class EventHandlers
     {
     }
@@ -311,6 +326,10 @@ namespace Microsoft.AspNetCore.Components
         void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters);
     }
+    public partial interface IComponentContext
+    {
+        bool IsConnected { get; }
+    }
     public partial interface IHandleAfterRender
     {
         System.Threading.Tasks.Task OnAfterRenderAsync();
@@ -324,6 +343,16 @@ namespace Microsoft.AspNetCore.Components
     {
         public InjectAttribute() { }
     }
+    public partial interface IUriHelper
+    {
+        event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged;
+        string GetAbsoluteUri();
+        string GetBaseUri();
+        void NavigateTo(string uri);
+        void NavigateTo(string uri, bool forceLoad);
+        System.Uri ToAbsoluteUri(string href);
+        string ToBaseRelativePath(string baseUri, string locationAbsolute);
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
     {
@@ -332,6 +361,11 @@ namespace Microsoft.AspNetCore.Components
         public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public static explicit operator Microsoft.AspNetCore.Components.MarkupString (string value) { throw null; }
         public override string ToString() { throw null; }
+    }
+    public partial class NavigationException : System.Exception
+    {
+        public NavigationException(string uri) { }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct Parameter
@@ -346,6 +380,7 @@ namespace Microsoft.AspNetCore.Components
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
+        public bool CaptureUnmatchedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ParameterCollection
@@ -384,7 +419,7 @@ namespace Microsoft.AspNetCore.Components
         public System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public partial class RouteAttribute : System.Attribute
     {
         public RouteAttribute(string template) { }
@@ -545,6 +580,23 @@ namespace Microsoft.AspNetCore.Components
         public double DeltaY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public double DeltaZ { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.IUriHelper
+    {
+        protected UriHelperBase() { }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged { add { } remove { } }
+        protected virtual void EnsureInitialized() { }
+        public string GetAbsoluteUri() { throw null; }
+        public virtual string GetBaseUri() { throw null; }
+        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
+        public void NavigateTo(string uri) { }
+        public void NavigateTo(string uri, bool forceLoad) { }
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        protected void SetAbsoluteBaseUri(string baseUri) { }
+        protected void SetAbsoluteUri(string uri) { }
+        public System.Uri ToAbsoluteUri(string href) { throw null; }
+        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
+        protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
+    }
 }
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -679,7 +731,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public static Microsoft.AspNetCore.Components.Rendering.IDispatcher CreateDefaultDispatcher() { throw null; }
-        public System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
@@ -695,14 +747,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ArrayRange<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable
+    public readonly partial struct ArrayRange<T>
     {
         public readonly T[] Array;
         public readonly int Count;
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
-        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
     public partial class RenderTreeBuilder
     {
@@ -727,6 +777,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
+        public void AddMultipleAttributes<T>(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
@@ -734,6 +785,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void OpenComponent(int sequence, System.Type componentType) { }
         public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
         public void OpenElement(int sequence, string elementName) { }
+        public void SetKey(object value) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
@@ -741,76 +793,64 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public readonly int ComponentId;
         public readonly System.ArraySegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly partial struct RenderTreeEdit
     {
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
+        public readonly int MoveToSiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
         public readonly int ReferenceFrameIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
         public readonly string RemovedAttributeName;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(4)]
         public readonly int SiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(0)]
         public readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType Type;
     }
     public enum RenderTreeEditType
     {
         PrependFrame = 1,
-        RemoveAttribute = 4,
         RemoveFrame = 2,
         SetAttribute = 3,
+        RemoveAttribute = 4,
+        UpdateText = 5,
         StepIn = 6,
         StepOut = 7,
         UpdateMarkup = 8,
-        UpdateText = 5,
+        PermutationListEntry = 9,
+        PermutationListEnd = 10,
     }
     public enum RenderTreeFrameType
     {
+        None = 0,
+        Element = 1,
+        Text = 2,
         Attribute = 3,
         Component = 4,
-        ComponentReferenceCapture = 7,
-        Element = 1,
-        ElementReferenceCapture = 6,
-        Markup = 8,
         Region = 5,
-        Text = 2,
+        ElementReferenceCapture = 6,
+        ComponentReferenceCapture = 7,
+        Markup = 8,
     }
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    public partial interface INavigationInterception
+    {
+        System.Threading.Tasks.Task EnableNavigationInterceptionAsync();
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct LocationChangedEventArgs
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { throw null; }
+        public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public enum NavLinkMatch
     {
-        All = 1,
         Prefix = 0,
-    }
-}
-namespace Microsoft.AspNetCore.Components.Services
-{
-    public partial interface IComponentContext
-    {
-        bool IsConnected { get; }
-    }
-    public partial interface IUriHelper
-    {
-        event System.EventHandler<string> OnLocationChanged;
-        string GetAbsoluteUri();
-        string GetBaseUri();
-        void NavigateTo(string uri);
-        void NavigateTo(string uri, bool forceLoad);
-        System.Uri ToAbsoluteUri(string href);
-        string ToBaseRelativePath(string baseUri, string locationAbsolute);
-    }
-    public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.Services.IUriHelper
-    {
-        protected UriHelperBase() { }
-        public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
-        protected virtual void EnsureInitialized() { }
-        public string GetAbsoluteUri() { throw null; }
-        public virtual string GetBaseUri() { throw null; }
-        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
-        public void NavigateTo(string uri) { }
-        public void NavigateTo(string uri, bool forceLoad) { }
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
-        protected void SetAbsoluteBaseUri(string baseUri) { }
-        protected void SetAbsoluteUri(string uri) { }
-        public System.Uri ToAbsoluteUri(string href) { throw null; }
-        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged() { }
+        All = 1,
     }
 }

@@ -4,8 +4,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -135,6 +135,142 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(
                 $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
                 $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void SettingCaptureUnmatchedValuesParameterExplicitlyWorks()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesProperty();
+            var value = new Dictionary<string, object>();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), value },
+            }.Build();
+
+            // Act
+            parameterCollection.SetParameterProperties(target);
+
+            // Assert
+            Assert.Same(value, target.CaptureUnmatchedValues);
+        }
+
+        [Fact]
+        public void SettingCaptureUnmatchedValuesParameterWithUnmatchedValuesWorks()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasCaptureUnmatchedValuesProperty.StringProp), "hi" },
+                { "test1", 123 },
+                { "test2", 456 },
+            }.Build();
+
+            // Act
+            parameterCollection.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal("hi", target.StringProp);
+            Assert.Collection(
+                target.CaptureUnmatchedValues.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("test1", kvp.Key);
+                    Assert.Equal(123, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("test2", kvp.Key);
+                    Assert.Equal(456, kvp.Value);
+                });
+        }
+
+        [Fact]
+        public void SettingCaptureUnmatchedValuesParameterExplicitlyAndImplicitly_Throws()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), new Dictionary<string, object>() },
+                { "test1", 123 },
+                { "test2", 456 },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' cannot be set explicitly when " +
+                $"also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+                $"test1" + Environment.NewLine +
+                $"test2",
+                ex.Message);
+        }
+
+        [Fact]
+        public void SettingCaptureUnmatchedValuesParameterExplicitlyAndImplicitly_ReverseOrder_Throws()
+        {
+            // Arrange
+            var target = new HasCaptureUnmatchedValuesProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { "test2", 456 },
+                { "test1", 123 },
+                { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), new Dictionary<string, object>() },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' cannot be set explicitly when " +
+                $"also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+                $"test1" + Environment.NewLine +
+                $"test2",
+                ex.Message);
+        }
+
+        [Fact]
+        public void HasDuplicateCaptureUnmatchedValuesParameters_Throws()
+        {
+            // Arrange
+            var target = new HasDupliateCaptureUnmatchedValuesProperty();
+            var parameterCollection = new ParameterCollectionBuilder().Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"Multiple properties were found on component type '{typeof(HasDupliateCaptureUnmatchedValuesProperty).FullName}' " +
+                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
+                $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
+                $"Properties:" + Environment.NewLine +
+                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
+                $"{nameof(HasDupliateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
+                ex.Message);
+        }
+
+        [Fact]
+        public void HasCaptureUnmatchedValuesParameteterWithWrongType_Throws()
+        {
+            // Arrange
+            var target = new HasWrongTypeCaptureUnmatchedValuesProperty();
+            var parameterCollection = new ParameterCollectionBuilder().Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasWrongTypeCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp)}' on component type '{typeof(HasWrongTypeCaptureUnmatchedValuesProperty).FullName}' cannot be used with " +
+                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}' because it has the wrong type. " +
+                $"The property must be assignable from 'Dictionary<string, object>'.",
                 ex.Message);
         }
 
@@ -271,6 +407,25 @@ namespace Microsoft.AspNetCore.Components.Test
         class HasParameterClashingWithInherited : HasInstanceProperties
         {
             [Parameter] new int IntProp { get; set; }
+        }
+
+        class HasCaptureUnmatchedValuesProperty
+        {
+            [Parameter] internal int IntProp { get; set; }
+            [Parameter] internal string StringProp { get; set; }
+            [Parameter] internal object ObjectProp { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
+        }
+
+        class HasDupliateCaptureUnmatchedValuesProperty
+        {
+            [Parameter(CaptureUnmatchedValues = true)] internal Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal IDictionary<string, object> CaptureUnmatchedValuesProp2 { get; set; }
+        }
+
+        class HasWrongTypeCaptureUnmatchedValuesProperty
+        {
+            [Parameter(CaptureUnmatchedValues = true)] internal KeyValuePair<string, object>[] CaptureUnmatchedValuesProp { get; set; }
         }
 
         class ParameterCollectionBuilder : IEnumerable

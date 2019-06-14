@@ -28,7 +28,11 @@ public:
 
     static
     std::string
-    GetHtml(HMODULE module, int page);
+    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution);
+
+    static
+    std::string
+    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution, const std::string& error);
 
 private:
     static

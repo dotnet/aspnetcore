@@ -49,6 +49,45 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 // Built-in components: https://github.com/aspnet/AspNetCore/issues/8825
 namespace Microsoft.AspNetCore.Components
 {
+    public partial class AuthorizeView : Microsoft.AspNetCore.Components.AuthorizeViewCore
+    {
+        public AuthorizeView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        protected override Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData() { throw null; }
+    }
+
+    public abstract partial class AuthorizeViewCore : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public AuthorizeViewCore() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected abstract Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        protected override System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
+    }
+
+    public partial class CascadingAuthenticationState : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        public CascadingAuthenticationState() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void OnInit() { }
+        void System.IDisposable.Dispose() { }
+    }
+
     public partial class CascadingValue<T> : Microsoft.AspNetCore.Components.IComponent
     {
         public CascadingValue() { }
@@ -76,6 +115,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase
     {
         public EditForm() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -95,6 +136,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public abstract partial class InputBase<T> : Microsoft.AspNetCore.Components.ComponentBase
     {
         protected InputBase() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string Class { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected string CssClass { get { throw null; } }
@@ -168,6 +211,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class ValidationMessage<T> : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         public ValidationMessage() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<T>> For { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
@@ -178,6 +223,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class ValidationSummary : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         public ValidationSummary() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
         void System.IDisposable.Dispose() { }
@@ -186,9 +233,13 @@ namespace Microsoft.AspNetCore.Components.Forms
 
 namespace Microsoft.AspNetCore.Components.Layouts
 {
-    public partial class LayoutDisplay : Microsoft.AspNetCore.Components.IComponent
+    public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {
-        public LayoutDisplay() { }
+        public PageDisplay() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Type Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -218,7 +269,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Reflection.Assembly AppAssembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Type FallbackComponent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        public Microsoft.AspNetCore.Components.RenderFragment NotFoundContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }

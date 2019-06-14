@@ -5,23 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class RuntimeDependenciesResolverTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public RuntimeDependenciesResolverTest(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
@@ -128,14 +121,49 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var expected = new HashSet<string>(expectedContents);
             var actual = new HashSet<string>(contents);
-            _output.WriteLine("Expected contents to have:");
-            _output.WriteLine(string.Join(",", expected.Except(actual)));
 
-            _output.WriteLine("Unexpected contents:");
-            _output.WriteLine(string.Join(",", actual.Except(expected)));
+            var contentNotFound = expected.Except(actual);
+            var additionalContentFound = actual.Except(expected);
 
             // Assert
+            if (contentNotFound.Any() || additionalContentFound.Any())
+            {
+                throw new ContentMisMatchException
+                {
+                    ContentNotFound = contentNotFound,
+                    AdditionalContentFound = additionalContentFound,
+                };
+            }
+
             Assert.Equal(expectedContents, contents);
+        }
+
+        private class ContentMisMatchException : Xunit.Sdk.XunitException
+        {
+            public IEnumerable<string> ContentNotFound { get; set; }
+
+            public IEnumerable<string> AdditionalContentFound { get; set; }
+
+            public override string Message
+            {
+                get
+                {
+                    var error = new StringBuilder();
+                    if (ContentNotFound.Any())
+                    {
+                        error.Append($"Expected content not found: ")
+                            .AppendJoin(", ", ContentNotFound);
+                    }
+
+                    if (AdditionalContentFound.Any())
+                    {
+                        error.Append("Unexpected content found: ")
+                            .AppendJoin(", ", AdditionalContentFound);
+                    }
+
+                    return error.ToString();
+                }
+            }
         }
     }
 }

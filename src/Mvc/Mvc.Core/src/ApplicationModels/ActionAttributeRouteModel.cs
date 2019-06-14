@@ -127,13 +127,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static void AddEndpointMetadata(SelectorModel selector, IList<object> metadata)
+        private static void AddEndpointMetadata(SelectorModel selector, IList<object> controllerMetadata)
         {
-            if (metadata != null)
+            if (controllerMetadata != null)
             {
-                for (var i = 0; i < metadata.Count; i++)
+                // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+                // must appear later in the sequence. In this case, the values in `controllerMetadata` should have their order
+                // preserved, but appear earlier than the entries in `selector.EndpointMetadata`.
+                for (var i = 0; i < controllerMetadata.Count; i++)
                 {
-                    selector.EndpointMetadata.Add(metadata[i]);
+                    selector.EndpointMetadata.Insert(i, controllerMetadata[i]);
                 }
             }
         }

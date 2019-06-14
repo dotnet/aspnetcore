@@ -43,14 +43,14 @@ namespace ClientSample
         // We claim to have inherent keep-alive so the client doesn't kill the connection when it hasn't seen ping frames.
         public bool HasInherentKeepAlive { get; } = true;
 
-        public Task DisposeAsync()
+        public override ValueTask DisposeAsync()
         {
             Transport?.Output.Complete();
             Transport?.Input.Complete();
 
             _socket?.Dispose();
 
-            return Task.CompletedTask;
+            return default;
         }
 
         public async Task<ConnectionContext> StartAsync()

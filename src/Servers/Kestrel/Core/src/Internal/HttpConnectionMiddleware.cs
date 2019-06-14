@@ -47,20 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Transport = connectionContext.Transport
             };
 
-            var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
-
-            if (connectionFeature != null)
-            {
-                if (connectionFeature.LocalIpAddress != null)
-                {
-                    httpConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
-                }
-
-                if (connectionFeature.RemoteIpAddress != null)
-                {
-                    httpConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
-                }
-            }
+            httpConnectionContext.LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint;
+            httpConnectionContext.RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint;
 
             var connection = new HttpConnection(httpConnectionContext);
 

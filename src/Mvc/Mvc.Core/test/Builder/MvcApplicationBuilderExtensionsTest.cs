@@ -55,10 +55,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var routeOptions = appBuilder.ApplicationServices
-                .GetRequiredService<IOptions<RouteOptions>>();
+            var endpointDataSource = appBuilder.ApplicationServices
+                .GetRequiredService<EndpointDataSource>();
 
-            Assert.Empty(routeOptions.Value.EndpointDataSources);
+            Assert.Empty(endpointDataSource.Endpoints);
         }
 
         [Fact]

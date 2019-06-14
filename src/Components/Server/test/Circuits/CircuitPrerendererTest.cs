@@ -6,7 +6,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +35,10 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         {
             // Arrange
             var circuitFactory = new TestCircuitFactory();
-            var circuitRegistry = new CircuitRegistry(Options.Create(new CircuitOptions()), Mock.Of<ILogger<CircuitRegistry>>());
+            var circuitRegistry = new CircuitRegistry(
+                Options.Create(new CircuitOptions()),
+                Mock.Of<ILogger<CircuitRegistry>>(),
+                TestCircuitIdFactory.CreateTestFactory());
             var circuitPrerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
             var httpContext = new DefaultHttpContext();
             var httpRequest = httpContext.Request;
@@ -77,7 +79,10 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         {
             // Arrange
             var circuitFactory = new TestCircuitFactory();
-            var circuitRegistry = new CircuitRegistry(Options.Create(new CircuitOptions()), Mock.Of<ILogger<CircuitRegistry>>());
+            var circuitRegistry = new CircuitRegistry(
+                Options.Create(new CircuitOptions()),
+                Mock.Of<ILogger<CircuitRegistry>>(),
+                TestCircuitIdFactory.CreateTestFactory());
             var circuitPrerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
             var httpContext = new DefaultHttpContext();
             var httpRequest = httpContext.Request;
@@ -118,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                     return uriHelper;
                 });
                 var serviceScope = serviceCollection.BuildServiceProvider().CreateScope();
-                return TestCircuitHost.Create(serviceScope);
+                return TestCircuitHost.Create(Guid.NewGuid().ToString(), serviceScope);
             }
         }
 

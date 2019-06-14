@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -32,12 +32,8 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
-            var context = new EndpointSelectorContext()
-            {
-                RouteValues = new RouteValueDictionary(new { action = "Index", })
-            };
             var httpContext = CreateHttpContext();
-            httpContext.Features.Set<IRouteValuesFeature>(context);
+            httpContext.Request.RouteValues = new RouteValueDictionary(new { action = "Index", });
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             // Act

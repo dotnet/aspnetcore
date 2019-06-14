@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public Task HttpsNoClientCert_NoClientCert(TestVariant variant)
         {
             return ClientCertTest(variant, sendClientCert: false);
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
         {
             return ClientCertTest(variant, sendClientCert: true);

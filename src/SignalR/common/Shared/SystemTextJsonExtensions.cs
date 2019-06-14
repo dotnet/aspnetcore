@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Internal
@@ -24,8 +22,13 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Object.");
             }
+        }
+
+        public static string GetTokenString(this ref Utf8JsonReader reader)
+        {
+            return GetTokenString(reader.TokenType);
         }
 
         public static string GetTokenString(JsonTokenType tokenType)
@@ -50,24 +53,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
-            }
-        }
-
-        // Remove after https://github.com/dotnet/corefx/issues/33295 is done
-        public static void Skip(this ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType == JsonTokenType.PropertyName)
-            {
-                reader.Read();
-            }
-
-            if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray)
-            {
-                int depth = reader.CurrentDepth;
-                while (reader.Read() && depth < reader.CurrentDepth)
-                {
-                }
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Array.");
             }
         }
 

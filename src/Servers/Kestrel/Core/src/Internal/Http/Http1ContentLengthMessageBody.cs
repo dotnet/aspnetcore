@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class Http1ContentLengthMessageBody : Http1MessageBody
+    internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
     {
         private ReadResult _readResult;
         private readonly long _contentLength;
@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _context.Input.AdvanceTo(consumed);
                     _finalAdvanceCalled = true;
+                    _context.OnTrailersComplete();
                 }
 
                 return;

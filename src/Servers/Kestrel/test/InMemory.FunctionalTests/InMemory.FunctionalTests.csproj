@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
    </PropertyGroup>
 
   <ItemGroup>
@@ -11,9 +12,14 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Threading.Channels"  />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />

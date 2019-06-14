@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;

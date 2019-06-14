@@ -63,11 +63,11 @@ namespace SampleDestination
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("/allow-origin", HandleRequest).WithCorsPolicy("AllowOrigin");
-                endpoints.Map("/allow-header-method", HandleRequest).WithCorsPolicy("AllowHeaderMethod");
-                endpoints.Map("/allow-credentials", HandleRequest).WithCorsPolicy("AllowCredentials");
-                endpoints.Map("/exposed-header", HandleRequest).WithCorsPolicy("ExposedHeader");
-                endpoints.Map("/allow-all", HandleRequest).WithCorsPolicy("AllowAll");
+                endpoints.Map("/allow-origin", HandleRequest).RequireCors("AllowOrigin");
+                endpoints.Map("/allow-header-method", HandleRequest).RequireCors("AllowHeaderMethod");
+                endpoints.Map("/allow-credentials", HandleRequest).RequireCors("AllowCredentials");
+                endpoints.Map("/exposed-header", HandleRequest).RequireCors("ExposedHeader");
+                endpoints.Map("/allow-all", HandleRequest).RequireCors("AllowAll");
             });
 
             app.Run(async (context) =>

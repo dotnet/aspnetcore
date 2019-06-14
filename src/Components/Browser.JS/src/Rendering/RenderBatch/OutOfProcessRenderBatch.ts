@@ -55,9 +55,13 @@ export class OutOfProcessRenderBatch implements RenderBatch {
   }
 
   diffReader: RenderTreeDiffReader;
+
   editReader: RenderTreeEditReader;
+
   frameReader: RenderTreeFrameReader;
+
   arrayRangeReader: ArrayRangeReader;
+
   arraySegmentReader: ArraySegmentReader;
 }
 
@@ -93,6 +97,10 @@ class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
   }
 
   newTreeIndex(edit: RenderTreeEdit) {
+    return readInt32LE(this.batchDataUint8, edit as any + 8); // 3rd int
+  }
+
+  moveToSiblingIndex(edit: RenderTreeEdit) {
     return readInt32LE(this.batchDataUint8, edit as any + 8); // 3rd int
   }
 

@@ -31,8 +31,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override void InitializeAsyncCore()
         {
-            Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
+            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
             MountTestComponent<EventBubblingComponent>();
+            WaitUntilExists(By.Id("event-bubbling"));
         }
 
         [Fact]

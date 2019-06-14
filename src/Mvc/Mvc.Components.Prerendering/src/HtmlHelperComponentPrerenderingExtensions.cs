@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             if (prerenderer == null)
             {
                 throw new InvalidOperationException($"No '{typeof(IComponentPrerenderer).Name}' implementation has been registered in the dependency injection container. " +
-                    $"This typically means a call to 'services.AddRazorComponents()' is missing in 'Startup.ConfigureServices'.");
+                    $"This typically means a call to 'services.AddServerSideBlazor()' is missing in 'Startup.ConfigureServices'.");
             }
 
             var parametersCollection = parameters == null ?

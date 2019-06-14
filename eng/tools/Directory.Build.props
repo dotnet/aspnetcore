@@ -1,3 +1,2 @@
 ﻿<Project>
-  <Import Project="..\..\build\sources.props" />
 </Project>

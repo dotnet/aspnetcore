@@ -2,9 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <Description>Single Page Application templates for ASP.NET Core
-
-    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
@@ -16,18 +14,17 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 

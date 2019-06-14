@@ -4,7 +4,6 @@
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
-    <IsTestProject>false</IsTestProject>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
@@ -19,7 +18,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.core" />
   </ItemGroup>

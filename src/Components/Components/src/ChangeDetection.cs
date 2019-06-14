@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Components
             => type.IsPrimitive
             || type == typeof(string)
             || type == typeof(DateTime)
+            || type == typeof(Type)
             || type == typeof(decimal);
     }
 }

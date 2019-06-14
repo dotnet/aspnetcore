@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum SameSiteMode
     {
-        Lax = 1,
         None = 0,
+        Lax = 1,
         Strict = 2,
     }
     public partial class WebSocketAcceptContext
@@ -133,9 +133,9 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public enum HttpsCompressionMode
     {
-        Compress = 2,
         Default = 0,
         DoNotCompress = 1,
+        Compress = 2,
     }
     public partial interface IFeatureCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
@@ -195,6 +195,11 @@ namespace Microsoft.AspNetCore.Http.Features
         System.Threading.CancellationToken RequestAborted { get; set; }
         void Abort();
     }
+    public partial interface IHttpRequestTrailersFeature
+    {
+        bool Available { get; }
+        Microsoft.AspNetCore.Http.IHeaderDictionary Trailers { get; }
+    }
     public partial interface IHttpResponseFeature
     {
         System.IO.Stream Body { get; set; }
@@ -241,7 +246,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IRequestBodyPipeFeature
     {
-        System.IO.Pipelines.PipeReader Reader { get; set; }
+        System.IO.Pipelines.PipeReader Reader { get; }
     }
     public partial interface IRequestCookiesFeature
     {
@@ -249,11 +254,15 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IResponseBodyPipeFeature
     {
-        System.IO.Pipelines.PipeWriter Writer { get; set; }
+        System.IO.Pipelines.PipeWriter Writer { get; }
     }
     public partial interface IResponseCookiesFeature
     {
         Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
+    }
+    public partial interface IServerVariablesFeature
+    {
+        string this[string variableName] { get; set; }
     }
     public partial interface IServiceProvidersFeature
     {

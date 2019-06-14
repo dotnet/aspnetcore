@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager.Object);
-            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock()));
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
             await testCode.Invoke();
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager);
-            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock()));
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
             var tid = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
@@ -210,7 +211,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager.Object);
-            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock()));
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager.Object);
-            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock()));
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager.Object);
-            services.AddSingleton<ITwoFactorSecurityStampValidator>(new TwoFactorSecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock()));
+            services.AddSingleton<ITwoFactorSecurityStampValidator>(new TwoFactorSecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
             var principal = await signInManager.Object.StoreRememberClient(user);

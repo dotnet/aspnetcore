@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    public sealed class ComponentHub : Hub
+    internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 var endpointFeature = Context.GetHttpContext().Features.Get<IEndpointFeature>();
                 var endpoint = endpointFeature?.Endpoint;
 
-                _logger.LogInformation($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
+                _logger.LogDebug($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
 
                 // No components preregistered so return. This is totally normal if the components were prerendered.
                 return null;
@@ -132,7 +131,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
-            _logger.LogInformation($"Received confirmation for batch {renderId}.");
+            _logger.LogDebug($"Received confirmation for batch {renderId}.");
             EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 

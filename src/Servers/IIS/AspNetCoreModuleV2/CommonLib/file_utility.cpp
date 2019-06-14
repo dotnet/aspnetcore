@@ -6,6 +6,7 @@
 #include <Shlwapi.h>
 #include "debugutil.h"
 #include "exceptions.h"
+#include "Environment.h"
 
 HRESULT
 FILE_UTILITY::IsPathUnc(
@@ -167,3 +168,53 @@ Finished:
     return hr;
 }
 
+std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& solution)
+{
+    return GetHtml(module, page, statusCode, subStatusCode, specificReasonPhrase, solution, std::string());
+}
+
+std::string
+FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& errorReason, const std::string& specificError)
+{
+    try
+    {
+        HRSRC rc = nullptr;
+        HGLOBAL rcData = nullptr;
+        std::string data;
+        const char* pTempData = nullptr;
+
+        THROW_LAST_ERROR_IF_NULL(rc = FindResource(module, MAKEINTRESOURCE(page), RT_HTML));
+        THROW_LAST_ERROR_IF_NULL(rcData = LoadResource(module, rc));
+        auto const size = SizeofResource(module, rc);
+        THROW_LAST_ERROR_IF(size == 0);
+        THROW_LAST_ERROR_IF_NULL(pTempData = static_cast<const char*>(LockResource(rcData)));
+        data = std::string(pTempData, size);
+
+        auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
+        std::string additionalHtml;
+
+        if (additionalErrorLink.has_value())
+        {
+            additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
+        }
+
+        std::string formattedError;
+        if (!specificError.empty())
+        {
+            formattedError = format("<h2>Specific error detected by ANCM:</h2><h3>%s</h3>", specificError.c_str());
+        }
+
+        std::string formattedErrorReason;
+        if (!errorReason.empty())
+        {
+            formattedErrorReason = format("<h2> Common solutions to this issue: </h2>%s", errorReason.c_str());
+        }
+
+        return format(data, statusCode, subStatusCode, specificReasonPhrase.c_str(), statusCode, subStatusCode, specificReasonPhrase.c_str(), formattedErrorReason.c_str(), formattedError.c_str(), additionalHtml.c_str());
+    }
+    catch (...)
+    {
+        OBSERVE_CAUGHT_EXCEPTION();
+        return "";
+    }
+}

@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (SupportsSignIn)
             {
-                await context.SignInAsync(new ClaimsPrincipal());
+                await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
                 Assert.Equal(1, forwardDefault.SignInCount);
             }
             else
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication
                 var context = new DefaultHttpContext();
                 context.RequestServices = sp;
 
-                await context.SignInAsync(new ClaimsPrincipal());
+                await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
                 Assert.Equal(1, specific.SignInCount);
                 Assert.Equal(0, specific.AuthenticateCount);
                 Assert.Equal(0, specific.ForbidCount);
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (SupportsSignIn)
             {
-                await context.SignInAsync(new ClaimsPrincipal());
+                await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
                 Assert.Equal(1, selector.SignInCount);
             }
             else
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (SupportsSignIn)
             {
-                await context.SignInAsync(new ClaimsPrincipal());
+                await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
                 Assert.Equal(1, forwardDefault.SignInCount);
             }
             else
@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (SupportsSignIn)
             {
-                await context.SignInAsync(new ClaimsPrincipal());
+                await context.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity("whatever")));
                 Assert.Equal(1, specific.SignInCount);
             }
             else

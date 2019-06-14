@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Components.Routing
-@inject Microsoft.AspNetCore.Components.Services.IUriHelper uriHelper
+@inject Microsoft.AspNetCore.Components.IUriHelper uriHelper
 <style type="text/css">a.active { background-color: yellow; font-weight: bold; }</style>
 <ul>
     <li><NavLink href="/subdir/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
@@ -14,11 +14,11 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
 </ul>
 
-<button id="do-navigation" onclick=@(x => uriHelper.NavigateTo("Other"))>
+<button id="do-navigation" @onclick=@(x => uriHelper.NavigateTo("Other"))>
     Programmatic navigation
 </button>
 
-<button id="do-navigation-forced" onclick=@(x => uriHelper.NavigateTo("Other", true))>
+<button id="do-navigation-forced" @onclick=@(x => uriHelper.NavigateTo("Other", true))>
     Programmatic navigation with force-load
 </button>
 
@@ -27,3 +27,6 @@
 </a>
 
 <a href="/" target="_blank">Target (_blank)</a>
+
+<a href="/subdir/NotAComponent.html">Not a component</a>
+

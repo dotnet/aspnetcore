@@ -3,12 +3,12 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace IISExpress.FunctionalTests.Inprocess
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AppOfflineIISExpressTests : IISFunctionalTestBase

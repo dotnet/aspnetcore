@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -192,9 +191,8 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
                 // the url in the header of `Location: /xxx/xxx` should be encoded
-                var expectedURL = UriHelper.BuildRelative(baseUrl, requestUrl + "/", new QueryString(queryString), new FragmentString());
                 var actualURL = response.Headers.GetValues("Location").FirstOrDefault();
-                Assert.Equal(expectedURL, actualURL);
+                Assert.Equal("http://localhost" + baseUrl + new PathString(requestUrl + "/") + queryString, actualURL);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }

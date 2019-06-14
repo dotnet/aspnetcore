@@ -116,8 +116,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"]); }
-            set { Headers["Host"] = value.ToUriComponent(); }
+            get { return HostString.FromUriComponent(Headers[HeaderNames.Host]); }
+            set { Headers[HeaderNames.Host] = value.ToUriComponent(); }
         }
 
         public override IQueryCollection Query
@@ -174,7 +174,6 @@ namespace Microsoft.AspNetCore.Http.Internal
         public override PipeReader BodyReader
         {
             get { return RequestBodyPipeFeature.Reader; }
-            set { RequestBodyPipeFeature.Reader = value; }
         }
 
         struct FeatureInterfaces

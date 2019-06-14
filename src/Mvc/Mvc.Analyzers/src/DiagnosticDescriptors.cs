@@ -52,5 +52,16 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
                 helpLinkUri: "https://aka.ms/AA20pbc");
+
+        // MVC1005 reserved for startup
+
+        public static readonly DiagnosticDescriptor MVC1006_FunctionsContainingTagHelpersMustBeAsyncAndReturnTask =
+            new DiagnosticDescriptor(
+                "MVC1006",
+                "Methods containing TagHelpers must be async and return Task.",
+                "The method contains a TagHelper and therefore must be async and return a Task.",
+                "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true);
     }
 }

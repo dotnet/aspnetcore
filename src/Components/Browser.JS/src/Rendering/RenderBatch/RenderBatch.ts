@@ -37,6 +37,7 @@ export interface RenderTreeEditReader {
   editType(edit: RenderTreeEdit): EditType;
   siblingIndex(edit: RenderTreeEdit): number;
   newTreeIndex(edit: RenderTreeEdit): number;
+  moveToSiblingIndex(edit: RenderTreeEdit): number;
   removedAttributeName(edit: RenderTreeEdit): string | null;
 }
 
@@ -71,6 +72,8 @@ export enum EditType {
   stepIn = 6,
   stepOut = 7,
   updateMarkup = 8,
+  permutationListEntry = 9,
+  permutationListEnd = 10,
 }
 
 export enum FrameType {

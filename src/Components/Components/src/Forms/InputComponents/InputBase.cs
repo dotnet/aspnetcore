@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
         /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the created element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+
+        /// <summary>
         /// Gets a value for the component's 'id' attribute.
         /// </summary>
         [Parameter] public string Id { get; private set; }
@@ -35,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets or sets the value of the input. This should be used with two-way binding.
         /// </summary>
         /// <example>
-        /// bind-Value="@model.PropertyName"
+        /// @bind-Value="@model.PropertyName"
         /// </example>
         [Parameter] public T Value { get; private set; }
 

@@ -4,6 +4,7 @@
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BasicTestApp.InteropTest
@@ -50,69 +51,69 @@ namespace BasicTestApp.InteropTest
         public static void VoidWithThreeParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3)
+            DotNetObjectRef<TestDTO> parameter3)
         {
-            Invocations[nameof(VoidWithThreeParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue() };
+            Invocations[nameof(VoidWithThreeParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue() };
         }
 
         [JSInvokable]
         public static void VoidWithFourParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4)
         {
-            Invocations[nameof(VoidWithFourParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4 };
+            Invocations[nameof(VoidWithFourParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4 };
         }
 
         [JSInvokable]
         public static void VoidWithFiveParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5)
         {
-            Invocations[nameof(VoidWithFiveParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5 };
+            Invocations[nameof(VoidWithFiveParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5 };
         }
 
         [JSInvokable]
         public static void VoidWithSixParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6)
         {
-            Invocations[nameof(VoidWithSixParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
+            Invocations[nameof(VoidWithSixParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
         }
 
         [JSInvokable]
         public static void VoidWithSevenParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7)
         {
-            Invocations[nameof(VoidWithSevenParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
+            Invocations[nameof(VoidWithSevenParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
         }
 
         [JSInvokable]
         public static void VoidWithEightParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7,
             Segment parameter8)
         {
-            Invocations[nameof(VoidWithEightParameters)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
+            Invocations[nameof(VoidWithEightParameters)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
         }
 
         [JSInvokable]
@@ -139,67 +140,67 @@ namespace BasicTestApp.InteropTest
         public static object[] EchoThreeParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3)
+            DotNetObjectRef<TestDTO> parameter3)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue() };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue() };
         }
 
         [JSInvokable]
         public static object[] EchoFourParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4 };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4 };
         }
 
         [JSInvokable]
         public static object[] EchoFiveParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5 };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5 };
         }
 
         [JSInvokable]
         public static object[] EchoSixParameters(ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
         }
 
         [JSInvokable]
         public static object[] EchoSevenParameters(ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
         }
 
         [JSInvokable]
         public static object[] EchoEightParameters(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7,
             Segment parameter8)
         {
-            return new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
+            return new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
         }
 
         [JSInvokable]
@@ -229,9 +230,9 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithThreeParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3)
+            DotNetObjectRef<TestDTO> parameter3)
         {
-            Invocations[nameof(VoidWithThreeParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue() };
+            Invocations[nameof(VoidWithThreeParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue() };
             return Task.CompletedTask;
         }
 
@@ -239,10 +240,10 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithFourParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4)
         {
-            Invocations[nameof(VoidWithFourParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4 };
+            Invocations[nameof(VoidWithFourParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4 };
             return Task.CompletedTask;
         }
 
@@ -250,11 +251,11 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithFiveParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5)
         {
-            Invocations[nameof(VoidWithFiveParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5 };
+            Invocations[nameof(VoidWithFiveParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5 };
             return Task.CompletedTask;
         }
 
@@ -262,12 +263,12 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithSixParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6)
         {
-            Invocations[nameof(VoidWithSixParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
+            Invocations[nameof(VoidWithSixParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6 };
             return Task.CompletedTask;
         }
 
@@ -275,13 +276,13 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithSevenParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7)
         {
-            Invocations[nameof(VoidWithSevenParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
+            Invocations[nameof(VoidWithSevenParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 };
             return Task.CompletedTask;
         }
 
@@ -289,14 +290,14 @@ namespace BasicTestApp.InteropTest
         public static Task VoidWithEightParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7,
             Segment parameter8)
         {
-            Invocations[nameof(VoidWithEightParametersAsync)] = new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
+            Invocations[nameof(VoidWithEightParametersAsync)] = new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 };
             return Task.CompletedTask;
         }
 
@@ -324,124 +325,142 @@ namespace BasicTestApp.InteropTest
         public static Task<object[]> EchoThreeParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3)
+            DotNetObjectRef<TestDTO> parameter3)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue() });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue() });
         }
 
         [JSInvokable]
         public static Task<object[]> EchoFourParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4 });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4 });
         }
 
         [JSInvokable]
         public static Task<object[]> EchoFiveParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5 });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5 });
         }
 
         [JSInvokable]
         public static Task<object[]> EchoSixParametersAsync(ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6 });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6 });
         }
 
         [JSInvokable]
         public static Task<object[]> EchoSevenParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7 });
         }
 
         [JSInvokable]
         public static Task<object[]> EchoEightParametersAsync(
             ComplexParameter parameter1,
             byte parameter2,
-            TestDTO parameter3,
+            DotNetObjectRef<TestDTO> parameter3,
             int parameter4,
             long parameter5,
             float parameter6,
             List<double> parameter7,
             Segment parameter8)
         {
-            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 });
+            return Task.FromResult(new object[] { parameter1, parameter2, parameter3.Value.GetNonSerializedValue(), parameter4, parameter5, parameter6, parameter7, parameter8 });
         }
 
         [JSInvokable]
-        public static Dictionary<string, object> ReturnDotNetObjectByRef()
+        public static Dictionary<string, DotNetObjectRef<TestDTO>> ReturnDotNetObjectByRef()
         {
-            return new Dictionary<string, object>
+            return new Dictionary<string, DotNetObjectRef<TestDTO>>
             {
-                { "Some sync instance", new DotNetObjectRef(new TestDTO(1000)) }
+                { "Some sync instance", DotNetObjectRef.Create(new TestDTO(1000)) }
             };
         }
 
         [JSInvokable]
-        public static async Task<Dictionary<string, object>> ReturnDotNetObjectByRefAsync()
+        public static async Task<Dictionary<string, DotNetObjectRef<TestDTO>>> ReturnDotNetObjectByRefAsync()
         {
             await Task.Yield();
-            return new Dictionary<string, object>
+            return new Dictionary<string, DotNetObjectRef<TestDTO>>
             {
-                { "Some async instance", new DotNetObjectRef(new TestDTO(1001)) }
+                { "Some async instance", DotNetObjectRef.Create(new TestDTO(1001)) }
             };
         }
 
         [JSInvokable]
-        public static int ExtractNonSerializedValue(TestDTO objectByRef)
+        public static int ExtractNonSerializedValue(DotNetObjectRef<TestDTO> objectByRef)
         {
-            return objectByRef.GetNonSerializedValue();
+            return objectByRef.Value.GetNonSerializedValue();
         }
 
         [JSInvokable]
-        public Dictionary<string, object> InstanceMethod(Dictionary<string, object> dict)
+        public InstanceMethodOutput InstanceMethod(InstanceMethodInput input)
         {
             // This method shows we can pass in values marshalled both as JSON (the dict itself)
             // and by ref (the incoming dtoByRef), plus that we can return values marshalled as
             // JSON (the returned dictionary) and by ref (the outgoingByRef value)
-            return new Dictionary<string, object>
+            return new InstanceMethodOutput
             {
-                { "thisTypeName", GetType().Name },
-                { "stringValueUpper", ((string)dict["stringValue"]).ToUpperInvariant() },
-                { "incomingByRef", ((TestDTO)dict["dtoByRef"]).GetNonSerializedValue() },
-                { "outgoingByRef", new DotNetObjectRef(new TestDTO(1234)) },
+                ThisTypeName = GetType().Name,
+                StringValueUpper = input.StringValue.ToUpperInvariant(),
+                IncomingByRef = input.DTOByRef.Value.GetNonSerializedValue(),
+                OutgoingByRef = DotNetObjectRef.Create(new TestDTO(1234)),
             };
         }
 
         [JSInvokable]
-        public async Task<Dictionary<string, object>> InstanceMethodAsync(Dictionary<string, object> dict)
+        public async Task<InstanceMethodOutput> InstanceMethodAsync(InstanceMethodInput input)
         {
-            // This method shows we can pass in values marshalled both as JSON (the dict itself)
+            // This method shows we can pass in values marshalled both as JSON
             // and by ref (the incoming dtoByRef), plus that we can return values marshalled as
             // JSON (the returned dictionary) and by ref (the outgoingByRef value)
             await Task.Yield();
-            return new Dictionary<string, object>
+            return new InstanceMethodOutput
             {
-                { "thisTypeName", GetType().Name },
-                { "stringValueUpper", ((string)dict["stringValue"]).ToUpperInvariant() },
-                { "incomingByRef", ((TestDTO)dict["dtoByRef"]).GetNonSerializedValue() },
-                { "outgoingByRef", new DotNetObjectRef(new TestDTO(1234)) },
+                ThisTypeName = GetType().Name,
+                StringValueUpper = input.StringValue.ToUpperInvariant(),
+                IncomingByRef = input.DTOByRef.Value.GetNonSerializedValue(),
+                OutgoingByRef = DotNetObjectRef.Create(new TestDTO(1234)),
             };
+        }
+
+        public class InstanceMethodInput
+        {
+            public string StringValue { get; set; }
+
+            public DotNetObjectRef<TestDTO> DTOByRef { get; set; }
+        }
+
+        public class InstanceMethodOutput
+        {
+            public string ThisTypeName { get; set; }
+
+            public string StringValueUpper { get; set; }
+
+            public int IncomingByRef { get; set; }
+
+            public DotNetObjectRef<TestDTO> OutgoingByRef { get; set; }
         }
     }
 }

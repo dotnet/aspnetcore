@@ -74,35 +74,6 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
-        public void BodyWriter_CanSet()
-        {
-            var response = new DefaultHttpContext();
-            var pipeWriter = new Pipe().Writer;
-            response.Response.BodyWriter = pipeWriter;
-
-            Assert.Equal(pipeWriter, response.Response.BodyWriter);
-        }
-
-        [Fact]
-        public void BodyWriter_WrapsStream()
-        {
-            var context = new DefaultHttpContext();
-            var expectedStream = new MemoryStream();
-            context.Response.Body = expectedStream;
-
-            var bodyPipe = context.Response.BodyWriter as StreamPipeWriter;
-
-            Assert.Equal(expectedStream, bodyPipe.InnerStream);
-        }
-
-        [Fact]
-        public void BodyWriter_ThrowsWhenSettingNull()
-        {
-            var context = new DefaultHttpContext();
-            Assert.Throws<ArgumentNullException>(() => context.Response.BodyWriter = null);
-        }
-
-        [Fact]
         public async Task ResponseStart_CallsFeatureIfSet()
         {
             var features = new FeatureCollection();

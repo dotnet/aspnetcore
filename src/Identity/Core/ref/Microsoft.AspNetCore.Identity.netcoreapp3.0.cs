@@ -94,8 +94,9 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial class SecurityStampValidator<TUser> : Microsoft.AspNetCore.Identity.ISecurityStampValidator where TUser : class
     {
-        public SecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock) { }
+        public SecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock, Microsoft.Extensions.Logging.ILoggerFactory logger) { }
         public Microsoft.AspNetCore.Authentication.ISystemClock Clock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Identity.SignInManager<TUser> SignInManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -147,11 +148,13 @@ namespace Microsoft.AspNetCore.Identity
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task RememberTwoFactorClientAsync(TUser user) { throw null; }
         protected virtual System.Threading.Tasks.Task ResetLockout(TUser user) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task SignInAsync(TUser user, Microsoft.AspNetCore.Authentication.AuthenticationProperties authenticationProperties, string authenticationMethod = null) { throw null; }
         public virtual System.Threading.Tasks.Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task SignInWithClaimsAsync(TUser user, Microsoft.AspNetCore.Authentication.AuthenticationProperties authenticationProperties, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> additionalClaims) { throw null; }
+        public virtual System.Threading.Tasks.Task SignInWithClaimsAsync(TUser user, bool isPersistent, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> additionalClaims) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task SignOutAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -171,7 +174,7 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial class TwoFactorSecurityStampValidator<TUser> : Microsoft.AspNetCore.Identity.SecurityStampValidator<TUser>, Microsoft.AspNetCore.Identity.ISecurityStampValidator, Microsoft.AspNetCore.Identity.ITwoFactorSecurityStampValidator where TUser : class
     {
-        public TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock) : base (default(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions>), default(Microsoft.AspNetCore.Identity.SignInManager<TUser>), default(Microsoft.AspNetCore.Authentication.ISystemClock)) { }
+        public TwoFactorSecurityStampValidator(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions> options, Microsoft.AspNetCore.Identity.SignInManager<TUser> signInManager, Microsoft.AspNetCore.Authentication.ISystemClock clock, Microsoft.Extensions.Logging.ILoggerFactory logger) : base (default(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.SecurityStampValidatorOptions>), default(Microsoft.AspNetCore.Identity.SignInManager<TUser>), default(Microsoft.AspNetCore.Authentication.ISystemClock), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
         protected override System.Threading.Tasks.Task SecurityStampVerified(TUser user, Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext context) { throw null; }
         protected override System.Threading.Tasks.Task<TUser> VerifySecurityStamp(System.Security.Claims.ClaimsPrincipal principal) { throw null; }
     }

@@ -1,7 +1,7 @@
 import { RenderBatch, ArraySegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
 import { EventForDotNet, UIEventArgs } from './EventForDotNet';
-import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
@@ -11,7 +11,9 @@ const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement 
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
+
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
+
   private browserRendererId: number;
 
   public constructor(browserRendererId: number) {
@@ -45,7 +47,15 @@ export class BrowserRenderer {
       }
     }
 
+    const ownerDocument = getClosestDomElement(element).ownerDocument;
+    const activeElementBefore = ownerDocument && ownerDocument.activeElement;
+
     this.applyEdits(batch, element, 0, edits, referenceFrames);
+
+    // Try to restore focus in case it was lost due to an element move
+    if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
+      activeElementBefore.focus();
+    }
   }
 
   public disposeComponent(componentId: number) {
@@ -63,6 +73,7 @@ export class BrowserRenderer {
   private applyEdits(batch: RenderBatch, parent: LogicalElement, childIndex: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
+    let permutationList: PermutationListEntry[] | undefined;
 
     const arraySegmentReader = batch.arraySegmentReader;
     const editReader = batch.editReader;
@@ -148,6 +159,19 @@ export class BrowserRenderer {
           parent = getLogicalParent(parent)!;
           currentDepth--;
           childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
+          break;
+        }
+        case EditType.permutationListEntry: {
+          permutationList = permutationList || [];
+          permutationList.push({
+            fromSiblingIndex: childIndexAtCurrentDepth + editReader.siblingIndex(edit),
+            toSiblingIndex: childIndexAtCurrentDepth + editReader.moveToSiblingIndex(edit),
+          });
+          break;
+        }
+        case EditType.permutationListEnd: {
+          permuteLogicalChildren(parent, permutationList!);
+          permutationList = undefined;
           break;
         }
         default: {
@@ -388,7 +412,8 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
     'Microsoft.AspNetCore.Components.Browser',
     'DispatchEvent',
     eventDescriptor,
-    JSON.stringify(eventArgs.data));
+    JSON.stringify(eventArgs.data)
+  );
 }
 
 function clearElement(element: Element) {
@@ -400,7 +425,7 @@ function clearElement(element: Element) {
 
 function clearBetween(start: Node, end: Node): void {
   const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if(!logicalParent){
+  if (!logicalParent){
     throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
   }
   const children = getLogicalChildrenArray(logicalParent);

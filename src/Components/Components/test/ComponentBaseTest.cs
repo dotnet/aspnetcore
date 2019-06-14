@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -12,6 +13,10 @@ namespace Microsoft.AspNetCore.Components.Test
 {
     public class ComponentBaseTest
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         [Fact]
         public void RunsOnInitWhenRendered()
         {
@@ -178,7 +183,12 @@ namespace Microsoft.AspNetCore.Components.Test
         public async Task RendersAfterParametersSetAndInitAsyncTasksAreCompleted()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var @event = new ManualResetEventSlim();
+
+            var renderer = new TestRenderer()
+            {
+                OnUpdateDisplayComplete = () => { @event.Set();  },
+            };
             var component = new TestComponent();
 
             component.Counter = 1;
@@ -197,9 +207,15 @@ namespace Microsoft.AspNetCore.Components.Test
             // A rendering should have happened after the synchronous execution of Init
             Assert.Single(renderer.Batches);
 
+            @event.Reset();
+
             // Completes task started by OnInitAsync
             component.Counter = 2;
             initTask.SetResult(true);
+
+            // We need to wait here, because the continuation from SetResult needs to be scheduled.
+            @event.Wait(Timeout);
+            @event.Reset();
 
             // Component should be rendered once, after set parameters
             Assert.Equal(2, renderer.Batches.Count);
@@ -209,6 +225,7 @@ namespace Microsoft.AspNetCore.Components.Test
             parametersSetTask.SetResult(false);
 
             await renderTask;
+            Assert.True(@event.IsSet);
 
             // Component should be rendered again
             // after the async part of onparameterssetasync completes

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
     public class AspNetSiteServerFixture : WebHostServerFixture
     {
         public delegate IWebHost BuildWebHost(string[] args);
+
+        public Assembly ApplicationAssembly { get; set; }
 
         public BuildWebHost BuildWebHostMethod { get; set; }
 
@@ -23,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                     $"No value was provided for {nameof(BuildWebHostMethod)}");
             }
 
-            var sampleSitePath = FindSampleOrTestSitePath(
-                BuildWebHostMethod.Method.DeclaringType.Assembly.FullName);
+            var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
+            var sampleSitePath = FindSampleOrTestSitePath(assembly.FullName);
 
             return BuildWebHostMethod(new[]
             {

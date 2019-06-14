@@ -26,20 +26,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             _serverFixture.BuildWebHostMethod = ComponentsApp.Server.Program.BuildWebHost;
         }
 
+        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
 
         public override async Task InitializeAsync()
         {
             await base.InitializeAsync();
-            Navigate("/", noReload: false);
-            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
-                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("blazorpack")));
 
+            // Capture the last log timestamp so that we can filter logs when we
+            // check for duplicate connections.
+            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
+            if (lastLog != null)
+            {
+                LastLogTimeStamp = lastLog.Timestamp;
+            }
+
+            Navigate("/", noReload: false);
+            Browser.True(() => ((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
         }
 
         [Fact]
         public void HasTitle()
         {
             Assert.Equal("Razor Components", Browser.Title);
+        }
+
+        [Fact]
+        public void DoesNotStartTwoConnections()
+        {
+            Browser.True(() =>
+            {
+                var logs = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
+                var curatedLogs = logs.Where(l => l.Timestamp > LastLogTimeStamp);
+
+                return curatedLogs.Count(e => e.Message.Contains("blazorpack")) == 1;
+            });
         }
 
         [Fact]
@@ -183,6 +204,5 @@ window.Blazor._internal.forceCloseConnection();");
             Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
                 .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
         }
-
     }
 }

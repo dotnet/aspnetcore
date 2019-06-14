@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// StatusCodeResult([ActionResultStatusCodeParameter] int statusCode)
     /// </example>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
-    internal sealed class ActionResultStatusCodeAttribute : Attribute
+    public sealed class ActionResultStatusCodeAttribute : Attribute
     {
     }
 }

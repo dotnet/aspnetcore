@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Builder
     public static class FallbackEndpointRouteBuilderExtensions
     {
         /// <summary>
+        /// The default route pattern used by fallback routing. <c>{*path:nonfile}</c>
+        /// </summary>
+        public static readonly string DefaultPattern = "{*path:nonfile}";
+
+        /// <summary>
         /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
         /// requests for non-file-names with the lowest possible priority.
         /// </summary>

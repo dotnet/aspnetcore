@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly Http1Connection _context;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context, context.MinRequestBodyDataRate)
+            : base(context)
         {
             _context = context;
         }
@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
+                context.OnTrailersComplete(); // No trailers for these.
                 return new Http1UpgradeMessageBody(context);
             }
 
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // status code and then close the connection.
                 if (transferCoding != TransferCoding.Chunked)
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, in transferEncoding);
+                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
                 }
 
                 // TODO may push more into the wrapper rather than just calling into the message body
@@ -173,6 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
+            context.OnTrailersComplete(); // No trailers for these.
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
         }
     }

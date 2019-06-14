@@ -13,7 +13,6 @@
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
@@ -23,6 +22,7 @@
     <None Remove="wwwroot/**/LICENSE*" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/THIRD-PARTY-NOTICES.txt" />
 
+    <Content Update="wwwroot/**/*" Pack="false" />
     <Content Update="**\*.cshtml" Pack="false" />
   </ItemGroup>
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -196,6 +197,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return sb.ToString();
         }
 
+        public async Task StreamDontRead(ChannelReader<string> source)
+        {
+            while (await source.WaitToReadAsync())
+            {
+            }
+        }
+
+
         public async Task<int> StreamingSum(ChannelReader<int> source)
         {
             var total = 0;
@@ -230,9 +239,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 await source.WaitToReadAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex.ToString());
                 return "error identified and caught";
             }
 
@@ -304,7 +312,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }
@@ -384,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }
@@ -844,7 +852,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
-        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable(CancellationToken token)
+        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable([EnumeratorCancellation] CancellationToken token)
         {
             _tcsService.StartedMethod.SetResult(null);
             await token.WaitForCancellationAsync();

@@ -62,12 +62,13 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "number");
-            builder.AddAttribute(2, "step", _stepAttributeValue);
-            builder.AddAttribute(3, "id", Id);
-            builder.AddAttribute(4, "class", CssClass);
-            builder.AddAttribute(5, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "type", "number");
+            builder.AddAttribute(3, "step", _stepAttributeValue);
+            builder.AddAttribute(4, "id", Id);
+            builder.AddAttribute(5, "class", CssClass);
+            builder.AddAttribute(6, "value", BindMethods.GetValue(CurrentValueAsString));
+            builder.AddAttribute(7, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         static bool TryParseFloat(string value, out T result)
         {
             var success = float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
+            if (success && !float.IsInfinity(parsedValue))
             {
                 result = (T)(object)parsedValue;
                 return true;
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         static bool TryParseDouble(string value, out T result)
         {
             var success = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
+            if (success && !double.IsInfinity(parsedValue))
             {
                 result = (T)(object)parsedValue;
                 return true;

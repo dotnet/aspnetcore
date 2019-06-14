@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Mvc;
 using Company.WebApplication1.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Company.WebApplication1.Controllers
 {
@@ -16,6 +17,12 @@ namespace Company.WebApplication1.Controllers
 #endif
     public class HomeController : Controller
     {
+        private readonly ILogger<HomeController> logger;
+
+        public HomeController(ILogger<HomeController> _logger)
+        {
+            logger = _logger;
+        }
         public IActionResult Index()
         {
             return View();

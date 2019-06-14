@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Components.Browser
     {
         private static readonly string Prefix = "Blazor._internal.uriHelper.";
 
+        public static readonly string ListenForNavigationEvents = Prefix + "listenForNavigationEvents";
+
         public static readonly string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 
         public static readonly string GetLocationHref = Prefix + "getLocationHref";

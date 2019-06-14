@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
     <title>ASP.NET Core Extensions</title>
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
-    <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
-    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</HostingStartupRuntimeFrameworkVersion>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRuntimeVersion)</HostingStartupRuntimeFrameworkVersion>
 
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -18,7 +17,6 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 
@@ -26,8 +24,6 @@
 
     <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(TargetRuntimeIdentifier)" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
-
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
 
     <ProjectReference Include="..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

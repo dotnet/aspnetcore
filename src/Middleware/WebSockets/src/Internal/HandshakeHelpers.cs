@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets.Internal
 {
@@ -16,10 +17,10 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
         /// </summary>
         public static readonly IEnumerable<string> NeededHeaders = new[]
         {
-            Constants.Headers.Upgrade,
-            Constants.Headers.Connection,
-            Constants.Headers.SecWebSocketKey,
-            Constants.Headers.SecWebSocketVersion
+            HeaderNames.Upgrade,
+            HeaderNames.Connection,
+            HeaderNames.SecWebSocketKey,
+            HeaderNames.SecWebSocketVersion
         };
 
         // Verify Method, Upgrade, Connection, version,  key, etc..
@@ -34,28 +35,28 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 
             foreach (var pair in headers)
             {
-                if (string.Equals(Constants.Headers.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(HeaderNames.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.Equals(Constants.Headers.ConnectionUpgrade, pair.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         validConnection = true;
                     }
                 }
-                else if (string.Equals(Constants.Headers.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(HeaderNames.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.Equals(Constants.Headers.UpgradeWebSocket, pair.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         validUpgrade = true;
                     }
                 }
-                else if (string.Equals(Constants.Headers.SecWebSocketVersion, pair.Key, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(HeaderNames.SecWebSocketVersion, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.Equals(Constants.Headers.SupportedVersion, pair.Value, StringComparison.OrdinalIgnoreCase))
                     {
                         validVersion = true;
                     }
                 }
-                else if (string.Equals(Constants.Headers.SecWebSocketKey, pair.Key, StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(HeaderNames.SecWebSocketKey, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     validKey = IsRequestKeyValid(pair.Value);
                 }
@@ -66,12 +67,12 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 
         public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
         {
-            headers[Constants.Headers.Connection] = Constants.Headers.ConnectionUpgrade;
-            headers[Constants.Headers.Upgrade] = Constants.Headers.UpgradeWebSocket;
-            headers[Constants.Headers.SecWebSocketAccept] = CreateResponseKey(key);
+            headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
+            headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
+            headers[HeaderNames.SecWebSocketAccept] = CreateResponseKey(key);
             if (!string.IsNullOrWhiteSpace(subProtocol))
             {
-                headers[Constants.Headers.SecWebSocketProtocol] = subProtocol;
+                headers[HeaderNames.SecWebSocketProtocol] = subProtocol;
             }
         }
 

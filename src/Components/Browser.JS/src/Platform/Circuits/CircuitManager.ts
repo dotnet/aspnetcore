@@ -3,6 +3,7 @@ import { ComponentDescriptor, MarkupRegistrationTags, StartComponentComment, End
 
 export class CircuitDescriptor {
   public circuitId: string;
+
   public components: ComponentDescriptor[];
 
   public constructor(circuitId: string, components: ComponentDescriptor[]) {

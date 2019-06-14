@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
@@ -62,11 +61,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(GetConnectionId(context));
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}
@@ -96,11 +90,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(connectionId: string.Empty);
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}/negotiate
@@ -515,7 +504,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // We specifically clone the identity on first poll if it's a windows identity
                     // If we swapped the new User here we'd have to dispose the old identities which could race with the application
                     // trying to access the identity.
-                    if (context.User.Identity is WindowsIdentity)
+                    if (!(context.User.Identity is WindowsIdentity))
                     {
                         existing.User = context.User;
                     }

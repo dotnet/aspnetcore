@@ -10,7 +10,7 @@
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1101"
   },
-  "order": 310,
+  "order": 800,
   "icon": "icon.png",
   "learnMoreLink": "https://github.com/aspnet/JavaScriptServices",
   "uiFilters": [
@@ -21,6 +21,11 @@
       "auth": "None",
       "authenticationType": "NoAuth",
       "allowUnsecured": true
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "Local"
     }
   ],
   "ports": [

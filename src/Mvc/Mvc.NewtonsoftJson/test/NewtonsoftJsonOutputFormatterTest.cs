@@ -5,8 +5,11 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         protected override TextOutputFormatter GetOutputFormatter()
         {
-            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
+            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
         }
 
         [Fact]
@@ -56,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Formatting = Formatting.Indented,
             };
             var expectedOutput = JsonConvert.SerializeObject(person, settings);
-            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared);
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
@@ -274,8 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var beforeMessage = "Hello World";
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
-            var before = new JValue(beforeMessage);
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
                 beforeMessage,
@@ -294,10 +296,38 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(beforeMessage, afterMessage);
         }
 
+        [Fact]
+        public async Task WriteToStreamAsync_LargePayload_DoesNotPerformSynchronousWrites()
+        {
+            // Arrange
+            var model = Enumerable.Range(0, 1000).Select(p => new User { FullName = new string('a', 5000) });
+
+            var stream = new Mock<Stream> { CallBase = true };
+            stream.Setup(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            stream.SetupGet(s => s.CanWrite).Returns(true);
+
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            var outputFormatterContext = GetOutputFormatterContext(
+                model,
+                typeof(string),
+                "application/json; charset=utf-8",
+                stream.Object);
+
+            // Act
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+            // Assert
+            stream.Verify(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce());
+
+            stream.Verify(v => v.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
+            stream.Verify(v => v.Flush(), Times.Never());
+        }
+
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
         {
             public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
-                : base(serializerSettings, ArrayPool<char>.Shared)
+                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions())
             {
             }
 
@@ -331,5 +361,5 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             public string FullName { get; set; }
         }
-                }
+    }
 }

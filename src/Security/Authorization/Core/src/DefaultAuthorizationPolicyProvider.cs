@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authorization
     {
         private readonly AuthorizationOptions _options;
         private Task<AuthorizationPolicy> _cachedDefaultPolicy;
-        private Task<AuthorizationPolicy> _cachedRequiredPolicy;
+        private Task<AuthorizationPolicy> _cachedFallbackPolicy;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultAuthorizationPolicyProvider"/>.
@@ -41,12 +41,12 @@ namespace Microsoft.AspNetCore.Authorization
         }
 
         /// <summary>
-        /// Gets the required authorization policy.
+        /// Gets the fallback authorization policy.
         /// </summary>
-        /// <returns>The required authorization policy.</returns>
-        public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+        /// <returns>The fallback authorization policy.</returns>
+        public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
         {
-            return GetCachedPolicy(ref _cachedRequiredPolicy, _options.RequiredPolicy);
+            return GetCachedPolicy(ref _cachedFallbackPolicy, _options.FallbackPolicy);
         }
 
         private Task<AuthorizationPolicy> GetCachedPolicy(ref Task<AuthorizationPolicy> cachedPolicy, AuthorizationPolicy currentPolicy)

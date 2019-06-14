@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Rewrite
     }
     public static partial class IISUrlRewriteOptionsExtensions
     {
-        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, System.IO.TextReader reader) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, System.IO.TextReader reader, bool alwaysUseManagedServerVariables = false) { throw null; }
     }
     public partial interface IRule
     {
@@ -56,7 +56,10 @@ namespace Microsoft.AspNetCore.Rewrite
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttpsPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, string regex, string replacement, bool skipRemainingRules) { throw null; }
     }
     public enum RuleResult
@@ -129,8 +132,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     }
     public partial class RedirectToWwwRule : Microsoft.AspNetCore.Rewrite.IRule
     {
+        public readonly string[] _domains;
         public readonly int _statusCode;
         public RedirectToWwwRule(int statusCode) { }
+        public RedirectToWwwRule(int statusCode, params string[] domains) { }
         public virtual void ApplyRule(Microsoft.AspNetCore.Rewrite.RewriteContext context) { }
     }
     public partial class RewriteRule : Microsoft.AspNetCore.Rewrite.IRule
@@ -184,10 +189,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum ConditionType
     {
-        IntComp = 3,
-        PropertyTest = 1,
         Regex = 0,
+        PropertyTest = 1,
         StringComp = 2,
+        IntComp = 3,
     }
     public partial class CookieActionFactory
     {
@@ -216,12 +221,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum FlagType
     {
+        EscapeBackreference = 0,
         Chain = 1,
         Cookie = 2,
         DiscardPath = 3,
-        End = 5,
         Env = 4,
-        EscapeBackreference = 0,
+        End = 5,
         Forbidden = 6,
         Gone = 7,
         Handler = 8,
@@ -232,8 +237,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
         NoSubReq = 13,
         NoVary = 14,
         Or = 15,
-        PassThrough = 17,
         Proxy = 16,
+        PassThrough = 17,
         QSAppend = 18,
         QSDiscard = 19,
         QSLast = 20,
@@ -243,20 +248,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum OperationType
     {
-        Directory = 7,
+        None = 0,
         Equal = 1,
-        Executable = 13,
-        ExistingFile = 9,
-        ExistingUrl = 12,
         Greater = 2,
         GreaterEqual = 3,
         Less = 4,
         LessEqual = 5,
-        None = 0,
         NotEqual = 6,
+        Directory = 7,
         RegularFile = 8,
-        Size = 11,
+        ExistingFile = 9,
         SymbolicLink = 10,
+        Size = 11,
+        ExistingUrl = 12,
+        Executable = 13,
     }
     public partial class ParsedModRewriteInput
     {
@@ -283,10 +288,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum SegmentType
     {
-        ConditionParameter = 2,
         Literal = 0,
-        RuleParameter = 3,
         ServerParameter = 1,
+        ConditionParameter = 2,
+        RuleParameter = 3,
     }
     public static partial class ServerVariables
     {
@@ -307,11 +312,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public enum ActionType
     {
-        AbortRequest = 4,
-        CustomResponse = 3,
         None = 0,
-        Redirect = 2,
         Rewrite = 1,
+        Redirect = 2,
+        CustomResponse = 3,
+        AbortRequest = 4,
     }
     public partial class Condition
     {
@@ -366,7 +371,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     public partial class InputParser
     {
         public InputParser() { }
-        public InputParser(Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection rewriteMaps) { }
+        public InputParser(Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection rewriteMaps, bool alwaysUseManagedServerVariables) { }
         public Microsoft.AspNetCore.Rewrite.Internal.Pattern ParseInputString(string testString) { throw null; }
         public Microsoft.AspNetCore.Rewrite.Internal.Pattern ParseInputString(string testString, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart) { throw null; }
     }
@@ -384,20 +389,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     }
     public enum MatchType
     {
-        IsDirectory = 2,
-        IsFile = 1,
         Pattern = 0,
+        IsFile = 1,
+        IsDirectory = 2,
     }
     public enum PatternSyntax
     {
         ECMAScript = 0,
-        ExactMatch = 2,
         Wildcard = 1,
+        ExactMatch = 2,
     }
     public enum RedirectType
     {
-        Found = 302,
         Permanent = 301,
+        Found = 302,
         SeeOther = 303,
         Temporary = 307,
     }
@@ -443,7 +448,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     }
     public static partial class ServerVariables
     {
-        public static Microsoft.AspNetCore.Rewrite.Internal.PatternSegment FindServerVariable(string serverVariable, Microsoft.AspNetCore.Rewrite.Internal.ParserContext context, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.Internal.PatternSegment FindServerVariable(string serverVariable, Microsoft.AspNetCore.Rewrite.Internal.ParserContext context, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart, bool alwaysUseManagedServerVariables) { throw null; }
     }
     public partial class UriMatchCondition : Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition
     {
@@ -457,7 +462,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     public partial class UrlRewriteFileParser
     {
         public UrlRewriteFileParser() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule> Parse(System.IO.TextReader reader) { throw null; }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule> Parse(System.IO.TextReader reader, bool alwaysUseManagedServerVariables) { throw null; }
     }
     public partial class UrlRewriteRuleBuilder
     {

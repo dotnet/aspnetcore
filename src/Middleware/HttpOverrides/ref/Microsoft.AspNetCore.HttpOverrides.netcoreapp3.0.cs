@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    public static partial class CertificateForwardingBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCertificateForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
+    }
     public static partial class ForwardedHeadersExtensions
     {
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseForwardedHeaders(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
@@ -37,14 +41,25 @@ namespace Microsoft.AspNetCore.Builder
 }
 namespace Microsoft.AspNetCore.HttpOverrides
 {
+    public partial class CertificateForwardingMiddleware
+    {
+        public CertificateForwardingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> options) { }
+        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
+    }
+    public partial class CertificateForwardingOptions
+    {
+        public System.Func<string, System.Security.Cryptography.X509Certificates.X509Certificate2> HeaderConverter;
+        public CertificateForwardingOptions() { }
+        public string CertificateHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     [System.FlagsAttribute]
     public enum ForwardedHeaders
     {
-        All = 7,
         None = 0,
         XForwardedFor = 1,
         XForwardedHost = 2,
         XForwardedProto = 4,
+        All = 7,
     }
     public static partial class ForwardedHeadersDefaults
     {
@@ -73,5 +88,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public System.Net.IPAddress Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int PrefixLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool Contains(System.Net.IPAddress address) { throw null; }
+    }
+}
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class CertificateForwardingServiceExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> configure) { throw null; }
     }
 }

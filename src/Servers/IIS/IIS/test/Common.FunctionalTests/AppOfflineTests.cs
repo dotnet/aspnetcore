@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/IISIntegration/issues/933")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/3835")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -183,14 +183,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
 
-            // Repeat dropping file and restarting multiple times
-            for (int i = 0; i < 5; i++)
-            {
-                AddAppOffline(deploymentResult.ContentRoot);
-                await AssertAppOffline(deploymentResult);
-                RemoveAppOffline(deploymentResult.ContentRoot);
-                await AssertRunning(deploymentResult);
-            }
+            AddAppOffline(deploymentResult.ContentRoot);
+            await AssertAppOffline(deploymentResult);
+            RemoveAppOffline(deploymentResult.ContentRoot);
+            await AssertRunning(deploymentResult);
 
             AddAppOffline(deploymentResult.ContentRoot);
             await AssertAppOffline(deploymentResult);

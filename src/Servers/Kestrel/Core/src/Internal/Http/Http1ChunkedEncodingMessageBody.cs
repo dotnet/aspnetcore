@@ -9,14 +9,13 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     /// <summary>
     ///   http://tools.ietf.org/html/rfc2616#section-3.6.1
     /// </summary>
-    internal class Http1ChunkedEncodingMessageBody : Http1MessageBody
+    internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     {
         // byte consts don't have a data type annotation so we pre-cast it
         private const byte ByteCR = (byte)'\r';
@@ -35,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context)
         {
             RequestKeepAlive = keepAlive;
-
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 
@@ -209,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
+        private void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
             if (readableBuffer.IsSingleSegment)
             {
@@ -229,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pumpTask = PumpAsync();
         }
 
-        protected bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = default;
             examined = default;
@@ -301,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // _consumedBytes aren't tracked for trailer headers, since headers have separate limits.
             if (_mode == Mode.TrailerHeaders)
             {
-                if (_context.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (_context.TakeMessageHeaders(readableBuffer, trailers: true, out consumed, out examined))
                 {
                     _mode = Mode.Complete;
                 }
@@ -489,6 +487,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 consumed = trailerBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Complete;
+                // No trailers
+                _context.OnTrailersComplete();
             }
             else
             {
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize()
             ));
     }
 }

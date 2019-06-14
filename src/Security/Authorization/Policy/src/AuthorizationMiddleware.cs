@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization
@@ -23,18 +22,8 @@ namespace Microsoft.AspNetCore.Authorization
 
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (policyProvider == null)
-            {
-                throw new ArgumentNullException(nameof(policyProvider));
-            }
-
-            _next = next;
-            _policyProvider = policyProvider;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
         public async Task Invoke(HttpContext context)

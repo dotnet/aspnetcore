@@ -11,19 +11,17 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection, IDisposable
+    internal sealed class SocketConnection : TransportConnection
     {
-        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
+        private static readonly int MinAllocBufferSize = SlabMemoryPool.BlockSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         private readonly Socket _socket;
-        private readonly PipeScheduler _scheduler;
         private readonly ISocketsTrace _trace;
         private readonly SocketReceiver _receiver;
         private readonly SocketSender _sender;
@@ -32,8 +30,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
+        private Task _processingTask;
+        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _connectionClosed;
 
-        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
+        internal SocketConnection(Socket socket,
+                                  MemoryPool<byte> memoryPool,
+                                  PipeScheduler scheduler,
+                                  ISocketsTrace trace,
+                                  long? maxReadBufferSize = null,
+                                  long? maxWriteBufferSize = null)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -41,34 +47,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _socket = socket;
             MemoryPool = memoryPool;
-            _scheduler = scheduler;
             _trace = trace;
 
-            var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
-            var remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
-
-            LocalAddress = localEndPoint.Address;
-            LocalPort = localEndPoint.Port;
-
-            RemoteAddress = remoteEndPoint.Address;
-            RemotePort = remoteEndPoint.Port;
+            LocalEndPoint = _socket.LocalEndPoint;
+            RemoteEndPoint = _socket.RemoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
 
             // On *nix platforms, Sockets already dispatches to the ThreadPool.
             // Yes, the IOQueues are still used for the PipeSchedulers. This is intentional.
             // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            var awaiterScheduler = IsWindows ? _scheduler : PipeScheduler.Inline;
+            var awaiterScheduler = IsWindows ? scheduler : PipeScheduler.Inline;
 
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
+
+            maxReadBufferSize ??= 0;
+            maxWriteBufferSize ??= 0;
+
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, scheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, scheduler, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
+
+            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+            // Set the transport and connection id
+            Transport = pair.Transport;
+            Application = pair.Application;
         }
 
-        public override MemoryPool<byte> MemoryPool { get; }
-        public override PipeScheduler InputWriterScheduler => _scheduler;
-        public override PipeScheduler OutputReaderScheduler => _scheduler;
+        public PipeWriter Input => Application.Output;
 
-        public async Task StartAsync()
+        public PipeReader Output => Application.Input;
+
+        public override MemoryPool<byte> MemoryPool { get; }
+
+        public void Start()
+        {
+            _processingTask = StartAsync();
+        }
+
+        private async Task StartAsync()
         {
             try
             {
@@ -82,7 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 _receiver.Dispose();
                 _sender.Dispose();
-                ThreadPool.UnsafeQueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
             }
             catch (Exception ex)
             {
@@ -100,10 +117,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         }
 
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
-        public void Dispose()
+        public override async ValueTask DisposeAsync()
         {
+            Transport.Input.Complete();
+            Transport.Output.Complete();
+
+            if (_processingTask != null)
+            {
+                await _processingTask;
+            }
+
             _connectionClosedTokenSource.Dispose();
-            _connectionClosingCts.Dispose();
         }
 
         private async Task DoReceive()
@@ -149,6 +173,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
                 Input.Complete(_shutdownReason ?? error);
+
+                FireConnectionClosed();
+
+                await _waitForConnectionClosedTcs.Task;
             }
         }
 
@@ -210,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                shutdownReason = new ConnectionResetException(ex.Message, ex);;
+                shutdownReason = new ConnectionResetException(ex.Message, ex);
                 _trace.ConnectionReset(ConnectionId);
             }
             catch (Exception ex)
@@ -267,6 +295,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     break;
                 }
             }
+        }
+
+        private void FireConnectionClosed()
+        {
+            // Guard against scheduling this multiple times
+            if (_connectionClosed)
+            {
+                return;
+            }
+
+            _connectionClosed = true;
+
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            {
+                state.CancelConnectionClosedToken();
+
+                state._waitForConnectionClosedTcs.TrySetResult(null);
+            },
+            this,
+            preferLocal: false);
         }
 
         private void Shutdown(Exception shutdownReason)

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         }
 
         public RazorIntegrationTestBase(ITestOutputHelper output)
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
-                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
                 return Task.CompletedTask;
             }
         }

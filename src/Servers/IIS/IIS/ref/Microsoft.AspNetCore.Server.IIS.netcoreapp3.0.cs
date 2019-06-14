@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Builder
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string AuthenticationDisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool AutomaticAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? MaxRequestBodySize { get { throw null; } set { } }
     }
 }
 namespace Microsoft.AspNetCore.Hosting
@@ -18,17 +19,16 @@ namespace Microsoft.AspNetCore.Hosting
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseIIS(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Http.Features
-{
-    public partial interface IServerVariablesFeature
-    {
-        string this[string variableName] { get; set; }
-    }
-}
 namespace Microsoft.AspNetCore.Server.IIS
 {
+    public sealed partial class BadHttpRequestException : System.IO.IOException
+    {
+        internal BadHttpRequestException() { }
+        public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public static partial class HttpContextExtensions
     {
+        [System.ObsoleteAttribute("This is obsolete and will be removed in a future version. Use GetServerVariable instead.")]
         public static string GetIISServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
     }
     public partial class IISServerDefaults

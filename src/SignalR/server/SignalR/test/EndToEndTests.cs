@@ -446,6 +446,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task AuthorizedConnectionCanConnect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                string token;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(server.Url);
+
+                    var response = await client.GetAsync("generatetoken?user=bob");
+                    token = await response.Content.ReadAsStringAsync();
+                }
+
+                var url = server.Url + "/auth";
+                var connection = new HttpConnection(new HttpConnectionOptions()
+                {
+                    AccessTokenProvider = () => Task.FromResult(token),
+                    Url = new Uri(url),
+                    Transports = HttpTransportType.ServerSentEvents
+                }, LoggerFactory);
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                    logger.LogInformation("Connected to {url}", url);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
         [ConditionalFact]
         [WebSocketsSupportedCondition]
         public async Task ServerClosesConnectionWithErrorIfHubCannotBeCreated_WebSocket()
@@ -532,6 +578,178 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task UnauthorizedHubConnectionDoesNotConnectWithEndpoints()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                var url = server.Url + "/authHubEndpoints";
+                var connection = new HubConnectionBuilder()
+                        .WithLoggerFactory(LoggerFactory)
+                        .WithUrl(url, HttpTransportType.LongPolling)
+                        .Build();
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(false);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task UnauthorizedHubConnectionDoesNotConnect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                var url = server.Url + "/authHub";
+                var connection = new HubConnectionBuilder()
+                        .WithLoggerFactory(LoggerFactory)
+                        .WithUrl(url, HttpTransportType.LongPolling)
+                        .Build();
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(false);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task AuthorizedHubConnectionCanConnectWithEndpoints()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                string token;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(server.Url);
+
+                    var response = await client.GetAsync("generatetoken?user=bob");
+                    token = await response.Content.ReadAsStringAsync();
+                }
+
+                var url = server.Url + "/authHubEndpoints";
+                var connection = new HubConnectionBuilder()
+                        .WithLoggerFactory(LoggerFactory)
+                        .WithUrl(url, HttpTransportType.LongPolling, o =>
+                        {
+                            o.AccessTokenProvider = () => Task.FromResult(token);
+                        })
+                        .Build();
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync().OrTimeout();
+                    logger.LogInformation("Connected to {url}", url);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task AuthorizedHubConnectionCanConnect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                string token;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(server.Url);
+
+                    var response = await client.GetAsync("generatetoken?user=bob");
+                    token = await response.Content.ReadAsStringAsync();
+                }
+
+                var url = server.Url + "/authHub";
+                var connection = new HubConnectionBuilder()
+                        .WithLoggerFactory(LoggerFactory)
+                        .WithUrl(url, HttpTransportType.LongPolling, o =>
+                        {
+                            o.AccessTokenProvider = () => Task.FromResult(token);
+                        })
+                        .Build();
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync().OrTimeout();
+                    logger.LogInformation("Connected to {url}", url);
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
         // Serves a fake transport that lets us verify fallback behavior
         private class TestTransportFactory : ITransportFactory
         {
@@ -568,7 +786,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            public Task StartAsync(Uri url, TransferFormat transferFormat)
+            public Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
                 var options = ClientPipeOptions.DefaultOptions;
                 var pair = DuplexPipe.CreateConnectionPair(options, options);

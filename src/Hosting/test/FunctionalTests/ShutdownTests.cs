@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1687", FlakyOn.AzP.Linux)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2577", FlakyOn.All)]
         public async Task ShutdownTestRun()
         {
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
@@ -49,8 +49,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
+// https://github.com/aspnet/AspNetCore/issues/8247
+#pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
+#pragma warning restore 0618
 
                 var deploymentParameters = new DeploymentParameters(
                     applicationPath,

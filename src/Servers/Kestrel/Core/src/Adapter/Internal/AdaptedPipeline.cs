@@ -5,28 +5,33 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     internal class AdaptedPipeline : IDuplexPipe
     {
-        private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
+        private readonly int _minAllocBufferSize;
 
-        private readonly IDuplexPipe _transport;
+        private Task _inputTask;
+        private Task _outputTask;
 
         public AdaptedPipeline(IDuplexPipe transport,
                                Pipe inputPipe,
                                Pipe outputPipe,
-                               IKestrelTrace log)
+                               IKestrelTrace log,
+                               int minAllocBufferSize)
         {
-            _transport = transport;
+            TransportStream = new RawStream(transport.Input, transport.Output, throwOnCancelled: true);
             Input = inputPipe;
             Output = outputPipe;
             Log = log;
+            _minAllocBufferSize = minAllocBufferSize;
         }
+
+        public RawStream TransportStream { get; }
 
         public Pipe Input { get; }
 
@@ -38,13 +43,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         PipeWriter IDuplexPipe.Output => Output.Writer;
 
-        public async Task RunAsync(Stream stream)
+        public void RunAsync(Stream stream)
         {
-            var inputTask = ReadInputAsync(stream);
-            var outputTask = WriteOutputAsync(stream);
+            _inputTask = ReadInputAsync(stream);
+            _outputTask = WriteOutputAsync(stream);
+        }
 
-            await inputTask;
-            await outputTask;
+        public async Task CompleteAsync()
+        {
+            Output.Writer.Complete();
+            Input.Reader.Complete();
+
+            if (_outputTask == null)
+            {
+                return;
+            }
+
+            // Wait for the output task to complete, this ensures that we've copied
+            // the application data to the underlying stream
+            await _outputTask;
+
+            // Cancel the underlying stream so that the input task yields
+            TransportStream.CancelPendingRead();
+
+            // The input task should yield now that we've cancelled it
+            await _inputTask;
         }
 
         private async Task WriteOutputAsync(Stream stream)
@@ -96,7 +119,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Output.Reader.Complete();
-                _transport.Output.Complete();
             }
         }
 
@@ -114,8 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
                 while (true)
                 {
-
-                    var outputBuffer = Input.Writer.GetMemory(MinAllocBufferSize);
+                    var outputBuffer = Input.Writer.GetMemory(_minAllocBufferSize);
                     var bytesRead = await stream.ReadAsync(outputBuffer);
                     Input.Writer.Advance(bytesRead);
 
@@ -133,6 +154,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     }
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                // Propagate the exception if it's ConnectionAbortedException
+                error = ex as ConnectionAbortedException;
+            }
             catch (Exception ex)
             {
                 // Don't rethrow the exception. It should be handled by the Pipeline consumer.
@@ -141,9 +167,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Input.Writer.Complete(error);
-                // The application could have ended the input pipe so complete
-                // the transport pipe as well
-                _transport.Input.Complete();
             }
         }
     }

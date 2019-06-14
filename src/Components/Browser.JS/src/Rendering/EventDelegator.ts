@@ -1,8 +1,23 @@
-﻿import { EventForDotNet, UIEventArgs } from './EventForDotNet';
+import { EventForDotNet, UIEventArgs } from './EventForDotNet';
 
 const nonBubblingEvents = toLookup([
-  'abort', 'blur', 'change', 'error', 'focus', 'load', 'loadend', 'loadstart', 'mouseenter', 'mouseleave',
-  'progress', 'reset', 'scroll', 'submit', 'unload', 'DOMNodeInsertedIntoDocument', 'DOMNodeRemovedFromDocument'
+  'abort',
+  'blur',
+  'change',
+  'error',
+  'focus',
+  'load',
+  'loadend',
+  'loadstart',
+  'mouseenter',
+  'mouseleave',
+  'progress',
+  'reset',
+  'scroll',
+  'submit',
+  'unload',
+  'DOMNodeInsertedIntoDocument',
+  'DOMNodeRemovedFromDocument',
 ]);
 
 export interface OnEventCallback {
@@ -14,7 +29,9 @@ export interface OnEventCallback {
 // event listeners as required (and also maps actual events back to the given callback).
 export class EventDelegator {
   private static nextEventDelegatorId = 0;
+
   private eventsCollectionKey: string;
+
   private eventInfoStore: EventInfoStore;
 
   constructor(private onEvent: OnEventCallback) {
@@ -93,6 +110,7 @@ export class EventDelegator {
 // for a given event name changes between zero and nonzero
 class EventInfoStore {
   private infosByEventHandlerId: { [eventHandlerId: number]: EventHandlerInfo } = {};
+
   private countByEventName: { [eventName: string]: number } = {};
 
   constructor(private globalListener: EventListener) {
@@ -155,7 +173,7 @@ interface EventHandlerInfosForElement {
   // can only have one attribute with a given name, hence only one event handler with
   // that name at any one time.
   // So to keep things simple, only track one EventHandlerInfo per (element, eventName)
-  [eventName: string]: EventHandlerInfo
+  [eventName: string]: EventHandlerInfo;
 }
 
 interface EventHandlerInfo {
@@ -166,6 +184,8 @@ interface EventHandlerInfo {
 
 function toLookup(items: string[]): { [key: string]: boolean } {
   const result = {};
-  items.forEach(value => { result[value] = true; });
+  items.forEach(value => {
+    result[value] = true;
+  });
   return result;
 }

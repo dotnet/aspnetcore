@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         private ArraySegment<byte> _byteBuffer;
         private ArraySegment<char> _charBuffer;
         private ArraySegment<byte> _overflowBuffer;
+        private bool _disposed;
 
         public TranscodingReadStream(Stream input, Encoding sourceEncoding)
         {
@@ -150,9 +151,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                     readBuffer = readBuffer.Slice(bytesEncoded);
                 }
 
-            // We need to exit in one of the 2 conditions:
-            // * encoderCompleted will return false if "buffer" was too small for all the chars to be encoded.
-            // * no bytes were converted in an iteration. This can occur if there wasn't any input.
+                // We need to exit in one of the 2 conditions:
+                // * encoderCompleted will return false if "buffer" was too small for all the chars to be encoded.
+                // * no bytes were converted in an iteration. This can occur if there wasn't any input.
             } while (encoderCompleted && bytesEncoded > 0);
 
             return totalBytes;
@@ -224,11 +225,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
         protected override void Dispose(bool disposing)
         {
-            ArrayPool<char>.Shared.Return(_charBuffer.Array);
-            ArrayPool<byte>.Shared.Return(_byteBuffer.Array);
-            ArrayPool<byte>.Shared.Return(_overflowBuffer.Array);
-
-            base.Dispose(disposing);
+            if (!_disposed)
+            {
+                _disposed = true;
+                ArrayPool<char>.Shared.Return(_charBuffer.Array);
+                ArrayPool<byte>.Shared.Return(_byteBuffer.Array);
+                ArrayPool<byte>.Shared.Return(_overflowBuffer.Array);
+            }
         }
     }
 }

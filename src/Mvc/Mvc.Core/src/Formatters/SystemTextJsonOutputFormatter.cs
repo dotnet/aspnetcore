@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <summary>
         /// Initializes a new <see cref="SystemTextJsonOutputFormatter"/> instance.
         /// </summary>
-        /// <param name="options">The <see cref="MvcOptions"/>.</param>
-        public SystemTextJsonOutputFormatter(MvcOptions options)
+        /// <param name="options">The <see cref="JsonOptions"/>.</param>
+        public SystemTextJsonOutputFormatter(JsonOptions options)
         {
-            SerializerOptions = options.SerializerOptions;
+            SerializerOptions = options.JsonSerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var writeStream = GetWriteStream(httpContext, selectedEncoding);
             try
             {
-                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, SerializerOptions);
+                await JsonSerializer.WriteAsync(writeStream, context.Object, context.ObjectType, SerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally

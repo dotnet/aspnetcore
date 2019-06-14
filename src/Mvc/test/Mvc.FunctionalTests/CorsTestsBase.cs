@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             // MVC applied the policy and since that did not pass, there were no access control headers.
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Collection(
                 response.Headers.OrderBy(h => h.Key),
                 h =>
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
                 new[] { "http://example.com" },
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             // Since there are no response headers, the client should step in to block the content.
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Empty(response.Headers);
 
             // Nothing gets executed for a pre-flight request.
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
+        public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
         {
             // Arrange
             var url = "http://localhost/api/store/actionusingcontrollercorssettings";
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
                 new[] { "*" },
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
+        public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
         {
             // Arrange
             var url = "http://localhost/api/store/actionwithcorssettings";
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
                 new[] { "http://example.com" },
@@ -349,12 +349,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task DisableCorsFilter_RunsBeforeOtherAuthorizationFilters()
+        public async Task DisableCors_RunsBeforeOtherAuthorizationFilters()
         {
-            // Controller has an authorization filter and Cors filter and the action has a DisableCors filter
-            // In this scenario, the CorsFilter should be executed before any other authorization filters
-            // i.e irrespective of where the Cors filter is applied(controller or action), Cors filters must
-            // always be executed before any other type of authorization filters.
+            // Controller enables authorization and Cors, the action has a DisableCorsAttribute.
+            // We expect the CorsMiddleware to execute and no-op
 
             // Arrange
             var request = new HttpRequestMessage(
@@ -370,7 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Empty(response.Headers);
 
             // Nothing gets executed for a pre-flight request.
@@ -379,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
+        public async Task Cors_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -393,12 +391,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Empty(response.Headers);
 
             // Nothing gets executed for a pre-flight request.
             var content = await response.Content.ReadAsStringAsync();
             Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task Cors_WithoutOriginHeader_Works()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                HttpMethod.Put,
+                "http://localhost/Cors/EditUserComment?userComment=abcd");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Empty(response.Headers);
         }
     }
 }

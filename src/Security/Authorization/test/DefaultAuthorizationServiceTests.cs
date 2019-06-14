@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         private IAuthorizationService BuildAuthorizationService(Action<IServiceCollection> setupServices = null)
         {
             var services = new ServiceCollection();
-            services.AddAuthorization();
+            services.AddAuthorizationCore();
             services.AddLogging();
             services.AddOptions();
             setupServices?.Invoke(services);
@@ -1025,7 +1025,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
             }
 
-            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
             {
                 return Task.FromResult<AuthorizationPolicy>(null);
             }
@@ -1064,7 +1064,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
             }
 
-            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
             {
                 return Task.FromResult<AuthorizationPolicy>(null);
             }

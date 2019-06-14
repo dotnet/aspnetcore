@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FormatterWebSite
@@ -83,6 +84,13 @@ namespace FormatterWebSite
         public IActionResult ValidationThrowsError_WhenValidationExceedsMaxValidationDepth([FromBody] InfinitelyRecursiveModel model)
         {
             return Ok();
+        }
+
+        [HttpPost]
+        [ModelStateValidationFilter]
+        public IActionResult CreateInvalidModel([FromBody] InvalidModel model)
+        {
+            return Ok(model);
         }
     }
 }

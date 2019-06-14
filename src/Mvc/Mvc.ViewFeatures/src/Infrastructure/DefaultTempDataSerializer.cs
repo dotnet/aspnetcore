@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
@@ -46,24 +45,30 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         break;
 
                     case JsonValueType.String:
-                        var stringValue = item.Value.GetString();
-                        // BsonTempDataSerializer will parse certain types of string values. We'll attempt to imitiate it.
-                        if (DateTime.TryParseExact(stringValue, "r", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTime))
-                        {
-                            deserializedValue = dateTime;
-                        }
-                        else if (Guid.TryParseExact(stringValue, "B", out var guid))
+                        if (item.Value.TryGetGuid(out var guid))
                         {
                             deserializedValue = guid;
                         }
+                        else if (item.Value.TryGetDateTime(out var dateTime))
+                        {
+                            deserializedValue = dateTime;
+                        }
                         else
                         {
-                            deserializedValue = stringValue;
+                            deserializedValue = item.Value.GetString();
                         }
                         break;
 
                     case JsonValueType.Null:
                         deserializedValue = null;
+                        break;
+
+                    case JsonValueType.Array:
+                        deserializedValue = DeserializeArray(item.Value);
+                        break;
+
+                    case JsonValueType.Object:
+                        deserializedValue = DeserializeDictionaryEntry(item.Value);
                         break;
 
                     default:
@@ -76,6 +81,53 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             return deserialized;
         }
 
+        private static object DeserializeArray(in JsonElement arrayElement)
+        {
+            if (arrayElement.GetArrayLength() == 0)
+            {
+                // We have to infer the type of the array by inspecting it's elements.
+                // If there's nothing to inspect, return a null value since we do not know
+                // what type the user code is expecting.
+                return null;
+            }
+
+            if (arrayElement[0].Type == JsonValueType.String)
+            {
+                var array = new List<string>();
+
+                foreach (var item in arrayElement.EnumerateArray())
+                {
+                    array.Add(item.GetString());
+                }
+
+                return array.ToArray();
+            }
+            else if (arrayElement[0].Type == JsonValueType.Number)
+            {
+                var array = new List<int>();
+
+                foreach (var item in arrayElement.EnumerateArray())
+                {
+                    array.Add(item.GetInt32());
+                }
+
+                return array.ToArray();
+            }
+
+            throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(arrayElement.Type));
+        }
+
+        private static object DeserializeDictionaryEntry(in JsonElement objectElement)
+        {
+            var dictionary = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var item in objectElement.EnumerateObject())
+            {
+                dictionary[item.Name] = item.Value.GetString();
+            }
+
+            return dictionary;
+        }
+
         public override byte[] Serialize(IDictionary<string, object> values)
         {
             if (values == null || values.Count == 0)
@@ -85,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                var writer = new Utf8JsonWriter(bufferWriter);
+                using var writer = new Utf8JsonWriter(bufferWriter);
                 writer.WriteStartObject();
                 foreach (var (key, value) in values)
                 {
@@ -123,11 +175,38 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                             break;
 
                         case DateTime dateTime:
-                            writer.WriteString(key, dateTime.ToString("r", CultureInfo.InvariantCulture));
+                            writer.WriteString(key, dateTime);
                             break;
 
                         case Guid guid:
-                            writer.WriteString(key, guid.ToString("B", CultureInfo.InvariantCulture));
+                            writer.WriteString(key, guid);
+                            break;
+
+                        case ICollection<int> intCollection:
+                            writer.WriteStartArray(key);
+                            foreach (var element in intCollection)
+                            {
+                                writer.WriteNumberValue(element);
+                            }
+                            writer.WriteEndArray();
+                            break;
+
+                        case ICollection<string> stringCollection:
+                            writer.WriteStartArray(key);
+                            foreach (var element in stringCollection)
+                            {
+                                writer.WriteStringValue(element);
+                            }
+                            writer.WriteEndArray();
+                            break;
+
+                        case IDictionary<string, string> dictionary:
+                            writer.WriteStartObject(key);
+                            foreach (var element in dictionary)
+                            {
+                                writer.WriteString(element.Key, element.Value);
+                            }
+                            writer.WriteEndObject();
                             break;
                     }
                 }
@@ -153,7 +232,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                 type == typeof(string) ||
                 type == typeof(bool) ||
                 type == typeof(DateTime) ||
-                type == typeof(Guid);
+                type == typeof(Guid) ||
+                typeof(ICollection<int>).IsAssignableFrom(type) ||
+                typeof(ICollection<string>).IsAssignableFrom(type) ||
+                typeof(IDictionary<string, string>).IsAssignableFrom(type);
         }
     }
 }

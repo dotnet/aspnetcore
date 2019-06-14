@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public TestInput()
         {
-            _memoryPool = KestrelMemoryPool.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(pool: _memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             Transport = pair.Transport;

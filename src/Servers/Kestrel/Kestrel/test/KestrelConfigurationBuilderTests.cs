@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -133,8 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
-                opt.Protocols = HttpProtocols.Http2;
+                opt.Protocols = HttpProtocols.Http1;
             });
 
             serverOptions.ConfigureHttpsDefaults(opt =>
@@ -156,14 +156,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     Assert.True(opt.IsHttps);
                     Assert.NotNull(opt.HttpsOptions.ServerCertificate);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
-                    Assert.Equal(HttpProtocols.Http2, opt.ListenOptions.Protocols);
+                    Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
-                    Assert.Equal(HttpProtocols.Http2, opt.Protocols);
+                    Assert.Equal(HttpProtocols.Http1, opt.Protocols);
                 })
                 .Load();
 
@@ -181,7 +179,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
-                opt.NoDelay = false;
                 opt.UseHttps(TestResources.GetTestCertificate());
             });
 
@@ -202,12 +199,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     ran1 = true;
                     Assert.True(opt.IsHttps);
                     Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
-                    Assert.False(opt.ListenOptions.NoDelay);
                 })
                 .LocalhostEndpoint(5002, opt =>
                 {
                     ran2 = true;
-                    Assert.False(opt.NoDelay);
                 })
                 .Load();
 
@@ -322,11 +317,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
+        public void DefaultConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected)
+            => DefaultConfigSectionCanSetProtocols(input, expected);
+
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public void DefaultConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected)
+            => DefaultConfigSectionCanSetProtocols(input, expected);
+
+        private void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
         {
             var serverOptions = CreateServerOptions();
             var ranDefault = false;
@@ -377,11 +384,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran3);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [InlineData("http1", HttpProtocols.Http1)]
+        // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
+        [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
+        public void EndpointConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected) =>
+            EndpointConfigSectionCanSetProtocols(input, expected);
+
+        [ConditionalTheory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public void EndpointConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected) =>
+            EndpointConfigSectionCanSetProtocols(input, expected);
+
+        private void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
         {
             var serverOptions = CreateServerOptions();
             var ranDefault = false;

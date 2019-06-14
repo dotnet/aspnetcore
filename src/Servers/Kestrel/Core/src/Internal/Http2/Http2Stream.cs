@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this, ServerOptions.Limits.MinRequestBodyDataRate);
+            => Http2MessageBody.For(this);
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -403,6 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
+            OnTrailersComplete();
             RequestBodyPipe.Writer.Complete();
 
             _inputFlowControl.StopWindowUpdates();
@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 pauseWriterThreshold: windowSize + 1,
                 resumeWriterThreshold: windowSize + 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
         private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         /// An empty collection means any host will be accepted.
         /// </param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IEndpointConventionBuilder RequireHost(this IEndpointConventionBuilder builder, params string[] hosts)
+        public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="displayName">The display name.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder WithDisplayName(this IEndpointConventionBuilder builder, string displayName)
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, string displayName) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="func">A delegate that produces the display name for each <see cref="EndpointBuilder"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder WithDisplayName(this IEndpointConventionBuilder builder, Func<EndpointBuilder, string> func)
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, Func<EndpointBuilder, string> func) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="items">A collection of metadata items.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
-        public static IEndpointConventionBuilder WithMetadata(this IEndpointConventionBuilder builder, params object[] items)
+        public static TBuilder WithMetadata<TBuilder>(this TBuilder builder, params object[] items) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {

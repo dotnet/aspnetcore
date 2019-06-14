@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             using (var alg384 = SHA384.Create())
             {
                 byte[] hash;
-                if(isSha256)
+                if (isSha256)
                 {
                     hash = alg256.ComputeHash(respStream);
                 }
@@ -79,10 +80,10 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.AzP.macOS)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
-            var slnDir = GetSolutionDir();
-            var wwwrootDir = Path.Combine(slnDir, "UI", "src", "wwwroot", scriptTag.Version);
+            var wwwrootDir = Path.Combine(AppContext.BaseDirectory, "UI", "src", "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -107,9 +108,8 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var slnDir = GetSolutionDir();
-            var uiDirV3 = Path.Combine(slnDir, "UI", "src", "Areas", "Identity", "Pages", "V3");
-            var uiDirV4 = Path.Combine(slnDir, "UI", "src", "Areas", "Identity", "Pages", "V4");
+            var uiDirV3 = Path.Combine(AppContext.BaseDirectory, "UI", "src", "Areas", "Identity", "Pages", "V3");
+            var uiDirV4 = Path.Combine(AppContext.BaseDirectory, "UI", "src", "Areas", "Identity", "Pages", "V4");
             var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
 
             var scriptTags = new List<ScriptTag>();
@@ -151,24 +151,6 @@ namespace Microsoft.AspNetCore.Identity.Test
                 });
             }
             return scriptTags;
-        }
-
-        private static string GetSolutionDir()
-        {
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            // On helix we use the published copy
-            if (!SkipOnHelixAttribute.OnHelix())
-            {
-                while (dir != null)
-                {
-                    if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
-                    {
-                        break;
-                    }
-                    dir = dir.Parent;
-                }
-            }
-            return dir.FullName;
         }
 
         private static string RemoveLineEndings(string originalString)

@@ -1,6 +1,6 @@
-﻿<PropertiesChangedHandlerChild SuppliedValue=@valueToSupply />
-<button onclick=@(x => valueToSupply++)>Increment</button>
+<PropertiesChangedHandlerChild SuppliedValue=@valueToSupply />
+<button @onclick=@(x => valueToSupply++)>Increment</button>
 
-@functions {
+@code {
     private int valueToSupply = 100;
 }

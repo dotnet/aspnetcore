@@ -583,9 +583,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var matches = tree.GetMatches(context.Values, context.AmbientValues).Select(m => m.Match).ToList();
 
             // Assert
-            Assert.Collection(
-                matches,
-                m => { Assert.Same(entry1, m); });
+            Assert.Empty(matches);
         }
 
         [Fact]
@@ -689,9 +687,7 @@ namespace Microsoft.AspNetCore.Routing.Internal.Routing
             var matches = tree.GetMatches(context.Values, context.AmbientValues).Select(m => m.Match).ToList();
             
             // Assert
-            Assert.Collection(
-                matches,
-                m => { Assert.Same(entry2, m); });
+            Assert.Empty(matches);
         }
 
         [Fact]

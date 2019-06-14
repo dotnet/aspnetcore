@@ -87,6 +87,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Cors.Infrastructure
+{
+    public partial interface ICorsMetadata
+    {
+    }
+}
 namespace Microsoft.AspNetCore.Http
 {
     public abstract partial class ConnectionInfo
@@ -117,9 +123,9 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum CookieSecurePolicy
     {
+        SameAsRequest = 0,
         Always = 1,
         None = 2,
-        SameAsRequest = 0,
     }
     public partial class Endpoint
     {
@@ -128,6 +134,11 @@ namespace Microsoft.AspNetCore.Http
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override string ToString() { throw null; }
+    }
+    public static partial class EndpointHttpContextExtensions
+    {
+        public static Microsoft.AspNetCore.Http.Endpoint GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
     }
     public sealed partial class EndpointMetadataCollection : System.Collections.Generic.IEnumerable<object>, System.Collections.Generic.IReadOnlyCollection<object>, System.Collections.Generic.IReadOnlyList<object>, System.Collections.IEnumerable
     {
@@ -138,7 +149,7 @@ namespace Microsoft.AspNetCore.Http
         public object this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator GetEnumerator() { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public T GetMetadata<T>() where T : class { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IEnumerable<T> GetOrderedMetadata<T>() where T : class { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IReadOnlyList<T> GetOrderedMetadata<T>() where T : class { throw null; }
         System.Collections.Generic.IEnumerator<object> System.Collections.Generic.IEnumerable<System.Object>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -239,7 +250,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpRequest() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeReader BodyReader { get; set; }
+        public virtual System.IO.Pipelines.PipeReader BodyReader { get { throw null; } }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get; set; }
@@ -263,7 +274,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpResponse() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeWriter BodyWriter { get; set; }
+        public virtual System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
@@ -279,7 +290,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract void Redirect(string location, bool permanent);
         public virtual void RegisterForDispose(System.IDisposable disposable) { }
         public virtual void RegisterForDisposeAsync(System.IAsyncDisposable disposable) { }
-        public abstract System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public virtual System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public static partial class HttpResponseWritingExtensions
     {
@@ -362,6 +373,13 @@ namespace Microsoft.AspNetCore.Http
         public string ToUriComponent() { throw null; }
     }
     public delegate System.Threading.Tasks.Task RequestDelegate(Microsoft.AspNetCore.Http.HttpContext context);
+    public static partial class RequestTrailerExtensions
+    {
+        public static bool CheckTrailersAvailable(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetDeclaredTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetTrailer(this Microsoft.AspNetCore.Http.HttpRequest request, string trailerName) { throw null; }
+        public static bool SupportsTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+    }
     public static partial class ResponseTrailerExtensions
     {
         public static void AppendTrailer(this Microsoft.AspNetCore.Http.HttpResponse response, string trailerName, Microsoft.Extensions.Primitives.StringValues trailerValues) { }
@@ -443,14 +461,6 @@ namespace Microsoft.AspNetCore.Http
         public abstract System.Collections.Generic.IList<string> WebSocketRequestedProtocols { get; }
         public virtual System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync() { throw null; }
         public abstract System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync(string subProtocol);
-    }
-}
-namespace Microsoft.AspNetCore.Http.Endpoints
-{
-    public static partial class EndpointHttpContextExtensions
-    {
-        public static Microsoft.AspNetCore.Http.Endpoint GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
-        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
     }
 }
 namespace Microsoft.AspNetCore.Http.Features

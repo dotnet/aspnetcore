@@ -5,11 +5,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Extensions for rendering components.

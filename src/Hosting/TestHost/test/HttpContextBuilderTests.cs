@@ -310,6 +310,24 @@ namespace Microsoft.AspNetCore.TestHost
             var ctx = await server.SendAsync(c => { });
         }
 
+        [Fact]
+        public async Task CallingAbortInsideHandlerShouldSetRequestAborted()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        context.Abort();
+                        return Task.CompletedTask;
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var ctx = await server.SendAsync(c => { });
+            Assert.True(ctx.RequestAborted.IsCancellationRequested);
+        }
+
         private class VerifierLogger : ILogger<IWebHost>
         {
             public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();

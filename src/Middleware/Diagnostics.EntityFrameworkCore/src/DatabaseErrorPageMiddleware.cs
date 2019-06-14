@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -130,6 +131,12 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                             else
                             {
                                 var databaseExists = await relationalDatabaseCreator.ExistsAsync();
+
+                                if (databaseExists)
+                                {
+                                    // Also check if the database is completely empty - see https://github.com/aspnet/EntityFrameworkCore/issues/15997
+                                    databaseExists = (bool)typeof(RelationalDatabaseCreator).GetMethod("HasTables", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(relationalDatabaseCreator, null);
+                                }
 
                                 var migrationsAssembly = context.GetService<IMigrationsAssembly>();
                                 var modelDiffer = context.GetService<IMigrationsModelDiffer>();

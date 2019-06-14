@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpResponse } from "../src/HttpClient";
-import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
+import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 
@@ -12,6 +12,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
+import { TestTransport } from "./TestTransport";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -65,14 +66,10 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const negotiating = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => {
-                        negotiating.resolve();
-                        return defaultNegotiateResponse;
-                    }),
+                    .on("POST", () => defaultNegotiateResponse),
                 logger,
                 transport: {
                     connect() {
@@ -95,8 +92,9 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow("Cannot start a connection that is not in the 'Disconnected' state.");
+                    .toThrow("Cannot start an HttpConnection that is not in the 'Disconnected' state.");
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -146,8 +144,11 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            await connection.start(TransferFormat.Text);
-        });
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("The connection was stopped during negotiation.");
+        },
+        "Failed to start the connection: Error: The connection was stopped during negotiation.");
     });
 
     it("cannot send with an un-started connection", async () => {
@@ -277,6 +278,7 @@ describe("HttpConnection", () => {
 
                 await startPromise;
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -306,7 +308,7 @@ describe("HttpConnection", () => {
 
                     expect(await negotiateUrl).toBe(expectedUrl);
 
-                    await expect(startPromise).rejects;
+                    await expect(startPromise).rejects.toThrow("We don't care how this turns out");
                 } finally {
                     await connection.stop();
                 }
@@ -805,7 +807,7 @@ describe("HttpConnection", () => {
                 // Force TypeScript to let us call start incorrectly
                 const connection: any = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
 
-                expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
+                await expect(connection.start(42)).rejects.toThrow("Unknown transferFormat value: 42.");
             });
         });
 
@@ -841,5 +843,234 @@ describe("HttpConnection", () => {
             },
             "Failed to start the connection: Error: Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
         });
+    });
+});
+
+describe("TransportSendQueue", () => {
+    it("sends data when not currently sending", async () => {
+        const sendMock = jest.fn(() => Promise.resolve());
+        const transport = new TestTransport();
+        transport.send = sendMock;
+        const queue = new TransportSendQueue(transport);
+
+        const x = queue.send("Hello");
+        await x;
+
+        expect(sendMock.mock.calls.length).toBe(1);
+
+        const stop = queue.stop();
+        await stop;
+    });
+
+    it("sends buffered data on fail", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // This should get queued.
+        const second = queue.send("world");
+
+        promiseSource3.reject("Test error");
+        await expect(first).rejects.toBe("Test error");
+
+        await second;
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world");
+
+        await queue.stop();
+    });
+
+    it("rejects promise for buffered sends", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.reject("Test error"));
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // This should get queued.
+        const second = queue.send("world");
+
+        promiseSource3.resolve();
+
+        await first;
+        await expect(second).rejects.toBeDefined();
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world");
+
+        await queue.stop();
+    });
+
+    it ("concatenates string sends", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send("world");
+        const third = queue.send("!");
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world!");
+
+        await queue.stop();
+    });
+
+    it ("concatenates buffered ArrayBuffer", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send(new Uint8Array([4, 5, 6]));
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send(new Uint8Array([7, 8, 10]));
+        const third = queue.send(new Uint8Array([12, 14]));
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
+
+        await queue.stop();
+    });
+
+    it ("throws if mixed data is queued", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send(new Uint8Array([4, 5, 6]));
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send(new Uint8Array([7, 8, 10]));
+        expect(() => queue.send("A string!")).toThrow();
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second]);
+        await queue.stop();
+    });
+
+    it ("rejects pending promises on stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const send = queue.send("Test");
+        await queue.stop();
+
+        await expect(send).rejects.toBe("Connection stopped.");
+    });
+
+    it ("prevents additional sends after stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        await queue.stop();
+        await expect(queue.send("test")).rejects.toBe("Connection stopped.");
     });
 });

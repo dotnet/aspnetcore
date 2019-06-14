@@ -4,11 +4,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
@@ -49,13 +47,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     internal class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
-        private readonly IWebHostEnvironment _hostingEnv;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<TUser> userManager, IWebHostEnvironment hostingEnv, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<TUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
-            _hostingEnv = hostingEnv;
             _sender = sender;
         }
 
@@ -73,7 +69,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             }
 
             Email = email;
-            // This sender is a no-op, so we should auto confirm the account
+            // If the email sender is a no-op, display the confirm link in the page
             DisplayConfirmAccountLink = _sender is EmailSender;
             if (DisplayConfirmAccountLink)
             {
@@ -84,7 +80,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                     pageHandler: null,
                     values: new { userId = userId, code = code },
                     protocol: Request.Scheme);
-
             }
 
             return Page();

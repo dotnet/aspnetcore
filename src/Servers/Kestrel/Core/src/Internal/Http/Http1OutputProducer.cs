@@ -86,6 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _memoryPool = memoryPool;
         }
 
+        // For tests
+        internal PipeWriter PipeWriter => _pipeWriter;
+
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -290,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
             lock (_contextLock)
             {
@@ -402,7 +405,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _pipeWriterCompleted = true;
                 _completed = true;
-                _pipeWriter.Complete();
             }
         }
 
@@ -481,10 +483,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Debug.Assert(_currentSegmentOwner == null);
             Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
-            _autoChunk = false;
-            _startCalled = false;
-            _currentChunkMemoryUpdated = false;
+            // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
+            _autoChunk = false;
+            _currentChunkMemoryUpdated = false;
+            _startCalled = false;
         }
 
         private ValueTask<FlushResult> WriteAsync(

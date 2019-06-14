@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,11 +38,20 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             _diagnostic = diagnostic;
         }
 
+        public override string EquivalenceKey => _diagnostic.Location.ToString();
+
         public override string Title => "Add ProducesResponseType attributes.";
 
         protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
         {
-            var context = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
+            var nullableContext = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
+            if (nullableContext == null)
+            {
+                return _document;
+            }
+
+            var context = nullableContext.Value;
+
             var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(context.SymbolCache, context.Method);
             var errorResponseType = SymbolApiResponseMetadataProvider.GetErrorResponseType(context.SymbolCache, context.Method);
 
@@ -54,8 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var documentEditor = await DocumentEditor.CreateAsync(_document, cancellationToken).ConfigureAwait(false);
 
             var addUsingDirective = false;
-            foreach (var (statusCode, returnType) in results.OrderBy(s => s.statusCode))
+            foreach (var item in results.OrderBy(s => s.statusCode))
             {
+                var statusCode = item.statusCode;
+                var returnType = item.typeSymbol;
+
                 AttributeSyntax attributeSyntax;
                 bool addUsing;
 
@@ -111,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return document.WithSyntaxRoot(root);
         }
 
-        private async Task<CodeActionContext> CreateCodeActionContext(CancellationToken cancellationToken)
+        private async Task<CodeActionContext?> CreateCodeActionContext(CancellationToken cancellationToken)
         {
             var root = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
@@ -122,7 +135,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
             var statusCodeConstants = GetStatusCodeConstants(statusCodesType);
 
-            var symbolCache = new ApiControllerSymbolCache(semanticModel.Compilation);
+            if (!ApiControllerSymbolCache.TryCreate(semanticModel.Compilation, out var symbolCache))
+            {
+                return null;
+            }
 
             var codeActionContext = new CodeActionContext(semanticModel, symbolCache, method, methodSyntax, statusCodeConstants, cancellationToken);
             return codeActionContext;
@@ -150,15 +166,15 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return statusCodeConstants;
         }
 
-        private ICollection<(int statusCode, ITypeSymbol typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
+        private ICollection<(int statusCode, ITypeSymbol? typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
         {
             if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, context.SemanticModel, context.MethodSyntax, context.CancellationToken, out var actualResponseMetadata))
             {
                 // If we cannot parse metadata correctly, don't offer fixes.
-                return Array.Empty<(int, ITypeSymbol)>();
+                return Array.Empty<(int, ITypeSymbol?)>();
             }
 
-            var statusCodes = new Dictionary<int, (int, ITypeSymbol)>();
+            var statusCodes = new Dictionary<int, (int, ITypeSymbol?)>();
             foreach (var metadata in actualResponseMetadata)
             {
                 if (DeclaredApiResponseMetadata.TryGetDeclaredMetadata(declaredResponseMetadata, metadata, result: out var declaredMetadata) &&

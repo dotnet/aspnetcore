@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -222,20 +223,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                    "<status>404</status>" +
-                    "<title>Not Found</title>" +
-                    "<type>https://tools.ietf.org/html/rfc7231#section-6.5.4</type>" +
-                    $"<traceId>{Activity.Current.Id}</traceId>" +
-                    "</problem>";
-
                 // Act
                 var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningClientErrorStatusCodeResult");
 
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
                 var content = await response.Content.ReadAsStringAsync();
-                XmlAssert.Equal(expected, content);
+                var root = XDocument.Parse(content).Root;
+                Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
             }
         }
 
@@ -266,22 +265,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             using (new ActivityReplacer())
             {
-                var expected = "<problem xmlns=\"urn:ietf:rfc:7807\">" +
-                "<status>400</status>" +
-                "<title>One or more validation errors occurred.</title>" +
-                $"<traceId>{Activity.Current.Id}</traceId>" +
-                "<MVC-Errors>" +
-                "<State>The State field is required.</State>" +
-                "</MVC-Errors>" +
-                "</problem>";
-
                 // Act
                 var response = await Client.GetAsync("/api/XmlDataContractApi/ActionReturningValidationProblem");
 
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
                 var content = await response.Content.ReadAsStringAsync();
-                XmlAssert.Equal(expected, content);
+                var root = XDocument.Parse(content).Root;
+                
+                Assert.Equal("400", root.Element(root.Name.Namespace.GetName("status"))?.Value);
+                Assert.Equal("One or more validation errors occurred.", root.Element(root.Name.Namespace.GetName("title"))?.Value);
+                var mvcErrors = root.Element(root.Name.Namespace.GetName("MVC-Errors"));
+                Assert.NotNull(mvcErrors);
+                Assert.Equal("The State field is required.", mvcErrors.Element(root.Name.Namespace.GetName("State"))?.Value);
+                // Activity is not null
+                Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
             }
         }
 

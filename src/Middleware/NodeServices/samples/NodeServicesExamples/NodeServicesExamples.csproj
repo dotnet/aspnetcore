@@ -4,7 +4,6 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <IsPackable>false</IsPackable>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

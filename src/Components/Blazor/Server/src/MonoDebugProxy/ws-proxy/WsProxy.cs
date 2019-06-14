@@ -71,7 +71,7 @@ namespace WsProxy {
 			pending.Add (bytes);
 			if (pending.Count == 1) {
 				if (current_send != null)
-					throw new Exception ("WTF, current_send MUST BE NULL IF THERE'S no pending send");
+					throw new Exception ("UNEXPECTED, current_send MUST BE NULL IF THERE'S no pending send");
 				//Console.WriteLine ("sending {0} bytes", bytes.Length);
 				current_send = Ws.SendAsync (new ArraySegment<byte> (bytes), WebSocketMessageType.Text, true, token);
 				return current_send;
@@ -86,7 +86,7 @@ namespace WsProxy {
 
 			if (pending.Count > 0) {
 				if (current_send != null)
-					throw new Exception ("WTF, current_send MUST BE NULL IF THERE'S no pending send");
+					throw new Exception ("UNEXPECTED, current_send MUST BE NULL IF THERE'S no pending send");
 				//Console.WriteLine ("sending more {0} bytes", pending[0].Length);
 				current_send = Ws.SendAsync (new ArraySegment<byte> (pending [0]), WebSocketMessageType.Text, true, token);
 				return current_send;
@@ -144,7 +144,7 @@ namespace WsProxy {
 
 		void Send (WebSocket to, JObject o, CancellationToken token)
 		{
-			var bytes = Encoding.UTF8.GetBytes (o.ToString ());		
+			var bytes = Encoding.UTF8.GetBytes (o.ToString ());
 
 			var queue = GetQueueForSocket (to);
 			var task = queue.Send (bytes, token);
@@ -256,7 +256,7 @@ namespace WsProxy {
 		}
 
 		 // , HttpContext context)
-		public async Task Run (Uri browserUri, WebSocket ideSocket) 
+		public async Task Run (Uri browserUri, WebSocket ideSocket)
 		{
 			Debug ("wsproxy start");
 			using (this.ide = ideSocket) {
@@ -276,7 +276,7 @@ namespace WsProxy {
 
 					try {
 						while (!x.IsCancellationRequested) {
-							var task = await Task.WhenAny (pending_ops);
+							var task = await Task.WhenAny (pending_ops.ToArray ());
 							//Console.WriteLine ("pump {0} {1}", task, pending_ops.IndexOf (task));
 							if (task == pending_ops [0]) {
 								var msg = ((Task<string>)task).Result;

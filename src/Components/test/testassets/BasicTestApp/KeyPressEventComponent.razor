@@ -1,6 +1,6 @@
-@using Microsoft.JSInterop
+@using System.Text.Json
 
-Type here: <input onkeypress=@OnKeyPressed />
+Type here: <input @onkeypress=@OnKeyPressed />
 <ul>
     @foreach (var key in keysPressed)
     {
@@ -8,12 +8,12 @@ Type here: <input onkeypress=@OnKeyPressed />
     }
 </ul>
 
-@functions {
+@code {
     List<string> keysPressed = new List<string>();
 
     void OnKeyPressed(UIKeyboardEventArgs eventArgs)
     {
-        Console.WriteLine(Json.Serialize(eventArgs));
+        Console.WriteLine(JsonSerializer.ToString(eventArgs));
         keysPressed.Add(eventArgs.Key);
     }
 }
