@@ -70,6 +70,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
+      IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
       _CreateTargetingPackArchive;
@@ -178,19 +179,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
   </Target>
 
-   <Target Name="IncludeFrameworkListFile"
-          BeforeTargets="_BatchCopyToLayoutTargetDir"
+  <Target Name="IncludeFrameworkListFile"
           Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
     <RepoTasks.CreateFrameworkListFile
-      Files="@(File)"
+      Files="@(RefPackContent)"
       TargetFile="$(FrameworkListOutputPath)"
-      TargetFilePrefixes="ref/;runtimes/"
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <File Include="$(FrameworkListFile)">
+      <RefPackContent Include="$(FrameworkListOutputPath)">
         <TargetPath>$(ManifestsPackagePath)</TargetPath>
-      </File>
+      </RefPackContent>
     </ItemGroup>
   </Target>
 

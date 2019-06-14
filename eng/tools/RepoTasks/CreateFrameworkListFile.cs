@@ -21,33 +21,12 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] Files { get; set; }
 
-        /// <summary>
-        /// A list of assembly names with Profile classifications. A Profile="%(Profile)" attribute
-        /// is set in the framework list for the matching Files item if %(Profile) contains text.
-        ///
-        /// If *any* FileProfiles are passed:
-        ///
-        ///   *Every* file that ends up listed in the framework list must have a matching
-        ///   FileProfile, even if %(Profile) is not set.
-        ///
-        ///   Additionally, every FileProfile must find exactly one File.
-        ///
-        /// This task fails if the conditions aren't met. This ensures the classification doesn't
-        /// become out of date when the list of files changes.
-        ///
-        /// %(Identity): Assembly name (including ".dll").
-        /// %(Profile): List of profiles that apply, semicolon-delimited.
-        /// </summary>
-        public ITaskItem[] FileProfiles { get; set; }
-
         [Required]
         public string TargetFile { get; set; }
 
-        public string[] TargetFilePrefixes { get; set; }
-
         /// <summary>
         /// Extra attributes to place on the root node.
-        ///
+        /// 
         /// %(Identity): Attribute name.
         /// %(Value): Attribute value.
         /// </summary>
@@ -55,26 +34,19 @@ namespace RepoTasks
 
         public override bool Execute()
         {
-            // while (!Debugger.IsAttached)
-            // {
+            //while (!Debugger.IsAttached)
+            //{
 
-            // }
+            //}
             XAttribute[] rootAttributes = RootAttributes
                 ?.Select(item => new XAttribute(item.ItemSpec, item.GetMetadata("Value")))
                 .ToArray();
 
             var frameworkManifest = new XElement("FileList", rootAttributes);
 
-            Dictionary<string, string> fileProfileLookup = FileProfiles
-                ?.ToDictionary(
-                    item => item.ItemSpec,
-                    item => item.GetMetadata("Profile"),
-                    StringComparer.OrdinalIgnoreCase);
-
             var usedFileProfiles = new HashSet<string>();
 
             foreach (var f in Files
-                .Where(IsTargetPathIncluded)
                 .Select(item => new
                 {
                     Item = item,
@@ -128,43 +100,13 @@ namespace RepoTasks
 
                 element.Add(new XAttribute("FileVersion", f.FileVersion));
 
-                if (fileProfileLookup != null)
-                {
-                    if (fileProfileLookup.TryGetValue(f.Filename, out string profile))
-                    {
-                        if (!string.IsNullOrEmpty(profile))
-                        {
-                            element.Add(new XAttribute("Profile", profile));
-                        }
-
-                        usedFileProfiles.Add(f.Filename);
-                    }
-                    else
-                    {
-                        Log.LogError($"File matches no profile classification: {f.Filename}");
-                    }
-                }
-
                 frameworkManifest.Add(element);
-            }
-
-            foreach (var unused in fileProfileLookup
-                ?.Keys.Except(usedFileProfiles).OrderBy(p => p)
-                ?? Enumerable.Empty<string>())
-            {
-                Log.LogError($"Profile classification matches no files: {unused}");
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(TargetFile));
             File.WriteAllText(TargetFile, frameworkManifest.ToString());
 
             return !Log.HasLoggedErrors;
-        }
-
-        private bool IsTargetPathIncluded(ITaskItem item)
-        {
-            return TargetFilePrefixes
-                ?.Any(prefix => item.GetMetadata("TargetPath")?.StartsWith(prefix) == true) ?? true;
         }
     }
 }

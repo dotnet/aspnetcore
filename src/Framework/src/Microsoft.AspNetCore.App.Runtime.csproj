@@ -154,6 +154,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GenerateSharedFxVersionsFiles;
       Crossgen;
       _ResolveSharedFrameworkContent;
+      IncludeFrameworkListFile;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
@@ -380,6 +381,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
       <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
       <SharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
+      <SharedFxContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
@@ -446,6 +448,20 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(RedistArchiveOutputPath) ."
       WorkingDirectory="$(RedistSharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+  </Target>
+  
+  <Target Name="IncludeFrameworkListFile"
+          Condition="'$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(SharedFxContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <SharedFxContent Include="$(FrameworkListOutputPath)">
+        <TargetPath>$(ManifestsPackagePath)</TargetPath>
+      </SharedFxContent>
+    </ItemGroup>
   </Target>
 
 </Project>
