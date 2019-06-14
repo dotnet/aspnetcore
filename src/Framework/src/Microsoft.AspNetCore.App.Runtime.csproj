@@ -381,7 +381,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
       <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
       <SharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
-      <SharedFxContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
@@ -459,7 +458,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <ItemGroup>
       <SharedFxContent Include="$(FrameworkListOutputPath)">
-        <TargetPath>$(ManifestsPackagePath)</TargetPath>
+        <PackagePath>$(ManifestsPackagePath)</PackagePath>
       </SharedFxContent>
     </ItemGroup>
   </Target>
