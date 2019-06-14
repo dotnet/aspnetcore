@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     _traceId = activity.TraceId.ToHexString();
                     _spanId = activity.SpanId.ToHexString();
-                    _parentId = activity.ParentId;
+                    _parentId = activity.ParentSpanId.ToHexString();
                 }
                 else
                 {
