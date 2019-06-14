@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(destinationType);
             bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("fr-FR"))
             {
-                { "theModelName", "32 000,1" }
+                { "theModelName", "32000,1" }
             };
             var binder = GetBinder();
 
