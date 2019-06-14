@@ -52,7 +52,7 @@ namespace Certificate.Sample
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.Map("*", context =>
+                endpoints.Map("{*url}", context =>
                 {
                     return context.Response.WriteAsync($"Hello {context.User.Identity.Name}");
                 });
