@@ -11,6 +11,8 @@
     <!-- Always include framework metapackages in patch updates. -->
     <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true' OR '$(IsSharedSourcePackage)' == 'true' ">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+    
+    <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
   </PropertyGroup>
 
