@@ -38,7 +38,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
     <!-- Platform manifest data -->
-    <PlatformManifestTargetPath>$(ManifestsPackagePath)FrameworkList.txt</PlatformManifestTargetPath>
+    <!-- <PlatformManifestTargetPath>$(ManifestsPackagePath)FrameworkList.txt</PlatformManifestTargetPath> -->
   </PropertyGroup>
 
   <ItemGroup>

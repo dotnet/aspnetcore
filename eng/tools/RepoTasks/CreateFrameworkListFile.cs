@@ -34,10 +34,6 @@ namespace RepoTasks
 
         public override bool Execute()
         {
-            //while (!Debugger.IsAttached)
-            //{
-
-            //}
             XAttribute[] rootAttributes = RootAttributes
                 ?.Select(item => new XAttribute(item.ItemSpec, item.GetMetadata("Value")))
                 .ToArray();
@@ -54,9 +50,10 @@ namespace RepoTasks
                     TargetPath = item.GetMetadata("TargetPath"),
                     AssemblyName = FileUtilities.GetAssemblyName(item.ItemSpec),
                     FileVersion = FileUtilities.GetFileVersion(item.ItemSpec),
-                    IsNative = item.GetMetadata("IsNative") == "true",
+                    IsNative = item.GetMetadata("IsNativeImage") == "true",
                     IsSymbolFile = item.GetMetadata("IsSymbolFile") == "true"
                 })
+                .Where(a => a.Filename.Contains("aspnetcorev2"))
                 .Where(f =>
                     !f.IsSymbolFile &&
                     (f.Filename.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || f.IsNative))
