@@ -33,7 +33,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
-    <ManifestsPackagePath>data/</ManifestsPackagePath>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
@@ -64,7 +63,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <PropertyGroup>
     <!-- If this project won't produce a package, don't bother building anything. -->
-    <BuildDependsOn Condition="'$(IsPackable)' != 'false'">
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
@@ -162,7 +161,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ArchiveOutputPath)">
+          Outputs="$(ArchiveOutputPath)"
+          Condition="'$(IsPackable)' == 'true'">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
       DestinationFile="$(ArchiveOutputPath)"

@@ -42,10 +42,11 @@ namespace Identity.DefaultUI.WebSite
             services.AddDbContext<TContext>(options =>
                 options
                     .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
-                    .UseSqlServer(
-                        Configuration.GetConnectionString("DefaultConnection"),
-                        sqlOptions => sqlOptions.MigrationsAssembly("Identity.DefaultUI.WebSite")
-                    ));
+                    //.UseSqlServer(
+                    //    Configuration.GetConnectionString("DefaultConnection"),
+                    //    sqlOptions => sqlOptions.MigrationsAssembly("Identity.DefaultUI.WebSite")
+                    //));
+                    .UseSqlite("DataSource=:memory:"));
 
             services.AddDefaultIdentity<TUser>()
                 .AddDefaultUI(Framework)
@@ -89,10 +90,11 @@ namespace Identity.DefaultUI.WebSite
             });
         }
 
-        protected static void DisableFilePolling(IWebHostEnvironment env)
+        public static void DisableFilePolling(IWebHostEnvironment env)
         {
             var pendingProviders = new Stack<IFileProvider>();
             pendingProviders.Push(env.WebRootFileProvider);
+            pendingProviders.Push(env.ContentRootFileProvider);
             while (pendingProviders.TryPop(out var currentProvider))
             {
                 switch (currentProvider)

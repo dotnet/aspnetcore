@@ -4,10 +4,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Internal
+namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
-    internal class RequestQueue : IDisposable
+    internal class TailDrop : IQueuePolicy, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -16,14 +17,24 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
+        public TailDrop(IOptions<TailDropOptions> options)
         {
-            _maxConcurrentRequests = maxConcurrentRequests;
-            _requestQueueLimit = requestQueueLimit;
+            _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
+            if (_maxConcurrentRequests <= 0)
+            {
+                throw new ArgumentException(nameof(_maxConcurrentRequests), "MaxConcurrentRequests must be a positive integer.");
+            }
+
+            _requestQueueLimit = options.Value.RequestQueueLimit;
+            if (_requestQueueLimit < 0)
+            {
+                throw new ArgumentException(nameof(_requestQueueLimit), "The RequestQueueLimit cannot be a negative number.");
+            }
+
             _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 
-        public async Task<bool> TryEnterQueueAsync()
+        public async Task<bool> TryEnterAsync()
         {
             // a return value of 'false' indicates that the request is rejected
             // a return value of 'true' indicates that the request may proceed
@@ -44,7 +55,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
             return true;
         }
 
-        public void Release()
+        public void OnExit()
         {
             _serverSemaphore.Release();
 

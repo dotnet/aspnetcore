@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 
-namespace Microsoft.AspNetCore
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Extensions for configuring static web assets for development.

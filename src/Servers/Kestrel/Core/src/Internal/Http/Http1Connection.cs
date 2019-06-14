@@ -68,8 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnded()
         {
-            Input.Complete();
-
             TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
 
             // Prevent RequestAborted from firing. Free up unneeded feature references.

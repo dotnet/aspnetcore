@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
         {
             var subject = certInfo.Subject;
-            var storeName = certInfo.Store;
+            var storeName = string.IsNullOrEmpty(certInfo.Store) ? StoreName.My.ToString() : certInfo.Store;
             var location = certInfo.Location;
             var storeLocation = StoreLocation.CurrentUser;
             if (!string.IsNullOrEmpty(location))

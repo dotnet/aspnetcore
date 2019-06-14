@@ -54,7 +54,6 @@
     <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
@@ -77,6 +76,14 @@
       the original direct dependency that pulled in the transitive reference.
     -->
     <ExternalAspNetCoreAppReference Include="@(_TransitiveExternalAspNetCoreAppReference)" />
+  </ItemGroup>
+
+  <!--
+    This compilation reference is necessary to compile netstandard2.0 assemblies that need IAsyncEnumerable and IAsyncDisposable and the assembly is also in the shared framework.
+    This reference is part of Microsoft.NETCore.App, so is listed here as a reference to be used during compilation only.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <_CompilationOnlyReference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
   <!--

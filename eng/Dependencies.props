@@ -42,6 +42,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.Storage.Blob" Version="$(MicrosoftAzureStorageBlobPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
@@ -165,15 +166,15 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
 
     <!-- Runtime packages required for crossgen -->
-    <LatestPackageReference Include="runtime.win-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.win-x86.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.win-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.osx-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-musl-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-musl-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.win-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.osx-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-arm" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-arm64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-musl-x64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+    <LatestPackageReference Include="microsoft.netcore.app.runtime.linux-musl-arm64" Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
   </ItemGroup>
 
 </Project>

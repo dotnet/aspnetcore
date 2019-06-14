@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             {
-                var actual = await _innerStream.ReadAsync(buffer, offset, count);
+                var actual = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
 
                 BytesRead += actual;
 

@@ -18,7 +18,8 @@
       "HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
       "RequestThrottling\\sample\\RequestThrottlingSample.csproj",
       "RequestThrottling\\src\\Microsoft.AspNetCore.RequestThrottling.csproj",
-      "RequestThrottling\\test\\Microsoft.AspNetCore.RequestThrottling.Tests.csproj"
+      "RequestThrottling\\test\\Microsoft.AspNetCore.RequestThrottling.Tests.csproj",
+      "RequestThrottling\\perf\\Microbenchmarks\\Microsoft.AspNetCore.RequestThrottling.Microbenchmarks.csproj"
     ]
   }
 }
