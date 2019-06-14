@@ -12,6 +12,9 @@
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
 
+    <HelixAvailableArch Include="x64" />
+    <HelixAvailableArch Include="arm64" />
+    
     <!-- x64 queues -->
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
