@@ -18,10 +18,6 @@ using Xunit.Abstractions;
 
 namespace Interop.FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
-        SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
-    [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     public class H2SpecTests : LoggedTest
     {
         [ConditionalTheory]
@@ -61,6 +57,14 @@ namespace Interop.FunctionalTests
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
+                var supportsAlpn =
+                    // "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support"
+                    new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win81).IsMet
+                    // "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492"
+                    && new OSSkipConditionAttribute(OperatingSystems.MacOSX).IsMet
+                    // Debian 8 uses OpenSSL 1.0.1 which does not support ALPN
+                    && new SkipOnHelixAttribute("https://github.com/aspnet/AspNetCore/issues/10428") { Queues = "Debian.8.Amd64.Open" }.IsMet;
+
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
                     string skip = null;
@@ -77,13 +81,17 @@ namespace Interop.FunctionalTests
                         Skip = skip,
                     });
 
-                    dataset.Add(new H2SpecTestCase
+                    // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
+                    if (supportsAlpn)
                     {
-                        Id = testcase.Item1,
-                        Description = testcase.Item2,
-                        Https = true,
-                        Skip = skip,
-                    });
+                        dataset.Add(new H2SpecTestCase
+                        {
+                            Id = testcase.Item1,
+                            Description = testcase.Item2,
+                            Https = true,
+                            Skip = skip,
+                        });
+                    }
                 }
 
                 return dataset;
