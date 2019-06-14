@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <HelixProjectPlatform Remove="arm64" />
+    <HelixProjectArch Remove="arm64" />
   </PropertyGroup>
 
   <ItemGroup>
