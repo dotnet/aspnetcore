@@ -53,7 +53,6 @@ namespace RepoTasks
                     IsNative = item.GetMetadata("IsNativeImage") == "true",
                     IsSymbolFile = item.GetMetadata("IsSymbolFile") == "true"
                 })
-                .Where(a => a.Filename.Contains("aspnetcorev2"))
                 .Where(f =>
                     !f.IsSymbolFile &&
                     (f.Filename.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || f.IsNative))
