@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
-                Logger.NoFormatter(formatterContext);
+                Logger.NoFormatter(formatterContext, result.ContentTypes);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return Task.CompletedTask;
