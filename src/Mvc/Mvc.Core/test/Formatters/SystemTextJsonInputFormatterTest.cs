@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public async Task ReadAsync_SingleError()
         {
             // Arrange
-            var failTotal = 0;
             var formatter = GetInputFormatter();
 
             var content = "[5, 'seven', 3, notnum ]";
@@ -59,17 +59,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Act
             await formatter.ReadAsync(formatterContext);
 
-            // Assert
-            foreach(var modelState in formatterContext.ModelState)
-            {
-                foreach(var error in modelState.Value.Errors)
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k),
+                kvp =>
                 {
-                    failTotal++;
+                    Assert.Equal("[1]", kvp.Key);
+                    var error = Assert.Single(kvp.Value.Errors);
                     Assert.StartsWith("''' is an invalid start of a value", error.ErrorMessage);
-                }
-            }
-
-            Assert.Equal(1, failTotal);
+                });
         }
 
         protected override TextInputFormatter GetInputFormatter()

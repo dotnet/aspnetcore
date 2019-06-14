@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 var formatterException = new InputFormatterException(jsonException.Message, jsonException);
 
-                var metadata = GetPathMetadata(context.Metadata, path);
+                var metadata = ModelNames.GetPathMetadata(context.Metadata, path);
                 context.ModelState.TryAddModelError(key, formatterException, metadata);
 
                 Log.JsonInputException(_logger, jsonException);
@@ -130,53 +130,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             return new TranscodingReadStream(httpContext.Request.Body, encoding);
-        }
-
-        // Keep in sync with NewtonsoftJsonInputFormatter.GetPathMetadata
-        private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
-        {
-            var index = 0;
-            while (index >= 0 && index < path.Length)
-            {
-                if (path[index] == '[')
-                {
-                    // At start of "[0]".
-                    if (metadata.ElementMetadata == null)
-                    {
-                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
-                        break;
-                    }
-
-                    metadata = metadata.ElementMetadata;
-                    index = path.IndexOf(']', index);
-                }
-                else if (path[index] == '.' || path[index] == ']')
-                {
-                    // Skip '.' in "prefix.property" or "[0].property" or ']' in "[0]".
-                    index++;
-                }
-                else
-                {
-                    // At start of "property", "property." or "property[0]".
-                    var endIndex = path.IndexOfAny(new[] { '.', '[' }, index);
-                    if (endIndex == -1)
-                    {
-                        endIndex = path.Length;
-                    }
-
-                    var propertyName = path.Substring(index, endIndex - index);
-                    if (metadata.Properties[propertyName] == null)
-                    {
-                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
-                        break;
-                    }
-
-                    metadata = metadata.Properties[propertyName];
-                    index = endIndex;
-                }
-            }
-
-            return metadata;
         }
 
         private static class Log

@@ -235,23 +235,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(expectedMessage, modelError.ErrorMessage);
         }
 
-        [Theory]
-        [InlineData("[5,7,3]", 0)]
-        [InlineData("[5, 'seven', 3]", 1)]
-        [InlineData("[5, 'seven', 3, 'notnum']", 2)]
-        public async Task ReadAsync_AllowMultipleErrors(string content, int failCount)
+        [Fact]
+        public async Task ReadAsync_AllowMultipleErrors()
         {
             // Arrange
-            var failTotal = 0;
-            var serializerSettings = new JsonSerializerSettings
-            {
-                Error = delegate (object sender, ErrorEventArgs args)
-                {
-                    args.ErrorContext.Handled = true;
-                }
-            };
+            var content = "[5, 'seven', 3, 'notnum']";
 
-            var formatter = CreateFormatter(serializerSettings: serializerSettings, allowInputFormatterExceptionMessages: true);
+            var formatter = CreateFormatter(allowInputFormatterExceptionMessages: true);
 
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
@@ -262,16 +252,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
-            foreach (var modelState in formatterContext.ModelState)
-            {
-                foreach (var error in modelState.Value.Errors)
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k),
+                kvp =>
                 {
-                    failTotal++;
+                    Assert.Equal("[1]", kvp.Key);
+                    var error = Assert.Single(kvp.Value.Errors);
                     Assert.StartsWith("Could not convert string to integer:", error.ErrorMessage);
-                }
-            }
-
-            Assert.Equal(failCount, failTotal);
+                },
+                kvp =>
+                {
+                    Assert.Equal("[3]", kvp.Key);
+                    var error = Assert.Single(kvp.Value.Errors);
+                    Assert.StartsWith("Could not convert string to integer:", error.ErrorMessage);
+                });
         }
 
         [Fact]
