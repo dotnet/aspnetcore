@@ -227,10 +227,9 @@ namespace Microsoft.JSInterop
             catch
             {
                 // Always dispose the JsonDocument in case of an error.
-                jsonDocument.Dispose();
+                jsonDocument?.Dispose();
                 throw;
             }
-
 
             static bool IsIncorrectDotNetObjectRefUse(JsonElement item, Type parameterType)
             {

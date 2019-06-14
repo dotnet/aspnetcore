@@ -37,6 +37,7 @@ namespace Microsoft.JSInterop
     public partial class JSException : System.Exception
     {
         public JSException(string message) { }
+        public JSException(string message, System.Exception innerException) { }
     }
     public abstract partial class JSInProcessRuntimeBase : Microsoft.JSInterop.JSRuntimeBase, Microsoft.JSInterop.IJSInProcessRuntime, Microsoft.JSInterop.IJSRuntime
     {

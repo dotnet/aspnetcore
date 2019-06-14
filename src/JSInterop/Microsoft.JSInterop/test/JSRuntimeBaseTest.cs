@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.JSInterop.Internal;
 using Xunit;
 
@@ -84,6 +85,33 @@ namespace Microsoft.JSInterop.Tests
             Assert.IsType<AggregateException>(task.Exception);
             Assert.IsType<JSException>(task.Exception.InnerException);
             Assert.Equal("This is a test exception", ((JSException)task.Exception.InnerException).Message);
+        }
+
+        [Fact]
+        public async Task CanCompleteAsyncCallsWithErrorsDuringDeserialization()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            // Act/Assert: Tasks not initially completed
+            var unrelatedTask = runtime.InvokeAsync<string>("unrelated call", Array.Empty<object>());
+            var task = runtime.InvokeAsync<int>("test identifier", Array.Empty<object>());
+            Assert.False(unrelatedTask.IsCompleted);
+            Assert.False(task.IsCompleted);
+            using var jsonDocument = JsonDocument.Parse("\"Not a string\"");
+
+            // Act/Assert: Task can be failed
+            runtime.OnEndInvoke(
+                runtime.BeginInvokeCalls[1].AsyncHandle,
+                /* succeeded: */ true,
+                new JSAsyncCallResult(jsonDocument, jsonDocument.RootElement));
+            Assert.False(unrelatedTask.IsCompleted);
+
+            var jsException = await Assert.ThrowsAsync<JSException>(() => task);
+            Assert.IsType<JsonException>(jsException.InnerException);
+
+            // Verify we've disposed the JsonDocument.
+            Assert.Throws<ObjectDisposedException>(() => jsonDocument.RootElement.Type);
         }
 
         [Fact]

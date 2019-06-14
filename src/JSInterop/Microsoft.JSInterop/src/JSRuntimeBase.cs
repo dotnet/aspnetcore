@@ -94,10 +94,18 @@ namespace Microsoft.JSInterop
                 if (succeeded)
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-                    var result = asyncCallResult != null ?
-                        JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
-                        null;
-                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    try
+                    {
+                        var result = asyncCallResult != null ?
+                            JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
+                            null;
+                        TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                    }
+                    catch (Exception exception)
+                    {
+                        var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
+                        TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
+                    }
                 }
                 else
                 {
