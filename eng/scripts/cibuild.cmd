@@ -1,4 +1,6 @@
 @ECHO OFF
 SET RepoRoot=%~dp0..\..
 %RepoRoot%\build.cmd -ci -all -pack -sign %*
-ECHO cibuild.cmd completed
+SET exit_code=%ERRORLEVEL%
+ECHO build.cmd completed
+EXIT /b %exit_code%
