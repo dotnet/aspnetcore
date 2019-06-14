@@ -38,7 +38,7 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
-      <_SelectedArchs>@(HelixProjectArch)</_SelectedPlatforms>
+      <_SelectedArchs>@(HelixProjectArch)</_SelectedArchs>
     </PropertyGroup>
 
     <ItemGroup>
