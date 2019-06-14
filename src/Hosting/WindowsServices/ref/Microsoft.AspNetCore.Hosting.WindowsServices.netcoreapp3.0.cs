@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Hosting.WindowsServices
 {
+    [System.ComponentModel.DesignerCategoryAttribute("Code")]
     public partial class WebHostService : System.ServiceProcess.ServiceBase
     {
         public WebHostService(Microsoft.AspNetCore.Hosting.IWebHost host) { }

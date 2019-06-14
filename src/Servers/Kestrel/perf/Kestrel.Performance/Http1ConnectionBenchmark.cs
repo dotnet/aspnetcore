@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalSetup]
         public void Setup()
         {
-            var memoryPool = MemoryPoolFactory.Create();
+            var memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 

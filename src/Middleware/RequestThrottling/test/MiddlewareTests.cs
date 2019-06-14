@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -12,117 +11,30 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
     public class MiddlewareTests
     {
         [Fact]
-        public async Task RequestsCanEnterIfSpaceAvailible()
+        public async Task RequestsCallNextIfQueueReturnsTrue()
         {
-            var middleware = TestUtils.CreateTestMiddleware(maxConcurrentRequests: 1);
-            var context = new DefaultHttpContext();
-
-            // a request should go through with no problems
-            await middleware.Invoke(context).OrTimeout();
-        }
-
-        [Fact]
-        public async Task SemaphoreStatePreservedIfRequestsError()
-        {
-            var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 1,
-                next: httpContext =>
-                {
-                    throw new DivideByZeroException();
-                });
-
-            Assert.Equal(0, middleware.ActiveRequestCount);
-
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
-
-            Assert.Equal(0, middleware.ActiveRequestCount);
-        }
-
-        [Fact]
-        public async Task QueuedRequestsContinueWhenSpaceBecomesAvailible()
-        {
-            var blocker = new SyncPoint();
-            var firstRequest = true;
+            var flag = false;
 
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 1,
-                next: httpContext =>
-                {
-                    if (firstRequest)
-                    {
-                        firstRequest = false;
-                        return blocker.WaitToContinue();
-                    }
+                queue: TestStrategy.AlwaysPass,
+                next: (context) => {
+                    flag = true;
                     return Task.CompletedTask;
                 });
 
-            // t1 (as the first request) is blocked by the tcs blocker
-            var t1 = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.ActiveRequestCount);
-
-            // t2 is blocked from entering the server since t1 already exists there
-            // note: increasing MaxConcurrentRequests would allow t2 through while t1 is blocked
-            var t2 = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, middleware.ActiveRequestCount);
-
-            // unblock the first task, and the second should follow
-            blocker.Continue();
-            await t1.OrTimeout();
-            await t2.OrTimeout();
+            await middleware.Invoke(new DefaultHttpContext());
+            Assert.True(flag);
         }
 
         [Fact]
-        public void InvalidArgumentIfMaxConcurrentRequestsIsNull()
-        {
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                TestUtils.CreateTestMiddleware(maxConcurrentRequests: null);
-            });
-            Assert.Equal("options", ex.ParamName);
-        }
-
-        [Fact]
-        public async void RequestsBlockedIfQueueFull()
-        {
-            var middleware = TestUtils.CreateBlockingTestMiddleware(
-                requestQueueLimit: 0,
-                next: httpContext =>
-                {
-                    // throttle should bounce the request; it should never get here
-                    throw new NotImplementedException();
-                });
-
-            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
-        }
-
-        [Fact]
-        public async void FullQueueResultsIn503Error()
-        {
-            var middleware = TestUtils.CreateBlockingTestMiddleware(requestQueueLimit: 0);
-
-            var context = new DefaultHttpContext();
-            await middleware.Invoke(context).OrTimeout();
-            Assert.Equal(503, context.Response.StatusCode);
-        }
-
-        [Fact]
-        public void MultipleRequestsFillUpQueue()
+        public async Task RequestRejectsIfQueueReturnsFalse()
         {
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 1,
-                requestQueueLimit: 10,
-                next: httpContext =>
-                {
-                    return Task.Delay(TimeSpan.FromSeconds(30));
-                });
+                queue: TestStrategy.AlwaysReject);
 
-            Assert.Equal(0, middleware.ActiveRequestCount);
-
-            var _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.ActiveRequestCount);
-
-            _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, middleware.ActiveRequestCount);
+            var context = new DefaultHttpContext();
+            await middleware.Invoke(context);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
         }
 
         [Fact]
@@ -130,8 +42,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             bool onRejectedInvoked = false;
 
-            var middleware = TestUtils.CreateBlockingTestMiddleware(
-                requestQueueLimit: 0,
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: TestStrategy.AlwaysReject,
                 onRejected: httpContext =>
                 {
                     onRejectedInvoked = true;
@@ -145,13 +57,61 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         }
 
         [Fact]
+        public async void RequestsBlockedIfQueueFull()
+        {
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: TestStrategy.AlwaysReject,
+                next: httpContext =>
+                {
+                    // throttle should bounce the request; it should never get here
+                    throw new NotImplementedException();
+                });
+
+            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
+        }
+
+        [Fact]
+        public void IncomingRequestsFillUpQueue()
+        {
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: TestStrategy.AlwaysBlock);
+
+            Assert.Equal(0, middleware.QueuedRequestCount);
+
+            _ = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(1, middleware.QueuedRequestCount);
+
+            _ = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(2, middleware.QueuedRequestCount);
+        }
+
+        [Fact]
+        public async Task CleanupHappensEvenIfNextErrors()
+        {
+            var flag = false;
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: new TestStrategy(
+                    invoke: (() => true),
+                    onExit: () => { flag = true; }),
+                next: httpContext =>
+                {
+                    throw new DivideByZeroException();
+                });
+
+            Assert.Equal(0, middleware.QueuedRequestCount);
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
+
+            Assert.Equal(0, middleware.QueuedRequestCount);
+            Assert.True(flag);
+        }
+
+        [Fact]
         public async void ExceptionThrownDuringOnRejected()
         {
             TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
 
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 1,
-                requestQueueLimit: 0,
                 onRejected: httpContext =>
                 {
                     throw new DivideByZeroException();
@@ -175,7 +135,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.True(thirdRequest.IsCompletedSuccessfully);
 
-            Assert.Equal(0, middleware.ActiveRequestCount);
+            Assert.Equal(0, middleware.QueuedRequestCount);
         }
     }
 }

@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
@@ -20,6 +18,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
     internal class RemoteRenderer : HtmlRenderer
     {
+        private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
+
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
         private readonly RendererRegistry _rendererRegistry;
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             if (_disposing)
             {
                 // We are being disposed, so do no work.
-                return Task.FromCanceled<object>(CancellationToken.None);
+                return CanceledTask;
             }
 
             // Note that we have to capture the data as a byte[] synchronously here, because

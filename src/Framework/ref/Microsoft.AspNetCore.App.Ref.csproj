@@ -56,9 +56,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
     <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
 
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'">aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'">aspnetcore-targeting-pack-$(PackageVersion).tar.gz</ArchiveOutputFileName>
-    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)</ArchiveOutputFileName>
+    <ZipArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).zip</ZipArchiveOutputPath>
+    <TarArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).tar.gz</TarArchiveOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -161,18 +161,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ArchiveOutputPath)"
+          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
           Condition="'$(IsPackable)' == 'true'">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
-      DestinationFile="$(ArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'" />
+      DestinationFile="$(ZipArchiveOutputPath)"
+      Overwrite="true" />
+    <!-- Requires Windows 10 version 1803 or newer -->
     <Exec
-      Command="tar -czf $(ArchiveOutputPath) ."
-      WorkingDirectory="$(TargetingPackLayoutRoot)"
-      Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'" />
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
+      Command="tar -czf $(TarArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
   </Target>
 
 </Project>
