@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -27,8 +26,6 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public const string ActionFilter = "Action Filter";
         private static readonly string[] _noFilters = new[] { "None" };
-
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
