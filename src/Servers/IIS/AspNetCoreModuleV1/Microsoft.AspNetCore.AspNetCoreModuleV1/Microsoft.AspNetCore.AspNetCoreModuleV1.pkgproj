@@ -10,6 +10,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageDescription>ASP.NET Core Module</PackageDescription>
+    <IsANCMPackage>true</IsANCMPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
