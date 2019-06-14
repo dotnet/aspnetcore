@@ -8,7 +8,7 @@ namespace CodeGenerator
         public static string GenerateFile()
         {
             // NOTE: This list MUST always match the set of feature interfaces implemented by TransportConnection.
-            // See also: src/Connections.Abstractions/TransportConnection.FeatureCollection.cs
+            // See also: shared/TransportConnection.FeatureCollection.cs
             var features = new[]
             {
                 "IConnectionIdFeature",
