@@ -385,8 +385,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                             fixed (byte* pHeaderName = headerNameBytes)
                             {
-                                NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
-                            }
+								if(headerValueBytes.Length == 0){
+									throw new ArgumentException("Header value cannot be an empty string");
+								}else{
+									NativeMethods.HttpResponseSetUnknownHeader(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
+								}
+							}
                         }
                         else
                         {
