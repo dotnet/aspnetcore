@@ -11,6 +11,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageDescription>ASP.NET Core Module</PackageDescription>
     <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
+    <IsANCMPackage>true</IsANCMPackage>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
