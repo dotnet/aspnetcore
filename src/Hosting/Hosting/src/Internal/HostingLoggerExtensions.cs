@@ -97,9 +97,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             private readonly string _path;
             private readonly string _traceIdentifier;
-            private readonly string _traceId;
-            private readonly string _parentId;
-            private readonly string _spanId;
+            private readonly Activity _activity;
 
             private string _cachedToString;
 
@@ -125,15 +123,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
                     else if (index == 2)
                     {
-                        return new KeyValuePair<string, object>("SpanId", _spanId);
+                        return new KeyValuePair<string, object>("SpanId", _activity.GetSpanId());
                     }
                     else if (index == 3)
                     {
-                        return new KeyValuePair<string, object>("TraceId", _traceId);
+                        return new KeyValuePair<string, object>("TraceId", _activity.GetTraceId());
                     }
                     else if (index == 4)
                     {
-                        return new KeyValuePair<string, object>("ParentId", _parentId);
+                        return new KeyValuePair<string, object>("ParentId", _activity.GetParentId());
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
@@ -147,18 +145,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                          ? httpContext.Request.PathBase + httpContext.Request.Path 
                          : httpContext.Request.Path).ToString();
 
-                if (activity.IdFormat == ActivityIdFormat.W3C)
-                {
-                    _traceId = activity.TraceId.ToHexString();
-                    _spanId = activity.SpanId.ToHexString();
-                    _parentId = activity.ParentSpanId.ToHexString();
-                }
-                else
-                {
-                    _traceId = activity.RootId;
-                    _spanId = activity.Id;
-                    _parentId = activity.ParentId;
-                }
+                _activity = activity;
             }
 
             public override string ToString()
@@ -170,9 +157,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                         "RequestPath:{0} RequestId:{1}, SpanId:{2}, TraceId:{3}, ParentId:{4}",
                         _path,
                         _traceIdentifier,
-                        _spanId,
-                        _traceId,
-                        _parentId);
+                        _activity.GetSpanId(),
+                        _activity.GetTraceId(),
+                        _activity.GetParentId());
                 }
 
                 return _cachedToString;
