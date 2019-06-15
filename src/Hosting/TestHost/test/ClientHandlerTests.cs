@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.TestHost
                 return Task.FromResult(0);
             }
         }
-        
+
         [Fact]
         public async Task ClientHandlerCreateContextWithDefaultRequestParameters()
         {
