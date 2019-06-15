@@ -160,7 +160,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             // Write the bytes as if they were ASCII
             for (int i = 0; i < buffer.Length; i++)
             {
-                rawDataBuilder.Append((char)buffer[i]);
+                var bufferChar = (char)buffer[i];
+                if (Char.IsControl(bufferChar))
+                {
+                    rawDataBuilder.Append("\\x");
+                    rawDataBuilder.Append(buffer[i].ToString("X2"));
+                    continue;
+                }
+                rawDataBuilder.Append(bufferChar);
             }
 
             _logger.LogDebug(builder.ToString(), rawDataBuilder.ToString());
