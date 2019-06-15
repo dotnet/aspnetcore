@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
             else if (displayFormatAttribute != null && !displayFormatAttribute.HtmlEncode)
             {
-                displayMetadata.DataTypeName = DataType.Html.ToString();
+                displayMetadata.DataTypeName = nameof(DataType.Html);
             }
 
             var containerType = context.Key.ContainerType ?? context.Key.ModelType;
