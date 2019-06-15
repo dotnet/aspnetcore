@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Components
     {
         public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
     }
 }
