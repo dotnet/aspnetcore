@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
             Assert.Equal(Activity.Current.Id, pairs["SpanId"].ToString());
             Assert.Equal(Activity.Current.RootId, pairs["TraceId"].ToString());
-            Assert.Null(pairs["ParentId"]?.ToString());
+            Assert.Equal(string.Empty, pairs["ParentId"]?.ToString());
         }
 
         [Fact]
