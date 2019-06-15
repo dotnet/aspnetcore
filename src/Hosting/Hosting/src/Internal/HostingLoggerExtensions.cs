@@ -123,15 +123,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
                     else if (index == 2)
                     {
-                        return new KeyValuePair<string, object>("SpanId", _activity.GetSpanId() ?? string.Empty);
+                        return new KeyValuePair<string, object>("SpanId", _activity.GetSpanId());
                     }
                     else if (index == 3)
                     {
-                        return new KeyValuePair<string, object>("TraceId", _activity.GetTraceId() ?? string.Empty);
+                        return new KeyValuePair<string, object>("TraceId", _activity.GetTraceId());
                     }
                     else if (index == 4)
                     {
-                        return new KeyValuePair<string, object>("ParentId", _activity.GetParentId() ?? string.Empty);
+                        return new KeyValuePair<string, object>("ParentId", _activity.GetParentId());
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
