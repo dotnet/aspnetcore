@@ -153,6 +153,6 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
              Targets="Test"
              Properties="$(BuildProperties);$(SolutionProperties);"
-             ContinueOnError="ErrorAndStop" />
+             ContinueOnError="ErrorAndContinue" />
   </Target>
 </Project>
