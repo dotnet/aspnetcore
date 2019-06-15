@@ -322,11 +322,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var attributes = new List<object>(context.Attributes.Count);
-
-            for (var i = 0; i < context.Attributes.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var contextAttributes = context.Attributes;
+            var contextAttributesCount = contextAttributes.Count;
+            var attributes = new List<object>(contextAttributesCount);
+            
+            for (var i = 0; i < contextAttributesCount; i++)
             {
-                var attribute = context.Attributes[i];
+                var attribute = contextAttributes[i];
                 if (attribute is ValidationProviderAttribute validationProviderAttribute)
                 {
                     attributes.AddRange(validationProviderAttribute.GetValidationAttributes());

@@ -24,9 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             // Perf: Avoid allocations
-            for (var i = 0; i < context.Results.Count; i++)
+            var results = context.Results;
+            var resultsCount = results.Count;
+            for (var i = 0; i < resultsCount; i++)
             {
-                var validatorItem = context.Results[i];
+                var validatorItem = results[i];
                 // Don't overwrite anything that was done by a previous provider.
                 if (validatorItem.Validator != null)
                 {
