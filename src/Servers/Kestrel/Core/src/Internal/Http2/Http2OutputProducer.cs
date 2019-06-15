@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // 2. There is no trailing HEADERS frame.
                 Http2HeadersFrameFlags http2HeadersFrame;
 
-                if (appCompleted && !_startedWritingDataFrames && (_stream.Trailers == null || _stream.Trailers.Count == 0))
+                if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
                 {
                     _streamEnded = true;
                     http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     readResult = await _dataPipe.Reader.ReadAsync();
 
-                    if (readResult.IsCompleted && _stream.Trailers?.Count > 0)
+                    if (readResult.IsCompleted && _stream.ResponseTrailers?.Count > 0)
                     {
                         // Output is ending and there are trailers to write
                         // Write any remaining content then write trailers
@@ -322,7 +322,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
                         }
 
-                        flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
+                        _stream.ResponseTrailers.SetReadOnly();
+                        flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted && _streamEnded)
                     {
