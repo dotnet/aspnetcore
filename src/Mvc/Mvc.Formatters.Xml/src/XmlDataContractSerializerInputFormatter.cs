@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (readStream is FileBufferingReadStream fileBufferingReadStream)
                 {
-                    fileBufferingReadStream.Dispose();
+                    await fileBufferingReadStream.DisposeAsync();
                 }
             }
         }
