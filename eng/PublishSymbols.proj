@@ -54,9 +54,11 @@
 
   <Target Name="SetupPublishSymbols">
     <ItemGroup>
+      <SymbolFilesToPublish Include="$(SymbolDirectory)/**/*.pdb" />
       <SymbolPackagesToPublish Include="$(SymbolDirectory)/**/*.symbols.nupkg" />
     </ItemGroup>
 
+    <Message Importance="High" Text="Publishing symbol files to '$(SymbolServerDescription)':%0A  @(SymbolFilesToPublish, '%0A  ')" />
     <Message Importance="High" Text="Publishing symbol packages to '$(SymbolServerDescription)':%0A  @(SymbolPackagesToPublish, '%0A  ')"/>
   </Target>
 </Project>
