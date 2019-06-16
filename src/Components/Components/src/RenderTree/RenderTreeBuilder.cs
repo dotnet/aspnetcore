@@ -521,8 +521,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="updatesAttributeName">The name of another attribute whose value can be updated when the event handler is executed.</param>
         public void SetUpdatesAttributeName(string updatesAttributeName)
         {
-            // TODO: This will be implemented in a later PR, once aspnetcore-tooling
-            // is updated to call this method.
+            if (_entries.Count == 0)
+            {
+                throw new InvalidOperationException("No preceding attribute frame exists.");
+            }
+
+            ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
+            if (prevFrame.FrameType != RenderTreeFrameType.Attribute)
+            {
+                throw new InvalidOperationException($"Incorrect frame type: '{prevFrame.FrameType}'");
+            }
+
+            prevFrame = prevFrame.WithAttributeEventUpdatesAttributeName(updatesAttributeName);
         }
 
         /// <summary>
@@ -697,6 +707,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _lastNonAttributeFrameType = null;
             _hasSeenAddMultipleAttributes = false;
             _seenAttributeNames?.Clear();
+        }
+
+        // internal because this should only be used during the post-event tree patching logic
+        // It's expensive because it involves copying all the subsequent memory in the array
+        internal void InsertAttributeExpensive(int insertAtIndex, int sequence, string attributeName, object attributeValue)
+        {
+            // Replicate the same attribute omission logic as used elsewhere
+            if ((attributeValue == null) || (attributeValue is bool boolValue && !boolValue))
+            {
+                return;
+            }
+
+            _entries.InsertExpensive(insertAtIndex, RenderTreeFrame.Attribute(sequence, attributeName, attributeValue));
         }
 
         /// <summary>

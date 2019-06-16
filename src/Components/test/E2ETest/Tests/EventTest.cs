@@ -185,6 +185,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("abcdefghijklmnopqrstuvwxy", () => output.Text);
         }
 
+        [Fact]
+        public void InputEvent_RespondsOnKeystrokes_EvenIfUpdatesAreLaggy()
+        {
+            // This test doesn't mean much on WebAssembly - it just shows that even if the CPU is locked
+            // up for a bit it doesn't cause typing to lose keystrokes. But when running server-side, this
+            // shows that network latency doesn't cause keystrokes to be lost even if:
+            // [1] By the time a keystroke event arrives, the event handler ID has since changed
+            // [2] We have the situation described under "the problem" at https://github.com/aspnet/AspNetCore/issues/8204#issuecomment-493986702
+
+            MountTestComponent<LaggyTypingComponent>();
+
+            var input = Browser.FindElement(By.TagName("input"));
+            var output = Browser.FindElement(By.Id("test-result"));
+
+            Browser.Equal(string.Empty, () => output.Text);
+
+            SendKeysSequentially(input, "abcdefg");
+            Browser.Equal("abcdefg", () => output.Text);
+
+            SendKeysSequentially(input, "hijklmn");
+            Browser.Equal("abcdefghijklmn", () => output.Text);
+        }
+
         void SendKeysSequentially(IWebElement target, string text)
         {
             // Calling it for each character works around some chars being skipped
