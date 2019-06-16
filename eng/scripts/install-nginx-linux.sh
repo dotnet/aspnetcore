@@ -5,4 +5,3 @@ curl -sSL http://nginx.org/download/nginx-1.14.2.tar.gz | tar zxfv - -C /tmp && 
 make
 make install
 sudo ln -s $HOME/nginxinstall/sbin/nginx /usr/bin/nginx
-nginx -v
