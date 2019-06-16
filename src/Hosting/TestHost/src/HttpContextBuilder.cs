@@ -127,6 +127,9 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal async Task CompleteResponseAsync()
         {
+            // Flush any pending content in writer
+            await _httpContext.Response.BodyWriter.FlushAsync();
+
             _pipelineFinished = true;
             await ReturnResponseMessageAsync();
             _responseStream.CompleteWrites();

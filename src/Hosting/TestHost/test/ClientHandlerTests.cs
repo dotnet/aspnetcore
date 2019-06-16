@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -265,6 +266,24 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
             block.SetResult(0);
             Assert.Equal("BodyStarted,BodyFinished", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task PendingContentInWriterIsSent()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            {
+                var data = Encoding.UTF8.GetBytes("Hello world");
+
+                var span = context.Response.BodyWriter.GetSpan(data.Length);
+                data.CopyTo(span);
+                context.Response.BodyWriter.Advance(data.Length);
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/");
+            Assert.Equal("Hello world", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
