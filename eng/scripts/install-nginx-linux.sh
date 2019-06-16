@@ -4,5 +4,5 @@ curl -sSL http://nginx.org/download/nginx-1.14.2.tar.gz | tar zxfv - -C /tmp && 
 ./configure --prefix=$HOME/nginxinstall --with-http_ssl_module
 make
 make install
-PATH="$PATH:$HOME/nginxinstall/sbin"
+ln -s $HOME/nginxinstall/sbin/nginx /usr/bin/nginx
 nginx -v
