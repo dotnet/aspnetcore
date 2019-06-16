@@ -94,7 +94,7 @@ if (-not $InstallPath) {
 
 if (-not $InstallPath) {
     if ("$Channel" -eq "Preview") {
-        $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Preview"
+        $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\${Edition}_Pre"
     } else {
         $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\$Edition"
     }
