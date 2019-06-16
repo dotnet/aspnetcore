@@ -19,6 +19,17 @@
 -        public Task RunAsync(Stream stream);
 
 -    }
+     public class ConnectionAdapterContext {
+         public Stream ConnectionStream { get; }
+         public IFeatureCollection Features { get; }
+     }
+     public interface IAdaptedConnection : IDisposable {
+         Stream ConnectionStream { get; }
+     }
+     public interface IConnectionAdapter {
+         bool IsHttps { get; }
+         Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context);
+     }
 -    public class LoggingConnectionAdapter : IConnectionAdapter {
  {
 -        public LoggingConnectionAdapter(ILogger logger);

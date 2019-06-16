@@ -13,6 +13,12 @@
 -        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter);
 
 -    }
+     public class TraceSourceLoggerProvider : IDisposable, ILoggerProvider {
+         public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch);
+         public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener);
+         public ILogger CreateLogger(string name);
+         public void Dispose();
+     }
 -    public class TraceSourceScope : IDisposable {
  {
 -        public TraceSourceScope(object state);

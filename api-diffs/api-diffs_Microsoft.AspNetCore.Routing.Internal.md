@@ -11,6 +11,10 @@
 -        public string Value { get; }
 
 -    }
+     public class DfaGraphWriter {
+         public DfaGraphWriter(IServiceProvider services);
+         public void Write(EndpointDataSource dataSource, TextWriter writer);
+     }
 -    public class LinkGenerationDecisionTree {
  {
 -        public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries);
@@ -57,6 +61,10 @@
 
 -        }
 -    }
+     public enum SegmentState {
+         Beginning = 0,
+         Inside = 1,
+     }
 -    public class UriBuilderContextPooledObjectPolicy : IPooledObjectPolicy<UriBuildingContext> {
  {
 -        public UriBuilderContextPooledObjectPolicy();
@@ -66,6 +74,25 @@
 -        public bool Return(UriBuildingContext obj);
 
 -    }
+     public class UriBuildingContext {
+         public UriBuildingContext(UrlEncoder urlEncoder);
+         public bool AppendTrailingSlash { get; set; }
+         public SegmentState BufferState { get; private set; }
+         public bool LowercaseQueryStrings { get; set; }
+         public bool LowercaseUrls { get; set; }
+         public TextWriter PathWriter { get; }
+         public TextWriter QueryWriter { get; }
+         public SegmentState UriState { get; private set; }
+         public bool Accept(string value);
+         public bool Accept(string value, bool encodeSlashes);
+         public bool Buffer(string value);
+         public void Clear();
+         public void EndSegment();
+         public void Remove(string literal);
+         public PathString ToPathString();
+         public QueryString ToQueryString();
+         public override string ToString();
+     }
  }
 ```
 

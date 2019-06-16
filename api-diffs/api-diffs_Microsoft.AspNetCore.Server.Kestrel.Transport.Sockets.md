@@ -12,6 +12,8 @@
 
      }
      public class SocketTransportOptions {
+         public SocketTransportOptions();
+         public int IOQueueCount { get; set; }
 +        public Nullable<long> MaxReadBufferSize { get; set; }
 +        public Nullable<long> MaxWriteBufferSize { get; set; }
 +        public bool NoDelay { get; set; }

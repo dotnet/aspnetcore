@@ -2,6 +2,9 @@
 
 ``` diff
  namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal {
+     public static class CertificateLoader {
+         public static X509Certificate2 LoadFromStoreCert(string subject, string storeName, StoreLocation storeLocation, bool allowInvalid);
+     }
 -    public class HttpsConnectionAdapter : IConnectionAdapter {
  {
 -        public HttpsConnectionAdapter(HttpsConnectionAdapterOptions options);

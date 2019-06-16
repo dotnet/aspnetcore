@@ -230,12 +230,29 @@
 -        public static void ValidateHeaderValueCharacters(string headerCharacters);
 
 -    }
+     public enum HttpMethod : byte {
+         Connect = (byte)7,
+         Custom = (byte)9,
+         Delete = (byte)2,
+         Get = (byte)0,
+         Head = (byte)4,
+         None = (byte)255,
+         Options = (byte)8,
+         Patch = (byte)6,
+         Post = (byte)3,
+         Put = (byte)1,
+         Trace = (byte)5,
+     }
      public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler {
+         public HttpParser();
+         public HttpParser(bool showErrorDetails);
 -        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
 
+         bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
 -        public bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
 
 +        public bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
+         public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
      }
 -    public abstract class HttpProtocol : IEnumerable, IEnumerable<KeyValuePair<Type, object>>, IFeatureCollection, IHttpBodyControlFeature, IHttpConnectionFeature, IHttpMaxRequestBodySizeFeature, IHttpRequestFeature, IHttpRequestIdentifierFeature, IHttpRequestLifetimeFeature, IHttpResponseControl, IHttpResponseFeature, IHttpUpgradeFeature {
  {
@@ -781,7 +798,19 @@
 
 -        }
 -    }
+     public enum HttpScheme {
+         Http = 0,
+         Https = 1,
+         Unknown = -1,
+     }
+     public enum HttpVersion {
+         Http10 = 0,
+         Http11 = 1,
+         Http2 = 2,
+         Unknown = -1,
+     }
      public interface IHttpHeadersHandler {
+         void OnHeader(Span<byte> name, Span<byte> value);
 +        void OnHeadersComplete();
      }
 -    public interface IHttpOutputAborter {
@@ -808,6 +837,10 @@
 -        bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
 
 +        bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
+         bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
+     }
+     public interface IHttpRequestLineHandler {
+         void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded);
      }
 -    public interface IHttpResponseControl {
  {

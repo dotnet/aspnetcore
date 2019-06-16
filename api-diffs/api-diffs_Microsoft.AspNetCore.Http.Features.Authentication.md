@@ -61,8 +61,10 @@
 
 -    }
      public class HttpAuthenticationFeature : IHttpAuthenticationFeature {
+         public HttpAuthenticationFeature();
 -        public IAuthenticationHandler Handler { get; set; }
 
+         public ClaimsPrincipal User { get; set; }
      }
 -    public interface IAuthenticationHandler {
  {
@@ -80,6 +82,7 @@
      public interface IHttpAuthenticationFeature {
 -        IAuthenticationHandler Handler { get; set; }
 
+         ClaimsPrincipal User { get; set; }
      }
 -    public class SignInContext {
  {

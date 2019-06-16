@@ -2,6 +2,14 @@
 
 ``` diff
  namespace Microsoft.Extensions.Configuration.Ini {
+     public class IniConfigurationProvider : FileConfigurationProvider {
+         public IniConfigurationProvider(IniConfigurationSource source);
+         public override void Load(Stream stream);
+     }
+     public class IniConfigurationSource : FileConfigurationSource {
+         public IniConfigurationSource();
+         public override IConfigurationProvider Build(IConfigurationBuilder builder);
+     }
 +    public class IniStreamConfigurationProvider : StreamConfigurationProvider {
 +        public IniStreamConfigurationProvider(IniStreamConfigurationSource source);
 +        public override void Load(Stream stream);

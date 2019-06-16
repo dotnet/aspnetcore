@@ -5,6 +5,13 @@
      public class IISDefaults {
 -        public static readonly string AuthenticationScheme;
 +        public const string AuthenticationScheme = "Windows";
+         public const string Negotiate = "Negotiate";
+         public const string Ntlm = "NTLM";
+         public IISDefaults();
+     }
+     public class IISHostingStartup : IHostingStartup {
+         public IISHostingStartup();
+         public void Configure(IWebHostBuilder builder);
      }
      public class IISMiddleware {
 -        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken, IAuthenticationSchemeProvider authentication, IApplicationLifetime applicationLifetime);
@@ -13,6 +20,7 @@
 -        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken, bool isWebsocketsSupported, IAuthenticationSchemeProvider authentication, IApplicationLifetime applicationLifetime);
 
 +        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken, bool isWebsocketsSupported, IAuthenticationSchemeProvider authentication, IHostApplicationLifetime applicationLifetime);
+         public Task Invoke(HttpContext httpContext);
      }
  }
 ```

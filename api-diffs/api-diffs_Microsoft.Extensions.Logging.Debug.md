@@ -16,8 +16,11 @@
 
 -    }
      public class DebugLoggerProvider : IDisposable, ILoggerProvider {
+         public DebugLoggerProvider();
 -        public DebugLoggerProvider(Func<string, LogLevel, bool> filter);
 
+         public ILogger CreateLogger(string name);
+         public void Dispose();
      }
  }
 ```

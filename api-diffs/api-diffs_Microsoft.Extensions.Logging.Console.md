@@ -45,17 +45,24 @@
 +        Systemd = 1,
 +    }
      public class ConsoleLoggerOptions {
+         public ConsoleLoggerOptions();
+         public bool DisableColors { get; set; }
 +        public ConsoleLoggerFormat Format { get; set; }
+         public bool IncludeScopes { get; set; }
 +        public LogLevel LogToStandardErrorThreshold { get; set; }
 +        public string TimestampFormat { get; set; }
      }
      public class ConsoleLoggerProvider : IDisposable, ILoggerProvider, ISupportExternalScope {
 -        public ConsoleLoggerProvider(IConsoleLoggerSettings settings);
 
+         public ConsoleLoggerProvider(IOptionsMonitor<ConsoleLoggerOptions> options);
 -        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes);
 
 -        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes, bool disableColors);
 
+         public ILogger CreateLogger(string name);
+         public void Dispose();
+         public void SetScopeProvider(IExternalScopeProvider scopeProvider);
      }
 -    public class ConsoleLoggerSettings : IConsoleLoggerSettings {
  {

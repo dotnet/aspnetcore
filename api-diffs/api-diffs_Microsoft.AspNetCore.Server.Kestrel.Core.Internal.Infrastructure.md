@@ -63,7 +63,23 @@
 
 -    }
      public static class HttpUtilities {
+         public const string Http10Version = "HTTP/1.0";
+         public const string Http11Version = "HTTP/1.1";
+         public const string Http2Version = "HTTP/2";
+         public const string HttpsUriScheme = "https://";
+         public const string HttpUriScheme = "http://";
+         public static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span);
+         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars);
+         public static string GetAsciiStringNonNullCharacters(this Span<byte> span);
 +        public static string GetHeaderName(this Span<byte> span);
+         public static bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme);
+         public static bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length);
+         public static HttpMethod GetKnownMethod(string value);
+         public static bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length);
+         public static bool IsHostHeaderValid(string hostText);
+         public static string MethodToString(HttpMethod method);
+         public static string SchemeToString(HttpScheme scheme);
+         public static string VersionToString(HttpVersion httpVersion);
      }
 -    public interface IDebugger {
  {

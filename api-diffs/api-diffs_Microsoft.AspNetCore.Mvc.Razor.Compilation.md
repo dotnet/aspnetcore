@@ -10,15 +10,28 @@
 
 -    }
      public class CompiledViewDescriptor {
+         public CompiledViewDescriptor();
 +        public CompiledViewDescriptor(RazorCompiledItem item);
+         public CompiledViewDescriptor(RazorCompiledItem item, RazorViewAttribute attribute);
+         public IList<IChangeToken> ExpirationTokens { get; set; }
 -        public bool IsPrecompiled { get; set; }
 
+         public RazorCompiledItem Item { get; set; }
+         public string RelativePath { get; set; }
+         public Type Type { get; }
+         public RazorViewAttribute ViewAttribute { get; set; }
      }
 -    public interface IViewCompilationMemoryCacheProvider {
  {
 -        IMemoryCache CompilationMemoryCache { get; }
 
 -    }
+     public interface IViewCompiler {
+         Task<CompiledViewDescriptor> CompileAsync(string relativePath);
+     }
+     public interface IViewCompilerProvider {
+         IViewCompiler GetCompiler();
+     }
 -    public class MetadataReferenceFeature {
  {
 -        public MetadataReferenceFeature();
@@ -40,6 +53,11 @@
 -        public abstract IReadOnlyList<MetadataReference> CompilationReferences { get; }
 
 -    }
+     public class RazorViewAttribute : Attribute {
+         public RazorViewAttribute(string path, Type viewType);
+         public string Path { get; }
+         public Type ViewType { get; }
+     }
 -    public class RoslynCompilationContext {
  {
 -        public RoslynCompilationContext(CSharpCompilation compilation);
@@ -47,6 +65,10 @@
 -        public CSharpCompilation Compilation { get; set; }
 
 -    }
+     public class ViewsFeature {
+         public ViewsFeature();
+         public IList<CompiledViewDescriptor> ViewDescriptors { get; }
+     }
 -    public class ViewsFeatureProvider : IApplicationFeatureProvider, IApplicationFeatureProvider<ViewsFeature> {
  {
 -        public static readonly string PrecompiledViewsAssemblySuffix;

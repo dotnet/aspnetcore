@@ -163,6 +163,9 @@
 -        public void Configure(MvcViewOptions options);
 
 -    }
+     public class RazorInjectAttribute : Attribute {
+         public RazorInjectAttribute();
+     }
 -    public class RazorPagePropertyActivator {
  {
 -        public RazorPagePropertyActivator(Type pageType, Type declaredModelType, IModelMetadataProvider metadataProvider, RazorPagePropertyActivator.PropertyValueAccessors propertyValueAccessors);
