@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (inputStream is TranscodingReadStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
 
