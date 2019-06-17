@@ -178,6 +178,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
           Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
     <RepoTasks.CreateFrameworkListFile
       Files="@(RefPackContent)"
@@ -185,8 +187,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)">
-      </RefPackContent>
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>

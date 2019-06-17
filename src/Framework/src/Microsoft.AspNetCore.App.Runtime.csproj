@@ -279,8 +279,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="GenerateSharedFxDepsFile">
     <ItemGroup>
       <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-
-      <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
 
@@ -453,6 +451,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <Target Name="IncludeFrameworkListFile"
+          BeforeTargets="_GetPackageFiles"
           Condition="'$(ManifestsPackagePath)' != ''">
     <RepoTasks.CreateFrameworkListFile
       Files="@(SharedFxContent)"
@@ -460,8 +459,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)">
-      </RuntimePackContent>
+      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
       <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
