@@ -27,9 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeToValidate == typeof(double) ||
                 typeToValidate == typeof(decimal))
             {
-                for (var i = 0; i < context.Results.Count; i++)
+                var results = context.Results;
+                // Read interface .Count once rather than per iteration
+                var resultsCount = results.Count;
+                for (var i = 0; i < resultsCount; i++)
                 {
-                    var validator = context.Results[i].Validator;
+                    var validator = results[i].Validator;
                     if (validator != null && validator is NumericClientModelValidator)
                     {
                         // A validator is already present. No need to add one.
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                     }
                 }
 
-                context.Results.Add(new ClientValidatorItem
+                results.Add(new ClientValidatorItem
                 {
                     Validator = new NumericClientModelValidator(),
                     IsReusable = true
