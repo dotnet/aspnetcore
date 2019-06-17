@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
 
         const string TestUri = "http://example.com/some/uri";
@@ -88,6 +89,50 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             Assert.Equal("Abc", result.Name);
             Assert.Equal(123, result.Age);
+        }
+
+        [Fact]
+        public async Task ReadAsJsonAsync_ReadsCamelCasedJson()
+        {
+            var input = "{\"name\": \"TestPerson\", \"age\": 23 }";
+
+            // Arrange
+            var httpClient = new HttpClient(new TestHttpMessageHandler(req =>
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(input)
+                });
+            }));
+
+            // Act
+            var result = await httpClient.GetJsonAsync<Person>(TestUri);
+
+            // Assert
+            Assert.Equal("TestPerson", result.Name);
+            Assert.Equal(23, result.Age);
+        }
+
+        [Fact]
+        public async Task ReadAsJsonAsync_ReadsPascalCasedJson()
+        {
+            var input = "{\"Name\": \"TestPerson\", \"Age\": 23 }";
+
+            // Arrange
+            var httpClient = new HttpClient(new TestHttpMessageHandler(req =>
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(input)
+                });
+            }));
+
+            // Act
+            var result = await httpClient.GetJsonAsync<Person>(TestUri);
+
+            // Assert
+            Assert.Equal("TestPerson", result.Name);
+            Assert.Equal(23, result.Age);
         }
 
         [Theory]

@@ -10,6 +10,7 @@ namespace BasicTestApp
         public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
     }
 }

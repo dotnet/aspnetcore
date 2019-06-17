@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest
         public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
     }
 }
