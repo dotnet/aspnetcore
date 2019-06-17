@@ -151,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
         protected readonly RequestDelegate _appAbort;
+        protected readonly RequestDelegate _appReset;
 
         internal TestServiceContext _serviceContext;
         private Timer _timer;
@@ -388,6 +389,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _appAbort = context =>
             {
                 context.Abort();
+                return Task.CompletedTask;
+            };
+
+            _appReset = context =>
+            {
+                var resetFeature = context.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(resetFeature);
+                resetFeature.Reset((int)Http2ErrorCode.CANCEL);
                 return Task.CompletedTask;
             };
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal partial class Http2Stream : IHttp2StreamIdFeature,
                                          IHttpMinRequestBodyDataRateFeature,
+                                         IHttpResetFeature,
                                          IHttpResponseCompletionFeature,
                                          IHttpResponseTrailersFeature
 
@@ -72,6 +74,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 await ProduceEnd();
             }
+        }
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            var abortReason = new ConnectionAbortedException(CoreStrings.FormatHttp2StreamResetByApplication((Http2ErrorCode)errorCode));
+            ResetAndAbort(abortReason, (Http2ErrorCode)errorCode);
         }
     }
 }
