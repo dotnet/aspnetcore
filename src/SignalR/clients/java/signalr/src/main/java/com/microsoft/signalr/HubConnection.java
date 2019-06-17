@@ -577,20 +577,22 @@ public class HubConnection {
     }
 
     Object[] checkUploadStream(Object[] args, List<String> streamIds) {
-        if (args != null) {
-            List<Object> params = new ArrayList<>(Arrays.asList(args));
-            for (Object arg: args) {
-                if (arg instanceof Observable) {
-                    params.remove(arg);
-                    Observable stream = (Observable)arg;
-                    String streamId = connectionState.getNextInvocationId();
-                    streamIds.add(streamId);
-                    this.streamMap.put(streamId, stream);
-                }
-            }
-            return params.toArray();
+        if (args == null) {
+            return new Object[] { null };
         }
-        return new Object[] { null };
+
+        List<Object> params = new ArrayList<>(Arrays.asList(args));
+        for (Object arg: args) {
+            if (arg instanceof Observable) {
+                params.remove(arg);
+                Observable stream = (Observable)arg;
+                String streamId = connectionState.getNextInvocationId();
+                streamIds.add(streamId);
+                this.streamMap.put(streamId, stream);
+            }
+        }
+        
+        return params.toArray();
     }
 
     /**
