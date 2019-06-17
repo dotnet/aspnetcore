@@ -8,7 +8,9 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
     {
         private TaskCompletionSource<bool>[] _buffer;
         private int _head; 
-        private int _queueLength; 
+        private int _queueLength;
+
+        private Task<bool> _trueTask = Task.FromResult(true);
 
         private object _bufferLock = new Object();
 
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 if (_freeServerSpots > 0)
                 {
                     _freeServerSpots--;
-                    return Task.FromResult(true);
+                    return _trueTask;
                 }
 
                 // if queue is full, cancel oldest request
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 // enqueue request with a tcs
-                var tcs = new TaskCompletionSource<bool>();
+                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _buffer[_head] = tcs;
                 _queueLength++;
 
