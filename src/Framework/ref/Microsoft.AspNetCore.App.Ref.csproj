@@ -187,8 +187,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <RefPackContent Include="$(FrameworkListOutputPath)">
-        <PackagePath>$(ManifestsPackagePath)</PackagePath>
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)">
       </RefPackContent>
     </ItemGroup>
   </Target>

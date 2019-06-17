@@ -460,9 +460,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       RootAttributes="@(FrameworkListRootAttributes)" />
 
     <ItemGroup>
-      <SharedFxContent Include="$(FrameworkListOutputPath)">
-        <PackagePath>$(ManifestsPackagePath)</PackagePath>
-      </SharedFxContent>
+      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)">
+      </RuntimePackContent>
     </ItemGroup>
   </Target>
 
