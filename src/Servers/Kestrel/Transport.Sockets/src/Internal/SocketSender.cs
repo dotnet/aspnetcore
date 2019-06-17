@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public sealed class SocketSender : SocketSenderReceiverBase
+    internal sealed class SocketSender : SocketSenderReceiverBase
     {
         private List<ArraySegment<byte>> _bufferList;
 

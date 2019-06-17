@@ -7,7 +7,7 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public sealed class SocketReceiver : SocketSenderReceiverBase
+    internal sealed class SocketReceiver : SocketSenderReceiverBase
     {
         public SocketReceiver(Socket socket, PipeScheduler scheduler) : base(socket, scheduler)
         {
