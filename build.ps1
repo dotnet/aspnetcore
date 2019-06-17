@@ -324,6 +324,7 @@ if ($tmpBinaryLog) {
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
 
+$local:exit_code = $null
 try {
     # Import custom tools configuration, if present in the repo.
     # Note: Import in global scope so that the script set top-level variables without qualification.
@@ -342,6 +343,10 @@ try {
 
     $restore = $tmpRestore
 
+    if ($ci) {
+        $global:VerbosePreference = 'Continue'
+    }
+
     if (-not $NoBuildRepoTasks) {
         MSBuild $toolsetBuildProj `
             /p:RepoRoot=$RepoRoot `
@@ -359,9 +364,13 @@ try {
 catch {
     Write-Host $_.ScriptStackTrace
     Write-PipelineTaskError -Message $_
-    ExitWithExitCode 1
+    $exit_code = 1
 }
 finally {
+    if (! $exit_code) {
+        $exit_code = $LASTEXITCODE
+    }
+
     # tools.ps1 corrupts global state, so reset these values so they don't carry between invocations of build.ps1
     rm variable:global:_BuildTool -ea Ignore
     rm variable:global:_DotNetInstallDir -ea Ignore
@@ -378,4 +387,4 @@ finally {
     }
 }
 
-ExitWithExitCode 0
+ExitWithExitCode $exit_code
