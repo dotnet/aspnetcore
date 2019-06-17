@@ -19,11 +19,4 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests" />
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
 </Project>
