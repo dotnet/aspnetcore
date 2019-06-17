@@ -29,7 +29,7 @@ using System.Collections.Generic;
 
 namespace {namespaceName}
 {{
-    {(className == "TransportConnection" ? $@"public" : "internal")} partial class {className} : IFeatureCollection
+    internal partial class {className} : IFeatureCollection
     {{{Each(features, feature => $@"
         private static readonly Type {feature.Name}Type = typeof({feature.Name});")}
 {Each(features, feature => $@"

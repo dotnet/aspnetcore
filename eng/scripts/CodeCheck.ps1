@@ -166,7 +166,7 @@ try {
     Write-Host "Re-generating package baselines"
     $dotnet = 'dotnet'
     if ($ci) {
-        $dotnet = "$repoRoot/.dotnet/x64/dotnet.exe"
+        $dotnet = "$repoRoot/.dotnet/dotnet.exe"
     }
     Invoke-Block {
         & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"

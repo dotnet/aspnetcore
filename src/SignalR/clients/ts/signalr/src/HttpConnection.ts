@@ -53,7 +53,6 @@ export class HttpConnection implements IConnection {
     // connectionStarted is tracked independently from connectionState, so we can check if the
     // connection ever did successfully transition from connecting to connected before disconnecting.
     private connectionStarted: boolean;
-    private readonly baseUrl: string;
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
@@ -63,8 +62,10 @@ export class HttpConnection implements IConnection {
     private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
+    private sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
+    public baseUrl: string;
     public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
@@ -146,8 +147,12 @@ export class HttpConnection implements IConnection {
             return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
         }
 
+        if (!this.sendQueue) {
+            this.sendQueue = new TransportSendQueue(this.transport!);
+        }
+
         // Transport will not be null if state is connected
-        return this.transport!.send(data);
+        return this.sendQueue.send(data);
     }
 
     public async stop(error?: Error): Promise<void> {
@@ -183,6 +188,15 @@ export class HttpConnection implements IConnection {
             await this.startInternalPromise;
         } catch (e) {
             // This exception is returned to the user as a rejected Promise from the start method.
+        }
+
+        if (this.sendQueue) {
+            try {
+                await this.sendQueue.stop();
+            } catch (e) {
+                this.logger.log(LogLevel.Error, `TransportSendQueue.stop() threw error '${e}'.`);
+            }
+            this.sendQueue = undefined;
         }
 
         // The transport's onclose will trigger stopConnection which will run our onclose event.
@@ -500,4 +514,104 @@ export class HttpConnection implements IConnection {
 
 function transportMatches(requestedTransport: HttpTransportType | undefined, actualTransport: HttpTransportType) {
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
+}
+
+export class TransportSendQueue {
+    private buffer: any[] = [];
+    private sendBufferedData: PromiseSource;
+    private executing: boolean = true;
+    private transportResult?: PromiseSource;
+    private sendLoopPromise: Promise<void>;
+
+    constructor(private readonly transport: ITransport) {
+        this.sendBufferedData = new PromiseSource();
+        this.transportResult = new PromiseSource();
+
+        this.sendLoopPromise = this.sendLoop();
+    }
+
+    public send(data: string | ArrayBuffer): Promise<void> {
+        this.bufferData(data);
+        if (!this.transportResult) {
+            this.transportResult = new PromiseSource();
+        }
+        return this.transportResult.promise;
+    }
+
+    public stop(): Promise<void> {
+        this.executing = false;
+        this.sendBufferedData.resolve();
+        return this.sendLoopPromise;
+    }
+
+    private bufferData(data: string | ArrayBuffer): void {
+        if (this.buffer.length && typeof(this.buffer[0]) !== typeof(data)) {
+            throw new Error(`Expected data to be of type ${typeof(this.buffer)} but was of type ${typeof(data)}`);
+        }
+
+        this.buffer.push(data);
+        this.sendBufferedData.resolve();
+    }
+
+    private async sendLoop(): Promise<void> {
+        while (true) {
+            await this.sendBufferedData.promise;
+
+            if (!this.executing) {
+                if (this.transportResult) {
+                    this.transportResult.reject("Connection stopped.");
+                }
+
+                break;
+            }
+
+            this.sendBufferedData = new PromiseSource();
+
+            const transportResult = this.transportResult!;
+            this.transportResult = undefined;
+
+            const data = typeof(this.buffer[0]) === "string" ?
+                this.buffer.join("") :
+                TransportSendQueue.concatBuffers(this.buffer);
+
+            this.buffer.length = 0;
+
+            try {
+                await this.transport.send(data);
+                transportResult.resolve();
+            } catch (error) {
+                transportResult.reject(error);
+            }
+        }
+    }
+
+    private static concatBuffers(arrayBuffers: ArrayBuffer[]): ArrayBuffer {
+        const totalLength = arrayBuffers.map((b) => b.byteLength).reduce((a, b) => a + b);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const item of arrayBuffers) {
+            result.set(new Uint8Array(item), offset);
+            offset += item.byteLength;
+        }
+
+        return result;
+    }
+}
+
+class PromiseSource {
+    private resolver?: () => void;
+    private rejecter!: (reason?: any) => void;
+    public promise: Promise<void>;
+
+    constructor() {
+        this.promise = new Promise((resolve, reject) => [this.resolver, this.rejecter] = [resolve, reject]);
+    }
+
+    public resolve(): void {
+        this.resolver!();
+    }
+
+    public reject(reason?: any): void {
+        this.rejecter!(reason);
+    }
 }

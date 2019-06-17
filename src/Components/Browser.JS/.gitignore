@@ -1,2 +1,2 @@
 ﻿node_modules/
-*.js.map
+dist/Debug/

@@ -22,6 +22,10 @@ namespace Microsoft.AspNetCore.Hosting
         public virtual void ConfigureContainer(TBuilder builder) { }
         public override System.IServiceProvider CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
     }
+    public static partial class StaticWebAssetsWebHostBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
+    }
     public partial class WebHostBuilder : Microsoft.AspNetCore.Hosting.IWebHostBuilder
     {
         public WebHostBuilder() { }
@@ -206,6 +210,14 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
         public ServerAddressesFeature() { }
         public System.Collections.Generic.ICollection<string> Addresses { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool PreferHostingUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
+namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
+{
+    public partial class StaticWebAssetsLoader
+    {
+        public StaticWebAssetsLoader() { }
+        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment) { }
     }
 }
 namespace Microsoft.Extensions.Hosting

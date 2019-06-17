@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             try
             {
                 AdaptedPipeline adaptedPipeline = null;
-                var adaptedPipelineTask = Task.CompletedTask;
 
                 // _adaptedTransport must be set prior to wiring up callbacks
                 // to allow the connection to be aborted prior to protocol selection.
@@ -120,8 +119,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     if (adaptedPipeline != null)
                     {
                         // Stream can be null here and run async will close the connection in that case
-                        var stream = await ApplyConnectionAdaptersAsync();
-                        adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
+                        var stream = await ApplyConnectionAdaptersAsync(adaptedPipeline.TransportStream);
+                        adaptedPipeline.RunAsync(stream);
                     }
 
                     IRequestProcessor requestProcessor = null;
@@ -160,20 +159,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         }
                     }
 
-                    _context.Transport.Input.OnWriterCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
+                    var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnInputOrOutputCompleted(), this);
 
-                    _context.Transport.Output.OnReaderCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
-
-                    if (requestProcessor != null)
+                    // We don't care about callbacks once all requests are processed
+                    using (closedRegistration)
                     {
-                        await requestProcessor.ProcessRequestsAsync(httpApplication);
+                        if (requestProcessor != null)
+                        {
+                            await requestProcessor.ProcessRequestsAsync(httpApplication);
+                        }
                     }
 
-                    await adaptedPipelineTask;
+                    // Complete the pipeline after the method runs
+                    await (adaptedPipeline?.CompleteAsync() ?? Task.CompletedTask);
                 }
             }
             catch (Exception ex)
@@ -277,10 +275,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task<Stream> ApplyConnectionAdaptersAsync()
+        private async Task<Stream> ApplyConnectionAdaptersAsync(RawStream stream)
         {
             var connectionAdapters = _context.ConnectionAdapters;
-            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
             var adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 
@@ -367,12 +364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
         {
-            Debug.Assert(_adaptedTransport != null);
-
             _context.ConnectionContext.Abort(abortReason);
-
-            _adaptedTransport.Input.Complete();
-            _adaptedTransport.Output.Complete();
         }
 
         public void OnTimeout(TimeoutReason reason)

@@ -1,15 +1,12 @@
 <Project>
 
   <ItemGroup>
-    <!-- BaselineGenerator is netcoreapp2.1. Other build tools may also require 2.x. -->
-    <DotNetCoreRuntime Include="2.2.1" />
-
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppRuntimeVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
 
     <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
-      Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Include="$(MicrosoftNETCoreAppRuntimeVersion)"
       Arch="x86"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />

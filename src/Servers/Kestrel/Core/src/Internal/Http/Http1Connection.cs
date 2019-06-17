@@ -68,8 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnded()
         {
-            Input.Complete();
-
             TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
 
             // Prevent RequestAborted from firing. Free up unneeded feature references.
@@ -189,32 +187,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+            if (buffer.Length > _remainingRequestHeadersBytesAllowed)
             {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
-
-                // If we sliced it means the current buffer bigger than what we're
-                // allowed to look at
-                overLength = true;
+                return TrimAndTakeMessageHeaders(buffer, trailers, out consumed, out examined);
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), buffer, out consumed, out examined, out var consumedBytes);
-            _remainingRequestHeadersBytesAllowed -= consumedBytes;
-
-            if (!result && overLength)
+            var reader = new SequenceReader<byte>(buffer);
+            var result = false;
+            try
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                if (result)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
+                return result;
             }
-            if (result)
+            finally
             {
-                TimeoutControl.CancelTimeout();
+                consumed = reader.Position;
+                _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                if (result)
+                {
+                    examined = consumed;
+                }
+                else
+                {
+                    examined = buffer.End;
+                }
             }
 
-            return result;
+            bool TrimAndTakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+            {
+                var trimmedBuffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+
+                var reader = new SequenceReader<byte>(trimmedBuffer);
+                var result = false;
+                try
+                {
+                    result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                    if (!result)
+                    {
+                        // We read the maximum allowed but didn't complete the headers.
+                        BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                    }
+
+                    TimeoutControl.CancelTimeout();
+
+                    return result;
+                }
+                finally
+                {
+                    consumed = reader.Position;
+                    _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                    if (result)
+                    {
+                        examined = consumed;
+                    }
+                    else
+                    {
+                        examined = trimmedBuffer.End;
+                    }
+                }
+            }
         }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)

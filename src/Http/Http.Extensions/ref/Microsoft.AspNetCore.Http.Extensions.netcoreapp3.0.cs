@@ -9,6 +9,10 @@ namespace Microsoft.AspNetCore.Http
         public static Microsoft.AspNetCore.Http.Headers.RequestHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
         public static Microsoft.AspNetCore.Http.Headers.ResponseHeaders GetTypedHeaders(this Microsoft.AspNetCore.Http.HttpResponse response) { throw null; }
     }
+    public static partial class HttpContextServerVariableExtensions
+    {
+        public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
+    }
     public static partial class ResponseExtensions
     {
         public static void Clear(this Microsoft.AspNetCore.Http.HttpResponse response) { }

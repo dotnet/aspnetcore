@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Server.IIS;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 
         public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
-            return context.HttpContext.GetIISServerVariable(_variableName) ?? _fallbackThunk().Evaluate(context, ruleBackReferences, conditionBackReferences);
+            return context.HttpContext.GetServerVariable(_variableName) ?? _fallbackThunk().Evaluate(context, ruleBackReferences, conditionBackReferences);
         }
     }
 }

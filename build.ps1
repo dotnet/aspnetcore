@@ -124,6 +124,9 @@ param(
     # MSBuild for .NET Core
     [switch]$ForceCoreMsbuild,
 
+    # Diagnostics
+    [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
+
     # Other lifecycle targets
     [switch]$Help, # Show help
 
@@ -243,6 +246,12 @@ $env:DOTNET_HOME = $DotNetHome
 
 # Execute
 
+if ($DumpProcesses -or $CI)
+{
+    # Dump running processes
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
+}
+
 $korebuildPath = Get-KoreBuild
 
 # Project selection
@@ -348,6 +357,10 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         }
     }
 
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+    }
+
     if (-not $foundJdk) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
     }
@@ -357,6 +370,7 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     $env:KOREBUILD_KEEPGLOBALJSON = 1
+    $env:KOREBUILD_DISABLE_DOTNET_ARCH = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'
@@ -367,4 +381,16 @@ finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
     Remove-Item env:DOTNET_HOME
     Remove-Item env:KOREBUILD_KEEPGLOBALJSON
+
+    if ($DumpProcesses -or $CI)
+    {
+        Stop-Job -Name DumpProcesses
+        Remove-Job -Name DumpProcesses
+    }
+
+    if ($CI) {
+        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+    }
+
+    Write-Host "build.ps1 completed"
 }

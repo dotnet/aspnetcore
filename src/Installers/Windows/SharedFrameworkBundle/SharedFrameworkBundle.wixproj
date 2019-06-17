@@ -2,13 +2,11 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
-  <Import Project="Product.props" />
-
   <PropertyGroup>
     <Name>AspNetCoreSharedFrameworkBundle</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <OutputName>$(Name)-$(Platform)</OutputName>
+    <IsShipping>true</IsShipping>
     <OutputType>Bundle</OutputType>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ProjectGuid>{D6C54D8B-043F-4877-B751-60E7390F9EC6}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -47,4 +45,32 @@
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+
+    <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
+    <BundleNameSub>Shared Framework</BundleNameSub>
+    <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
+    <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+    <BundleRegName>$(BundleNameFull)</BundleRegName>
+
+    <BundleManufacturer>Microsoft Corporation</BundleManufacturer>
+    <BundleLogPrefix>dd_AspNetCoreSharedFramework_</BundleLogPrefix>
+
+    <!-- Registration -->
+    <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
+    <BundleRegFamily>.NET Core</BundleRegFamily>
+
+    <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+  </PropertyGroup>
+
 </Project>

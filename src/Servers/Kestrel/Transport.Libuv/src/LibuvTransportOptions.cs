@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
-        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.MemoryPoolFactory.Create;
+        internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 
         private static int ProcessorThreadCount
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -289,8 +289,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
 
-            ServerFactory.EnsureDatabaseCreated();
-
             var client = server.CreateClient();
             var newClient = server.CreateClient();
 
@@ -312,8 +310,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .SetupTestEmailSender(emailSender);
 
             var server = ServerFactory.WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-
-            ServerFactory.EnsureDatabaseCreated();
 
             var client = server.CreateClient();
             var resetPasswordClient = server.CreateClient();

@@ -45,16 +45,22 @@ namespace OpenIdConnectSample
                 .AddCookie()
                 .AddOpenIdConnect(o =>
             {
+                /*
                 o.ClientId = Configuration["oidc:clientid"];
                 o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
                 o.Authority = Configuration["oidc:authority"];
+                */
+                // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
+                o.ClientId = "server.hybrid";
+                o.ClientSecret = "secret"; // for code flow
+                o.Authority = "https://demo.identityserver.io/";
 
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
                 o.AccessDeniedPath = "/access-denied-from-remote";
 
-                o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
+                // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
                 o.Events = new OpenIdConnectEvents()
                 {

@@ -26,7 +26,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="%(HostingStartupPackageReference.Identity)" Version="%(HostingStartupPackageReference.Version)" />
   </ItemGroup>

@@ -54,6 +54,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override long Position { get { throw null; } set { } }
         public string TempFileName { get { throw null; } }
         protected override void Dispose(bool disposing) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         public override void Flush() { }
         public override int Read(byte[] buffer, int offset, int count) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -233,6 +235,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static string Base64UrlEncode(byte[] input) { throw null; }
         public static int Base64UrlEncode(byte[] input, int offset, char[] output, int outputOffset, int count) { throw null; }
         public static string Base64UrlEncode(byte[] input, int offset, int count) { throw null; }
+        public static string Base64UrlEncode(System.ReadOnlySpan<byte> input) { throw null; }
         public static int GetArraySizeRequiredToDecode(int count) { throw null; }
         public static int GetArraySizeRequiredToEncode(int count) { throw null; }
     }

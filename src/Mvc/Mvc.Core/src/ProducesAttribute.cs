@@ -25,13 +25,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="type">The <see cref="Type"/> of object that is going to be written in the response.</param>
         public ProducesAttribute(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            Type = type;
+        {   
+            Type = type ?? throw new ArgumentNullException(nameof(type));
             ContentTypes = new MediaTypeCollection();
         }
 
