@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Web.ProjectTemplates/Web.ProjectTemplates.csproj" ReferenceOutputAssemblies="false" />
+    <ProjectReference Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssemblies="false" />
 
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />

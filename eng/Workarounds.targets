@@ -58,7 +58,4 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
-  <!-- This overrides Arcade's default XUnit targets. Added to debug why tests are deadlocking on CI. -->
-  <Import Project="XUnitWithTimeout.targets" Condition="'$(TestRunnerName)' == 'XUnitWithTimeout'" />
-
 </Project>
