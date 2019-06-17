@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Identity
                     var purp = reader.ReadString();
                     if (!string.Equals(purp, purpose))
                     {
-                        Logger.PurposeNotEquals();
+                        Logger.PurposeNotEquals(purpose, purp);
                         return false;
                     }
 

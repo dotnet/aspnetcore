@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Logging
     {
         private static readonly Action<ILogger, Exception> _invalidExpirationTime;
         private static readonly Action<ILogger, Exception> _userIdsNotEquals;
-        private static readonly Action<ILogger, Exception> _purposeNotEquals;
+        private static readonly Action<ILogger, string, string, Exception> _purposeNotEquals;
         private static readonly Action<ILogger, Exception> _unexpectedEndOfInput;
         private static readonly Action<ILogger, Exception> _securityStampNotEquals;
         private static readonly Action<ILogger, Exception> _securityStampIsNotEmpty;
@@ -19,18 +19,18 @@ namespace Microsoft.Extensions.Logging
         {
             _invalidExpirationTime = LoggerMessage.Define(
                 eventId: new EventId(0, "InvalidExpirationTime"),
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "ValidateAsync failed: the expiration time is invalid.");
 
             _userIdsNotEquals = LoggerMessage.Define(
                 eventId: new EventId(1, "UserIdsNotEquals"),
                 logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: the expected and actual UserId aren't equal");
+                formatString: "ValidateAsync failed: did not find expected UserId.");
 
-            _purposeNotEquals = LoggerMessage.Define(
+            _purposeNotEquals = LoggerMessage.Define<string, string>(
                 eventId: new EventId(2, "PurposeNotEquals"),
                 logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: the expected and actual purpose aren't equal.");
+                formatString: "ValidateAsync failed: did not find expected purpose. '{ActualPurpose}' does not match the expected purpose '{ExpectedPurpose}'.");
 
             _unexpectedEndOfInput = LoggerMessage.Define(
                 eventId: new EventId(3, "UnexpectedEndOfInput"),
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Logging
             _securityStampNotEquals = LoggerMessage.Define(
                 eventId: new EventId(4, "SecurityStampNotEquals"),
                 logLevel: LogLevel.Debug,
-                formatString: "ValidateAsync failed: the expected and actual stamp aren't equal.");
+                formatString: "ValidateAsync failed: did not find expected security stamp.");
 
             _securityStampIsNotEmpty = LoggerMessage.Define(
                 eventId: new EventId(5, "SecurityStampIsNotEmpty"),
@@ -63,9 +63,9 @@ namespace Microsoft.Extensions.Logging
             _userIdsNotEquals(logger, null);
         }
 
-        public static void PurposeNotEquals(this ILogger logger)
+        public static void PurposeNotEquals(this ILogger logger, string actualPurpose, string expectedPurpose)
         {
-            _purposeNotEquals(logger, null);
+            _purposeNotEquals(logger, actualPurpose, expectedPurpose,  null);
         }
 
         public static void UnexpectedEndOfInput(this ILogger logger)
