@@ -165,6 +165,9 @@ if ($Help) {
     exit 1
 }
 
+Write-Host "Listing environment variables:"
+Get-ChildItem Env:*
+
 if ($DumpProcesses -or $CI) {
     # Dump running processes
     Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
