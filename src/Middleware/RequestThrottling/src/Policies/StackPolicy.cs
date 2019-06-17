@@ -43,7 +43,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 _queueLength++;
 
                 // increment _head for next time
-                _head = (_head + 1) % _buffer.Length;
+                if (_head++ == _buffer.Length - 1)
+                {
+                    _head = 0;
+                }
                 return tcs.Task;
             }
         }
@@ -59,7 +62,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 // step backwards and launch a new task
-                _head = (_head - 1) % _buffer.Length;
+                if (_head-- == 0)
+                {
+                    _head = _buffer.Length - 1;
+                }
                 _buffer[_head].SetResult(true);
                 _queueLength--;
             }
