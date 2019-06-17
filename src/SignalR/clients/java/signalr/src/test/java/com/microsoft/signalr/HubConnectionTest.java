@@ -954,8 +954,7 @@ class HubConnectionTest {
 
         assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
     }
-
-
+    
     @Test
     public void canSendNullArgInInvocation() {
         MockTransport mockTransport = new MockTransport();
