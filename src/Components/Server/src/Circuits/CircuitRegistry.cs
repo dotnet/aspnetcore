@@ -68,6 +68,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         internal ConcurrentDictionary<string, CircuitHost> ConnectedCircuits { get; }
 
+        internal bool TryGetExistingCircuit(string circuitId, ClaimsPrincipal user, out CircuitHost circuitHost)
+        {
+            // We authenticate the connection and authorize it based on the presence of a claim.
+            // We need to make sure that the circuit we are connecting to is the same the connection
+            // was validated against.
+            if (!_circuitIdFactory.ValidateCircuitId(circuitId, user))
+            {
+                circuitHost = null;
+                return false;
+            }
+
+            return ConnectedCircuits.TryGetValue(circuitId, out circuitHost) ||
+                DisconnectedCircuits.TryGetValue(circuitId, out circuitHost);
+        }
+
         internal MemoryCache DisconnectedCircuits { get; }
 
         /// <summary>
@@ -155,11 +170,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             DisconnectedCircuits.Set(circuitHost.CircuitId.RequestToken, entry, entryOptions);
         }
 
-        public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
+        public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, ClaimsPrincipal user, string connectionId, CancellationToken cancellationToken)
         {
             Log.CircuitConnectStarted(_logger, circuitId);
 
-            if (!_circuitIdFactory.ValidateCircuitId(circuitId, new ClaimsPrincipal()))
+            // We authenticate the connection and authorize it based on the presence of a claim.
+            // We need to make sure that the circuit we are connecting to is the same the connection
+            // was validated against.
+            if (!_circuitIdFactory.ValidateCircuitId(circuitId, user))
             {
                 Log.InvalidCircuitId(_logger, circuitId);
                 return null;

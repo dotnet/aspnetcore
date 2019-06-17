@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _generator.GetBytes(buffer);
             var payload = _protector.Protect(buffer);
 
-            return new CircuitId(GetHash(buffer), payload);
+            return new CircuitId(buffer, GetHash(buffer), payload);
         }
 
         private static byte[] GetHash(byte[] buffer)
@@ -44,17 +44,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return hash;
         }
 
+        public bool ValidateCircuitId(string circuitId, string cookie, out CircuitId id)
+        {
+            id = FromCookieValue(cookie);
+            var rawRequestId = Base64UrlTextEncoder.Decode(circuitId);
+            var requestTokenBytes = Base64UrlTextEncoder.Decode(id.RequestToken);
+            if (CryptographicOperations.FixedTimeEquals(rawRequestId, requestTokenBytes))
+            {
+                return true;
+            }
+            else
+            {
+                id = default;
+                return false;
+            }
+        }
+
         public bool ValidateCircuitId(string circuitId, ClaimsPrincipal user)
         {
             try
             {
-                return true;
-                //var protectedBytes = Base64UrlTextEncoder.Decode(circuitId);
-                //_protector.Unprotect(protectedBytes);
+                foreach (var claim in user.Claims)
+                {
+                    if (claim.Type.Equals(CircuitAuthenticationHandler.IdClaimType))
+                    {
+                        var rawRequestId = Base64UrlTextEncoder.Decode(claim.Value);
+                        var requestTokenBytes = Base64UrlTextEncoder.Decode(circuitId);
 
-                //// Its enough that we prove that we can unprotect the payload to validate the circuit id,
-                //// as this demonstrates that it the id wasn't tampered with.
-                //return true;
+                        if (CryptographicOperations.FixedTimeEquals(rawRequestId, requestTokenBytes))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
             catch (Exception)
             {
@@ -66,20 +90,24 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         internal CircuitId FromCookieValue(string value)
         {
             var payload = Base64UrlTextEncoder.Decode(value);
-            var hash = _protector.Unprotect(payload);
-            return new CircuitId(GetHash(hash), payload);
+            var id = _protector.Unprotect(payload);
+            return new CircuitId(id, GetHash(id), payload);
         }
     }
 
     internal struct CircuitId
     {
-        public CircuitId(byte[] hash, byte[] payload) : this()
+        public CircuitId(byte[] id, byte[] hash, byte[] payload) : this()
         {
+            Id = id;
             RequestToken = Base64UrlTextEncoder.Encode(hash);
             CookieToken = Base64UrlTextEncoder.Encode(payload);
         }
 
-        public string RequestToken { get; set; }
-        public string CookieToken { get; set; }
+        public byte[] Id { get; }
+
+        public string RequestToken { get; }
+
+        public string CookieToken { get; }
     }
 }

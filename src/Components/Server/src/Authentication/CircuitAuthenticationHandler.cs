@@ -46,19 +46,10 @@ namespace Microsoft.AspNetCore.Components.Server
 
             if (Context.Request.Cookies.TryGetValue(key, out var cookie))
             {
-                var id = GetId(cookie);
-                if (id == null)
-                {
-                    return Task.FromResult(AuthenticateResult.NoResult());
-                }
-
-                var idBytes = Base64UrlTextEncoder.Decode(circuitId);
-                var cookieRequestTokenBytes = Base64UrlTextEncoder.Decode(id);
-
-                if (id != null && CryptographicOperations.FixedTimeEquals(idBytes, cookieRequestTokenBytes))
+                if (CircuitIdFactory.ValidateCircuitId(circuitId, cookie, out var parsedId))
                 {
                     var identity = new ClaimsIdentity(AuthenticationType);
-                    identity.AddClaim(new Claim(IdClaimType, id));
+                    identity.AddClaim(new Claim(IdClaimType, parsedId.RequestToken));
                     var principal = new ClaimsPrincipal();
                     principal.AddIdentity(identity);
                     return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, AuthenticationType)));

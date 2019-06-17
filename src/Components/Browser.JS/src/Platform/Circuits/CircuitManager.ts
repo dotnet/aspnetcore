@@ -37,8 +37,8 @@ export function discoverPrerenderedCircuits(document: Document): CircuitDescript
   return circuits;
 }
 
-export async function startCircuit(connection: signalR.HubConnection): Promise<CircuitDescriptor | undefined> {
-  const result = await connection.invoke<string>('StartCircuit', uriHelperFunctions.getLocationHref(), uriHelperFunctions.getBaseURI());
+export async function startCircuit(circuitId: string, connection: signalR.HubConnection): Promise<CircuitDescriptor | undefined> {
+  const result = await connection.invoke<string>('StartCircuit', circuitId, uriHelperFunctions.getLocationHref(), uriHelperFunctions.getBaseURI());
   if (result) {
     return new CircuitDescriptor(result, []);
   } else {

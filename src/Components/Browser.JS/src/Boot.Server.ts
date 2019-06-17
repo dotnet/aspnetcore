@@ -71,7 +71,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   // Ensure any embedded resources have been loaded before starting the app
   await embeddedResourcesPromise;
 
-  const renderedComponents = await startCircuit(initialConnection);
+  const renderedComponents = await startCircuit(circuitId, initialConnection);
 
   if (!renderedComponents) {
     logger.log(LogLevel.Information, 'No preregistered components to render.');

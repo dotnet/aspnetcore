@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -16,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    [Authorize(CircuitAuthenticationHandler.AuthenticationType)]
     internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
@@ -70,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public string StartCircuit(string circuitId, string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
             if (DefaultCircuitFactory.ResolveComponentMetadata(Context.GetHttpContext(), circuitClient).Count == 0)
@@ -84,21 +82,40 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            var circuitHost = _circuitFactory.CreateCircuitHost(
-                Context.GetHttpContext(),
-                circuitClient,
-                uriAbsolute,
-                baseUriAbsolute);
+            // The circuit id is either a preprovisioned circuit id obtained through the create endpoint or is
+            // from a circuit containing prerendered components.
+            var existingCircuit = _circuitRegistry.TryGetExistingCircuit(circuitId, Context.User, out var circuitHost);
+            if (!existingCircuit)
+            {
+                circuitHost = _circuitFactory.CreateCircuitHost(
+                    Context.GetHttpContext(),
+                    circuitClient,
+                    uriAbsolute,
+                    baseUriAbsolute);
 
-            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+                circuitHost.UnhandledException += CircuitHost_UnhandledException;
+            }
+            else
+            {
+                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
+            }
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
 
-            _circuitRegistry.Register(circuitHost);
+            // For existing circuits we will simply trigger the rendering of non prerendered
+            // components. Otherwise we do a full initialization. Once the reconnection gets
+            // stablished the rest of the lifecycle events will run and the circuit will
+            // become connected.
+            _ = circuitHost.InitializeAsync(Context.ConnectionAborted, existingCircuit);
+
+            if (!existingCircuit)
+            {
+                // 
+                _circuitRegistry.Register(circuitHost);
+            }
 
             CircuitHost = circuitHost;
 
@@ -110,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public async Task<bool> ConnectCircuit(string circuitId)
         {
-            var circuitHost = await _circuitRegistry.ConnectAsync(circuitId, Clients.Caller, Context.ConnectionId, Context.ConnectionAborted);
+            var circuitHost = await _circuitRegistry.ConnectAsync(circuitId, Clients.Caller, Context.User, Context.ConnectionId, Context.ConnectionAborted);
             if (circuitHost != null)
             {
                 CircuitHost = circuitHost;

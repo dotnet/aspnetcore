@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var _ = Renderer.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
-        public async Task InitializeAsync(CancellationToken cancellationToken)
+        public async Task InitializeAsync(CancellationToken cancellationToken, bool existingCircuit)
         {
             await Renderer.InvokeAsync(async () =>
             {
@@ -149,8 +149,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     SetCurrentCircuitHost(this);
                     _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                    await OnCircuitOpenedAsync(cancellationToken);
-                    await OnConnectionUpAsync(cancellationToken);
+                    if (!existingCircuit)
+                    {
+                        // If the circuit we are using was created during prerendering don't run
+                        // the lifecycle events again at this time.
+                        // Circuit opened ran during prerendering
+                        // ConnectionUp will run after the reconnection is completed.
+                        await OnCircuitOpenedAsync(cancellationToken);
+                        await OnConnectionUpAsync(cancellationToken);
+                    }
 
                     // We add the root components *after* the circuit is flagged as open.
                     // That's because AddComponentAsync waits for quiescence, which can take
