@@ -462,6 +462,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ItemGroup>
       <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)">
       </RuntimePackContent>
+      <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
 
