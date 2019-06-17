@@ -1,12 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Policies
@@ -14,8 +7,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
     class StackPolicy : IQueuePolicy
     {
         private TaskCompletionSource<bool>[] _buffer;
-        private int _head; // does both writes and reads
-        private int _queueLength; // tracks the back of the queue
+        private int _head; 
+        private int _queueLength; 
 
         private object _bufferLock = new Object();
 
@@ -37,30 +30,26 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                     return Task.FromResult(true);
                 }
 
+                // if queue is full, cancel oldest request
                 if (_queueLength == _buffer.Length)
                 {
                     _buffer[_head].SetResult(false);
                     _queueLength--;
                 }
 
-                // make a new task, place it in current spot
+                // enqueue request with a tcs
                 var tcs = new TaskCompletionSource<bool>();
                 _buffer[_head] = tcs;
                 _queueLength++;
 
                 // increment _head for next time
                 _head = (_head + 1) % _buffer.Length;
-
                 return tcs.Task;
             }
         }
 
         public void OnExit()
         {
-            // going backwards,
-            // find a task you can run, and run it
-            //     (this is find a waiting task, and set its result to True)
-
             lock (_bufferLock)
             {
                 if (_queueLength == 0)
@@ -69,6 +58,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                     return;
                 }
 
+                // step backwards and launch a new task
                 _head = (_head - 1) % _buffer.Length;
                 _buffer[_head].SetResult(true);
                 _queueLength--;
