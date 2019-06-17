@@ -3,7 +3,7 @@
 
 namespace Ignitor
 {
-    internal class ComponentNode : ContainerNode
+    public class ComponentNode : ContainerNode
     {
         private readonly int _componentId;
 

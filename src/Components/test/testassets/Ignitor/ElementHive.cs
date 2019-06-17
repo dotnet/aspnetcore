@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Ignitor
 {
-    internal class ElementHive
+    public class ElementHive
     {
         private const string SelectValuePropname = "_blazorSelectValue";
 

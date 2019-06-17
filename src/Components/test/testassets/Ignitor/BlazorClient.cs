@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,50 +16,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Ignitor
 {
-    internal class Program
+    public class BlazorClient
     {
-        public static async Task<int> Main(string[] args)
-        {
-            if (args.Length == 0)
-            {
-                Console.WriteLine("a uri is required");
-                return 1;
-            }
-
-            Console.WriteLine("Press the ANY key to begin.");
-            Console.ReadLine();
-
-            var uri = new Uri(args[0]);
-
-            var client = new BlazorClient();
-            client.JSInterop += OnJSInterop;
-            Console.CancelKeyPress += (sender, e) => client.Cancel();
-
-            var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            // Click the counter button 1000 times
-            client.RenderBatchReceived += (int browserRendererId, int batchId, byte[] data) =>
-            {
-                if (batchId < 1000)
-                {
-                    client.ClickAsync("thecounter");
-                }
-                else
-                {
-                    done.TrySetResult(true);
-                }
-            };
-
-            await client.ConnectAsync(uri, prerendered: true);
-            await done.Task;
-
-            return 0;
-        }
-
-        private static void OnJSInterop(int callId, string identifier, string argsJson) =>
-            Console.WriteLine("JS Invoke: " + identifier + " (" + argsJson + ")");
-
-        public Program()
+        public BlazorClient()
         {
             CancellationTokenSource = new CancellationTokenSource();
             TaskCompletionSource = new TaskCompletionSource<object>();
@@ -73,33 +33,59 @@ namespace Ignitor
         private CancellationToken CancellationToken => CancellationTokenSource.Token;
         private TaskCompletionSource<object> TaskCompletionSource { get; }
 
-        public async Task ExecuteAsync(Uri uri)
-        {
-            string circuitId = await GetPrerenderedCircuitId(uri);
+        public bool ConfirmRenderBatch { get; set; } = true;
 
+        public event Action<int, string, string> JSInterop;
+        public event Action<int, int, byte[]> RenderBatchReceived;
+
+        public string CircuitId { get; set; }
+
+        public HubConnection HubConnection { get; set; }
+
+        public Task ClickAsync(string elementId)
+        {
+            if (!Hive.TryFindElementById(elementId, out var elementNode))
+            {
+                throw new InvalidOperationException($"Could not find element with id {elementId}.");
+            }
+
+            return elementNode.ClickAsync(HubConnection);
+        }
+
+        public ElementHive Hive { get; set; }
+
+        public async Task<bool> ConnectAsync(Uri uri, bool prerendered)
+        {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
             builder.WithUrl(new Uri(uri, "_blazor/"));
             builder.ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Trace));
             var hive = new ElementHive();
 
-            await using var connection = builder.Build();
-            await connection.StartAsync(CancellationToken);
+            HubConnection = builder.Build();
+            await HubConnection.StartAsync(CancellationToken);
             Console.WriteLine("Connected");
 
-            connection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
-            connection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
-            connection.On<Error>("JS.OnError", OnError);
-            connection.Closed += OnClosedAsync;
+            HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
+            HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+            HubConnection.On<Error>("JS.OnError", OnError);
+            HubConnection.Closed += OnClosedAsync;
 
             // Now everything is registered so we can start the circuit.
-            var success = await connection.InvokeAsync<bool>("ConnectCircuit", circuitId);
-
-            await TaskCompletionSource.Task;
+            if (prerendered)
+            {
+                CircuitId = await GetPrerenderedCircuitIdAsync(uri);
+                return await HubConnection.InvokeAsync<bool>("ConnectCircuit", CircuitId);
+            }
+            else
+            {
+                CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri);
+                return CircuitId != null;
+            }
 
             void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
             {
-                Console.WriteLine("JS Invoke: " + identifier + " (" + argsJson + ")");
+                JSInterop?.Invoke(asyncHandle, identifier, argsJson);
             }
 
             void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
@@ -107,8 +93,12 @@ namespace Ignitor
                 var batch = RenderBatchReader.Read(batchData);
                 hive.Update(batch);
 
-                // This will click the Counter component repeatedly resulting in infinite requests.
-                _ = ClickAsync("thecounter", hive, connection);
+                if (ConfirmRenderBatch)
+                {
+                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
+                }
+
+                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
             }
 
             void OnError(Error error)
@@ -131,7 +121,12 @@ namespace Ignitor
             }
         }
 
-        private static async Task<string> GetPrerenderedCircuitId(Uri uri)
+        void InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
+        {
+            HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson);
+        }
+
+        private static async Task<string> GetPrerenderedCircuitIdAsync(Uri uri)
         {
             var httpClient = new HttpClient();
             var response = await httpClient.GetAsync(uri);
@@ -142,17 +137,6 @@ namespace Ignitor
             var json = JsonDocument.Parse(match.Groups[1].Value);
             var circuitId = json.RootElement.GetProperty("circuitId").GetString();
             return circuitId;
-        }
-
-        private static async Task ClickAsync(string id, ElementHive hive, HubConnection connection)
-        {
-            if (!hive.TryFindElementById(id, out var elementNode))
-            {
-                Console.WriteLine("Could not find the counter to perform a click. Exiting.");
-                return;
-            }
-
-            await elementNode.ClickAsync(connection);
         }
 
         public void Cancel()

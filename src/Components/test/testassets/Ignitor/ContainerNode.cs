@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ignitor
 {
-    internal abstract class ContainerNode : Node
+    public abstract class ContainerNode : Node
     {
         private readonly List<Node> _children;
 

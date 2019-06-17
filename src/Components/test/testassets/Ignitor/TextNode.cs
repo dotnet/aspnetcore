@@ -3,7 +3,7 @@
 
 namespace Ignitor
 {
-    internal class TextNode : Node
+    public class TextNode : Node
     {
         public TextNode(string text)
         {
