@@ -1,15 +1,14 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace RepoTasks
 {
@@ -26,7 +25,7 @@ namespace RepoTasks
 
         /// <summary>
         /// Extra attributes to place on the root node.
-        /// 
+        ///
         /// %(Identity): Attribute name.
         /// %(Value): Attribute value.
         /// </summary>
