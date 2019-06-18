@@ -46,7 +46,8 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature"
+                "IHttpResponseStartFeature",
+                "IHttpResetFeature"
             };
 
             var rareFeatures = new[]

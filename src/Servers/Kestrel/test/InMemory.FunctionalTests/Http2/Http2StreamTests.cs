@@ -4107,5 +4107,178 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Single(_decodedHeaders);
             Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
         }
+
+        [Fact]
+        public async Task ResetAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
+        {
+            var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                try
+                {
+                    context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
+                    Assert.NotNull(completionFeature);
+
+                    await context.Response.WriteAsync("Hello World");
+                    Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
+                    Assert.True(context.Response.Headers.IsReadOnly);
+
+                    context.Response.AppendTrailer("CustomName", "Custom Value");
+
+                    await completionFeature.CompleteAsync().DefaultTimeout();
+
+                    Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
+
+                    // RequestAborted will no longer fire after CompleteAsync.
+                    Assert.False(context.RequestAborted.CanBeCanceled);
+                    var resetFeature = context.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(resetFeature);
+                    resetFeature.Reset((int)Http2ErrorCode.NO_ERROR);
+
+                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                    await clientTcs.Task.DefaultTimeout();
+                    appTcs.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appTcs.SetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            var bodyFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)(Http2HeadersFrameFlags.NONE),
+                withStreamId: 1);
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
+                "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
+
+            clientTcs.SetResult(0);
+            await appTcs.Task;
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
+
+        [Fact]
+        public async Task ResetAfterCompleteAsync_POSTWithResponseBodyAndTrailers_RequestBodyThrows()
+        {
+            var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                try
+                {
+                    var requestBodyTask = context.Request.BodyReader.ReadAsync();
+
+                    context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
+                    Assert.NotNull(completionFeature);
+
+                    await context.Response.WriteAsync("Hello World");
+                    Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
+                    Assert.True(context.Response.Headers.IsReadOnly);
+
+                    context.Response.AppendTrailer("CustomName", "Custom Value");
+
+                    await completionFeature.CompleteAsync().DefaultTimeout();
+
+                    Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
+
+                    // RequestAborted will no longer fire after CompleteAsync.
+                    Assert.False(context.RequestAborted.CanBeCanceled);
+                    var resetFeature = context.Features.Get<IHttpResetFeature>();
+                    Assert.NotNull(resetFeature);
+                    resetFeature.Reset((int)Http2ErrorCode.NO_ERROR);
+
+                    await Assert.ThrowsAsync<TaskCanceledException>(async () => await requestBodyTask);
+                    await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await context.Request.BodyReader.ReadAsync());
+
+                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                    await clientTcs.Task.DefaultTimeout();
+                    appTcs.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appTcs.SetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            var bodyFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)(Http2HeadersFrameFlags.NONE),
+                withStreamId: 1);
+            var trailersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 25,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.NO_ERROR, expectedErrorMessage:
+                "The HTTP/2 stream was reset by the application with error code NO_ERROR.");
+
+            clientTcs.SetResult(0);
+            await appTcs.Task;
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
+
+            _decodedHeaders.Clear();
+
+            _hpackDecoder.Decode(trailersFrame.PayloadSequence, endHeaders: true, handler: this);
+
+            Assert.Single(_decodedHeaders);
+            Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
+        }
     }
 }
