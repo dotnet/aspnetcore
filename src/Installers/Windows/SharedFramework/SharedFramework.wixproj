@@ -21,9 +21,7 @@
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\SharedFramework\GenerateNugetPack.ps1</GenerateNupkgPowershellScript>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
-    <!-- TODO put this in artifacts in non-shipping -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@
 
 param(
     [Parameter(Mandatory=$true)][string]$MsiPath,
-    [Parameter(Mandatory=$true)][string]$CabPath,
+    [Parameter(Mandatory=$false)][string]$CabPath,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [Parameter(Mandatory=$true)][string]$Architecture,
