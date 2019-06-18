@@ -18,7 +18,7 @@
 
   <PropertyGroup>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\</StartWorkingDirectory>
-    <StartArguments>Core/src/Internal/Http/HttpHeaders.Generated.cs Core/src/Internal/Http/HttpProtocol.Generated.cs Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs ../Connections.Abstractions/src/TransportConnection.Generated.cs</StartArguments>
+    <StartArguments>Core/src/Internal/Http/HttpHeaders.Generated.cs Core/src/Internal/Http/HttpProtocol.Generated.cs Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs shared/TransportConnection.Generated.cs</StartArguments>
   </PropertyGroup>
 
 </Project>

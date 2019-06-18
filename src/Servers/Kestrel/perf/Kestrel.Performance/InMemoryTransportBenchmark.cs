@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
-        public class InMemoryTransport : IConnectionListener
+        internal class InMemoryTransport : IConnectionListener
         {
             private readonly IReadOnlyList<InMemoryConnection> _connections;
             private readonly TaskCompletionSource<ConnectionContext> _tcs = new TaskCompletionSource<ConnectionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
-        public class InMemoryConnection : TransportConnection
+        internal class InMemoryConnection : TransportConnection
         {
             public InMemoryConnection()
             {

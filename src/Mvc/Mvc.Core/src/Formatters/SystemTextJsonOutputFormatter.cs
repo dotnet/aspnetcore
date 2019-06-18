@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (writeStream is TranscodingWriteStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
         }

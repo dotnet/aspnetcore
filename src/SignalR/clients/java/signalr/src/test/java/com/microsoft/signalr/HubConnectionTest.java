@@ -954,6 +954,42 @@ class HubConnectionTest {
 
         assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
     }
+    
+    @Test
+    public void canSendNullArgInInvocation() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null);
+        result.doOnSuccess(value -> done.set(true));
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
+
+        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+    }
+
+    @Test
+    public void canSendMultipleNullArgsInInvocation() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null, null);
+        result.doOnSuccess(value -> done.set(true));
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null,null]}"+ RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
+
+        assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+    }
 
     @Test
     public void multipleInvokesWaitForOwnCompletionMessage() {

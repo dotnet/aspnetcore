@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             for (var i = 0; i < args.Length; i++)
             {
-                if (ReflectionHelper.IsStreamingType(args[i].GetType()))
+                if (args[i] != null && ReflectionHelper.IsStreamingType(args[i].GetType()))
                 {
                     if (readers == null)
                     {

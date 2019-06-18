@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Connections
 {
-    public partial class TransportConnection : IConnectionIdFeature,
-                                               IConnectionTransportFeature,
-                                               IConnectionItemsFeature,
-                                               IMemoryPoolFeature,
-                                               IConnectionLifetimeFeature
+    internal partial class TransportConnection : IConnectionIdFeature,
+                                                 IConnectionTransportFeature,
+                                                 IConnectionItemsFeature,
+                                                 IMemoryPoolFeature,
+                                                 IConnectionLifetimeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
         // then the list of `features` in the generated code project MUST also be updated.

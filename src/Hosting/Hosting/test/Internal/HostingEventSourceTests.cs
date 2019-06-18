@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
@@ -239,29 +240,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private static HostingEventSource GetHostingEventSource()
         {
             return new HostingEventSource(Guid.NewGuid().ToString());
-        }
-
-        private class TestEventListener : EventListener
-        {
-            private readonly int _eventId;
-
-            public TestEventListener(int eventId)
-            {
-                _eventId = eventId;
-            }
-
-            public EventWrittenEventArgs EventData { get; private set; }
-
-            protected override void OnEventWritten(EventWrittenEventArgs eventData)
-            {
-                // The tests here run in parallel and since the single publisher instance (HostingEventingSource)
-                // notifies all listener instances in these tests, capture the EventData that a test is explicitly
-                // looking for and not give back other tests' data.
-                if (eventData.EventId == _eventId)
-                {
-                    EventData = eventData;
-                }
-            }
         }
 
         private class CounterListener : EventListener

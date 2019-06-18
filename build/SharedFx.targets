@@ -9,7 +9,7 @@
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
 
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
-    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LB.csproj" />
 
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj" />
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\Symbols\Microsoft.AspNetCore.ANCMSymbols.csproj" />

@@ -1,14 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.RequestThrottling.Tests;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
@@ -24,17 +21,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-            var options = new RequestThrottlingOptions
-            {
-                MaxConcurrentRequests = 8,
-                RequestQueueLimit = _numRequests
-            };
-
-            _middleware = new RequestThrottlingMiddleware(
-                    next: _restOfServer,
-                    loggerFactory: NullLoggerFactory.Instance,
-                    options: Options.Create(options)
-                );
+            _middleware = TestUtils.CreateTestMiddleware_TailDrop(
+                maxConcurrentRequests: 1,
+                requestQueueLimit: 0,
+                next: _restOfServer);
         }
 
         [Params(false, true)]

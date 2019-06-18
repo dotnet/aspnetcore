@@ -67,9 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             var hasRequiredAttribute = false;
 
-            for (var i = 0; i < context.Results.Count; i++)
+            var results = context.Results;
+            // Read interface .Count once rather than per iteration
+            var resultsCount = results.Count;
+            for (var i = 0; i < resultsCount; i++)
             {
-                var validatorItem = context.Results[i];
+                var validatorItem = results[i];
                 if (validatorItem.Validator != null)
                 {
                     // Check if a required attribute is already cached.
