@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -316,6 +317,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2689", FlakyOn.All)]
         public void CircuitRegistryUsesConfiguredMaxRetainedDisconnectedCircuitsValue()
         {
             // Arrange
