@@ -1,31 +1,32 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Builder;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal
 {
-    internal class DataProtectionStartupFilter : IStartupFilter
+    internal class DataProtectionHostedService : IHostedService
     {
         private readonly IKeyRingProvider _keyRingProvider;
-        private readonly ILogger<DataProtectionStartupFilter> _logger;
+        private readonly ILogger<DataProtectionHostedService> _logger;
 
-        public DataProtectionStartupFilter(IKeyRingProvider keyRingProvider)
+        public DataProtectionHostedService(IKeyRingProvider keyRingProvider)
             : this(keyRingProvider, NullLoggerFactory.Instance)
         { }
 
-        public DataProtectionStartupFilter(IKeyRingProvider keyRingProvider, ILoggerFactory loggerFactory)
+        public DataProtectionHostedService(IKeyRingProvider keyRingProvider, ILoggerFactory loggerFactory)
         {
             _keyRingProvider = keyRingProvider;
-            _logger = loggerFactory.CreateLogger<DataProtectionStartupFilter>();
+            _logger = loggerFactory.CreateLogger<DataProtectionHostedService>();
         }
 
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        public Task StartAsync(CancellationToken token)
         {
             try
             {
@@ -42,7 +43,9 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
                 _logger.KeyRingFailedToLoadOnStartup(ex);
             }
 
-            return next;
+            return Task.CompletedTask;
         }
+
+        public Task StopAsync(CancellationToken token) => Task.CompletedTask;
     }
 }
