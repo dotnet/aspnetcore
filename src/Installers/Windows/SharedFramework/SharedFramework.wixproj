@@ -81,7 +81,7 @@
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
 
-  <Target Name="Test12354" AfterTargets="CopyToArtifactsDirectory;Build">
+  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
       <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
@@ -90,7 +90,7 @@
                       '$(MsiFullPath)' ^
                       '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
-                      '$(InstallersOutputPath)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)'" />
