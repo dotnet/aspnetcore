@@ -234,9 +234,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
     try {
         const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTestApp.dll");
 
-        console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!${serverPath}.`);
-        console.log(process.env);
-
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
 
@@ -245,14 +242,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
             desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
-
-        console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!where`);
-        spawn("where", ["dotnet"], {
-            env: {
-                ...process.env,
-            }
-        }).stdout.pipe(process.stdout);
-
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
                 ...process.env,

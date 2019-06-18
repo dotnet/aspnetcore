@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <IsTestProject>false</IsTestProject>
     <BrowserTestHostName Condition="'$(ContinuousIntegrationBuild)' == 'true'">sauce.local</BrowserTestHostName>
     <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
