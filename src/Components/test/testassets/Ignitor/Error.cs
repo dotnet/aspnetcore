@@ -4,7 +4,7 @@
 namespace Ignitor
 {
     internal class Error
-        {
-            public string Stack { get; set; }
-        }
+    {
+        public string Stack { get; set; }
+    }
 }
