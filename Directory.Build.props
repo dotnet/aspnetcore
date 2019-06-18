@@ -120,6 +120,7 @@
   <!-- Artifacts layout -->
   <PropertyGroup>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
+    <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>
   </PropertyGroup>
 
   <!-- Ensure these output paths exist. -->

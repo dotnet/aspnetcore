@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             try
             {
+                var serverConnectionCompletedTcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+
                 async Task EchoServer(ConnectionContext connection)
                 {
                     // For graceful shutdown
@@ -62,6 +64,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     catch (OperationCanceledException)
                     {
                         Logger.LogDebug("Graceful shutdown triggered for {connectionId}.", connection.ConnectionId);
+                    }
+                    finally
+                    {
+                        serverConnectionCompletedTcs.TrySetResult(null);
                     }
                 }
 
@@ -96,6 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         Assert.Equal(data, buffer);
                     }
+
+                    // Wait for the server to complete the loop because of the FIN
+                    await serverConnectionCompletedTcs.Task.DefaultTimeout();
 
                     await host.StopAsync();
                 }

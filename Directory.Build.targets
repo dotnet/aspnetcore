@@ -118,6 +118,19 @@
 
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">
+    <BuildDependsOn>$(BuildDependsOn);_CopySymbolsToArtifacts</BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_CopySymbolsToArtifacts">
+    <Copy SourceFiles="$([System.IO.Path]::ChangeExtension('$(TargetPath)', 'pdb'))"
+        DestinationFolder="$(SymbolsOutputPath)$(TargetFramework)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
+  </Target>
+
   <Import Project="eng\Workarounds.targets" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />

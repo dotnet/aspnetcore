@@ -577,6 +577,10 @@ public class HubConnection {
     }
 
     Object[] checkUploadStream(Object[] args, List<String> streamIds) {
+        if (args == null) {
+            return new Object[] { null };
+        }
+
         List<Object> params = new ArrayList<>(Arrays.asList(args));
         for (Object arg: args) {
             if (arg instanceof Observable) {
@@ -587,7 +591,7 @@ public class HubConnection {
                 this.streamMap.put(streamId, stream);
             }
         }
-
+        
         return params.toArray();
     }
 

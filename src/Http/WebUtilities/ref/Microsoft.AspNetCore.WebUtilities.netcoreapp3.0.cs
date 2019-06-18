@@ -54,6 +54,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override long Position { get { throw null; } set { } }
         public string TempFileName { get { throw null; } }
         protected override void Dispose(bool disposing) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         public override void Flush() { }
         public override int Read(byte[] buffer, int offset, int count) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

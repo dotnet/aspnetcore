@@ -192,13 +192,17 @@ describe("HttpConnection", () => {
         "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
     });
 
-    it("all transport failure error get aggregated", async () => {
+    it("all transport failure errors get aggregated", async () => {
         await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
             const options: IHttpConnectionOptions = {
                 WebSocket: false,
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => defaultNegotiateResponse)
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return defaultNegotiateResponse;
+                    })
                     .on("GET", () => new HttpResponse(200))
                     .on("DELETE", () => new HttpResponse(202)),
 
@@ -210,11 +214,75 @@ describe("HttpConnection", () => {
             await expect(connection.start(TransferFormat.Text))
                 .rejects
                 .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+
+            expect(negotiateCount).toEqual(1);
         },
         "Failed to start the transport 'WebSockets': null",
-        "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
-        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client.",
         "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+    });
+
+    it("negotiate called again when transport fails to start and falls back", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
+                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+                transport: HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+
+            expect(negotiateCount).toEqual(2);
+        },
+        "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
+        "Failed to start the transport 'ServerSentEvents': Error: Don't allow ServerSentEvents.",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+    });
+
+    it("failed re-negotiate fails start", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
+                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        if (negotiateCount === 2) {
+                            throw new Error("negotiate failed");
+                        }
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("negotiate failed");
+
+            expect(negotiateCount).toEqual(2);
+        },
+        "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
+        "Failed to complete negotiation with the server: Error: negotiate failed",
+        "Failed to start the connection: Error: negotiate failed");
     });
 
     it("can stop a non-started connection", async () => {
@@ -344,8 +412,7 @@ describe("HttpConnection", () => {
                     .toThrow(`Unable to connect to the server with any of the available transports. ${negotiateResponse.availableTransports[0].transport} failed: Error: '${negotiateResponse.availableTransports[0].transport}' is disabled by the client.` +
                     ` ${negotiateResponse.availableTransports[1].transport} failed: Error: '${negotiateResponse.availableTransports[1].transport}' is disabled by the client.`);
             },
-            /Failed to start the connection: Error: Unable to connect to the server with any of the available transports. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client./,
-            /Failed to start the transport '[a-zA-Z]+': Error: '[a-zA-Z]+' is disabled by the client./);
+            /Failed to start the connection: Error: Unable to connect to the server with any of the available transports. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client./);
         });
 
         it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async () => {
@@ -384,8 +451,7 @@ describe("HttpConnection", () => {
                     expect(e.message).toBe(`Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
                 }
             },
-                `Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`,
-                `Failed to start the transport '${HttpTransportType[requestedTransport]}': Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
+            `Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
         });
     });
 

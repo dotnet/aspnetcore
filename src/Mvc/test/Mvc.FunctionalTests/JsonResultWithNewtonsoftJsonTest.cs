@@ -1,18 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class JsonResultTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+    public class JsonResultWithNewtonsoftJsonTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithNewtonsoftJson>>
     {
-        public JsonResultTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+        private IServiceCollection _serviceCollection;
+
+        public JsonResultWithNewtonsoftJsonTest(MvcTestFixture<BasicWebSite.StartupWithNewtonsoftJson> fixture)
         {
-            Client = fixture.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<BasicWebSite.StartupWithNewtonsoftJson>());
+            factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection));
+
+            Client = factory.CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
@@ -21,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_UsesDefaultContentType()
         {
             // Arrange
-            var url = "http://localhost/JsonResult/Plain";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/Plain";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -42,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_Conneg_Fails(string mediaType)
         {
             // Arrange
-            var url = "http://localhost/JsonResult/Plain";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/Plain";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.TryAddWithoutValidation("Accept", mediaType);
 
@@ -61,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_Null()
         {
             // Arrange
-            var url = "http://localhost/JsonResult/Null";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/Null";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -79,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_String()
         {
             // Arrange
-            var url = "http://localhost/JsonResult/String";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/String";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -96,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_Uses_CustomSerializerSettings()
         {
             // Arrange
-            var url = "http://localhost/JsonResult/CustomSerializerSettings";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/CustomSerializerSettings";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act
@@ -112,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonResult_CustomContentType()
         {
             // Arrange
-            var url = "http://localhost/JsonResult/CustomContentType";
+            var url = "http://localhost/JsonResultWithNewtonsoftJson/CustomContentType";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             // Act

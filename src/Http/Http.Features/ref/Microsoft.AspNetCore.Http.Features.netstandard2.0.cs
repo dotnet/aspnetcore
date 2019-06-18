@@ -200,6 +200,10 @@ namespace Microsoft.AspNetCore.Http.Features
         bool Available { get; }
         Microsoft.AspNetCore.Http.IHeaderDictionary Trailers { get; }
     }
+    public partial interface IHttpResponseCompletionFeature
+    {
+        System.Threading.Tasks.Task CompleteAsync();
+    }
     public partial interface IHttpResponseFeature
     {
         System.IO.Stream Body { get; set; }

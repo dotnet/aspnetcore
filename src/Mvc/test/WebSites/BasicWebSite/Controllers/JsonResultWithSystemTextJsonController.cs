@@ -1,21 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace BasicWebSite.Controllers
 {
-    public class JsonResultController : Controller
+    public class JsonResultWithSystemTextJsonController : Controller
     {
-        private static readonly JsonSerializerSettings _customSerializerSettings;
+        private static readonly JsonSerializerOptions _customSerializerSettings;
 
-        static JsonResultController()
+        static JsonResultWithSystemTextJsonController()
         {
-            _customSerializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
-            _customSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            _customSerializerSettings = new JsonSerializerOptions();
         }
 
         public JsonResult Plain()

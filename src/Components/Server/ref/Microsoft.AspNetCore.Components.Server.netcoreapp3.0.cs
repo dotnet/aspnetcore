@@ -95,14 +95,15 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class ComponentServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions> configure = null) { throw null; }
     }
     public partial interface IServerSideBlazorBuilder
     {
         Microsoft.Extensions.DependencyInjection.IServiceCollection Services { get; }
     }
-    public static partial class ServerSizeBlazorBuilderExtensions
+    public static partial class ServerSideBlazorBuilderExtensions
     {
+        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddCircuitOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions> configure) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddHubOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder builder, System.Action<Microsoft.AspNetCore.SignalR.HubOptions> configure) { throw null; }
     }
 }
