@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public abstract class HubDispatcher<THub> where THub : Hub
+    internal abstract class HubDispatcher<THub> where THub : Hub
     {
         public abstract Task OnConnectedAsync(HubConnectionContext connection);
         public abstract Task OnDisconnectedAsync(HubConnectionContext connection, Exception exception);

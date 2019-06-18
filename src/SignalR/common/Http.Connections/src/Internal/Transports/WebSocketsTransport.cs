@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public partial class WebSocketsTransport : IHttpTransport
+    internal partial class WebSocketsTransport : IHttpTransport
     {
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
