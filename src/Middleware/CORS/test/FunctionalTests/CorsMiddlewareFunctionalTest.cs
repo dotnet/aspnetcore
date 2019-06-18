@@ -28,7 +28,7 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/11354")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
         [InlineData("Startup")]
         [InlineData("StartupWithoutEndpointRouting")]
