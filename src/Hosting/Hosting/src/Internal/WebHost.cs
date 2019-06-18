@@ -21,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.StackTrace.Sources;
 using Microsoft.Net.Http.Headers;
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private IServiceProvider _applicationServices;
         private ExceptionDispatchInfo _applicationServicesException;
-        private ILogger _logger;
+        private ILogger _logger =  NullLogger.Instance;
 
         private bool _stopped;
         private bool _startedServer;
@@ -317,7 +318,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             _stopped = true;
 
-            _logger?.Shutdown();
+            _logger.Shutdown();
 
             var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
             if (!cancellationToken.CanBeCanceled)
@@ -364,7 +365,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
                 catch (Exception ex)
                 {
-                    _logger?.ServerShutdownException(ex);
+                    _logger.ServerShutdownException(ex);
                 }
             }
 

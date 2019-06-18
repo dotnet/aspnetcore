@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger<HttpsConnectionAdapter>();
+            _logger = loggerFactory?.CreateLogger<HttpsConnectionAdapter>() ?? (ILogger)NullLogger.Instance;
         }
 
         public bool IsHttps => true;
@@ -181,13 +182,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
             catch (OperationCanceledException)
             {
-                _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
             catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
             {
-                _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
