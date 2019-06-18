@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if NETCOREAPP3_0
 using System.Buffers;
+#endif
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.WebEncoders.Sources;
