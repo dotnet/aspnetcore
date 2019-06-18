@@ -1,22 +1,23 @@
 using System;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
-    class StackPolicy : IQueuePolicy
+    internal class StackPolicy : IQueuePolicy
     {
-        private TaskCompletionSource<bool>[] _buffer;
+        private readonly TaskCompletionSource<bool>[] _buffer;
         private int _head; 
         private int _queueLength;
 
-        private Task<bool> _trueTask = Task.FromResult(true);
+        private static readonly Task<bool> _trueTask = Task.FromResult(true);
 
-        private object _bufferLock = new Object();
+        private readonly object _bufferLock = new Object();
 
         private int _freeServerSpots;
 
-        public StackPolicy(IOptions<TailDropOptions> options)
+        public StackPolicy(IOptions<PolicyOptions> options)
         {
             _buffer = new TaskCompletionSource<bool>[options.Value.RequestQueueLimit];
             _freeServerSpots = options.Value.MaxConcurrentRequests;

@@ -22,16 +22,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configure">Set the options used by the queue.
-        /// Mandatory, since <see cref="TailDropOptions.MaxConcurrentRequests"></see> must be provided.</param>
+        /// Mandatory, since <see cref="PolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
         /// <returns></returns>
-        public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<TailDropOptions> configure)
+        public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<PolicyOptions> configure)
         {
             services.Configure(configure);
             services.AddSingleton<IQueuePolicy, TailDrop>();
             return services;
         }
 
-        public static IServiceCollection AddStackPolicy(this IServiceCollection services, Action<TailDropOptions> configure)
+        public static IServiceCollection AddStackPolicy(this IServiceCollection services, Action<PolicyOptions> configure)
         {
             services.Configure(configure);
             services.AddSingleton<IQueuePolicy, StackPolicy>();

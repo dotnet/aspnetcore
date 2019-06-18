@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public TailDrop(IOptions<TailDropOptions> options)
+        public TailDrop(IOptions<PolicyOptions> options)
         {
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             if (_maxConcurrentRequests <= 0)
