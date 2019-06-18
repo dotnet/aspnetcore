@@ -636,8 +636,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            // TODO: Fix once EF query works Issue #10668
-            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).ToList().SingleOrDefault());
+
+            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
         }
 
         /// <summary>
