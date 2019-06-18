@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\build\submodule.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\build\submodule.props')" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\build\versions.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\build\versions.props')" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\build\settings.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\build\settings.props')" />
+  <Import Project="..\..\..\build\submodule.props"  />
+  <Import Project="..\..\..\build\settings.props" />
 
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -31,7 +30,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -72,12 +71,4 @@
     <ClInclude Include="precomp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\..\build\submodule.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\..\..\build\submodule.props'))" />
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\..\..\build\versions.props'))" />
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\..\..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\..\..\build\settings.props'))" />
-  </Target>
 </Project>

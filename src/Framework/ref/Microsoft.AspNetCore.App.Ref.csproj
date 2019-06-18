@@ -7,7 +7,7 @@
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
-    <PackageVersion>$(TargetingPackVersion)</PackageVersion>
+    <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 
@@ -17,14 +17,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PackageType>DotnetPlatform</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
-
-    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
-    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
-
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'">aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'">aspnetcore-targeting-pack-$(PackageVersion).tar.gz</ArchiveOutputFileName>
-    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
 
     <!-- There are no symbols for reference assemblies. -->
     <IncludeSymbols>false</IncludeSymbols>
@@ -41,7 +33,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
-    <ManifestsPackagePath>data/</ManifestsPackagePath>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
@@ -61,8 +52,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
+
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)</ArchiveOutputFileName>
+    <ZipArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).zip</ZipArchiveOutputPath>
+    <TarArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).tar.gz</TarArchiveOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- If this project won't produce a package, don't bother building anything. -->
-    <BuildDependsOn Condition="'$(IsPackable)' != 'false'">
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
@@ -160,17 +161,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ArchiveOutputPath)">
+          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
+          Condition="'$(IsPackable)' == 'true'">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
-      DestinationFile="$(ArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'" />
+      DestinationFile="$(ZipArchiveOutputPath)"
+      Overwrite="true" />
+    <!-- Requires Windows 10 version 1803 or newer -->
     <Exec
-      Command="tar -czf $(ArchiveOutputPath) ."
-      WorkingDirectory="$(TargetingPackLayoutRoot)"
-      Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'" />
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
+      Command="tar -czf $(TarArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
   </Target>
 
 </Project>

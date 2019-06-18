@@ -44,11 +44,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             var count = 0;
 
-            // TODO: Use new API once EF is updated. Issue #10671
-            foreach (var property in context.Model.GetEntityTypes().Single(e => (string)e.FindAnnotation("Relational:TableName")?.Value == table).GetProperties())
+            foreach (var property in context.Model.GetEntityTypes().Single(e => e.GetTableName() == table).GetProperties())
             {
-                // TODO: Use new API once EF is updated. Issue #10671
-                if (!columns.Contains((string)property.FindAnnotation("Relational:ColumnName")?.Value ?? property.Name))
+                if (!columns.Contains(property.GetColumnName()))
                 {
                     continue;
                 }

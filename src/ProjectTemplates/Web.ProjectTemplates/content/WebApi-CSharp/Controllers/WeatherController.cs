@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Company.WebApplication1.Controllers
 {
@@ -17,6 +18,12 @@ namespace Company.WebApplication1.Controllers
     [ApiController]
     public class WeatherController : ControllerBase
     {
+        private readonly ILogger<WeatherController> logger;
+
+        public WeatherController(ILogger<WeatherController> _logger)
+        {
+            logger = _logger;
+        }
         [HttpGet]
         public ActionResult<WeatherResult> GetWeatherForecasts(string location, TemperatureUnit unit)
         {

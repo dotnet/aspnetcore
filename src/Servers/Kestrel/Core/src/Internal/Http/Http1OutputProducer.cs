@@ -86,6 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _memoryPool = memoryPool;
         }
 
+        // For tests
+        internal PipeWriter PipeWriter => _pipeWriter;
+
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -402,7 +405,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _pipeWriterCompleted = true;
                 _completed = true;
-                _pipeWriter.Complete();
             }
         }
 

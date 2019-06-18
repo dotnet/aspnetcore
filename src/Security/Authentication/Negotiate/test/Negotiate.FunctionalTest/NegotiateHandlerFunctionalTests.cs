@@ -35,8 +35,38 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 new object[] { Http2Version },
             };
 
+        [ConditionalFact]
+        // Only test HTTP/1.1, ALPN is not supported on Win7
+        public async Task Anonymous_NoChallenge_NoOps_Win7()
+        {
+            using var host = await CreateHostAsync();
+            using var client = CreateSocketHttpClient(host);
+            client.DefaultRequestVersion = Http11Version;
+
+            var result = await client.GetAsync("/Anonymous1");
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate));
+            Assert.Equal(Http11Version, result.Version);
+        }
+
+        [ConditionalFact]
+        // Only test HTTP/1.1, ALPN is not supported on Win7
+        public async Task Anonymous_Challenge_401Negotiate_Win7()
+        {
+            using var host = await CreateHostAsync();
+            // WinHttpHandler can't disable default credentials on localhost, use SocketHttpHandler.
+            using var client = CreateSocketHttpClient(host);
+            client.DefaultRequestVersion = Http11Version;
+
+            var result = await client.GetAsync("/Authenticate");
+            Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
+            Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
+            Assert.Equal(Http11Version, result.Version);
+        }
+
         [ConditionalTheory]
         [MemberData(nameof(Http11And2))]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Windows only supports ALPN on 8.1 and later.")]
         public async Task Anonymous_NoChallenge_NoOps(Version version)
         {
             using var host = await CreateHostAsync();
@@ -51,6 +81,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         [ConditionalTheory]
         [MemberData(nameof(Http11And2))]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Windows only supports ALPN on 8.1 and later.")]
         public async Task Anonymous_Challenge_401Negotiate(Version version)
         {
             using var host = await CreateHostAsync();
@@ -148,6 +179,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "The client only supports HTTP/2 on Win10.")]
         public async Task RequestAfterAuth_Http2Then2Anonymous_Success(bool persistNtlm)
         {
             using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persistNtlm);
@@ -213,7 +245,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         options.Listen(IPAddress.Loopback, 0, endpoint =>
                         {
-                            endpoint.UseHttps("testCert.pfx", "testPassword");
+                            endpoint.UseHttps("negotiateAuthCert.pfx", "testPassword");
                         });
                     });
                     webHostBuilder.Configure(app =>

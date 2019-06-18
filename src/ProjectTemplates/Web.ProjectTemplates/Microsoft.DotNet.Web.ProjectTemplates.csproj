@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
-    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine
-
-    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
@@ -20,7 +18,7 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

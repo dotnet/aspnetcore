@@ -2483,16 +2483,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
-            // Ensure the response doesn't get flush before the abort is observed by scheduling inline.
-            var testContext = new TestServiceContext(LoggerFactory)
-            {
-                Scheduler = PipeScheduler.Inline
-            };
+            var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(httpContext =>
             {
-                httpContext.Features.Get<IConnectionLifetimeFeature>().Abort();
-                return Task.CompletedTask;
+                var feature = httpContext.Features.Get<IConnectionLifetimeFeature>();
+                feature.Abort();
+
+                // Ensure the response doesn't get flush before the abort is observed.
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                feature.ConnectionClosed.Register(() => tcs.TrySetResult(null));
+
+                return tcs.Task;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())

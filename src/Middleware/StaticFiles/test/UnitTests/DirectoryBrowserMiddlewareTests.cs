@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                Assert.Equal("http://localhost" + requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
-                Assert.True(response.Content.Headers.ContentLength == 0);
+                Assert.Null(response.Content.Headers.ContentLength);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }

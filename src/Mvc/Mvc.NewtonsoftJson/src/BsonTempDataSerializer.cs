@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private static readonly ConcurrentDictionary<Type, Func<JObject, object>> _dictionaryConverters =
             new ConcurrentDictionary<Type, Func<JObject, object>>();
 
-        private static readonly Dictionary<JTokenType, Type> _tokenTypeLookup = new Dictionary<JTokenType, Type>
+        private static readonly Dictionary<JTokenType, Type> _tokenTypeLookup = new Dictionary<JTokenType, Type>(8)
         {
             { JTokenType.String, typeof(string) },
             { JTokenType.Integer, typeof(int) },

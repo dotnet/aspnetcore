@@ -31,4 +31,31 @@
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
   </PropertyGroup>
 
+
+  <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+
+  <!-- Workaround until we can build our repo with a 3.0 Preview 7 SDK which has https://github.com/dotnet/core-sdk/pull/2401. -->
+  <ItemGroup Condition="'$(PreReleasePreviewNumber)' == '7' ">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <!--
+        Temporary until we can update to build with the Preview7 SDK .
+        Using PreReleasePreviewNumber to time-bomb this so we can remove this before RTM.
+
+        This workaround was also applied to src\ProjectTemplates\test\Infrastructure\TemplateTests.props.in.
+      -->
+      <RuntimePackNamePatterns>Microsoft.NETCore.App.Runtime.**RID**</RuntimePackNamePatterns>
+      <AppHostPackNamePattern />
+      <AppHostRuntimeIdentifiers />
+    </KnownFrameworkReference>
+  </ItemGroup>
+
 </Project>

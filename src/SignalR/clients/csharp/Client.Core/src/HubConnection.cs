@@ -49,9 +49,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         };
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendStreamItems)));
-#if NETCOREAPP3_0
         private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendIAsyncEnumerableStreamItems)));
-#endif
+
         // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -522,7 +521,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-#if NETCOREAPP3_0
         /// <summary>
         /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
         /// </summary>
@@ -559,7 +557,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 cts.Dispose();
             }
         }
-#endif
 
         private async Task<ChannelReader<object>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
@@ -630,7 +627,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             for (var i = 0; i < args.Length; i++)
             {
-                if (ReflectionHelper.IsStreamingType(args[i].GetType()))
+                if (args[i] != null && ReflectionHelper.IsStreamingType(args[i].GetType()))
                 {
                     if (readers == null)
                     {
@@ -674,7 +671,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // For each stream that needs to be sent, run a "send items" task in the background.
                 // This reads from the channel, attaches streamId, and sends to server.
                 // A single background thread here quickly gets messy.
-#if NETCOREAPP3_0
                 if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
                 {
                     _ = _sendIAsyncStreamItemsMethod
@@ -682,7 +678,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
                     continue;
                 }
-#endif
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
                     .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
@@ -707,7 +702,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return CommonStreaming(connectionState, streamId, token, ReadChannelStream);
         }
 
-#if NETCOREAPP3_0
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
         private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
         {
@@ -724,7 +718,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return CommonStreaming(connectionState, streamId, token, ReadAsyncEnumerableStream);
         }
-#endif
 
         private async Task CommonStreaming(ConnectionState connectionState, string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
         {
@@ -1445,7 +1438,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private OperationCanceledException GetOperationCanceledException(string message, Exception innerException, CancellationToken cancellationToken)
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
             return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else
             return new OperationCanceledException(message, innerException);
@@ -1942,12 +1935,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return _connectionLock.Wait(0);
             }
 
+            // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
             public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                await WaitConnectionLockAsync();
+                await WaitConnectionLockAsync(methodName);
 
                 if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
                 {
+                    ReleaseConnectionLock(methodName);
                     throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
                 }
 

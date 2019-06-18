@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (inputStream is TranscodingReadStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
 

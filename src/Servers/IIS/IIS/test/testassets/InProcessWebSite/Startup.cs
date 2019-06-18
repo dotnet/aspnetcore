@@ -26,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
 namespace TestSite
 {
@@ -35,15 +36,20 @@ namespace TestSite
         {
             TestStartup.Register(app, this);
         }
-        
+
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddResponseCompression();
         }
+#if FORWARDCOMPAT
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
 
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().WebRootPath);
+#else
         private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().ContentRootPath);
 
         private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().WebRootPath);
+#endif
 
         private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
 
@@ -118,7 +124,11 @@ namespace TestSite
 
         public Task CreateFile(HttpContext context)
         {
+#if FORWARDCOMPAT
+            var hostingEnv = context.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>();
+#else
             var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
+#endif
 
             if (context.Connection.LocalIpAddress == null || context.Connection.RemoteIpAddress == null)
             {
@@ -434,7 +444,11 @@ namespace TestSite
         private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("test1");
+#if FORWARDCOMPAT
+            var lifetime = ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
             var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
+#endif
             lifetime.ApplicationStopping.WaitHandle.WaitOne();
             await ctx.Response.WriteAsync("test2");
         }
@@ -797,7 +811,11 @@ namespace TestSite
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
+#if FORWARDCOMPAT
+            ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>().StopApplication();
+#else
             ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
+#endif
         }
 
         private async Task ShutdownStopAsync(HttpContext ctx)
@@ -844,8 +862,8 @@ namespace TestSite
             // This test simulates the scenario where native Flush call is being
             // executed on background thread while request thread calls GetServerVariable
             // concurrent native calls may cause native object corruption
-
             var serverVariableFeature = ctx.Features.Get<IServerVariablesFeature>();
+
             await ctx.Response.WriteAsync("Response Begin");
             for (int i = 0; i < 1000; i++)
             {

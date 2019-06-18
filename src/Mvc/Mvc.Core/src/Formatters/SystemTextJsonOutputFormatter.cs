@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
@@ -59,14 +59,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var writeStream = GetWriteStream(httpContext, selectedEncoding);
             try
             {
-                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, SerializerOptions);
+                await JsonSerializer.WriteAsync(writeStream, context.Object, context.ObjectType, SerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally
             {
                 if (writeStream is TranscodingWriteStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
         }

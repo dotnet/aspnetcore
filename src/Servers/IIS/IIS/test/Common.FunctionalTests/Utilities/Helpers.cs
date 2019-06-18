@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -20,12 +19,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public static class Helpers
     {
-        private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(10);
         private static readonly int RetryRequestCount = 10;
 
         public static string GetInProcessTestSitesName()
         {
-            return DeployerSelector.IsForwardsCompatibilityTest ? "InProcessForwardsCompatWebSite" : "InProcessWebSite";
+            return DeployerSelector.IsNewShimTest ? "InProcessNewShimWebSite" : "InProcessWebSite";
         }
 
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
@@ -105,12 +104,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public static async Task<HttpResponseMessage> RetryRequestAsync(this HttpClient client, string uri, Func<HttpResponseMessage, Task<bool>> predicate)
         {
             HttpResponseMessage response = await client.GetAsync(uri);
-
+            var delay = RetryRequestDelay;
             for (var i = 0; i < RetryRequestCount && !await predicate(response); i++)
             {
                 // Keep retrying until app_offline is present.
                 response = await client.GetAsync(uri);
-                await Task.Delay(RetryRequestDelay);
+                await Task.Delay(delay);
+                // This will max out at a 5 second delay
+                delay *= 2;
             }
 
             if (!await predicate(response))

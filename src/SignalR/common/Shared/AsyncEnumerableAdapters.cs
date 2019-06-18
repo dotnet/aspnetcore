@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
-#if NETCOREAPP3_0
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
         {
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
@@ -24,6 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cts);
         }
 
+#if NETCOREAPP3_0
         public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (var item in channel.ReadAllAsync(cancellationToken))
@@ -31,6 +31,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 yield return item;
             }
         }
+#else
+        // System.Threading.Channels.ReadAllAsync() is not available on netstandard2.0 and netstandard2.1
+        // But this is the exact same code that it uses
+        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            while (await channel.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                while (channel.TryRead(out var item))
+                {
+                    yield return item;
+                }
+            }
+        }
+#endif
 
         private class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
         {
@@ -45,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
-                var enumerator = _asyncEnumerable.GetAsyncEnumerator();
+                var enumerator = _asyncEnumerable.GetAsyncEnumerator(_cts.Token);
                 if (cancellationToken.CanBeCanceled)
                 {
                     var registration = cancellationToken.Register((ctsState) =>
@@ -53,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         ((CancellationTokenSource)ctsState).Cancel();
                     }, _cts);
 
-                    return new CancelableEnumerator<TResult>(_asyncEnumerable.GetAsyncEnumerator(), registration);
+                    return new CancelableEnumerator<TResult>(enumerator, registration);
                 }
 
                 return enumerator;
@@ -129,6 +143,5 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
             }
         }
-#endif
     }
 }
