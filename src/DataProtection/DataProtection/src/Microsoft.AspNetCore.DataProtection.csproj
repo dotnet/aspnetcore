@@ -4,6 +4,7 @@
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
