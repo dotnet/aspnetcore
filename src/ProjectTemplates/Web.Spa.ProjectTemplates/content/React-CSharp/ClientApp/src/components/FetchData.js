@@ -57,13 +57,13 @@ export class FetchData extends Component {
   async populateWeatherData() {
     ////#if (IndividualLocalAuth)
     const token = await authService.getAccessToken();
-    const response = await fetch('api/SampleData/WeatherForecasts', {
+    const response = await fetch('weatherforecast', {
       headers: !token ? {} : { 'Authorization': `Bearer ${token}` }
     });
     const data = await response.json();
     this.setState({ forecasts: data, loading: false });
     ////#else
-    const response = await fetch('api/SampleData/WeatherForecasts');
+    const response = await fetch('weatherforecast');
     const data = await response.json();
     this.setState({ forecasts: data, loading: false });
     ////#endif
