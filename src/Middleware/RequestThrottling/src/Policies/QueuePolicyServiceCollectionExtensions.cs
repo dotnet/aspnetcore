@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Contains methods for adding Q
+    /// Contains methods for specifying which queue the middleware should use.
     /// </summary>
     public static class QueuePolicyServiceCollectionExtensions
     {
