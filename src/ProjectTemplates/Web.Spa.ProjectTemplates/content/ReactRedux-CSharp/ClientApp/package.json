@@ -30,7 +30,6 @@
     "@types/react-router-dom": "4.3.1",
     "@types/reactstrap": "6.4.3",
     "cross-env": "5.2.0",
-    "eslint": "5.6.0",
     "eslint-config-react-app": "3.0.6",
     "eslint-plugin-flowtype": "2.50.3",
     "eslint-plugin-import": "2.14.0",
