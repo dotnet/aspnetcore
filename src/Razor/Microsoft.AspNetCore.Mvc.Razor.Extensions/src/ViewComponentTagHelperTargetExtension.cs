@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string ViewComponentHelperTypeName { get; set; } = "global::Microsoft.AspNetCore.Mvc.IViewComponentHelper";
 
-        public string ViewComponentHelperVariableName { get; set; } = "_helper";
+        public string ViewComponentHelperVariableName { get; set; } = "__helper";
 
         public string ViewComponentInvokeMethodName { get; set; } = "InvokeAsync";
 
@@ -36,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string TagHelperContextTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext";
 
-        public string TagHelperContextVariableName { get; set; } = "context";
+        public string TagHelperContextVariableName { get; set; } = "__context";
 
         public string TagHelperOutputTypeName { get; set; } = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput";
 
-        public string TagHelperOutputVariableName { get; set; } = "output";
+        public string TagHelperOutputVariableName { get; set; } = "__output";
 
         public string TagHelperOutputTagNamePropertyName { get; set; } = "TagName";
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string TagHelperContentSetMethodName { get; set; } = "SetHtmlContent";
 
-        public string TagHelperContentVariableName { get; set; } = "content";
+        public string TagHelperContentVariableName { get; set; } = "__helperContent";
 
         public string IViewContextAwareTypeName { get; set; } = "global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware";
 

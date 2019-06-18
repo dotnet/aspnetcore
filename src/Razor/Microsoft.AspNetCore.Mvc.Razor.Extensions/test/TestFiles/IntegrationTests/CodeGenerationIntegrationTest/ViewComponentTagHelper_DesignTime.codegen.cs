@@ -75,20 +75,20 @@ global::System.Object __typeHelper = "*, AppCode";
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("vc:test")]
         public class __Generated__TestViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
         {
-            private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
+            private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper __helper = null;
             public __Generated__TestViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)
             {
-                _helper = helper;
+                __helper = helper;
             }
             [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
             public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }
             public System.String firstName { get; set; }
-            public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
+            public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext __context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput __output)
             {
-                (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-                var content = await _helper.InvokeAsync("Test", new { firstName });
-                output.TagName = null;
-                output.Content.SetHtmlContent(content);
+                (__helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
+                var __helperContent = await __helper.InvokeAsync("Test", new { firstName });
+                __output.TagName = null;
+                __output.Content.SetHtmlContent(__helperContent);
             }
         }
     }
