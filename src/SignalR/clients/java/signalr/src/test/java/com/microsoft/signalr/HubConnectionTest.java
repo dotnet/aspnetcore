@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.Completable;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Observable;
@@ -162,7 +163,6 @@ class HubConnectionTest {
 
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("http://example.com", hubConnection.getBaseUrl());
-
 
         Throwable exception = assertThrows(IllegalStateException.class, () -> hubConnection.setBaseUrl("http://newurl.com"));
         assertEquals("The HubConnection must be in the disconnected state to change the url.",exception.getMessage());
@@ -946,15 +946,63 @@ class HubConnectionTest {
 
         AtomicBoolean done = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
-        result.doOnSuccess(value -> done.set(true));
+        result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
         assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
     }
-    
+
+    @Test
+    public void invokeNoReturnValueWaitsForCompletion() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Completable result = hubConnection.invoke("test", "message");
+        result.doOnComplete(() -> done.set(true)).subscribe();
+        result.subscribe();
+
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
+
+        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
+    }
+
+    @Test
+    public void invokeNoReturnValueHandlesError() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Completable result = hubConnection.invoke("test", "message");
+        result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
+
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
+
+        result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet();
+
+        AtomicReference<String> errorMessage = new AtomicReference<>();
+        result.doOnError(error -> {
+            errorMessage.set(error.getMessage());
+        }).subscribe(() -> {}, (error) -> {});
+
+        assertEquals("There was an error", errorMessage.get());
+    }
+
     @Test
     public void canSendNullArgInInvocation() {
         MockTransport mockTransport = new MockTransport();
@@ -964,13 +1012,14 @@ class HubConnectionTest {
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null);
-        result.doOnSuccess(value -> done.set(true));
+        result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
 
         assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
     }
 
     @Test
@@ -982,13 +1031,14 @@ class HubConnectionTest {
 
         AtomicBoolean done = new AtomicBoolean();
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null, null);
-        result.doOnSuccess(value -> done.set(true));
+        result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null,null]}"+ RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
 
         assertEquals("Hello World", result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
     }
 
     @Test
@@ -1002,8 +1052,8 @@ class HubConnectionTest {
         AtomicBoolean doneSecond = new AtomicBoolean();
         Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
         Single<String> result2 = hubConnection.invoke(String.class, "echo", "message");
-        result.doOnSuccess(value -> doneFirst.set(true));
-        result2.doOnSuccess(value -> doneSecond.set(true));
+        result.doOnSuccess(value -> doneFirst.set(true)).subscribe();
+        result2.doOnSuccess(value -> doneSecond.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[2]);
         assertFalse(doneFirst.get());
@@ -1012,9 +1062,11 @@ class HubConnectionTest {
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"2\",\"result\":\"message\"}" + RECORD_SEPARATOR);
         assertEquals("message", result2.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
         assertFalse(doneFirst.get());
+        assertTrue(doneSecond.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
         assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(doneFirst.get());
     }
 
     @Test
@@ -1028,12 +1080,13 @@ class HubConnectionTest {
         // int.class is a primitive type and since we use Class.cast to cast an Object to the expected return type
         // which does not work for primitives we have to write special logic for that case.
         Single<Integer> result = hubConnection.invoke(int.class, "echo", "message");
-        result.doOnSuccess(value -> done.set(true));
+        result.doOnSuccess(value -> done.set(true)).subscribe();
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
 
         assertEquals(Integer.valueOf(42), result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
     }
 
     @Test

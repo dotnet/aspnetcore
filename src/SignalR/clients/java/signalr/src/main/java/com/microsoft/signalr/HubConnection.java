@@ -591,8 +591,40 @@ public class HubConnection {
                 this.streamMap.put(streamId, stream);
             }
         }
-        
+
         return params.toArray();
+    }
+
+
+    /**
+     * Invokes a hub method on the server using the specified method name and arguments.
+     *
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @return A Single that yields the return value when the invocation has completed.
+     */
+    @SuppressWarnings("unchecked")
+    public Completable invoke(String method, Object... args) {
+        if (hubConnectionState != HubConnectionState.CONNECTED) {
+            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+        }
+
+        String id = connectionState.getNextInvocationId();
+
+        CompletableSubject subject = CompletableSubject.create();
+        InvocationRequest irq = new InvocationRequest(null, id);
+        connectionState.addInvocation(irq);
+
+        Subject<Object> pendingCall = irq.getPendingCall();
+
+        pendingCall.subscribe(result -> {},
+                error -> subject.onError(error),
+                () -> subject.onComplete());
+
+        // Make sure the actual send is after setting up the callbacks otherwise there is a race
+        // where the map doesn't have the callbacks yet when the response is returned
+        sendInvocationMessage(method, args, id, false);
+        return subject;
     }
 
     /**
