@@ -2218,6 +2218,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        internal class HttpContextFeatureImpl : IHttpContextFeature
+        {
+            public HttpContext HttpContext { get; set; }
+        }
+
         [Fact]
         public async Task HubMethodWithAuthorizationProvidesResourceToAuthHandlers()
         {
@@ -2244,7 +2249,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                     // Setup a HttpContext to make sure it flows to the AuthHandler correctly
-                    var httpConnectionContext = new HttpConnectionContext("", null);
+                    var httpConnectionContext = new HttpContextFeatureImpl();
                     httpConnectionContext.HttpContext = new DefaultHttpContext();
                     client.Connection.Features.Set<IHttpContextFeature>(httpConnectionContext);
 
