@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Client

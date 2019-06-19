@@ -10,6 +10,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Http.Features;
@@ -37,8 +38,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _disposed;
         private bool _hasInherentKeepAlive;
 
+        private readonly HttpEndPoint _httpEndPoint;
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
+        private readonly TransferFormat _transferFormat;
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
@@ -128,16 +131,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="httpConnectionOptions">The connection options to use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
+            : this(new HttpEndPoint(httpConnectionOptions.Url), httpConnectionOptions, TransferFormat.Binary, loggerFactory)
         {
-            if (httpConnectionOptions.Url == null)
-            {
-                throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
-            }
+        }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="httpEndPoint">The <see cref="HttpEndPoint"/> to connect to. This overrides <see cref="HttpConnectionOptions.Url"/>.</param>
+        /// <param name="httpConnectionOptions">The connection options to use.</param>
+        /// <param name="transferFormat">The transfer format the connection should use.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        public HttpConnection(HttpEndPoint httpEndPoint, HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory)
+        {
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
-            _httpConnectionOptions = httpConnectionOptions;
+            _httpEndPoint = httpEndPoint ?? throw new ArgumentNullException(nameof(httpEndPoint));
+            _httpConnectionOptions = httpConnectionOptions ?? throw new ArgumentNullException(nameof(httpConnectionOptions));
+            _transferFormat = transferFormat;
 
             if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
@@ -166,30 +178,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            return StartAsync(TransferFormat.Binary, cancellationToken);
-        }
-
-        /// <summary>
-        /// Starts the connection using the specified transfer format.
-        /// </summary>
-        /// <param name="transferFormat">The transfer format the connection should use.</param>
-        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
-        /// <remarks>
-        /// A connection cannot be restarted after it has stopped. To restart a connection
-        /// a new instance should be created using the same options.
-        /// </remarks>
-        public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
-        {
-            using (_logger.BeginScope(_logScope))
-            {
-                await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
-            }
-        }
-
-        private async Task StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
 
@@ -212,7 +201,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 Log.Starting(_logger);
 
-                await SelectAndStartTransport(transferFormat, cancellationToken);
+                await SelectAndStartTransport(_transferFormat, cancellationToken);
 
                 _started = true;
                 Log.Started(_logger);
@@ -287,7 +276,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
-            var uri = _httpConnectionOptions.Url;
+            var uri = _httpEndPoint.Url;
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
 
