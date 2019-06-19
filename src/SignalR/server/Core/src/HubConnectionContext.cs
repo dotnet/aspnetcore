@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="hubOptions">The options to configure the connection.</param>
-        public HubConnectionContext(ConnectionContext connectionContext, ILoggerFactory loggerFactory, HubOptions hubOptions)
+        public HubConnectionContext(ConnectionContext connectionContext, HubOptions hubOptions, ILoggerFactory loggerFactory)
         {
             _keepAliveInterval = hubOptions.KeepAliveInterval?.Ticks ?? HubOptionsSetup.DefaultKeepAliveInterval.Ticks;
             _clientTimeoutInterval = hubOptions.ClientTimeoutInterval?.Ticks ?? HubOptionsSetup.DefaultClientTimeoutInterval.Ticks;

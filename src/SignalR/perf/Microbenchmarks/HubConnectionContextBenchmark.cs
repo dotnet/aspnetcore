@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 KeepAliveInterval = Timeout.InfiniteTimeSpan,
             };
-            _hubConnectionContext = new HubConnectionContext(connection, NullLoggerFactory.Instance, hubOptions);
+            _hubConnectionContext = new HubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
 
             _successHubProtocolResolver = new TestHubProtocolResolver(new NewtonsoftJsonHubProtocol());
             _failureHubProtocolResolver = new TestHubProtocolResolver(null);

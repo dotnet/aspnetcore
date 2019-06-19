@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -76,23 +75,25 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup when they were explicitly set to null.
+
+            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
+            if (supportedProtocols == null || supportedProtocols.Count == 0)
+            {
+                throw new InvalidOperationException("There are no supported protocols");
+            }
+
             var options = new HubOptions()
             {
                 KeepAliveInterval = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval,
                 ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
                 HandshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout,
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
-                SupportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols,
+                SupportedProtocols = supportedProtocols,
             };
-
-            if (options.SupportedProtocols != null && options.SupportedProtocols.Count == 0)
-            {
-                throw new InvalidOperationException("There are no supported protocols");
-            }
 
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, _loggerFactory, options);
+            var connectionContext = new HubConnectionContext(connection, options, _loggerFactory);
 
             var resolvedSupportedProtocols = (options.SupportedProtocols as IReadOnlyList<string>) ?? options.SupportedProtocols.ToList();
             if (!await connectionContext.HandshakeAsync(options.HandshakeTimeout.Value, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))

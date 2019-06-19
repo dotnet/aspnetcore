@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 {
                     KeepAliveInterval = Timeout.InfiniteTimeSpan,
                 };
-                var hubConnection = new HubConnectionContext(connection, NullLoggerFactory.Instance, hubOptions);
+                var hubConnection = new HubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
                 hubConnection.Protocol = protocol;
                 _hubLifetimeManager.OnConnectedAsync(hubConnection).GetAwaiter().GetResult();
                 _hubLifetimeManager.AddToGroupAsync(connection.ConnectionId, TestGroupName).GetAwaiter().GetResult();

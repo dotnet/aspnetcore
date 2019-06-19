@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 {
                     KeepAliveInterval = TimeSpan.Zero,
                 };
-                var hubConnectionContext = new HubConnectionContext(connectionContext, NullLoggerFactory.Instance, hubOptions);
+                var hubConnectionContext = new HubConnectionContext(connectionContext, hubOptions, NullLoggerFactory.Instance);
                 hubConnectionContext.UserIdentifier = userIdentifier;
                 hubConnectionContext.Protocol = jsonHubProtocol;
 

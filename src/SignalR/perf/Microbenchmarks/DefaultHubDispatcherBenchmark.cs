@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 KeepAliveInterval = TimeSpan.Zero,
             };
-            _connectionContext = new NoErrorHubConnectionContext(connection, NullLoggerFactory.Instance, hubOptions);
+            _connectionContext = new NoErrorHubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
 
             _connectionContext.Protocol = new FakeHubProtocol();
         }
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         {
             public TaskCompletionSource<object> ReceivedCompleted = new TaskCompletionSource<object>();
 
-            public NoErrorHubConnectionContext(ConnectionContext connectionContext, ILoggerFactory loggerFactory, HubOptions hubOptions)
-                : base(connectionContext, loggerFactory, hubOptions)
+            public NoErrorHubConnectionContext(ConnectionContext connectionContext, HubOptions hubOptions, ILoggerFactory loggerFactory)
+                : base(connectionContext, hubOptions, loggerFactory)
             {
             }
 
