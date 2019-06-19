@@ -53,6 +53,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 CircuitAuthenticationHandler.AuthenticationType,
                 _ => { });
 
+            services.AddAuthorization();
+
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthorizationOptions>, ConfigureCircuitAuthorization>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CircuitOptions>, ConfigureCircuitAuthenticationPolicy>());
 

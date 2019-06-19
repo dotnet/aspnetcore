@@ -67,6 +67,8 @@ namespace TestServer
 
                 subdirApp.UseRouting();
 
+                subdirApp.UseAuthorization();
+
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
@@ -90,6 +92,9 @@ namespace TestServer
                 subdirApp.UsePathBase("/prerendered");
                 subdirApp.UseStaticFiles();
                 subdirApp.UseRouting();
+
+                subdirApp.UseAuthorization();
+
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");

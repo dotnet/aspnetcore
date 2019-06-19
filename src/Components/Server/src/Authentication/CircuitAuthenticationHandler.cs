@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 if (CircuitIdFactory.ValidateCircuitId(circuitId, cookie, out var parsedId))
                 {
-                    var identity = new ClaimsIdentity(AuthenticationType);
+                    var identity = new ClaimsIdentity();
                     identity.AddClaim(new Claim(IdClaimType, parsedId.RequestToken));
                     var principal = new ClaimsPrincipal();
                     principal.AddIdentity(identity);
@@ -86,21 +86,6 @@ namespace Microsoft.AspNetCore.Components.Server
         protected override Task HandleSignOutAsync(AuthenticationProperties properties)
         {
             throw new InvalidOperationException("Sign out is not supported.");
-        }
-
-        private string GetId(string value)
-        {
-            try
-            {
-                CircuitId result = CircuitIdFactory.FromCookieValue(value);
-                return result.RequestToken;
-            }
-            catch
-            {
-                // Cookie didn't have a valid format, treating them as if it didn't exist.
-                // We might want to log here that something went wrong.
-                return null;
-            }
         }
 
         internal static void AttachCircuitId(HttpContext httpContext, CircuitId circuitId)
