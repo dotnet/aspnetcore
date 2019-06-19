@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             using (var stringWritter = new StringWriter())
             {
                 tearsOfJoy.WriteTo(stringWritter, HtmlEncoder.Default);
-                Assert.Equal("&#x1f602;2", stringWritter.ToString());
+                Assert.Equal("&#x1f602;2", stringWritter.ToString(), ignoreCase: true);
             }
         }
     }
