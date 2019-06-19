@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
         [Fact]
         public static void BaseFunctionality()
         {
-            var stack = new StackPolicy(Options.Create(new PolicyOptions {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 0,
                 RequestQueueLimit = 2,
             }));
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
         [Fact]
         public static void OldestRequestOverwritten()
         {
-            var stack = new StackPolicy(Options.Create(new PolicyOptions {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 0,
                 RequestQueueLimit = 3,
             }));
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
         [Fact]
         public static void RespectsMaxConcurrency()
         {
-            var stack = new StackPolicy(Options.Create(new PolicyOptions {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 2,
                 RequestQueueLimit = 2,
             }));
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
         [Fact]
         public static void ExitRequestsPreserveSemaphoreState()
         {
-            var stack = new StackPolicy(Options.Create(new PolicyOptions {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 1,
                 RequestQueueLimit = 2,
             }));

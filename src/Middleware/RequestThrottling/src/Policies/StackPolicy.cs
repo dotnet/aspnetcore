@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
-    internal class StackPolicy : IQueuePolicy
+    internal class StackQueuePolicy : IQueuePolicy
     {
         private readonly TaskCompletionSource<bool>[] _buffer;
         private int _head; 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
         private int _freeServerSpots;
 
-        public StackPolicy(IOptions<PolicyOptions> options)
+        public StackQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _buffer = new TaskCompletionSource<bool>[options.Value.RequestQueueLimit];
             _freeServerSpots = options.Value.MaxConcurrentRequests;
@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 _queueLength++;
 
                 // increment _head for next time
-                if (_head++ == _buffer.Length - 1)
+                _head++;
+                if (_head == _buffer.Length)
                 {
                     _head = 0;
                 }
@@ -65,10 +66,15 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 // step backwards and launch a new task
-                if (_head-- == 0)
+                if (_head == 0)
                 {
                     _head = _buffer.Length - 1;
                 }
+                else
+                {
+                    _head--;
+                }
+
                 _buffer[_head].SetResult(true);
                 _queueLength--;
             }

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
     /// <summary>
     /// Specifies options for the <see cref="TailDrop"/>
     /// </summary>
-    public class PolicyOptions
+    public class QueuePolicyOptions
     {
         /// <summary>
         /// Maximum number of concurrent requests. Any extras will be queued on the server. 

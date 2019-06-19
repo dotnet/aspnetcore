@@ -46,20 +46,20 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static StackPolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        internal static StackQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
         {
-            var options = Options.Create(new PolicyOptions
+            var options = Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
                 RequestQueueLimit = requestsQueuelimit
             });
 
-            return new StackPolicy(options);
+            return new StackQueuePolicy(options);
         }
 
         internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
-            var options = Options.Create(new PolicyOptions
+            var options = Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
                 RequestQueueLimit = requestQueueLimit
