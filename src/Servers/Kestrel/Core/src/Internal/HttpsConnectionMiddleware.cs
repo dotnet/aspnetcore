@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -41,6 +42,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+
+            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
+            if (options.HttpProtocols == HttpProtocols.Http2 && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
             }
 
             _next = next;
