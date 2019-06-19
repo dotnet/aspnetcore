@@ -25,10 +25,6 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
-
-    <!-- Ensure these two projects are built in series to avoid file contention. -->
-    <!-- <ProjectReference Condition="'$(RunTemplateTests)' == 'true'" Include="$(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssemblies="false" /> -->
-
   </ItemGroup>
 
   <ItemGroup>
