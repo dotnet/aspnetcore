@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             switch (previousState)
             {
                 case ProtocolSelectionState.Initializing:
-                    // OnReader/WriterCompleted callbacks are not wired until after leaving the Initializing state.
+                    // ConnectionClosed callback is not wired up until after leaving the Initializing state.
                     Debug.Assert(false);
 
                     CloseUninitializedConnection(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
