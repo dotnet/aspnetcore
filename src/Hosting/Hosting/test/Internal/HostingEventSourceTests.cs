@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             var hostingEventSource = GetHostingEventSource();
 
-            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
             var rpsValues = eventListener.GetCounterValues("requests-per-second", timeoutTokenSource.Token).GetAsyncEnumerator();
             var totalRequestValues = eventListener.GetCounterValues("total-requests", timeoutTokenSource.Token).GetAsyncEnumerator();
