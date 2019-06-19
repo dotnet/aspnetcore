@@ -6,7 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http.Connections.Internal
+namespace Microsoft.AspNetCore.Http.Connections
 {
     public static class ServerSentEventsMessageFormatter
     {

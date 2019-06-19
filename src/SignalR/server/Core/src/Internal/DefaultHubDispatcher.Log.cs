@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public partial class DefaultHubDispatcher<THub>
+    internal partial class DefaultHubDispatcher<THub>
     {
         private static class Log
         {

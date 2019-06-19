@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 
             context.Result = RuleResult.EndResponse;
 
-            context.Logger?.CustomResponse(context.HttpContext.Request.GetEncodedUrl());
+            context.Logger.CustomResponse(context.HttpContext.Request.GetEncodedUrl());
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
@@ -376,6 +377,52 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             Assert.False(startTask.IsCompleted);
                             connectResponseTcs.TrySetResult(null);
                             await startTask.OrTimeout();
+                        });
+                }
+            }
+
+            [Fact]
+            public async Task CanCancelStartingConnectionAfterNegotiate()
+            {
+                using (StartVerifiableLog())
+                {
+                    // Set up a SyncPoint within Negotiate, so we can verify
+                    // that the call has gotten that far
+                    var negotiateSyncPoint = new SyncPoint();
+                    var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                    testHttpHandler.OnNegotiate(async (request, cancellationToken) =>
+                    {
+                        // Wait here for the test code to cancel the "outer" token
+                        await negotiateSyncPoint.WaitToContinue().OrTimeout();
+
+                        // Cancel
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    });
+
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler),
+                        async (connection) =>
+                        {
+                            // Kick off StartAsync, but don't wait for it
+                            var cts = new CancellationTokenSource();
+                            var startTask = connection.StartAsync(cts.Token);
+
+                            // Wait for the connection to get to the "WaitToContinue" call above,
+                            // which means it has gotten to Negotiate
+                            await negotiateSyncPoint.WaitForSyncPoint().OrTimeout();
+
+                            // Assert that StartAsync has not yet been canceled
+                            Assert.False(startTask.IsCanceled);
+
+                            // Cancel StartAsync, then "release" the SyncPoint
+                            // so the negotiate handler can keep going
+                            cts.Cancel();
+                            negotiateSyncPoint.Continue();
+
+                            // Assert that StartAsync was canceled
+                            await Assert.ThrowsAsync<OperationCanceledException>(() => startTask).OrTimeout();
                         });
                 }
             }
