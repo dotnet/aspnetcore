@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
+        internal override Formatter CurrentFormatter => Formatter.Newtonsoft;
+
         [Fact]
         public async Task Constructor_BuffersRequestBody_UsingDefaultOptions()
         {
@@ -253,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.Collection(
-                formatterContext.ModelState.OrderBy(k => k),
+                formatterContext.ModelState.OrderBy(k => k.Key),
                 kvp =>
                 {
                     Assert.Equal("[1]", kvp.Key);

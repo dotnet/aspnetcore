@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     {
+        internal override Formatter CurrentFormatter => Formatter.SystemText;
+
         [Fact]
         public override Task ReadAsync_AddsModelValidationErrorsToModelState()
         {

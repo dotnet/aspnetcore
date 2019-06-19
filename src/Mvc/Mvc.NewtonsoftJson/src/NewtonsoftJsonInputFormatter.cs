@@ -227,6 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         else
                         {
                             addMember = !path.EndsWith("." + member, StringComparison.Ordinal)
+                                && !path.EndsWith("['" + member + "']", StringComparison.Ordinal)
                                 && !path.EndsWith("[" + member + "]", StringComparison.Ordinal);
                         }
                     }

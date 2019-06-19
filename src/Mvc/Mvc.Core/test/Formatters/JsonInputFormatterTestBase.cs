@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -18,6 +19,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public abstract class JsonInputFormatterTestBase : LoggedTest
     {
+        internal enum Formatter
+        {
+            Newtonsoft,
+            SystemText
+        }
+
+        internal abstract Formatter CurrentFormatter { get; }
+
         [Theory]
         [InlineData("application/json", true)]
         [InlineData("application/*", false)]
@@ -104,6 +113,67 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result.HasError);
             var stringValue = Assert.IsType<string>(result.Model);
             Assert.Equal("abcd", stringValue);
+        }
+
+        [Fact]
+        public async Task JsonFormatter_EscapedKeys_Bracket()
+        {
+            // Arrange
+            var content = "[{\"It[s a key\":1234556}]";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(IEnumerable<IDictionary<string, short>>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal("[0][\'It[s a key\']", kvp.Key);
+                });
+        }
+
+        [Fact]
+        public async Task JsonFormatter_EscapedKeys()
+        {
+            // Arrange
+            var content = "[{\"It\\\"s a key\": 1234556}]";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(
+                typeof(IEnumerable<IDictionary<string, short>>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    switch(CurrentFormatter)
+                    {
+                        case Formatter.Newtonsoft:
+                            Assert.Equal("[0]['It\"s a key']", kvp.Key);
+                            break;
+                        case Formatter.SystemText:
+                            Assert.Equal("[0][\'It\\u0022s a key\']", kvp.Key);
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                });
         }
 
         [Fact]
@@ -280,7 +350,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.True(result.HasError);
-            Assert.Single(formatterContext.ModelState["names[1].Small"].Errors);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal("names[1].Small", kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]

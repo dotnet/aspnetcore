@@ -118,6 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
+                Log.JsonInputSuccess(_logger, context.ModelType);
                 return InputFormatterResult.Success(model);
             }
         }
@@ -134,18 +135,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _jsonInputFormatterException;
+            private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
+            private static readonly Action<ILogger, string, Exception> _jsonInputSuccess;
 
             static Log()
             {
-                _jsonInputFormatterException = LoggerMessage.Define(
-                   LogLevel.Debug,
-                   new EventId(1, "SystemTextJsonInputException"),
-                   "JSON input formatter threw an exception.");
+                _jsonInputFormatterException = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    new EventId(1, "SystemTextJsonInputException"),
+                    "JSON input formatter threw an exception: {Message}");
+                _jsonInputSuccess = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    new EventId(2, "SystemTextJsonInputSuccess"),
+                    "JSON input formatter succeeded, deserializing to type '{TypeName}'");
             }
 
             public static void JsonInputException(ILogger logger, Exception exception) 
-                => _jsonInputFormatterException(logger, exception);
+                => _jsonInputFormatterException(logger, exception.Message, exception);
+
+            public static void JsonInputSuccess(ILogger logger, Type modelType)
+                => _jsonInputSuccess(logger, modelType.FullName, null);
         }
     }
 }
