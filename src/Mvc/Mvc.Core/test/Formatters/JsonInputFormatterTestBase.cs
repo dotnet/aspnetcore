@@ -19,14 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public abstract class JsonInputFormatterTestBase : LoggedTest
     {
-        internal enum Formatter
-        {
-            Newtonsoft,
-            SystemText
-        }
-
-        internal abstract Formatter CurrentFormatter { get; }
-
         [Theory]
         [InlineData("application/json", true)]
         [InlineData("application/*", false)]
@@ -116,8 +108,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task JsonFormatter_EscapedKeys_Bracket()
+        public virtual async Task JsonFormatter_EscapedKeys_Bracket()
         {
+            var expectedKey = JsonFormatter_EscapedKeys_Bracket_Expected;
+
             // Arrange
             var content = "[{\"It[s a key\":1234556}]";
             var formatter = GetInputFormatter();
@@ -136,13 +130,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 formatterContext.ModelState.OrderBy(k => k.Key),
                 kvp =>
                 {
-                    Assert.Equal("[0][\'It[s a key\']", kvp.Key);
+                    Assert.Equal(expectedKey, kvp.Key);
                 });
         }
 
         [Fact]
-        public async Task JsonFormatter_EscapedKeys()
+        public virtual async Task JsonFormatter_EscapedKeys()
         {
+            var expectedKey = JsonFormatter_EscapedKeys_Expected;
+
             // Arrange
             var content = "[{\"It\\\"s a key\": 1234556}]";
             var formatter = GetInputFormatter();
@@ -162,17 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 formatterContext.ModelState.OrderBy(k => k.Key),
                 kvp =>
                 {
-                    switch(CurrentFormatter)
-                    {
-                        case Formatter.Newtonsoft:
-                            Assert.Equal("[0]['It\"s a key']", kvp.Key);
-                            break;
-                        case Formatter.SystemText:
-                            Assert.Equal("[0][\'It\\u0022s a key\']", kvp.Key);
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
+                    Assert.Equal(expectedKey, kvp.Key);
                 });
         }
 
@@ -285,12 +271,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var formatterContext = CreateInputFormatterContext(typeof(List<ComplexModel>), httpContext);
 
+            var expectedKey = ReadAsync_ArrayOfObjects_HasCorrectKey_Expected;
+
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
             Assert.True(result.HasError, "Model should have had an error!");
-            Assert.Single(formatterContext.ModelState["[2].Age"].Errors);
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]
@@ -304,13 +297,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = GetHttpContext(contentBytes);
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexModel), httpContext);
+            var expectedKey = ReadAsync_AddsModelValidationErrorsToModelState_Expected;
 
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
             Assert.True(result.HasError, "Model should have had an error!");
-            Assert.Single(formatterContext.ModelState["Age"].Errors);
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]
@@ -325,12 +324,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var formatterContext = CreateInputFormatterContext(typeof(short[]), httpContext);
 
+            var expectedValue = ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected;
+
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
             Assert.True(result.HasError, "Model should have produced an error!");
-            Assert.True(formatterContext.ModelState.ContainsKey("[2]"), "Should have contained key '[2]'");
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal(expectedValue, kvp.Key);
+                });
         }
 
         [Fact]
@@ -344,6 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = GetHttpContext(contentBytes);
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexModel[]), httpContext, modelName: "names");
+            var expectedKey = ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected;
 
             // Act
             var result = await formatter.ReadAsync(formatterContext);
@@ -353,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Collection(
                 formatterContext.ModelState.OrderBy(k => k.Key),
                 kvp => {
-                    Assert.Equal("names[1].Small", kvp.Key);
+                    Assert.Equal(expectedKey, kvp.Key);
                     Assert.Single(kvp.Value.Errors);
                 });
         }
@@ -424,12 +429,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexPoco), httpContext);
 
+            var expectedKey = ReadAsync_ComplexPoco_Expected;
+
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
             Assert.True(result.HasError, "Model should have had an error!");
-            Assert.Single(formatterContext.ModelState["Person.Numbers[2]"].Errors);
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]
@@ -450,6 +461,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.True(result.HasError, "Model should have had an error!");
             Assert.Single(formatterContext.ModelState["Person.Name"].Errors);
         }
+
+        internal abstract string JsonFormatter_EscapedKeys_Bracket_Expected { get; }
+
+        internal abstract string JsonFormatter_EscapedKeys_Expected { get; }
+
+        internal abstract string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected { get; }
+
+        internal abstract string ReadAsync_AddsModelValidationErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_ComplexPoco_Expected { get; }
 
         protected abstract TextInputFormatter GetInputFormatter();
 

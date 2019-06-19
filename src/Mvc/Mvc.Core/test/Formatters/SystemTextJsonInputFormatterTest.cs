@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     {
-        internal override Formatter CurrentFormatter => Formatter.SystemText;
-
         [Fact]
         public override Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
@@ -47,6 +45,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public override Task JsonFormatter_EscapedKeys()
+        {
+            return base.JsonFormatter_EscapedKeys();
+        }
+
+        [Fact]
+        public override Task JsonFormatter_EscapedKeys_Bracket()
+        {
+            return base.JsonFormatter_EscapedKeys_Bracket();
+        }
+
+        [Fact]
         public async Task ReadAsync_SingleError()
         {
             // Arrange
@@ -65,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 formatterContext.ModelState.OrderBy(k => k),
                 kvp =>
                 {
-                    Assert.Equal("[1]", kvp.Key);
+                    Assert.Equal("$[1]", kvp.Key);
                     var error = Assert.Single(kvp.Value.Errors);
                     Assert.StartsWith("''' is an invalid start of a value", error.ErrorMessage);
                 });
@@ -75,5 +85,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             return new SystemTextJsonInputFormatter(new JsonOptions(), LoggerFactory.CreateLogger<SystemTextJsonInputFormatter>());
         }
+
+        internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "$.Age";
+
+        internal override string JsonFormatter_EscapedKeys_Expected => "$[0]['It\\u0022s a key']";
+
+        internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
+
+        internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "$[2].Age";
+
+        internal override string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected => "$[2]";
+
+        internal override string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected => "$[1].Small";
+
+        internal override string ReadAsync_ComplexPoco_Expected => "$.Person.Numbers[2]";
     }
 }

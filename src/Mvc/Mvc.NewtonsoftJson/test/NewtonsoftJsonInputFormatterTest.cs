@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static readonly ObjectPoolProvider _objectPoolProvider = new DefaultObjectPoolProvider();
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
-        internal override Formatter CurrentFormatter => Formatter.Newtonsoft;
-
         [Fact]
         public async Task Constructor_BuffersRequestBody_UsingDefaultOptions()
         {
@@ -198,6 +196,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(settings.DateTimeZoneHandling, actual.DateTimeZoneHandling);
         }
 
+        [Fact]
+        public override Task JsonFormatter_EscapedKeys()
+        {
+            return base.JsonFormatter_EscapedKeys();
+        }
+
+        [Fact]
+        public override Task JsonFormatter_EscapedKeys_Bracket()
+        {
+            return base.JsonFormatter_EscapedKeys_Bracket();
+        }
+
         [Theory]
         [InlineData(" ", true, true)]
         [InlineData(" ", false, false)]
@@ -359,6 +369,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     AllowInputFormatterExceptionMessages = allowInputFormatterExceptionMessages,
                 });
         }
+
+        internal override string JsonFormatter_EscapedKeys_Expected => "[0]['It\"s a key']";
+
+        internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "[0][\'It[s a key\']";
+
+        internal override string ReadAsync_AddsModelValidationErrorsToModelState_Expected => "Age";
+
+        internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "[2].Age";
+
+        internal override string ReadAsync_ComplexPoco_Expected => "Person.Numbers[2]";
+
+        internal override string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected => "names[1].Small";
+
+        internal override string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected => "[2]";
 
         private class Location
         {

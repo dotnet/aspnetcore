@@ -78,23 +78,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             catch (JsonException jsonException)
             {
                 var path = jsonException.Path;
-                if (path.StartsWith("$.", StringComparison.Ordinal))
-                {
-                    path = path.Substring(2);
-                }
-
-                if (path.StartsWith("$[", StringComparison.Ordinal))
-                {
-                    path = path.Substring(1);
-                }
-
-                // Handle path combinations such as ""+"Property", "Parent"+"Property", or "Parent"+"[12]".
-                var key = ModelNames.CreatePropertyModelName(context.ModelName, path);
 
                 var formatterException = new InputFormatterException(jsonException.Message, jsonException);
 
                 var metadata = ModelNames.GetPathMetadata(context.Metadata, path);
-                context.ModelState.TryAddModelError(key, formatterException, metadata);
+                context.ModelState.TryAddModelError(path, formatterException, metadata);
 
                 Log.JsonInputException(_logger, jsonException);
 
