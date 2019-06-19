@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -38,8 +38,6 @@ namespace Certificate.Sample
                 });
 
             services.AddAuthorization();
-
-            services.AddMvc(config => { });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +52,10 @@ namespace Certificate.Sample
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.Map("{*url}", context =>
+                {
+                    return context.Response.WriteAsync($"Hello {context.User.Identity.Name}");
+                });
             });
         }
     }
