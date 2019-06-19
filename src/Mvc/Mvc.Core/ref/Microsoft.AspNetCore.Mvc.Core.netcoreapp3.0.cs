@@ -2320,6 +2320,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static string CreateIndexModelName(string parentName, int index) { throw null; }
         public static string CreateIndexModelName(string parentName, string index) { throw null; }
         public static string CreatePropertyModelName(string prefix, string propertyName) { throw null; }
+        public static Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata GetPathMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, string path) { throw null; }
     }
     public abstract partial class ObjectModelValidator : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator
     {
