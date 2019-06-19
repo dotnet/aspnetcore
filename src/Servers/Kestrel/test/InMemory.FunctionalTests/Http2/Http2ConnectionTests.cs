@@ -3603,7 +3603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             // Send a blocked request
-            var tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             task = tcs.Task;
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
