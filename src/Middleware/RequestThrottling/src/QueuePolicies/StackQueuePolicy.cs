@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
         public Task<bool> TryEnterAsync()
         {
+
             lock (_bufferLock)
             {
                 if (_freeServerSpots > 0)
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
                 // enqueue request with a tcs
                 var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                if (_hasReachedCapacity)
+                if (_hasReachedCapacity || _queueLength < _buffer.Count)
                 {
                     _buffer[_head] = tcs;
                 }

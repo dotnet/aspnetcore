@@ -85,21 +85,21 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
         }
 
         [Fact]
-        public static void MaintainsStateThroughLoad()
+        public static void StaleRequestsAreProperlyOverwritten()
         {
             var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions
             {
-                MaxConcurrentRequests = 1,
-                RequestQueueLimit = 100,
+                MaxConcurrentRequests = 0,
+                RequestQueueLimit = 4,
             }));
 
-            for (int i = 0; i < 400; i++)
-            {
-                _ = stack.TryEnterAsync();
-            }
+            var _ = stack.TryEnterAsync();
+            stack.OnExit();
 
-            var task = stack.TryEnterAsync();
-            Assert.True(task.IsCompleted);
+            var task2 = stack.TryEnterAsync();
+            stack.OnExit();
+
+            Assert.True(task2.IsCompleted);
         }
     } 
 }
