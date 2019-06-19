@@ -10,31 +10,6 @@
     <BuildJava>true</BuildJava>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- This repo does not have solutions to build -->
-    <DisableDefaultTargets>true</DisableDefaultTargets>
-    <DisableDefaultItems>true</DisableDefaultItems>
-    <BuildSolutions>false</BuildSolutions>
-    <BuildSiteExtensions Condition="('$(TargetRuntimeIdentifier)' == 'win-x64' OR '$(TargetRuntimeIdentifier)' == 'win-x86') AND '$(BuildSiteExtensions)' == ''">true</BuildSiteExtensions>
-
-    <OverridePackageOutputPath>false</OverridePackageOutputPath>
-
-    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
-    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
-    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
-    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
-    <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
-    <LogOutputDir>$(ArtifactsDir)log\</LogOutputDir>
-
-    <SignCheckExclusionsFile>$(RepoRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
-
-    <!-- Disable the check which asserts that all managed .NET binaries we distribute are strong-named signed. Workaround for https://github.com/aspnet/AspNetCore-Internal/issues/1501 -->
-    <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
-
-    <SharedSourcesFolder>$(RepoRoot)src\Shared\</SharedSourcesFolder>
-    <BuildIisNativeProjects Condition="'$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
-  </PropertyGroup>
-
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
 
@@ -73,9 +48,9 @@
 
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects -->
-    <When Condition="'$(Projects)' != ''">
+    <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
-        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
+        <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
           <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
         </ProjectToBuild>
       </ItemGroup>
@@ -108,9 +83,20 @@
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
-      <ItemGroup>
-        <ProjectToBuild Include="$(RepoRoot)src\Servers\**\*.pkgproj" Condition=" '$(_RunPack)' == 'true' OR '$(BuildAllProjects)' == 'true' "/>
+      <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetRuntimeIdentifier)' == 'linux-x64'">
+        <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'deb' "
+                        Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
+        <ProjectToBuild Condition=" '$(LinuxInstallerType)' == 'rpm' "
+                        Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
+      </ItemGroup>
 
+      <ItemGroup Condition=" '$(BuildSiteExtensions)' == 'true' ">
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
+        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
+      </ItemGroup>
+
+      <ItemGroup>
         <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
                         Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)">
           <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
@@ -181,10 +167,4 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
-
-  <Import Project="..\eng\Versions.props" />
-  <Import Project="..\eng\SharedFramework.Local.props" />
-  <Import Project="..\eng\SharedFramework.External.props" />
-  <Import Project="runtimes.props" />
-  <Import Project="CodeSign.props" />
 </Project>

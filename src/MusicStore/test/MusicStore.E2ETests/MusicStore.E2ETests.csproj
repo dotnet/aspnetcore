@@ -6,9 +6,6 @@
     <TestGroupName>MusicStore.E2ETests</TestGroupName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-    <!-- Temporarily suppress warnings about Microsoft.AspNetCore.Server.IntegrationTesting -->
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- Tests are disabled due to https://github.com/aspnet/AspNetCore-Internal/issues/1967 -->
     <SkipTests>true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/8343 -->

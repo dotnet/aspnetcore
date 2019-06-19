@@ -21,6 +21,7 @@
   <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
   <Target Name="Build" DependsOnTargets="DebBuild" />
+  <Target Name="Pack" />
 
   <Target Name="DebBuild" DependsOnTargets="$(DebBuildDependsOn)">
     <!-- Generate debian_config.json. We can't simply use WriteLinesToFile because of https://github.com/Microsoft/msbuild/issues/1622. Use our custom GenerateFileFromTemplate task instead -->

@@ -181,7 +181,7 @@ if [ -z "$__RootfsDir" ] && [ ! -z "$ROOTFS_DIR" ]; then
 fi
 
 if [ -z "$__RootfsDir" ]; then
-    __RootfsDir="$__CrossDir/rootfs/$__BuildArch"
+    __RootfsDir="$__CrossDir/../../../.tools/rootfs/$__BuildArch"
 fi
 
 if [ -d "$__RootfsDir" ]; then

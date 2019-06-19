@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task GenericRawCreate()
         {
             var server = new TestServer();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task GenericCreateAndStartHost_GetTestServer()
         {
-            var host = await new HostBuilder()
+            using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task GenericCreateAndStartHost_GetTestClient()
         {
-            var host = await new HostBuilder()
+            using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.TestHost
                 .Configure(app => { })
                 .UseTestServer();
 
-            var host = builder.Build();
+            using var host = builder.Build();
             host.Start();
         }
 

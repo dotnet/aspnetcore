@@ -237,7 +237,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     VaryByAncmHostingModel(variants, server, tfm, type, arch, archSkip);
                 }
-                else
+
+                // TODO: remove this workaround: https://github.com/aspnet/AspNetCore/issues/11301
+                else if (string.IsNullOrEmpty(archSkip))
                 {
                     variants.Add(new TestVariant()
                     {
@@ -289,15 +291,19 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                 }
 
-                variants.Add(new TestVariant()
+                // TODO: remove this workaround: https://github.com/aspnet/AspNetCore/issues/11301
+                if (string.IsNullOrEmpty(skipAncm))
                 {
-                    Server = server,
-                    Tfm = tfm,
-                    ApplicationType = type,
-                    Architecture = arch,
-                    HostingModel = hostingModel,
-                    Skip = skipAncm,
-                });
+                    variants.Add(new TestVariant()
+                    {
+                        Server = server,
+                        Tfm = tfm,
+                        ApplicationType = type,
+                        Architecture = arch,
+                        HostingModel = hostingModel,
+                        Skip = skipAncm,
+                    });
+                }
             }
         }
 
