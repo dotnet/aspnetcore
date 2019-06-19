@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
     internal class StackQueuePolicy : IQueuePolicy
     {
         private readonly List<TaskCompletionSource<bool>> _buffer;
-        private int _maxCapacity;
+        private readonly int _maxQueueCapacity;
+        private readonly int _maxConcurrentRequests;
         private bool _hasReachedCapacity;
         private int _head;
         private int _queueLength;
@@ -22,7 +23,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
         public StackQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _buffer = new List<TaskCompletionSource<bool>>();
-            _maxCapacity = options.Value.RequestQueueLimit;
+            _maxQueueCapacity = options.Value.RequestQueueLimit;
+            _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             _freeServerSpots = options.Value.MaxConcurrentRequests;
         }
 
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 // if queue is full, cancel oldest request
-                if (_queueLength == _maxCapacity)
+                if (_queueLength == _maxQueueCapacity)
                 {
                     _hasReachedCapacity = true;
                     _buffer[_head].SetResult(false);
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
                 // increment _head for next time
                 _head++;
-                if (_head == _maxCapacity)
+                if (_head == _maxQueueCapacity)
                 {
                     _head = 0;
                 }
@@ -74,13 +76,20 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 if (_queueLength == 0)
                 {
                     _freeServerSpots++;
+
+                    if (_freeServerSpots > _maxConcurrentRequests)
+                    {
+                        _freeServerSpots--;
+                        throw new InvalidOperationException("OnExit must only be called once per successful call to TryEnterAsync");
+                    }
+
                     return;
                 }
 
                 // step backwards and launch a new task
                 if (_head == 0)
                 {
-                    _head = _maxCapacity - 1;
+                    _head = _maxQueueCapacity - 1;
                 }
                 else
                 {

@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.RequestThrottling.Policies;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -32,12 +34,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
             }));
 
             var task1 = stack.TryEnterAsync();
-            var _ = stack.TryEnterAsync();
-            _ = stack.TryEnterAsync();
-
             Assert.False(task1.IsCompleted);
+            var task2 = stack.TryEnterAsync();
+            Assert.False(task2.IsCompleted);
+            var task3 = stack.TryEnterAsync();
+            Assert.False(task3.IsCompleted);
 
-            _ = stack.TryEnterAsync();
+            var task4 = stack.TryEnterAsync();
+            Assert.False(task4.IsCompleted);
 
             Assert.True(task1.IsCompleted);
             Assert.False(task1.Result);
@@ -93,13 +97,31 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
                 RequestQueueLimit = 4,
             }));
 
-            var _ = stack.TryEnterAsync();
+            var task1 = stack.TryEnterAsync();
             stack.OnExit();
+            Assert.True(task1.IsCompleted);
 
             var task2 = stack.TryEnterAsync();
             stack.OnExit();
-
             Assert.True(task2.IsCompleted);
+        }
+
+        [Fact]
+        public static async Task OneTryEnterAsyncOneOnExit()
+        {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions
+            {
+                MaxConcurrentRequests = 1,
+                RequestQueueLimit = 4,
+            }));
+
+            Assert.Throws<InvalidOperationException>(() => stack.OnExit());
+
+            await stack.TryEnterAsync();
+
+            stack.OnExit();
+
+            Assert.Throws<InvalidOperationException>(() => stack.OnExit());
         }
     } 
 }
