@@ -12,7 +12,7 @@ param(
     [Parameter(Mandatory=$true)][string]$RepoRoot
 )
 
-$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget"
+$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Architecture"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 
 if (-not (Test-Path $NuGetDir)) {
