@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Components.Server
     internal class ConfigureCircuitAuthorization : IPostConfigureOptions<AuthorizationOptions>
     {
         public ConfigureCircuitAuthorization(
-            IOptions<CircuitOptions> circuitOptions, IOptions<AuthenticationOptions> authenticationOptions)
+            IOptions<CircuitOptions> circuitOptions,
+            IOptions<AuthenticationOptions> authenticationOptions)
         {
             CircuitOptions = circuitOptions.Value;
             AuthenticationOptions = authenticationOptions.Value;
@@ -21,7 +22,24 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public void PostConfigure(string name, AuthorizationOptions options)
         {
-            options.AddPolicy(CircuitAuthenticationHandler.AuthenticationType, CircuitOptions.AuthorizationPolicy);
+            if (options.GetPolicy(CircuitAuthenticationHandler.AuthorizationPolicyName) != null)
+            {
+                // Someone already configured the policy, so we do nothing.
+                return;
+            }
+
+            var authorizationPolicyBuilder = new AuthorizationPolicyBuilder(CircuitAuthenticationHandler.AuthenticationType);
+
+            if (AuthenticationOptions.DefaultScheme != null)
+            {
+                authorizationPolicyBuilder.AddAuthenticationSchemes(AuthenticationOptions.DefaultScheme);
+            }
+
+            var policy = authorizationPolicyBuilder
+                .RequireClaim(CircuitAuthenticationHandler.IdClaimType)
+                .Build();
+
+            options.AddPolicy(CircuitAuthenticationHandler.AuthorizationPolicyName, policy);
         }
     }
 }

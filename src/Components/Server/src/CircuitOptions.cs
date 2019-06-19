@@ -47,10 +47,5 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Defaults to <c>3 minutes</c>.
         /// </value>
         public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
-
-        /// <summary>
-        /// Gets the policy to use for Hub authorization
-        /// </summary>
-        public AuthorizationPolicy AuthorizationPolicy { get; set; }
     }
 }

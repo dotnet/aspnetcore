@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
+    // Required by the default authentication handler implementation. Otherwise, unused.
     internal class CircuitAuthenticationOptions : AuthenticationSchemeOptions
     {
     }

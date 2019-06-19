@@ -68,6 +68,20 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
+
+        // At some point we might want to change the name for this method.
+        // Start circuit renders non-prerendered components.
+        // If there were prerendered components on the page:
+        // * The client will first reconnect to the circuit, at which point the circuit will be up and connected and
+        //   then will call into start circuit, which will render the rest of the components.
+        // * The order in which circuit events are triggered is preserved.
+        //   * OnCircuitOpenedAsync runs before all components.
+        //     * Will run during prerendering.
+        //   * OnConnectionUpAsync runs before all components get rendered.
+        //     * Will run inside ConnectCircuit
+        // If there were only prerendered components on the page start circuit will do nothing.
+        // If there were no prerendered components on the page:
+        //   * A new circuit will be created with the given circuit id.
         public string StartCircuit(string circuitId, string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -127,6 +141,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             CircuitHost = circuitHost;
 
+            // We don't need to return the request token, but we can clean this up later.
             return circuitHost.CircuitId.RequestToken;
         }
 

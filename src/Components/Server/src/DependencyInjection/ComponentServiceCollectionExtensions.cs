@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Extension methods to configure an <see cref="IServiceCollection"/> for components.
     /// </summary>
-    public static partial class ComponentServiceCollectionExtensions
+    public static class ComponentServiceCollectionExtensions
     {
         /// <summary>
         /// Adds Server-Side Blazor services to the service collection.
@@ -56,7 +56,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddAuthorization();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthorizationOptions>, ConfigureCircuitAuthorization>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CircuitOptions>, ConfigureCircuitAuthenticationPolicy>());
 
             // Register the Blazor specific hub protocol
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());

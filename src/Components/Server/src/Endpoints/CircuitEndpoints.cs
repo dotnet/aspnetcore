@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
         public async Task StartCircuitAsync(HttpContext context)
         {
             var id = _circuitIdFactory.CreateCircuitId();
-            CircuitAuthenticationHandler.AttachCircuitId(context, id);
+            await CircuitAuthenticationHandler.AttachCircuitIdAsync(context, id);
 
             var circuitId = new RequestCircuitId { Id = id.RequestToken };
 

@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
 
             endpoints.MapStartCircuitEndpoint(ComponentHub.DefaultPath + "/start");
             return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions))
-                .RequireAuthorization(CircuitAuthenticationHandler.AuthenticationType);
+                .RequireAuthorization(CircuitAuthenticationHandler.AuthorizationPolicyName);
         }
 
         /// <summary>

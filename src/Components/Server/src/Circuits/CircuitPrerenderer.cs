@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // a navigation request. Instead rendre nothing
                 return new ComponentPrerenderResult(Array.Empty<string>());
             }
-            var circuitHost = GetOrCreateCircuitHost(context, navigationStatus);
+            var circuitHost = await GetOrCreateCircuitHostAsync(context, navigationStatus);
             ComponentRenderedText renderResult = default;
             try
             {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             await circuitHost.DisposeAsync();
         }
 
-        private CircuitHost GetOrCreateCircuitHost(HttpContext context, CircuitNavigationStatus navigationStatus)
+        private async Task<CircuitHost> GetOrCreateCircuitHostAsync(HttpContext context, CircuitNavigationStatus navigationStatus)
         {
             if (context.Items.TryGetValue(CircuitHostKey, out var existingHost))
             {
@@ -114,6 +114,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     client: new CircuitClientProxy(), // This creates an "offline" client.
                     GetFullUri(context.Request),
                     GetFullBaseUri(context.Request));
+
+                await CircuitAuthenticationHandler.AttachCircuitIdAsync(context, result.CircuitId);
 
                 result.UnhandledException += CircuitHost_UnhandledException;
                 context.Response.OnCompleted(() =>
