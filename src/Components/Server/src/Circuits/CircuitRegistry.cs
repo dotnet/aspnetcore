@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
         {
-            Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
+            Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId.RequestToken, connectionId);
 
             Task circuitHandlerTask;
             lock (CircuitRegistryLock)
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 case EvictionReason.Capacity:
                     // Kick off the dispose in the background.
                     var disconnectedEntry = (DisconnectedCircuitEntry)value;
-                    Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId, reason);
+                    Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId.RequestToken, reason);
                     _ = DisposeCircuitEntry(disconnectedEntry);
                     break;
 

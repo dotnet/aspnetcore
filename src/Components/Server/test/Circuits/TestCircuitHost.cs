@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             handlers = handlers ?? Array.Empty<CircuitHandler>();
             return new TestCircuitHost(
-                circuitId.RequestToken == null ? new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()) : circuitId,
+                circuitId.RequestToken == null ? new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()) : circuitId,
                 serviceScope,
                 clientProxy,
                 renderRegistry,

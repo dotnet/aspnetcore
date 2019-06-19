@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = TestCircuitHost.Create(
-                new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()),
+                new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()),
                 serviceScope.Object,
                 remoteRenderer);
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = TestCircuitHost.Create(
-                new CircuitId(Guid.NewGuid().ToByteArray(),Guid.NewGuid().ToByteArray()),
+                new CircuitId(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray()),
                 serviceScope.Object,
                 remoteRenderer);
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
             // Act
-            await circuitHost.InitializeAsync(cancellationToken);
+            await circuitHost.InitializeAsync(cancellationToken, existingCircuit: false);
 
             // Assert
             handler1.VerifyAll();
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             // Act
-            var initializeAsyncTask = circuitHost.InitializeAsync(new CancellationToken());
+            var initializeAsyncTask = circuitHost.InitializeAsync(new CancellationToken(), existingCircuit: false);
 
             // Assert: No synchronous exceptions
             handler.VerifyAll();

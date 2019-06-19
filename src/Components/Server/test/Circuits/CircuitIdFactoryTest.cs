@@ -50,7 +50,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var id = factory.CreateCircuitId();
 
             // Act
-            var isValid = factory.ValidateCircuitId(id.CookieToken, new ClaimsPrincipal());
+            var user = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new Claim[] { new Claim("bcid",id.RequestToken) },
+                    "AuthType"));
+
+            var isValid = factory.ValidateCircuitId(id.RequestToken, user);
 
             // Assert
             Assert.True(isValid, "Failed to validate id");
