@@ -10,17 +10,14 @@
     <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRuntimeVersion)</HostingStartupRuntimeFrameworkVersion>
-
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageType>AzureSiteExtension</PackageType>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageVersion>$(SiteExtensionPackageVersion)</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-
     <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(TargetRuntimeIdentifier)" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
 
