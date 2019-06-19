@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
             {
                 throw new NotImplementedException();
-            }, new TestServiceContext(LoggerFactory),
+            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
