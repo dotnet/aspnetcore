@@ -81,8 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 var formatterException = new InputFormatterException(jsonException.Message, jsonException);
 
-                var metadata = ModelNames.GetPathMetadata(context.Metadata, path);
-                context.ModelState.TryAddModelError(path, formatterException, metadata);
+                context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
 
                 Log.JsonInputException(_logger, jsonException);
 
