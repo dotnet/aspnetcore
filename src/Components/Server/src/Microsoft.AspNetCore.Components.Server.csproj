@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -63,6 +63,10 @@
   <ItemGroup>
     <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authorization\" />
   </ItemGroup>
 
 </Project>

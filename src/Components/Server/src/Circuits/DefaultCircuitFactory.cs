@@ -98,7 +98,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 circuitHandlers,
                 _loggerFactory.CreateLogger<CircuitHost>());
 
-            CircuitAuthenticationHandler.AttachCircuitId(httpContext, circuitHost.CircuitId);
+            if (!client.Connected)
+            {
+                // This means we are prerendering, in which case we will be putting the circuit ID
+                // within the original HTTP request. So at that time, we want to attach the authentication
+                // piece for it.
+                // For strictly non-prerendered scenarios, the circuit id gets provisioned through an external
+                // HTTP request beforehand, so at this point we will be already inside the signalr connection.
+                CircuitAuthenticationHandler.AttachCircuitId(httpContext, circuitHost.CircuitId);
+            }
 
             // Initialize per - circuit data that services need
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;

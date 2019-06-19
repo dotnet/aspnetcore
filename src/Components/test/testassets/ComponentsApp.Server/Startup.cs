@@ -5,13 +5,9 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -34,6 +30,7 @@ namespace ComponentsApp.Server
 
             services.AddAuthentication("Test")
                 .AddScheme<TestAuthenticationOptions, TestScheme>("Test", o => { });
+
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
         }
 
@@ -54,7 +51,7 @@ namespace ComponentsApp.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapBlazorHub()
+                endpoints.MapBlazorHub<App.Banner>(selector: "banner")
                     .RequireAuthorization("Circuit");
                 endpoints.MapFallbackToPage("/Index");
             });

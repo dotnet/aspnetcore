@@ -1,0 +1,8 @@
+<button @onclick="@SayHello">Click me</button>
+<p>@Text</p>
+
+@code{
+public string Text { get; set; }
+
+public void SayHello() => Text = "Hello banner";
+}

@@ -71,7 +71,11 @@ namespace Microsoft.AspNetCore.Components.Server
         public string StartCircuit(string circuitId, string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
-            if (DefaultCircuitFactory.ResolveComponentMetadata(Context.GetHttpContext(), circuitClient).Count == 0)
+            var preregisterredDescriptors = DefaultCircuitFactory.ResolveComponentMetadata(
+                Context.GetHttpContext(),
+                circuitClient);
+
+            if (preregisterredDescriptors.Count == 0)
             {
                 var endpointFeature = Context.GetHttpContext().Features.Get<IEndpointFeature>();
                 var endpoint = endpointFeature?.Endpoint;
@@ -97,7 +101,10 @@ namespace Microsoft.AspNetCore.Components.Server
             }
             else
             {
-                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
+                foreach (var descriptor in preregisterredDescriptors)
+                {
+                    circuitHost.Descriptors.Add(descriptor);
+                }
             }
 
             // Fire-and-forget the initialization process, because we can't block the
@@ -113,7 +120,8 @@ namespace Microsoft.AspNetCore.Components.Server
 
             if (!existingCircuit)
             {
-                // 
+                // If it was a new circuit we register it. Otherwise, it will become connected once the connect
+                // event is triggered by the prerendered components.
                 _circuitRegistry.Register(circuitHost);
             }
 

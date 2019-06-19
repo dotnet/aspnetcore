@@ -71,12 +71,6 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   // Ensure any embedded resources have been loaded before starting the app
   await embeddedResourcesPromise;
 
-  const renderedComponents = await startCircuit(circuitId, initialConnection);
-
-  if (!renderedComponents) {
-    logger.log(LogLevel.Information, 'No preregistered components to render.');
-  }
-
   const reconnect = async (existingConnection?: signalR.HubConnection): Promise<boolean> => {
     if (renderingFailed) {
       // We can't reconnect after a failure, so exit early.
@@ -96,6 +90,14 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   window['Blazor'].reconnect = reconnect;
 
   await reconnect(initialConnection);
+
+  // We render any additional component after all prerendered components have
+  // re-stablished the connection with the circuit.
+  const renderedComponents = await startCircuit(circuitId, initialConnection);
+
+  if (!renderedComponents) {
+    logger.log(LogLevel.Information, 'No preregistered components to render.');
+  }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 

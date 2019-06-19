@@ -79,8 +79,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return false;
             }
 
-            return ConnectedCircuits.TryGetValue(circuitId, out circuitHost) ||
-                DisconnectedCircuits.TryGetValue(circuitId, out circuitHost);
+            if (ConnectedCircuits.TryGetValue(circuitId, out circuitHost))
+            {
+                return true;
+            }
+
+            if(DisconnectedCircuits.TryGetValue(circuitId, out DisconnectedCircuitEntry disconnectedEntry))
+            {
+                circuitHost = disconnectedEntry.CircuitHost;
+                return true;
+            }
+
+            circuitHost = null;
+            return false;
         }
 
         internal MemoryCache DisconnectedCircuits { get; }
