@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // IsEnabled is checked in the caller, so if we are here just log
             _logger.Log(
                 logLevel: LogLevel.Information,
-                eventId: new EventId(LoggerEventIds.RequestStarting, nameof(LoggerEventIds.RequestStarting)),
+                eventId: new EventId(LoggerEventIds.RequestStarting, "RequestStarting"),
                 state: new HostingRequestStartingLog(httpContext),
                 exception: null,
                 formatter: HostingRequestStartingLog.Callback);
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 _logger.Log(
                     logLevel: LogLevel.Information,
-                    eventId: new EventId(LoggerEventIds.RequestFinished, nameof(LoggerEventIds.RequestFinished)),
+                    eventId: new EventId(LoggerEventIds.RequestFinished, "RequestFinished"),
                     state: new HostingRequestFinishedLog(httpContext, elapsed),
                     exception: null,
                     formatter: HostingRequestFinishedLog.Callback);
