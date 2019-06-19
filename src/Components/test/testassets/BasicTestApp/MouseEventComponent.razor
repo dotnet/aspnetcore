@@ -16,6 +16,13 @@
         Mousedown: <input id="mousedown_input" @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" />
     </p>
     <p>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="@OnPointerDown" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="@OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="@OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
         <button @onclick="@Clear">Clear</button>
     </p>
 
@@ -60,6 +67,27 @@
     {
         DumpEvent(e);
         message += "onmouseup,";
+        StateHasChanged();
+    }
+
+    void OnPointerDown(UIPointerEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onpointerdown";
+        StateHasChanged();
+    }
+
+    void OnDragStart(UIDragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondragstart,";
+        StateHasChanged();
+    }
+
+    void OnDrop(UIDragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondrop,";
         StateHasChanged();
     }
 

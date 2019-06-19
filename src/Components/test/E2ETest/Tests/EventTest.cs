@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -115,6 +114,40 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             actions.Perform();
             Browser.Equal("onmousedown,onmouseup,", () => output.Text);
+        }
+
+        [Fact]
+        public void PointerDown_CanTrigger()
+        {
+            MountTestComponent<MouseEventComponent>();
+
+            var input = Browser.FindElement(By.Id("pointerdown_input"));
+
+            var output = Browser.FindElement(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            var actions = new Actions(Browser).ClickAndHold(input);
+
+            actions.Perform();
+            Browser.Equal("onpointerdown", () => output.Text);
+        }
+
+        [Fact]
+        public void DragDrop_CanTrigger()
+        {
+            MountTestComponent<MouseEventComponent>();
+
+            var input = Browser.FindElement(By.Id("drag_input"));
+            var target = Browser.FindElement(By.Id("drop"));
+
+            var output = Browser.FindElement(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            var actions = new Actions(Browser).DragAndDrop(input, target);
+
+            actions.Perform();
+            // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
+            Browser.Equal("ondragstart,", () => output.Text);
         }
 
         [Fact]

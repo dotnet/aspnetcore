@@ -91,19 +91,9 @@ export class EventForDotNet<TData extends UIEventArgs> {
 
 function parseDragEvent(event: any) {
   return {
-    type: event.type,
-    detail: event.detail,
+    ...parseMouseEvent(event),
     dataTransfer: event.dataTransfer,
-    screenX: event.screenX,
-    screenY: event.screenY,
-    clientX: event.clientX,
-    clientY: event.clientY,
-    button: event.button,
-    buttons: event.buttons,
-    ctrlKey: event.ctrlKey,
-    shiftKey: event.shiftKey,
-    altKey: event.altKey,
-    metaKey: event.metaKey,
+
   };
 }
 
