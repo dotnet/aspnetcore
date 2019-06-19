@@ -20,7 +20,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public static HubConnectionContext Create(ConnectionContext connection, IHubProtocol protocol = null, string userIdentifier = null)
         {
-            return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
+            var options = new HubOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(15),
+            };
+
+            return new HubConnectionContext(connection, NullLoggerFactory.Instance, options)
             {
                 Protocol = protocol ?? new JsonHubProtocol(),
                 UserIdentifier = userIdentifier,
@@ -29,15 +34,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public static MockHubConnectionContext CreateMock(ConnectionContext connection)
         {
-            return new MockHubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15), streamBufferCapacity: 10);
+            var options = new HubOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(15),
+                ClientTimeoutInterval = TimeSpan.FromSeconds(15),
+                StreamBufferCapacity = 10,
+            };
+            return new MockHubConnectionContext(connection, NullLoggerFactory.Instance, options);
         }
 
         public class MockHubConnectionContext : HubConnectionContext
         {
-            public MockHubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
-                : base(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval, streamBufferCapacity)
+            public MockHubConnectionContext(ConnectionContext connectionContext, ILoggerFactory loggerFactory, HubOptions options)
+                : base(connectionContext, loggerFactory, options)
             {
-
             }
 
             public override ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
