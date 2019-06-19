@@ -2200,7 +2200,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        internal class TestAuthHandler : IAuthorizationHandler
+        private class TestAuthHandler : IAuthorizationHandler
         {
             public Task HandleAsync(AuthorizationHandlerContext context)
             {
@@ -2216,11 +2216,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 return Task.CompletedTask;
             }
-        }
-
-        internal class HttpContextFeatureImpl : IHttpContextFeature
-        {
-            public HttpContext HttpContext { get; set; }
         }
 
         [Fact]
@@ -3701,6 +3696,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
             public int Bar { get; }
             public string Foo { get; }
+        }
+
+        private class HttpContextFeatureImpl : IHttpContextFeature
+        {
+            public HttpContext HttpContext { get; set; }
         }
     }
 }
