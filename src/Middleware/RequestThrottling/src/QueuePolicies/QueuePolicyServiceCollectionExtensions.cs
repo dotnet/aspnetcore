@@ -27,11 +27,11 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
-            services.AddSingleton<IQueuePolicy, TailDrop>();
+            services.AddSingleton<IQueuePolicy, TailDropQueuePolicy>();
             return services;
         }
 
-        public static IServiceCollection AddStackPolicy(this IServiceCollection services, Action<QueuePolicyOptions> configure)
+        public static IServiceCollection AddStackQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
             services.AddSingleton<IQueuePolicy, StackQueuePolicy>();

@@ -1,14 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
     internal class StackQueuePolicy : IQueuePolicy
     {
-        private readonly TaskCompletionSource<bool>[] _buffer;
-        private int _head; 
+        private readonly List<TaskCompletionSource<bool>> _buffer;
+        private int _maxCapacity;
+        private bool _hasReachedCapacity;
+        private int _head;
         private int _queueLength;
 
         private static readonly Task<bool> _trueTask = Task.FromResult(true);
@@ -19,7 +21,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
         public StackQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
-            _buffer = new TaskCompletionSource<bool>[options.Value.RequestQueueLimit];
+            _buffer = new List<TaskCompletionSource<bool>>();
+            _maxCapacity = options.Value.RequestQueueLimit;
             _freeServerSpots = options.Value.MaxConcurrentRequests;
         }
 
@@ -34,20 +37,28 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 // if queue is full, cancel oldest request
-                if (_queueLength == _buffer.Length)
+                if (_queueLength == _maxCapacity)
                 {
+                    _hasReachedCapacity = true;
                     _buffer[_head].SetResult(false);
                     _queueLength--;
                 }
 
                 // enqueue request with a tcs
                 var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                _buffer[_head] = tcs;
+                if (_hasReachedCapacity)
+                {
+                    _buffer[_head] = tcs;
+                }
+                else
+                {
+                    _buffer.Add(tcs);
+                }
                 _queueLength++;
 
                 // increment _head for next time
                 _head++;
-                if (_head == _buffer.Length)
+                if (_head == _maxCapacity)
                 {
                     _head = 0;
                 }
@@ -68,7 +79,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 // step backwards and launch a new task
                 if (_head == 0)
                 {
-                    _head = _buffer.Length - 1;
+                    _head = _maxCapacity - 1;
                 }
                 else
                 {

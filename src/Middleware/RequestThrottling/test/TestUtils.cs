@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             return new StackQueuePolicy(options);
         }
 
-        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        internal static TailDropQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new TailDrop(options);
+            return new TailDropQueuePolicy(options);
         }
     }
 

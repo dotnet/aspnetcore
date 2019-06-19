@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class QueuePolicyServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddStackPolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.Policies.QueuePolicyOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddStackQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.Policies.QueuePolicyOptions> configure) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddTailDropQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.Policies.QueuePolicyOptions> configure) { throw null; }
     }
 }

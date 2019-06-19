@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
     public class QueueFullOverhead
     {
-        private const int _numRequests = 20000;
+        private const int _numRequests = 200;
         private int _requestCount = 0;
         private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
@@ -54,27 +54,27 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             await Task.Yield();
         }
 
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void Baseline()
-        {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                _ = IncrementAndCheck(null);
-            }
+        //[Benchmark(OperationsPerInvoke = _numRequests)]
+        //public void Baseline()
+        //{
+        //    for (int i = 0; i < _numRequests; i++)
+        //    {
+        //        _ = IncrementAndCheck(null);
+        //    }
 
-            _mres.Wait();
-        }
+        //    _mres.Wait();
+        //}
 
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void QueueingAll_FIFO()
-        {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                _ = _middleware_FIFO.Invoke(null);
-            }
+        //[Benchmark(OperationsPerInvoke = _numRequests)]
+        //public void QueueingAll_FIFO()
+        //{
+        //    for (int i = 0; i < _numRequests; i++)
+        //    {
+        //        _ = _middleware_FIFO.Invoke(null);
+        //    }
 
-            _mres.Wait();
-        }
+        //    _mres.Wait();
+        //}
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
         public void QueueingAll_LIFO()

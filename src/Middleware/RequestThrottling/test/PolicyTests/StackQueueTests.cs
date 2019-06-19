@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.RequestThrottling.Policies;
 using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
 {
-    public static class StackPolicyTests
+    public static class StackQueueTests
     {
         [Fact]
         public static void BaseFunctionality()
@@ -86,6 +82,24 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
 
             var task3 = stack.TryEnterAsync();
             Assert.True(task3.IsCompleted && task3.Result);
+        }
+
+        [Fact]
+        public static void MaintainsStateThroughLoad()
+        {
+            var stack = new StackQueuePolicy(Options.Create(new QueuePolicyOptions
+            {
+                MaxConcurrentRequests = 1,
+                RequestQueueLimit = 100,
+            }));
+
+            for (int i = 0; i < 400; i++)
+            {
+                _ = stack.TryEnterAsync();
+            }
+
+            var task = stack.TryEnterAsync();
+            Assert.True(task.IsCompleted);
         }
     } 
 }
