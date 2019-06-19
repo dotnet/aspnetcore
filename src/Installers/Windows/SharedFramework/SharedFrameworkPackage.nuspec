@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>VS.Redist.Common.NetCore.Toolset.$ARCH$</id>
-        <version>$MAJOR_VERSION$.$MINOR_VERSION$</version>
-        <title>VS.Redist.Common.NetCore.Toolset.$ARCH$</title>
+        <id> VS.Redist.Common.AspNetCore.SharedFramework.$ARCH$</id>
+        <version>1.0.0</version>
+        <title> VS.Redist.Common.AspNetCore.SharedFramework.$ARCH$</title>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>

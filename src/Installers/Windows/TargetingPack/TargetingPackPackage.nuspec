@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>VS.Redist.Common.AspNetCore.TargetingPack.$ARCH$</id>
-        <version>$MAJOR_VERSION$.$MINOR_VERSION$</version>
+        <version>1.0.0</version>
         <title> VS.Redist.Common.AspNetCore.TargetingPack.$ARCH$</title>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>

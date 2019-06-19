@@ -87,8 +87,7 @@
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
-                      '$(AspNetCoreMajorVersion)' ^
-                      '$(AspNetCoreMinorVersion)' ^
+                      '$(PackageVersion)' ^
                       '$(RepoRoot)'" />
   </Target>
 </Project>
