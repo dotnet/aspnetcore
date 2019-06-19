@@ -25,7 +25,7 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
     <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
-    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPack.ps1</GenerateNupkgPowershellScript>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>
