@@ -38,8 +38,9 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
     $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}"" />", content);
             }
 
-            Assert.True(File.Exists(expectedJsonName));
-            using (var jsonStream = new FileInfo(expectedJsonName).OpenRead())
+            var jsonFile = Path.Combine(_tempDir.Root, expectedJsonName);
+            Assert.True(File.Exists(jsonFile));
+            using (var jsonStream = new FileInfo(jsonFile).OpenRead())
             using (var reader = new StreamReader(jsonStream))
             {
                 var content = await reader.ReadToEndAsync();
