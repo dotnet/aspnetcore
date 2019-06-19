@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Ignitor
 {
-    internal class ElementNode : ContainerNode
+    public class ElementNode : ContainerNode
     {
         private readonly Dictionary<string, object> _attributes;
         private readonly Dictionary<string, object> _properties;
@@ -79,9 +79,9 @@ namespace Ignitor
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
-                Console.WriteLine("Button does not have a click event. Exiting");
-                return;
+                throw new InvalidOperationException("Element does not have a click event.");
             }
+
             var mouseEventArgs = new UIMouseEventArgs()
             {
                 Type = clickEventDescriptor.EventName,
