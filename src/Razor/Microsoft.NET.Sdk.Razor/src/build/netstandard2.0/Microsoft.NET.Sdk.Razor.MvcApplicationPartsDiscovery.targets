@@ -67,7 +67,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       OutputFile="$(_MvcApplicationPartAttributeGeneratedFile)"
       Condition="'@(_ApplicationPartAssemblyNames->Count())' != '0'" />
 
-    <ItemGroup Condition="'@(_ApplicationPartAssemblyNames->Count())' != '0'">
+    <!--
+      If the generated attribute file exists, but no assembly names were discovered,
+      it suggests that the assembly references were changed to no longer point to MVC.
+      In this case, delete the file so that future incremental builds can no longer pick it up.
+    -->
+    <Delete
+      File="$(_MvcApplicationPartAttributeGeneratedFile)"
+      Condition="'@(_ApplicationPartAssemblyNames->Count())' == '0' AND Exists('$(_MvcApplicationPartAttributeGeneratedFile)')" />
+
+    <ItemGroup Condition="Exists('$(_MvcApplicationPartAttributeGeneratedFile)')">
       <Compile Remove="$(_MvcApplicationPartAttributeGeneratedFile)" Condition="'$(Language)'!='F#'" />
       <Compile Include="$(_MvcApplicationPartAttributeGeneratedFile)"  Condition="'$(Language)'!='F#'" />
 

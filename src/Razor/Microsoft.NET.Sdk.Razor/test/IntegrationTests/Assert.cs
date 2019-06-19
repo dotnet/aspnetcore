@@ -507,6 +507,36 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        public static void AssemblyHasAttribute(MSBuildResult result, string assemblyPath, string fullTypeName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
+            var typeNames = GetAssemblyAttributes(assemblyPath);
+            Assert.Contains(fullTypeName, typeNames);
+        }
+
+        private static IEnumerable<string> GetAssemblyAttributes(string assemblyPath)
+        {
+            using (var file = File.OpenRead(assemblyPath))
+            {
+                var peReader = new PEReader(file);
+                var metadataReader = peReader.GetMetadataReader();
+                return metadataReader.CustomAttributes.Where(t => !t.IsNil).Select(t =>
+                {
+                    var attribute = metadataReader.GetCustomAttribute(t);
+                    var constructor = metadataReader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var type = metadataReader.GetTypeReference((TypeReferenceHandle)constructor.Parent);
+
+                    return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
+                }).ToArray();
+            }
+        }
+
         private abstract class MSBuildXunitException : Xunit.Sdk.XunitException
         {
             protected MSBuildXunitException(MSBuildResult result)

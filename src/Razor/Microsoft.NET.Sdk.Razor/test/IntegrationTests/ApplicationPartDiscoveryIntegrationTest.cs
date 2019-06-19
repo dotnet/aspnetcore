@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
             Assert.FileContains(result, Path.Combine(IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs"), "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")]");
+            Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
         [Fact]
@@ -69,6 +70,33 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, generatedAttributeFile);
             Assert.Equal(thumbPrint, GetThumbPrint(generatedAttributeFile));
+            Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
+        }
+
+        // Regression test for https://github.com/aspnet/AspNetCore/issues/11315
+        [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        public async Task BuildIncrementalism_CausingRecompilation_WhenApplicationPartAttributeIsGenerated()
+        {
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            var generatedAttributeFile = Path.Combine(IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
+            Assert.FileExists(result, generatedAttributeFile);
+            Assert.FileContains(result, generatedAttributeFile, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")]");
+
+            var thumbPrint = GetThumbPrint(generatedAttributeFile);
+
+            // Touch a file in the main app which should call recompilation, but not the Mvc discovery tasks to re-run.
+            File.AppendAllText(Path.Combine(Project.DirectoryPath, "Program.cs"), " ");
+            result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, generatedAttributeFile);
+            Assert.Equal(thumbPrint, GetThumbPrint(generatedAttributeFile));
+            Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
         [Fact]
@@ -88,6 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.MvcApplicationPartsAssemblyInfo.fs");
             Assert.FileContains(result, Path.Combine(IntermediateOutputPath, "SimpleMvcFSharp.MvcApplicationPartsAssemblyInfo.fs"), "<assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")>");
+            Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "SimpleMvcFSharp.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
         [Fact]
