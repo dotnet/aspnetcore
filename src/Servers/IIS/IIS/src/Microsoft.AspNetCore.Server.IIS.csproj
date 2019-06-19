@@ -55,6 +55,7 @@
 
   <Target Name="AddRunNativeComponents"
           BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="DebugSymbolsProjectOutputGroup"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
