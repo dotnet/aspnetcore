@@ -61,11 +61,6 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         public NegotiateMetadata() { }
     }
-    public static partial class ServerSentEventsMessageFormatter
-    {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task WriteMessageAsync(System.Buffers.ReadOnlySequence<byte> payload, System.IO.Stream output) { throw null; }
-    }
     public partial class WebSocketOptions
     {
         public WebSocketOptions() { }
