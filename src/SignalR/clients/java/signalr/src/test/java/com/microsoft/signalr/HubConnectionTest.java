@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.Completable;
 import org.junit.jupiter.api.Test;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
@@ -966,7 +966,6 @@ class HubConnectionTest {
         AtomicBoolean done = new AtomicBoolean();
         Completable result = hubConnection.invoke("test", "message");
         result.doOnComplete(() -> done.set(true)).subscribe();
-        result.subscribe();
 
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(done.get());
@@ -975,6 +974,44 @@ class HubConnectionTest {
 
         assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
         assertTrue(done.get());
+    }
+
+    @Test
+    public void invokeCompletedByCompletionMessageWithResult() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Completable result = hubConnection.invoke("test", "message");
+        result.doOnComplete(() -> done.set(true)).subscribe();
+
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
+
+        assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
+        assertTrue(done.get());
+    }
+
+    @Test
+    public void completionWithResultAndErrorHandlesError() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        AtomicBoolean done = new AtomicBoolean();
+        Completable result = hubConnection.invoke("test", "message");
+        result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
+
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
+        assertFalse(done.get());
+
+        Throwable exception = assertThrows(IllegalArgumentException.class, () -> mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42,\"error\":\"There was an error\"}" + RECORD_SEPARATOR));
+        assertEquals("Expected either 'error' or 'result' to be provided, but not both.", exception.getMessage());
     }
 
     @Test

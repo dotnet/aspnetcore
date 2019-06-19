@@ -617,7 +617,7 @@ public class HubConnection {
 
         Subject<Object> pendingCall = irq.getPendingCall();
 
-        pendingCall.subscribe(result -> {},
+        pendingCall.subscribe(result -> subject.onComplete(),
                 error -> subject.onError(error),
                 () -> subject.onComplete());
 
