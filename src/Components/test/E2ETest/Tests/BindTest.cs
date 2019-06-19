@@ -82,6 +82,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanBindTextbox_WithBindSuffixInitiallyPopulated()
+        {
+            var target = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated"));
+            var boundValue = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-value"));
+            var mirrorValue = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-mirror"));
+            var setNullButton = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-setnull"));
+            Assert.Equal("Hello", target.GetAttribute("value"));
+            Assert.Equal("Hello", boundValue.Text);
+            Assert.Equal("Hello", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("Changed value\t");
+            Browser.Equal("Changed value", () => boundValue.Text);
+            Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
+
+            // Remove the value altogether
+            setNullButton.Click();
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
         public void CanBindTextArea_InitiallyBlank()
         {
             var target = Browser.FindElement(By.Id("textarea-initially-blank"));
