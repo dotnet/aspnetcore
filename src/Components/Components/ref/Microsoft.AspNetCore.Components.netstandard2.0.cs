@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange")]
     public static partial class BindAttributes
     {
