@@ -164,9 +164,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     if (context.CachedResponseHeaders != null)
                     {
-                        for (var i = 0; i < HeadersToIncludeIn304.Length; i++)
+                        foreach (var key in HeadersToIncludeIn304)
                         {
-                            var key = HeadersToIncludeIn304[i];
                             if (context.CachedResponseHeaders.TryGetValue(key, out var values))
                             {
                                 context.HttpContext.Response.Headers[key] = values;
