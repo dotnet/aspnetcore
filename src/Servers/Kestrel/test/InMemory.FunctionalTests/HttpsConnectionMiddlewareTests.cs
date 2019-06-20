@@ -499,6 +499,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task AllowAnyCertOverridesCertificateValidation()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                {
+                    ServerCertificate = _x509Certificate2,
+                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false,
+                    AllowAnyClientCertificate = true
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    var stream = OpenSslStream(connection.Stream);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, true);
+                }
+            }
+        }
+
+        [Fact]
         public async Task CertificatePassedToHttpContextIsNotDisposed()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)

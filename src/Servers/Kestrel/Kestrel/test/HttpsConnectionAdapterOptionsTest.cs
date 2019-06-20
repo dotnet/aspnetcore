@@ -18,19 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.Equal(TimeSpan.FromSeconds(10), new HttpsConnectionAdapterOptions().HandshakeTimeout);
         }
 
-        [Fact]
-        public void AllowAnyCertificateOverridesValidationFunc()
-        {
-            var connectionAdapterOptions = new HttpsConnectionAdapterOptions
-            {
-                ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                ClientCertificateValidation = (x509Cert, x509Chain, sslPolicyErrors) => false,
-                AllowAnyClientCertificate = true
-            };
-
-            Assert.True(connectionAdapterOptions.ClientCertificateValidation(null, null, SslPolicyErrors.None));
-        }
-
         [Theory]
         [MemberData(nameof(TimeoutValidData))]
         public void HandshakeTimeoutValid(TimeSpan value)
