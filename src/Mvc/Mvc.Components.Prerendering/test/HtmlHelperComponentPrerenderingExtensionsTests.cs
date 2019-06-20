@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Html;
@@ -135,6 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ctx.Request.QueryString = new QueryString("?query=value");
             var responseMock = new Mock<IHttpResponseFeature>();
             responseMock.Setup(r => r.HasStarted).Returns(true);
+            responseMock.Setup(r => r.Headers).Returns(new HeaderDictionary());
             ctx.Features.Set(responseMock.Object);
             var helper = CreateHelper(ctx);
             var writer = new StringWriter();
@@ -483,11 +486,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
         {
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService
+                .Setup(s => s.SignInAsync(
+                    It.IsAny<HttpContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<AuthenticationProperties>()))
+                .Returns(Task.CompletedTask);
+
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddDataProtection();
             services.AddSingleton(HtmlEncoder.Default);
-            configureServices = configureServices ?? (s => s.AddServerSideBlazor());
+            services.AddSingleton(authenticationService.Object);
+            configureServices ??= (s => s.AddServerSideBlazor());
             configureServices?.Invoke(services);
 
             var helper = new Mock<IHtmlHelper>();
