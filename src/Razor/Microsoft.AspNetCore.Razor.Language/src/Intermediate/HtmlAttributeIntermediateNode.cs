@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string Suffix { get; set; }
 
+        public string EventUpdatesAttributeName { get; set; }
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)
@@ -32,6 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             formatter.WriteProperty(nameof(AttributeName), AttributeName);
             formatter.WriteProperty(nameof(Prefix), Prefix);
             formatter.WriteProperty(nameof(Suffix), Suffix);
+            formatter.WriteProperty(nameof(EventUpdatesAttributeName), EventUpdatesAttributeName);
         }
     }
 }

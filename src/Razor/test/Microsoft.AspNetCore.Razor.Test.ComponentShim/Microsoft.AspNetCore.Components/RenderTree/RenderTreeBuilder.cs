@@ -107,5 +107,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void SetKey(object key)
         {
         }
+
+        public void SetUpdatesAttributeName(string updatesAttributeName)
+        {
+        }
     }
 }

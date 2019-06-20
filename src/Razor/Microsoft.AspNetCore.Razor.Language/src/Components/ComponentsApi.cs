@@ -89,6 +89,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string ChildContent = nameof(ChildContent);
 
             public static readonly string SetKey = nameof(SetKey);
+
+            public static readonly string SetUpdatesAttributeName = nameof(SetUpdatesAttributeName);
         }
 
         public static class RuntimeHelpers

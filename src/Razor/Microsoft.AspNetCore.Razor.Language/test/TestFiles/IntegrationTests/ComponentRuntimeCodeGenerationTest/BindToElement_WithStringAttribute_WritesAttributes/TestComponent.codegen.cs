@@ -24,6 +24,7 @@ namespace Test
 #nullable disable
             ));
             builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
+            builder.SetUpdatesAttributeName("myvalue");
             builder.CloseElement();
         }
         #pragma warning restore 1998

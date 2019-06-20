@@ -25,6 +25,7 @@ namespace Test
 #nullable disable
             ));
             builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled));
+            builder.SetUpdatesAttributeName("checked");
             builder.CloseElement();
         }
         #pragma warning restore 1998

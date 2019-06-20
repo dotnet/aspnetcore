@@ -228,6 +228,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             WriteAttribute(context, node.AttributeName, _currentAttributeValues);
             _currentAttributeValues.Clear();
+
+            if (!string.IsNullOrEmpty(node.EventUpdatesAttributeName))
+            {
+                context.CodeWriter
+                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.SetUpdatesAttributeName}")
+                    .WriteStringLiteral(node.EventUpdatesAttributeName)
+                    .WriteEndMethodInvocation();
+            }
         }
 
         public override void WriteHtmlAttributeValue(CodeRenderingContext context, HtmlAttributeValueIntermediateNode node)

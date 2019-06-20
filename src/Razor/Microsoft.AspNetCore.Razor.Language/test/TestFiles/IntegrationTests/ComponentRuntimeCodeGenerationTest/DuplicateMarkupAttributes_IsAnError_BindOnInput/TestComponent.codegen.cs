@@ -36,6 +36,7 @@ namespace Test
 #nullable disable
             ));
             builder.AddAttribute(6, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text));
+            builder.SetUpdatesAttributeName("value");
             builder.CloseElement();
             builder.AddMarkupContent(7, "\r\n");
             builder.CloseElement();

@@ -369,6 +369,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     Prefix = changeAttributeName + "=\"",
                     Suffix = "\"",
+
+                    EventUpdatesAttributeName = valueNode.AttributeName,
                 };
 
                 changeNode.Children.Add(new CSharpExpressionAttributeValueIntermediateNode());

@@ -33,6 +33,7 @@ namespace Test
 #nullable disable
             ));
             builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format));
+            builder.SetUpdatesAttributeName("value");
             builder.CloseElement();
         }
         #pragma warning restore 1998
