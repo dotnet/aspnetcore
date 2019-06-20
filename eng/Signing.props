@@ -11,7 +11,6 @@
 
   <ItemGroup Label="Signing config">
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
-    <ItemsToSign Remove="">
     <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
