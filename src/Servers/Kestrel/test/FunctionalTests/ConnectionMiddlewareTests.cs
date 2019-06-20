@@ -12,15 +12,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class ConnectionAdapterTests : LoggedTest
+    public class ConnectionMiddlewareTests : LoggedTest
     {
         [Fact]
-        public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer()
+        public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next => context => throw new Exception());
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
