@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="System.Security.Cryptography.Xml" />
     <Reference Include="System.Security.Principal.Windows" />
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>
