@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.ConfigureServices(services => {
                 services.AddSingleton<IServer, MessagePump>();
+                services.AddSingleton<IServerIntegratedAuth>(services => (IServerIntegratedAuth)services.GetRequiredService<IServer>());
                 services.AddAuthenticationCore();
             });
         }

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class MessagePump : IServer
+    internal class MessagePump : IServer, IServerIntegratedAuth
     {
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_options.Authentication.Schemes != AuthenticationSchemes.None)
             {
                 authentication.AddScheme(new AuthenticationScheme(HttpSysDefaults.AuthenticationScheme, displayName: null, handlerType: typeof(AuthenticationHandler)));
+                IsEnabled = true;
+                AuthenticationScheme = HttpSysDefaults.AuthenticationScheme;
             }
 
             Features = new FeatureCollection();
@@ -65,6 +67,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public IFeatureCollection Features { get; }
 
         private bool Stopping => _stopping == 1;
+
+        // IServerIntegratedAuth
+        public bool IsEnabled { get; private set; }
+
+        // IServerIntegratedAuth
+        public string AuthenticationScheme { get; private set; }
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {

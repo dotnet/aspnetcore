@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Hosting
                         services.AddSingleton<IServer, IISHttpServer>();
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
+                        services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
+                        {
+                            IsEnabled = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled,
+                            AuthenticationScheme = IISServerDefaults.AuthenticationScheme
+                        });
                         services.Configure<IISServerOptions>(
                             options => {
                                 options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);

@@ -33,6 +33,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// </summary>
         public bool PersistNtlmCredentials { get; set; } = true;
 
+        internal bool DefferToServer { get; set; }
+
         // For testing
         internal INegotiateStateFactory StateFactory { get; set; } = new ReflectedNegotiateStateFactory();
     }

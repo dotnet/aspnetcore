@@ -162,6 +162,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "..\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{666AFB4D-68A5-4621-BB55-2CD82F0FB1F8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys", "..\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj", "{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -420,6 +422,10 @@ Global
 		{666AFB4D-68A5-4621-BB55-2CD82F0FB1F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{666AFB4D-68A5-4621-BB55-2CD82F0FB1F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{666AFB4D-68A5-4621-BB55-2CD82F0FB1F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6C3C4A9-197B-47B5-8B72-35047CBC4F22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -500,6 +506,7 @@ Global
 		{16C26D50-6849-4BA4-AEB6-E5C9AA2369A2} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{A665A1F8-D1A4-42AC-B8E9-71B6F57481D8} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{666AFB4D-68A5-4621-BB55-2CD82F0FB1F8} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
+		{D6C3C4A9-197B-47B5-8B72-35047CBC4F22} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}
