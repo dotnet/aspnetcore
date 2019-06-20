@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Hosting
         public static ListenOptions UseConnectionLogging(this ListenOptions listenOptions, string loggerName)
         {
             var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerName == null ? loggerFactory.CreateLogger<LoggingConnectionAdapter>() : loggerFactory.CreateLogger(loggerName);
-            listenOptions.ConnectionAdapters.Add(new LoggingConnectionAdapter(logger));
+            var logger = loggerName == null ? loggerFactory.CreateLogger<LoggingConnectionMiddleware>() : loggerFactory.CreateLogger(loggerName);
+            listenOptions.Use(next => new LoggingConnectionMiddleware(next, logger).OnConnectionAsync);
             return listenOptions;
         }
     }

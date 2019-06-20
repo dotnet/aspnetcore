@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -78,7 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             };
 
             options._middleware.AddRange(_middleware);
-            options.ConnectionAdapters.AddRange(ConnectionAdapters);
             return options;
         }
     }

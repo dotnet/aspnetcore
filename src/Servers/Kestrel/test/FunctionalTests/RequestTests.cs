@@ -40,10 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
@@ -509,7 +506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
             var appStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -546,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
             var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
@@ -583,7 +580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
             var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
@@ -628,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // This needs a timeout.
             const int applicationAbortedConnectionId = 34;
 
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
 
             var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var registrationTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -746,6 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
+                ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count,
                 ServerOptions =
                 {
                     Limits =
@@ -805,7 +803,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var appStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
-            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
 
             var scratchBuffer = new byte[4096];
 

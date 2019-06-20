@@ -171,8 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out https);
                 context.ServerOptions.ApplyEndpointDefaults(httpsDefault);
 
-                if (httpsDefault.ConnectionAdapters.Any(f => f.IsHttps)
-                    || httpsDefault.TryUseHttps())
+                if (httpsDefault.IsTls || httpsDefault.TryUseHttps())
                 {
                     await httpsDefault.BindAsync(context).ConfigureAwait(false);
                     context.Logger.LogDebug(CoreStrings.BindingToDefaultAddresses,
@@ -255,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     var options = ParseAddress(address, out var https);
                     context.ServerOptions.ApplyEndpointDefaults(options);
 
-                    if (https && !options.ConnectionAdapters.Any(f => f.IsHttps))
+                    if (https && !options.IsTls)
                     {
                         options.UseHttps();
                     }

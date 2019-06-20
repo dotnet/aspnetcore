@@ -6,7 +6,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -18,12 +17,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer()
         {
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new ThrowingConnectionAdapter() }
-            };
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            listenOptions.Use(next => context => throw new Exception());
 
-            var serviceContext = new TestServiceContext(LoggerFactory);
+            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
 
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -45,16 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     });
                 }
                 await server.StopAsync();
-            }
-        }
-
-        private class ThrowingConnectionAdapter : IConnectionAdapter
-        {
-            public bool IsHttps => false;
-
-            public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
-            {
-                throw new Exception();
             }
         }
     }

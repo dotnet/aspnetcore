@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
@@ -26,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
     internal class HttpsConnectionMiddleware
     {
         private readonly ConnectionDelegate _next;
-
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
@@ -80,49 +78,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private async Task InnerOnConnectionAsync(ConnectionContext context)
         {
-            SslStream sslStream;
             bool certificateRequired;
             var feature = new Core.Internal.TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
-            // TODO: Handle the cases where this can be null
-            var memoryPoolFeature = context.Features.Get<IMemoryPoolFeature>();
+            var memoryPool = context.Features.Get<IMemoryPoolFeature>()?.MemoryPool;
 
-            var inputPipeOptions = new PipeOptions
+            var inputPipeOptions = new StreamPipeReaderOptions
             (
-                pool: memoryPoolFeature.MemoryPool,
-                readerScheduler: _options.Scheduler,
-                writerScheduler: PipeScheduler.Inline,
-                pauseWriterThreshold: _options.MaxInputBufferSize ?? 0,
-                resumeWriterThreshold: _options.MaxInputBufferSize / 2 ?? 0,
-                useSynchronizationContext: false,
-                minimumSegmentSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize()
+                pool: memoryPool,
+                bufferSize: memoryPool.GetMinimumSegmentSize(),
+                minimumReadSize: memoryPool.GetMinimumAllocSize(),
+                leaveOpen: true
             );
 
-            var outputPipeOptions = new PipeOptions
+            var outputPipeOptions = new StreamPipeWriterOptions
             (
-                pool: memoryPoolFeature.MemoryPool,
-                readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.Inline,
-                pauseWriterThreshold: _options.MaxOutputBufferSize ?? 0,
-                resumeWriterThreshold: _options.MaxOutputBufferSize / 2 ?? 0,
-                useSynchronizationContext: false,
-                minimumSegmentSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize()
+                pool: memoryPool,
+                leaveOpen: true
             );
 
-            // TODO: eventually make SslDuplexStream : Stream, IDuplexPipe to avoid RawStream allocation and pipe allocations
-            var adaptedPipeline = new AdaptedPipeline(context.Transport, new Pipe(inputPipeOptions), new Pipe(outputPipeOptions), _logger, memoryPoolFeature.MemoryPool.GetMinimumAllocSize());
-            var transportStream = adaptedPipeline.TransportStream;
+            SslDuplexPipe sslDuplexPipe = null;
 
             if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
             {
-                sslStream = new SslStream(transportStream);
+                sslDuplexPipe = new SslDuplexPipe(context.Transport, inputPipeOptions, outputPipeOptions);
                 certificateRequired = false;
             }
             else
             {
-                sslStream = new SslStream(transportStream,
+                sslDuplexPipe = new SslDuplexPipe(context.Transport, inputPipeOptions, outputPipeOptions, s => new SslStream(s,
                     leaveInnerStreamOpen: false,
                     userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                     {
@@ -154,10 +140,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                         }
 
                         return true;
-                    });
+                    }));
 
                 certificateRequired = true;
             }
+
+            var sslStream = sslDuplexPipe.Stream;
 
             using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
             using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
@@ -210,13 +198,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 catch (OperationCanceledException)
                 {
                     _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
-                    sslStream.Dispose();
+                    await sslStream.DisposeAsync();
                     return;
                 }
                 catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                 {
                     _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                    sslStream.Dispose();
+                    await sslStream.DisposeAsync();
                     return;
                 }
             }
@@ -232,30 +220,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
             feature.Protocol = sslStream.SslProtocol;
 
-            var original = context.Transport;
+            var originalTransport = context.Transport;
 
             try
             {
-                context.Transport = adaptedPipeline;
+                context.Transport = sslDuplexPipe;
 
-                using (sslStream)
+                // Disposing the stream will dispose the sslDuplexPipe
+                await using (sslStream)
                 {
-                    try
-                    {
-                        adaptedPipeline.RunAsync(sslStream);
-
-                        await _next(context);
-                    }
-                    finally
-                    {
-                        await adaptedPipeline.CompleteAsync();
-                    }
+                    await _next(context);
                 }
             }
             finally
             {
                 // Restore the original so that it gets closed appropriately
-                context.Transport = original;
+                context.Transport = originalTransport;
             }
         }
 
@@ -280,6 +260,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             return new X509Certificate2(certificate);
+        }
+
+        private class SslDuplexPipe : DuplexPipeStreamAdapter<SslStream>
+        {
+            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions)
+                : this(transport, readerOptions, writerOptions, s => new SslStream(s))
+            {
+
+            }
+
+            public SslDuplexPipe(IDuplexPipe transport, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, SslStream> factory) :
+                base(transport, readerOptions, writerOptions, factory)
+            {
+            }
         }
     }
 }

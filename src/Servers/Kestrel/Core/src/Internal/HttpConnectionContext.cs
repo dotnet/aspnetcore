@@ -7,7 +7,6 @@ using System.IO.Pipelines;
 using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -19,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public ConnectionContext ConnectionContext { get; set; }
         public ServiceContext ServiceContext { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
-        public IList<IConnectionAdapter> ConnectionAdapters { get; set; }
         public MemoryPool<byte> MemoryPool { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }

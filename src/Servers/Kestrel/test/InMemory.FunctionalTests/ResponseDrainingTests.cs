@@ -18,17 +18,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var minRate = new MinDataRate(16384, TimeSpan.FromSeconds(2));
 
