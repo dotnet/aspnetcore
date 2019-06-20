@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
     public class HttpsConnectionAdapterOptions
     {
         private TimeSpan _handshakeTimeout;
-        private Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> _clientCertificateValidation;
 
         /// <summary>
         /// Initializes a new instance of <see cref="HttpsConnectionAdapterOptions"/>.
@@ -57,16 +56,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public ClientCertificateMode ClientCertificateMode { get; set; }
 
         /// <summary>
-        /// Specifies a callback for additional client certificate validation that will be invoked during authentication.
+        /// Specifies a callback for additional client certificate validation that will be invoked during authentication. This will be ignored
+        /// if <see cref="AllowAnyClientCertificate"/> is set to true.
         /// </summary>
-        public Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> ClientCertificateValidation {
-            get
-            {
-                return AllowAnyClientCertificate ? (_, __, ___) => true : _clientCertificateValidation;
-            }
-
-            set => _clientCertificateValidation = value;
-        }
+        public Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> ClientCertificateValidation { get; set; }
 
         /// <summary>
         /// Specifies allowable SSL protocols. Defaults to <see cref="SslProtocols.Tls12" /> and <see cref="SslProtocols.Tls11"/>.
@@ -85,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public bool CheckCertificateRevocation { get; set; }
 
         /// <summary>
-        /// When set to true, allows any client certificate.
+        /// When set to true, <see cref="ClientCertificateValidation"/>  is ignored and any client certificate is allowed.
         /// </summary>
         public bool AllowAnyClientCertificate { get; set; }
 
