@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
 
-        private int _queuedRequests;
-
         /// <summary>
         /// Creates a new <see cref="RequestThrottlingMiddleware"/>.
         /// </summary>
@@ -49,19 +47,23 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            Interlocked.Increment(ref _queuedRequests);
+            var waitInQueueTask = _queuePolicy.TryEnterAsync();
 
-            var success = false;
-            try
+            if (!waitInQueueTask.IsCompleted)
             {
-                success = await _queuePolicy.TryEnterAsync();
-            }
-            finally
-            {
-                Interlocked.Decrement(ref _queuedRequests);
+                var timer = RequestThrottlingEventSource.Log.RequestEnqueued();
+
+                try
+                {
+                    await waitInQueueTask;
+                }
+                finally
+                {
+                    RequestThrottlingEventSource.Log.RequestDequeued(timer);
+                }
             }
 
-            if (success)
+            if (waitInQueueTask.Result)
             {
                 try
                 {
@@ -74,18 +76,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
             }
             else
             {
+                RequestThrottlingEventSource.Log.RequestRejected();
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 await _onRejected(context);
             }
-        }
-
-        /// <summary>
-        /// The total number of requests waiting within the middleware
-        /// </summary>
-        public int QueuedRequestCount
-        {
-            get => _queuedRequests;
         }
 
         private static class RequestThrottlingLog

@@ -73,16 +73,17 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void IncomingRequestsFillUpQueue()
         {
+            RequestThrottlingEventSource.Log.Reset();
             var middleware = TestUtils.CreateTestMiddleware(
                 queue: TestStrategy.AlwaysBlock);
 
-            Assert.Equal(0, middleware.QueuedRequestCount);
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.QueuedRequestCount);
+            Assert.Equal(1, RequestThrottlingEventSource.Log.QueuedRequests);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, middleware.QueuedRequestCount);
+            Assert.Equal(2, RequestThrottlingEventSource.Log.QueuedRequests);
         }
 
         [Fact]
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var flag = false;
 
+            RequestThrottlingEventSource.Log.Reset();
             var middleware = TestUtils.CreateTestMiddleware(
                 queue: new TestStrategy(
                     invoke: (() => true),
@@ -99,10 +101,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     throw new DivideByZeroException();
                 });
 
-            Assert.Equal(0, middleware.QueuedRequestCount);
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
             await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
-            Assert.Equal(0, middleware.QueuedRequestCount);
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
             Assert.True(flag);
         }
 
@@ -111,6 +113,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
 
+            RequestThrottlingEventSource.Log.Reset();
             var middleware = TestUtils.CreateTestMiddleware(
                 onRejected: httpContext =>
                 {
@@ -135,7 +138,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.True(thirdRequest.IsCompletedSuccessfully);
 
-            Assert.Equal(0, middleware.QueuedRequestCount);
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
         }
     }
 }
