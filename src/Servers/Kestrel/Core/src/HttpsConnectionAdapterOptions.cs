@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 
         /// <summary>
         /// Specifies a callback for additional client certificate validation that will be invoked during authentication. This will be ignored
-        /// if <see cref="AllowAnyClientCertificate"/> is set to true.
+        /// if <see cref="AllowAnyClientCertificate"/> is called after this callback is set.
         /// </summary>
         public Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> ClientCertificateValidation { get; set; }
 
@@ -78,9 +78,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public bool CheckCertificateRevocation { get; set; }
 
         /// <summary>
-        /// When set to true, <see cref="ClientCertificateValidation"/>  is ignored and any client certificate is allowed.
+        /// Overrides the current <see cref="ClientCertificateValidation"/> callback and allows any client certificate.
         /// </summary>
-        public bool AllowAnyClientCertificate { get; set; }
+        public void AllowAnyClientCertificate()
+        {
+            ClientCertificateValidation = (_, __, ___) => true;
+        }
 
         /// <summary>
         /// Provides direct configuration of the <see cref="SslServerAuthenticationOptions"/> on a per-connection basis.

@@ -339,12 +339,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.Protocols = httpProtocols;
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                var options = new HttpsConnectionAdapterOptions
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    AllowAnyClientCertificate = true
-                });
+                };
+
+                options.AllowAnyClientCertificate();
+                listenOptions.UseHttps(options);
             }
 
             await using (var server = new TestServer(context =>
@@ -388,12 +390,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                var options = new HttpsConnectionAdapterOptions
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    AllowAnyClientCertificate = true
-                });
+                };
+
+                options.AllowAnyClientCertificate();
+                listenOptions.UseHttps(options);
             }
 
 
@@ -503,13 +507,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                var options = new HttpsConnectionAdapterOptions
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
                     ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false,
-                    AllowAnyClientCertificate = true
-                });
+                };
+
+                options.AllowAnyClientCertificate();
+
+                listenOptions.UseHttps(options);
             }
 
             await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
@@ -528,12 +535,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                var options = new HttpsConnectionAdapterOptions
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    AllowAnyClientCertificate = true
-                });
+                };
+
+                options.AllowAnyClientCertificate();
+                listenOptions.UseHttps(options);
             }
 
             RequestDelegate app = context =>

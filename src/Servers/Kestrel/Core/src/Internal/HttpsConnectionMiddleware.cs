@@ -131,12 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                             return _options.ClientCertificateMode != ClientCertificateMode.RequireCertificate;
                         }
 
-                        // If AllowAnyClientCertificate is true then we don't need to do any client cert validation.
-                        if (_options.AllowAnyClientCertificate)
-                        {
-                            return true;
-                        }
-
                         if (_options.ClientCertificateValidation == null)
                         {
                             if (sslPolicyErrors != SslPolicyErrors.None)
