@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -14,14 +13,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
     internal class CircuitIdFactory
     {
+        private readonly IDataProtectionProvider _dataProtectorProvider = new EphemeralDataProtectionProvider();
+
         private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server";
 
         private readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
         private readonly IDataProtector _protector;
 
-        public CircuitIdFactory(IDataProtectionProvider provider)
+        public CircuitIdFactory()
         {
-            _protector = provider.CreateProtector(CircuitIdProtectorPurpose);
+            _protector =  _dataProtectorProvider.CreateProtector(CircuitIdProtectorPurpose);
         }
 
         // Generates a circuit id that is produced from a strong cryptographic random number generator

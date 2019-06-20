@@ -14,6 +14,7 @@ import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/C
 type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
 interface BlazorOptions {
   configureSignalR: SignalRBuilder;
+  serviceUrl: string;
   logLevel: LogLevel;
 }
 
@@ -29,6 +30,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
   const defaultOptions: BlazorOptions = {
     configureSignalR: (_) => { },
+    serviceUrl: '_blazor',
     logLevel: LogLevel.Warning,
   };
 
@@ -119,7 +121,7 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new signalR.HubConnectionBuilder()
-    .withUrl(`_blazor?circuitId=${circuitId}`)
+    .withUrl(`${options.serviceUrl}?circuitId=${circuitId}`)
     .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);
