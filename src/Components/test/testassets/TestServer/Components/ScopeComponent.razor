@@ -1,0 +1,16 @@
+@namespace TestServer
+<h3>@Text</h3>
+<button class="reveal" @onclick="@Reveal">Reveal your id</button>
+<p class="circuit-id">@Id</p>
+@inject ScopeIdentifierService ScopeIdentifier
+
+@functions {
+    [Parameter] public string Text { get; set; } = "no-prerendered";
+
+    public string Id { get; set; } = "";
+
+    void Reveal()
+    {
+        Id = ScopeIdentifier.Id;
+    }
+}

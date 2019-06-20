@@ -58,7 +58,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     throw new Error('Can\'t have multiple circuits per connection');
   }
 
-  const circuitId = circuits.length > 0 ? circuits[0].circuitId : await getNewCircuitId();
+  const circuitId = circuits.length > 0 ? circuits[0].circuitId : await getNewCircuitId(options);
 
   const initialConnection = await initializeConnection(options, circuitHandlers, circuitId, logger);
 
@@ -108,8 +108,8 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 }
 
-async function getNewCircuitId(): Promise<string> {
-  const response = await fetch('_blazor/start', {
+async function getNewCircuitId(options: BlazorOptions): Promise<string> {
+  const response = await fetch(`${options.serviceUrl}/start`, {
     method: 'POST',
     headers: { 'X-Requested-With': 'Blazor' },
   });

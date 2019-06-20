@@ -1,0 +1,76 @@
+@page
+@namespace TestServer
+@model StartModesHostModel
+<!DOCTYPE html>
+<html>
+<head>
+    <base href="~/" />
+</head>
+<body>
+
+</body>
+</html>
+@if (Model.Mode == "prerendered")
+{
+    <div id="prerendered-1">
+        @(await Html.RenderComponentAsync<ScopeComponent>(new { Text = "prerendered" }))
+    </div>
+    <div id="prerendered-2">
+        @(await Html.RenderComponentAsync<ScopeComponent>(new { Text = "prerendered" }))
+    </div>
+}
+@if (Model.Mode == "mixed")
+{
+    <div id="prerendered-1">
+        @(await Html.RenderComponentAsync<ScopeComponent>(new { Text = "prerendered" }))
+    </div>
+    <div id="prerendered-2">
+        @(await Html.RenderComponentAsync<ScopeComponent>(new { Text = "prerendered" }))
+    </div>
+    <div id="mixed-1">
+        <mixed1></mixed1>
+    </div>
+    <div id="mixed-2">
+        <mixed2></mixed2>
+    </div>
+}
+@if (Model.Mode == "preregistered")
+{
+    <div id="preregistered-1">
+        <preregistered1></preregistered1>
+    </div>
+    <div id="preregistered-2">
+        <preregistered2></preregistered2>
+    </div>
+}
+
+@*
+    So that E2E tests can make assertions about both the prerendered and
+    interactive states, we only load the .js file when told to.
+*@
+
+@{
+    var serviceUrl = Model.Mode == "prerendered" ? "prerendered/" : (Model.Mode == "mixed" ? "mixed/" : "preregistered/");
+}
+
+<hr />
+
+<button id="load-boot-script" onclick="start()">Load boot script</button>
+
+<script src="_framework/blazor.server.js" autostart="false"></script>
+<script>
+    // Used by InteropOnInitializationComponent
+    function setElementValue(element, newValue) {
+        element.value = newValue;
+        return element.value;
+    }
+
+    function start() {
+        Blazor.start({
+            logLevel: 1, // LogLevel.Debug
+            serviceUrl: '@("startmodeshost/" + serviceUrl + "_blazor")'
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__started__'] = true;
+        });
+    }
+</script>

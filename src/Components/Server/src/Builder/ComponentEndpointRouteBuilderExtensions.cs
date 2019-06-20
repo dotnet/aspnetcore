@@ -32,6 +32,22 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
+        /// Maps the Blazor <see cref="Hub" /> to the path <paramref name="path"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="path">The path to map the Blazor <see cref="Hub" />.</param>
+        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
+        public static ComponentEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints, string path)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            return endpoints.MapBlazorHub(path, configureOptions: _ => { });
+        }
+
+        /// <summary>
         /// Maps the Blazor <see cref="Hub" /> to the default path.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
@@ -49,12 +65,33 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            endpoints.MapStartCircuitEndpoint(ComponentHub.DefaultPath + "/start")
+            return endpoints.MapBlazorHub(ComponentHub.DefaultPath, configureOptions);
+        }
+
+        /// <summary>
+        /// Maps the Blazor <see cref="Hub" /> to the path <paramref name="path"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="path">The path to map the Blazor <see cref="Hub" />.</param>
+        /// <param name="configureOptions">A callback to configure dispatcher options.</param>
+        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
+        public static ComponentEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints, string path, Action<HttpConnectionDispatcherOptions> configureOptions)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            endpoints.MapStartCircuitEndpoint(path + "/start")
                 .Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
 
-            var result = new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions))
-                .RequireAuthorization(CircuitAuthenticationHandler.AuthorizationPolicyName);
-            result.Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
+            var result = new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(path, configureOptions))
+                .ApplyHubMetadata();
 
             return result;
         }
@@ -336,7 +373,15 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            return endpoints.MapBlazorHub(configureOptions).AddComponent(componentType, selector);
+            return endpoints.MapBlazorHub(path, configureOptions)
+                .AddComponent(componentType, selector);
+        }
+
+        private static ComponentEndpointConventionBuilder ApplyHubMetadata(this ComponentEndpointConventionBuilder builder)
+        {
+            builder = builder.RequireAuthorization(CircuitAuthenticationHandler.AuthorizationPolicyName);
+            builder.Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
+            return builder;
         }
     }
 }

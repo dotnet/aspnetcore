@@ -1,10 +1,7 @@
 using BasicTestApp;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,6 +33,8 @@ namespace TestServer
                 options.AddPolicy("NameMustStartWithB", policy =>
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
+
+            services.AddSingleton<ScopeIdentifierService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,6 +101,32 @@ namespace TestServer
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
+                });
+            });
+
+            app.Map("/startmodes", startModesApp =>
+            {
+                startModesApp.UsePathBase("/startmodes");
+                startModesApp.UseStaticFiles();
+                startModesApp.UseRouting();
+
+                startModesApp.UseCors();
+                startModesApp.UseAuthorization();
+
+                startModesApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapFallbackToPage("/startmodeshost/{mode}", "/StartModesHost");
+
+                    // prerender only
+                    endpoints.MapBlazorHub("/startmodeshost/prerendered/_blazor");
+
+                    // preregister-only
+                    endpoints.MapBlazorHub<ScopeComponent>("preregistered1", "/startmodeshost/preregistered/_blazor")
+                        .AddComponent(typeof(ScopeComponent), "preregistered2");
+
+                    // mixed
+                    endpoints.MapBlazorHub<ScopeComponent>("mixed1", "/startmodeshost/mixed/_blazor")
+                        .AddComponent(typeof(ScopeComponent), "mixed2");
                 });
             });
         }
