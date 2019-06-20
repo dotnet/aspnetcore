@@ -766,7 +766,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
-        public void AddMultipleAttributes<T>(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> attributes) { }
+        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
