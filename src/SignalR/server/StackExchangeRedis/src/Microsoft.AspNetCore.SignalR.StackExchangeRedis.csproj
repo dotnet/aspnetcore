@@ -18,4 +18,9 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
+  </ItemGroup>
+
 </Project>
