@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (useConnectionAdapter)
                         {
-                            listenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
+                            listenOptions.UsePassThrough();
                         }
                     });
 

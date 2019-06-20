@@ -8,16 +8,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal sealed class RawStream : Stream
+    internal class DuplexPipeStream : Stream
     {
         private readonly PipeReader _input;
         private readonly PipeWriter _output;
         private readonly bool _throwOnCancelled;
         private volatile bool _cancelCalled;
 
-        public RawStream(PipeReader input, PipeWriter output, bool throwOnCancelled = false)
+        public DuplexPipeStream(PipeReader input, PipeWriter output, bool throwOnCancelled = false)
         {
             _input = input;
             _output = output;

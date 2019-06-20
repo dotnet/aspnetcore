@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 async Task OnBind(ListenOptions options)
                 {
                     // Add the HTTP middleware as the terminal connection middleware
-                    options.UseHttpServer(options.ConnectionAdapters, ServiceContext, application, options.Protocols);
+                    options.UseHttpServer(ServiceContext, application, options.Protocols);
 
                     var connectionDelegate = options.Build();
 

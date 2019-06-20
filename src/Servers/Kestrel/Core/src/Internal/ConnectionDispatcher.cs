@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                     catch (Exception ex)
                     {
-                        Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                        Log.LogError(0, ex, "Unhandled exception while processing {ConnectionId}.", connectionContext.ConnectionId);
                     }
                 }
             }

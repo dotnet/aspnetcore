@@ -2,168 +2,96 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class PassThroughConnectionAdapter : IConnectionAdapter
+    public class PassThroughConnectionMiddleware
     {
-        public bool IsHttps => false;
+        private readonly ConnectionDelegate _next;
 
-        public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+        public PassThroughConnectionMiddleware(ConnectionDelegate next)
         {
-            var adapted = new AdaptedConnection(new PassThroughStream(context.ConnectionStream));
-            return Task.FromResult<IAdaptedConnection>(adapted);
+            _next = next;
         }
 
-        private class AdaptedConnection : IAdaptedConnection
+        public Task OnConnectionAsync(ConnectionContext context)
         {
-            public AdaptedConnection(Stream stream)
-            {
-                ConnectionStream = stream;
-            }
-
-            public Stream ConnectionStream { get; }
-
-            public void Dispose()
-            {
-            }
+            context.Transport = new PassThroughDuplexPipe(context.Transport);
+            return _next(context);
         }
 
-        private class PassThroughStream : Stream
+        private class PassThroughDuplexPipe : IDuplexPipe
         {
-            private readonly Stream _innerStream;
-
-            public PassThroughStream(Stream innerStream)
+            public PassThroughDuplexPipe(IDuplexPipe duplexPipe)
             {
-                _innerStream = innerStream;
+                Input = new PassThroughPipeReader(duplexPipe.Input);
+                Output = new PassThroughPipeWriter(duplexPipe.Output);
             }
 
-            public override bool CanRead => _innerStream.CanRead;
+            public PipeReader Input { get; }
 
-            public override bool CanSeek => _innerStream.CanSeek;
+            public PipeWriter Output { get; }
 
-            public override bool CanTimeout => _innerStream.CanTimeout;
-
-            public override bool CanWrite => _innerStream.CanWrite;
-
-            public override long Length => _innerStream.Length;
-
-            public override long Position { get => _innerStream.Position; set => _innerStream.Position = value; }
-
-            public override int ReadTimeout { get => _innerStream.ReadTimeout; set => _innerStream.ReadTimeout = value; }
-
-            public override int WriteTimeout { get => _innerStream.WriteTimeout; set => _innerStream.WriteTimeout = value; }
-
-            public override int Read(byte[] buffer, int offset, int count)
+            private class PassThroughPipeWriter : PipeWriter
             {
-                return _innerStream.Read(buffer, offset, count);
+                private PipeWriter _output;
+
+                public PassThroughPipeWriter(PipeWriter output)
+                {
+                    _output = output;
+                }
+
+                public override void Advance(int bytes) => _output.Advance(bytes);
+
+                public override void CancelPendingFlush() => _output.CancelPendingFlush();
+
+                public override void Complete(Exception exception = null) => _output.Complete(exception);
+
+                public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default) => _output.FlushAsync(cancellationToken);
+
+                public override Memory<byte> GetMemory(int sizeHint = 0) => _output.GetMemory(sizeHint);
+
+                public override Span<byte> GetSpan(int sizeHint = 0) => _output.GetSpan(sizeHint);
+
+                public override void OnReaderCompleted(Action<Exception, object> callback, object state) => _output.OnReaderCompleted(callback, state);
             }
 
-            public override int ReadByte()
+            private class PassThroughPipeReader : PipeReader
             {
-                return _innerStream.ReadByte();
+                private PipeReader _input;
+
+                public PassThroughPipeReader(PipeReader input)
+                {
+                    _input = input;
+                }
+
+                public override void AdvanceTo(SequencePosition consumed) => _input.AdvanceTo(consumed);
+
+                public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) => _input.AdvanceTo(consumed, examined);
+
+                public override void CancelPendingRead() => _input.CancelPendingRead();
+
+                public override void Complete(Exception exception = null) => _input.Complete(exception);
+
+                public override void OnWriterCompleted(Action<Exception, object> callback, object state) => _input.OnWriterCompleted(callback, state);
+
+                public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default) => _input.ReadAsync(cancellationToken);
+
+                public override bool TryRead(out ReadResult result) => _input.TryRead(out result);
             }
+        }
+    }
 
-            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                return _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
-            }
-
-            public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-            {
-                return _innerStream.BeginRead(buffer, offset, count, callback, state);
-            }
-
-            public override int EndRead(IAsyncResult asyncResult)
-            {
-                return _innerStream.EndRead(asyncResult);
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                _innerStream.Write(buffer, offset, count);
-            }
-
-
-            public override void WriteByte(byte value)
-            {
-                _innerStream.WriteByte(value);
-            }
-
-            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            {
-                return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
-            }
-
-            public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-            {
-                return _innerStream.BeginWrite(buffer, offset, count, callback, state);
-            }
-
-            public override void EndWrite(IAsyncResult asyncResult)
-            {
-                _innerStream.EndWrite(asyncResult);
-            }
-
-            public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-            {
-                return _innerStream.CopyToAsync(destination, bufferSize, cancellationToken);
-            }
-
-            public override void Flush()
-            {
-                _innerStream.Flush();
-            }
-
-            public override Task FlushAsync(CancellationToken cancellationToken)
-            {
-                return _innerStream.FlushAsync();
-
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                return _innerStream.Seek(offset, origin);
-            }
-
-            public override void SetLength(long value)
-            {
-                _innerStream.SetLength(value);
-            }
-
-            public override void Close()
-            {
-                _innerStream.Close();
-            }
-
-            public override int Read(Span<byte> buffer)
-            {
-                return _innerStream.Read(buffer);
-            }
-
-            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-            {
-                return _innerStream.ReadAsync(buffer, cancellationToken);
-            }
-
-            public override void Write(ReadOnlySpan<byte> buffer)
-            {
-                _innerStream.Write(buffer);
-            }
-
-            public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-            {
-                return _innerStream.WriteAsync(buffer, cancellationToken);
-            }
-
-            public override void CopyTo(Stream destination, int bufferSize)
-            {
-                _innerStream.CopyTo(destination, bufferSize);
-            }
+    public static class PassThroughConnectionMiddlewareExtensions
+    {
+        public static TBuilder UsePassThrough<TBuilder>(this TBuilder builder) where TBuilder : IConnectionBuilder
+        {
+            builder.Use(next => new PassThroughConnectionMiddleware(next).OnConnectionAsync);
+            return builder;
         }
     }
 }
