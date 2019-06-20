@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -26,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
     internal class HttpsConnectionMiddleware
     {
         private readonly ConnectionDelegate _next;
-
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
@@ -85,19 +83,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
-            var memoryPoolFeature = context.Features.Get<IMemoryPoolFeature>();
+            var memoryPool = context.Features.Get<IMemoryPoolFeature>()?.MemoryPool;
 
             var inputPipeOptions = new StreamPipeReaderOptions
             (
-                pool: memoryPoolFeature.MemoryPool,
-                bufferSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize(),
-                minimumReadSize: memoryPoolFeature.MemoryPool.GetMinimumAllocSize(),
+                pool: memoryPool,
+                bufferSize: memoryPool.GetMinimumSegmentSize(),
+                minimumReadSize: memoryPool.GetMinimumAllocSize(),
                 leaveOpen: true
             );
 
             var outputPipeOptions = new StreamPipeWriterOptions
             (
-                pool: memoryPoolFeature.MemoryPool,
+                pool: memoryPool,
                 leaveOpen: true
             );
 
@@ -147,6 +145,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 certificateRequired = true;
             }
 
+            var sslStream = sslDuplexPipe.Stream;
+
             using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
             using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
             {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     {
                         selector = (sender, name) =>
                         {
-                            context.Features.Set(sslDuplexPipe.Stream);
+                            context.Features.Set(sslStream);
                             var cert = _serverCertificateSelector(context, name);
                             if (cert != null)
                             {
@@ -193,41 +193,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
-                    await sslDuplexPipe.Stream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
                 }
                 catch (OperationCanceledException)
                 {
                     _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
-                    await sslDuplexPipe.Stream.DisposeAsync();
+                    await sslStream.DisposeAsync();
                     return;
                 }
                 catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                 {
                     _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                    await sslDuplexPipe.Stream.DisposeAsync();
+                    await sslStream.DisposeAsync();
                     return;
                 }
             }
 
-            feature.ApplicationProtocol = sslDuplexPipe.Stream.NegotiatedApplicationProtocol.Protocol;
+            feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
-            feature.ClientCertificate = ConvertToX509Certificate2(sslDuplexPipe.Stream.RemoteCertificate);
-            feature.CipherAlgorithm = sslDuplexPipe.Stream.CipherAlgorithm;
-            feature.CipherStrength = sslDuplexPipe.Stream.CipherStrength;
-            feature.HashAlgorithm = sslDuplexPipe.Stream.HashAlgorithm;
-            feature.HashStrength = sslDuplexPipe.Stream.HashStrength;
-            feature.KeyExchangeAlgorithm = sslDuplexPipe.Stream.KeyExchangeAlgorithm;
-            feature.KeyExchangeStrength = sslDuplexPipe.Stream.KeyExchangeStrength;
-            feature.Protocol = sslDuplexPipe.Stream.SslProtocol;
+            feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
+            feature.CipherAlgorithm = sslStream.CipherAlgorithm;
+            feature.CipherStrength = sslStream.CipherStrength;
+            feature.HashAlgorithm = sslStream.HashAlgorithm;
+            feature.HashStrength = sslStream.HashStrength;
+            feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
+            feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
+            feature.Protocol = sslStream.SslProtocol;
 
-            var original = context.Transport;
+            var originalTransport = context.Transport;
 
             try
             {
                 context.Transport = sslDuplexPipe;
 
                 // Disposing the stream will dispose the sslDuplexPipe
-                await using (sslDuplexPipe.Stream)
+                await using (sslStream)
                 {
                     await _next(context);
                 }
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             finally
             {
                 // Restore the original so that it gets closed appropriately
-                context.Transport = original;
+                context.Transport = originalTransport;
             }
         }
 

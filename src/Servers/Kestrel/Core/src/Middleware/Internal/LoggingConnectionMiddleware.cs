@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public async Task OnConnectionAsync(ConnectionContext context)
         {
-            var oldTranspot = context.Transport;
+            var oldTransport = context.Transport;
 
             try
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                context.Transport = oldTranspot;
+                context.Transport = oldTransport;
             }
         }
 
