@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -71,11 +72,8 @@ namespace Microsoft.AspNetCore.Mvc
             var appRoot = "/";
             var contentPath = "~/Home/About";
             var expectedPath = "/Home/About";
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.Setup(o => o.Redirect(expectedPath, false))
-                        .Verifiable();
 
-            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var httpContext = GetHttpContext(appRoot);
             var actionContext = GetActionContext(httpContext);
             var result = new LocalRedirectResult(contentPath);
 
@@ -83,27 +81,23 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            httpResponse.Verify();
+            Assert.Equal(expectedPath, httpContext.Response.Headers[HeaderNames.Location].ToString());
+            Assert.Equal(StatusCodes.Status302Found, httpContext.Response.StatusCode);
         }
 
         [Theory]
-        [InlineData("", "//", "/test")]
-        [InlineData("", "/\\", "/test")]
-        [InlineData("", "//foo", "/test")]
-        [InlineData("", "/\\foo", "/test")]
-        [InlineData("", "Home/About", "/Home/About")]
-        [InlineData("/myapproot", "http://www.example.com", "/test")]
+        [InlineData("", "//")]
+        [InlineData("", "/\\")]
+        [InlineData("", "//foo")]
+        [InlineData("", "/\\foo")]
+        [InlineData("", "Home/About")]
+        [InlineData("/myapproot", "http://www.example.com")]
         public async Task Execute_Throws_ForNonLocalUrl(
             string appRoot,
-            string contentPath,
-            string expectedPath)
+            string contentPath)
         {
             // Arrange
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.Setup(o => o.Redirect(expectedPath, false))
-                        .Verifiable();
-
-            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var httpContext = GetHttpContext(appRoot);
             var actionContext = GetActionContext(httpContext);
             var result = new LocalRedirectResult(contentPath);
 
@@ -116,21 +110,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [InlineData("", "~//", "//")]
-        [InlineData("", "~/\\", "/\\")]
-        [InlineData("", "~//foo", "//foo")]
-        [InlineData("", "~/\\foo", "/\\foo")]
+        [InlineData("", "~//")]
+        [InlineData("", "~/\\")]
+        [InlineData("", "~//foo")]
+        [InlineData("", "~/\\foo")]
         public async Task Execute_Throws_ForNonLocalUrlTilde(
             string appRoot,
-            string contentPath,
-            string expectedPath)
+            string contentPath)
         {
             // Arrange
-            var httpResponse = new Mock<HttpResponse>();
-            httpResponse.Setup(o => o.Redirect(expectedPath, false))
-                        .Verifiable();
-
-            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var httpContext = GetHttpContext(appRoot);
             var actionContext = GetActionContext(httpContext);
             var result = new LocalRedirectResult(contentPath);
 
@@ -160,26 +149,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         private static HttpContext GetHttpContext(
-            string appRoot,
-            string contentPath,
-            string expectedPath,
-            HttpResponse response)
+            string appRoot)
         {
-            var httpContext = new Mock<HttpContext>();
-            var serviceProvider = GetServiceProvider();
-
-            httpContext.Setup(o => o.Response)
-                .Returns(response);
-            httpContext.SetupGet(o => o.RequestServices)
-                .Returns(serviceProvider);
-            httpContext.SetupGet(o => o.Items)
-                .Returns(new ItemsDictionary());
-            httpContext.Setup(o => o.Request.PathBase)
-                .Returns(new PathString(appRoot));
-            httpContext.SetupGet(h => h.Features)
-                .Returns(new FeatureCollection());
-
-            return httpContext.Object;
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = GetServiceProvider();
+            httpContext.Request.PathBase = new PathString(appRoot);
+            return httpContext;
         }
     }
 }

@@ -7,8 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
+    /// <summary>
+    /// Default implementation of <see cref="IFormFile"/>.
+    /// </summary>
     public class FormFile : IFormFile
     {
         // Stream.CopyTo method uses 80KB as the default buffer size.

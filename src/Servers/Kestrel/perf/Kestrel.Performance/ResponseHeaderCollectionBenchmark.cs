@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
             var context = new DefaultHttpContext(http1Connection);
-            _response = new DefaultHttpResponse(context);
+            _response = context.Response;
 
             switch (Type)
             {

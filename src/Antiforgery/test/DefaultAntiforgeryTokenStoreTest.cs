@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetCookieToken_CookieDoesNotExist_ReturnsNull()
         {
             // Arrange
-            var httpContext = GetHttpContext(new RequestCookieCollection());
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions
             {
                 Cookie = { Name = _cookieName }
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_CookieIsEmpty_ReturnsNullTokens()
         {
             // Arrange
-            var httpContext = GetHttpContext(new RequestCookieCollection());
+            var httpContext = GetHttpContext();
             httpContext.Request.Form = FormCollection.Empty;
 
             var options = new AntiforgeryOptions
@@ -407,18 +408,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private HttpContext GetHttpContext(string cookieName, string cookieValue)
         {
-            var cookies = new RequestCookieCollection(new Dictionary<string, string>
-            {
-                { cookieName, cookieValue },
-            });
-
-            return GetHttpContext(cookies);
+            var context = GetHttpContext();
+            context.Request.Headers[HeaderNames.Cookie] = $"{cookieName}={cookieValue}";
+            return context;
         }
 
-        private HttpContext GetHttpContext(IRequestCookieCollection cookies)
+        private HttpContext GetHttpContext()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Cookies = cookies;
 
             return httpContext;
         }

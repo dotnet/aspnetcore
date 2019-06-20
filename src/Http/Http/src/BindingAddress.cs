@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class BindingAddress
     {
+        private const string UnixPipeHostPrefix = "unix:/";
+
         public string Host { get; private set; }
         public string PathBase { get; private set; }
         public int Port { get; internal set; }
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             get
             {
-                return Host.StartsWith(Constants.UnixPipeHostPrefix, StringComparison.Ordinal);
+                return Host.StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
             }
         }
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                     throw new InvalidOperationException("Binding address is not a unix pipe.");
                 }
 
-                return Host.Substring(Constants.UnixPipeHostPrefix.Length - 1);
+                return Host.Substring(UnixPipeHostPrefix.Length - 1);
             }
         }
 
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
             int schemeDelimiterEnd = schemeDelimiterStart + "://".Length;
 
-            var isUnixPipe = address.IndexOf(Constants.UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+            var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
 
             int pathDelimiterStart;
             int pathDelimiterEnd;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
             else
             {
-                pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + Constants.UnixPipeHostPrefix.Length, StringComparison.Ordinal);
+                pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length, StringComparison.Ordinal);
                 pathDelimiterEnd = pathDelimiterStart + ":".Length;
             }
 
