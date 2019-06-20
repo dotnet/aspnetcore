@@ -82,21 +82,21 @@ namespace Microsoft.AspNetCore.SignalR
                 throw new InvalidOperationException("There are no supported protocols");
             }
 
-            var options = new HubOptions()
+            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
+
+            var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval,
                 ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
-                HandshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout,
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
-                SupportedProtocols = supportedProtocols,
             };
 
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, options, _loggerFactory);
+            var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
 
-            var resolvedSupportedProtocols = (options.SupportedProtocols as IReadOnlyList<string>) ?? options.SupportedProtocols.ToList();
-            if (!await connectionContext.HandshakeAsync(options.HandshakeTimeout.Value, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
+            var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
+            if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }

@@ -44,11 +44,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
             var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport);
 
-            var hubOptions = new HubOptions()
+            var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = TimeSpan.Zero,
             };
-            _connectionContext = new NoErrorHubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
+            _connectionContext = new NoErrorHubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
 
             _connectionContext.Protocol = new FakeHubProtocol();
         }
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         {
             public TaskCompletionSource<object> ReceivedCompleted = new TaskCompletionSource<object>();
 
-            public NoErrorHubConnectionContext(ConnectionContext connectionContext, HubOptions hubOptions, ILoggerFactory loggerFactory)
-                : base(connectionContext, hubOptions, loggerFactory)
+            public NoErrorHubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
+                : base(connectionContext, contextOptions, loggerFactory)
             {
             }
 

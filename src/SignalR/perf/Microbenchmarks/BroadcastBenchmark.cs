@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 var pair = DuplexPipe.CreateConnectionPair(options, options);
                 var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport);
-                var hubOptions = new HubOptions()
+                var contextOptions = new HubConnectionContextOptions()
                 {
                     KeepAliveInterval = Timeout.InfiniteTimeSpan,
                 };
-                var hubConnection = new HubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
+                var hubConnection = new HubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
                 hubConnection.Protocol = protocol;
                 _hubLifetimeManager.OnConnectedAsync(hubConnection).GetAwaiter().GetResult();
                 _hubLifetimeManager.AddToGroupAsync(connection.ConnectionId, TestGroupName).GetAwaiter().GetResult();

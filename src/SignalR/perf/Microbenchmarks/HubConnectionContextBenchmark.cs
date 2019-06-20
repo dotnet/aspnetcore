@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _pipe, _pipe);
-            var hubOptions = new HubOptions()
+            var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = Timeout.InfiniteTimeSpan,
             };
-            _hubConnectionContext = new HubConnectionContext(connection, hubOptions, NullLoggerFactory.Instance);
+            _hubConnectionContext = new HubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
 
             _successHubProtocolResolver = new TestHubProtocolResolver(new NewtonsoftJsonHubProtocol());
             _failureHubProtocolResolver = new TestHubProtocolResolver(null);

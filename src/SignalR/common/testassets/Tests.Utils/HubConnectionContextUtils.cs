@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public static HubConnectionContext Create(ConnectionContext connection, IHubProtocol protocol = null, string userIdentifier = null)
         {
-            var options = new HubOptions()
+            var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
             };
 
-            return new HubConnectionContext(connection, options, NullLoggerFactory.Instance)
+            return new HubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance)
             {
                 Protocol = protocol ?? new JsonHubProtocol(),
                 UserIdentifier = userIdentifier,
@@ -34,19 +34,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public static MockHubConnectionContext CreateMock(ConnectionContext connection)
         {
-            var options = new HubOptions()
+            var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(15),
                 ClientTimeoutInterval = TimeSpan.FromSeconds(15),
                 StreamBufferCapacity = 10,
             };
-            return new MockHubConnectionContext(connection, options, NullLoggerFactory.Instance);
+            return new MockHubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
         }
 
         public class MockHubConnectionContext : HubConnectionContext
         {
-            public MockHubConnectionContext(ConnectionContext connectionContext, HubOptions options, ILoggerFactory loggerFactory)
-                : base(connectionContext, options, loggerFactory)
+            public MockHubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
+                : base(connectionContext, contextOptions, loggerFactory)
             {
             }
 
