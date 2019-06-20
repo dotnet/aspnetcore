@@ -109,7 +109,11 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 }
 
 async function getNewCircuitId(): Promise<string> {
-  const response = await fetch('_blazor/start');
+  const response = await fetch('_blazor/start', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'Blazor' },
+  });
+
   const responseBody = await response.json() as { id: string };
 
   return responseBody.id;

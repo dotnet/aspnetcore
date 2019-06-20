@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +43,20 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                 TestCircuitIdFactory.CreateTestFactory());
             var circuitPrerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
             var httpContext = new DefaultHttpContext();
+
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService
+                .Setup(authService => authService.SignInAsync(
+                    It.IsAny<HttpContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<AuthenticationProperties>()))
+                .Returns(Task.CompletedTask);
+
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(authenticationService.Object)
+                .BuildServiceProvider();
+
             var httpRequest = httpContext.Request;
             httpRequest.Scheme = "https";
             httpRequest.Host = new HostString("example.com", 1234);
@@ -90,6 +106,19 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             httpRequest.Host = new HostString("example.com", 1234);
             httpRequest.PathBase = "/my/dir";
             httpRequest.Path = "/some/path";
+
+            var authenticationService = new Mock<IAuthenticationService>();
+            authenticationService
+                .Setup(authService => authService.SignInAsync(
+                    It.IsAny<HttpContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<ClaimsPrincipal>(),
+                    It.IsAny<AuthenticationProperties>()))
+                .Returns(Task.CompletedTask);
+
+            httpContext.RequestServices = new ServiceCollection()
+                .AddSingleton(authenticationService.Object)
+                .BuildServiceProvider();
 
             var prerenderingContext = new ComponentPrerenderingContext
             {

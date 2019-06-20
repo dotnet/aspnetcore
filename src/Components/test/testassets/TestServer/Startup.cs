@@ -67,6 +67,7 @@ namespace TestServer
 
                 subdirApp.UseRouting();
 
+                subdirApp.UseCors();
                 subdirApp.UseAuthorization();
 
                 subdirApp.UseEndpoints(endpoints =>
@@ -78,6 +79,7 @@ namespace TestServer
 
             app.UseRouting();
 
+            app.UseCors();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -93,6 +95,7 @@ namespace TestServer
                 subdirApp.UseStaticFiles();
                 subdirApp.UseRouting();
 
+                subdirApp.UseCors();
                 subdirApp.UseAuthorization();
 
                 subdirApp.UseEndpoints(endpoints =>

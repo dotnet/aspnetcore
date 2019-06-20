@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             // value provided in the attribute.
             var environmentOverride = Environment
                 .GetEnvironmentVariable("MICROSOFT_ASPNETCORE_TESTING_SELENIUM_SUPPORTED");
-            var environmentOverrideValue = !string.IsNullOrWhiteSpace(environmentOverride) ? bool.Parse(attribute.Value) : false;
+            var environmentOverrideValue = !string.IsNullOrWhiteSpace(environmentOverride) ? bool.Parse(environmentOverride) : attributeValue;
 
             if (environmentOverride != null)
             {
