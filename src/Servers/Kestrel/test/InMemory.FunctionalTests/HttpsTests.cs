@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         }
                     }
                 },
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         tcs.SetException(ex);
                     }
                 },
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var loggerProvider = new HandshakeErrorLoggerProvider();
             LoggerFactory.AddProvider(loggerProvider);
 
-            var testContext = new TestServiceContext(LoggerFactory);
+            var testContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             var handshakeStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -326,7 +326,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     listenOptions.UseHttps(o =>
                     {
                         o.ServerCertificate = new X509Certificate2(TestResources.GetTestCertificate());
-                        o.OnAuthenticate = (_, __) => handshakeStartedTcs.SetResult(null);
+                        o.OnAuthenticate = (_, __) =>
+                        {
+                            handshakeStartedTcs.SetResult(null);
+                        };
 
                         handshakeTimeout = o.HandshakeTimeout;
                     });
@@ -358,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             LoggerFactory.AddProvider(loggerProvider);
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(TestResources.GetTestCertificate());
@@ -390,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var onAuthenticateCalled = false;
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(httpsOptions =>
@@ -426,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var onAuthenticateCalled = false;
 
             await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
+                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 },
                 listenOptions =>
                 {
                     listenOptions.UseHttps(httpsOptions =>
@@ -462,7 +465,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             public ILogger CreateLogger(string categoryName)
             {
-                if (categoryName == TypeNameHelper.GetTypeDisplayName(typeof(HttpsConnectionAdapter)))
+                if (categoryName == TypeNameHelper.GetTypeDisplayName(typeof(HttpsConnectionMiddleware)))
                 {
                     return FilterLogger;
                 }

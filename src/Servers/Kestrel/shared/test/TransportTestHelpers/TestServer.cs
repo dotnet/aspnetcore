@@ -42,12 +42,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, listenOptions, _ => { })
+            : this(app, context, options => options.ListenOptions.Add(listenOptions), _ => { })
         {
         }
 
-        public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, Action<IServiceCollection> configureServices)
-            : this(app, context, options => options.ListenOptions.Add(listenOptions), configureServices)
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<ListenOptions> configureListenOptions)
+            : this(app, context, options =>
+            {
+                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                {
+                    KestrelServerOptions = options
+                };
+                configureListenOptions(listenOptions);
+                options.ListenOptions.Add(listenOptions);
+            }, _ => { })
         {
         }
 

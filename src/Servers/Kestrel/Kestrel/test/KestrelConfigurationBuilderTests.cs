@@ -168,8 +168,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
             Assert.True(ran2);
 
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.Null(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.False(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]
@@ -210,8 +210,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran2);
 
             // You only get Https once per endpoint.
-            Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
-            Assert.NotNull(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+            Assert.True(serverOptions.ListenOptions[0].IsTls);
+            Assert.True(serverOptions.ListenOptions[1].IsTls);
         }
 
         [Fact]

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -16,27 +17,27 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    internal class HttpsConnectionAdapter : IConnectionAdapter
+    internal class HttpsConnectionMiddleware
     {
-        private static readonly ClosedAdaptedConnection _closedAdaptedConnection = new ClosedAdaptedConnection();
+        private readonly ConnectionDelegate _next;
 
         private readonly HttpsConnectionAdapterOptions _options;
+        private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
 
-        private readonly ILogger _logger;
-
-        public HttpsConnectionAdapter(HttpsConnectionAdapterOptions options)
-            : this(options, loggerFactory: null)
+        public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
+          : this(next, options, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
-        public HttpsConnectionAdapter(HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
+        public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
             }
 
+            _next = next;
             // capture the certificate now so it can't be switched after validation
             _serverCertificate = options.ServerCertificate;
             _serverCertificateSelector = options.ServerCertificateSelector;
@@ -69,18 +71,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger<HttpsConnectionAdapter>() ?? (ILogger)NullLogger.Instance;
+            _logger = loggerFactory?.CreateLogger<HttpsConnectionMiddleware>();
         }
-
-        public bool IsHttps => true;
-
-        public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+        public Task OnConnectionAsync(ConnectionContext context)
         {
-            // Don't trust SslStream not to block.
             return Task.Run(() => InnerOnConnectionAsync(context));
         }
 
-        private async Task<IAdaptedConnection> InnerOnConnectionAsync(ConnectionAdapterContext context)
+        private async Task InnerOnConnectionAsync(ConnectionContext context)
         {
             SslStream sslStream;
             bool certificateRequired;
@@ -88,14 +86,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
+            // TODO: Handle the cases where this can be null
+            var memoryPoolFeature = context.Features.Get<IMemoryPoolFeature>();
+
+            var inputPipeOptions = new PipeOptions
+            (
+                pool: memoryPoolFeature.MemoryPool,
+                readerScheduler: _options.Scheduler,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: _options.MaxInputBufferSize ?? 0,
+                resumeWriterThreshold: _options.MaxInputBufferSize / 2 ?? 0,
+                useSynchronizationContext: false,
+                minimumSegmentSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize()
+            );
+
+            var outputPipeOptions = new PipeOptions
+            (
+                pool: memoryPoolFeature.MemoryPool,
+                readerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: _options.MaxOutputBufferSize ?? 0,
+                resumeWriterThreshold: _options.MaxOutputBufferSize / 2 ?? 0,
+                useSynchronizationContext: false,
+                minimumSegmentSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize()
+            );
+
+            // TODO: eventually make SslDuplexStream : Stream, IDuplexPipe to avoid RawStream allocation and pipe allocations
+            var adaptedPipeline = new AdaptedPipeline(context.Transport, new Pipe(inputPipeOptions), new Pipe(outputPipeOptions), _logger, memoryPoolFeature.MemoryPool.GetMinimumAllocSize());
+            var transportStream = adaptedPipeline.TransportStream;
+
             if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
             {
-                sslStream = new SslStream(context.ConnectionStream);
+                sslStream = new SslStream(transportStream);
                 certificateRequired = false;
             }
             else
             {
-                sslStream = new SslStream(context.ConnectionStream,
+                sslStream = new SslStream(transportStream,
                     leaveInnerStreamOpen: false,
                     userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                     {
@@ -132,69 +159,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 certificateRequired = true;
             }
 
-            var timeoutFeature = context.Features.Get<IConnectionTimeoutFeature>();
-            timeoutFeature.SetTimeout(_options.HandshakeTimeout);
-
-            try
+            using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
+            using (cancellationTokeSource.Token.UnsafeRegister(state => ((ConnectionContext)state).Abort(), context))
             {
-                // Adapt to the SslStream signature
-                ServerCertificateSelectionCallback selector = null;
-                if (_serverCertificateSelector != null)
+                try
                 {
-                    selector = (sender, name) =>
+                    // Adapt to the SslStream signature
+                    ServerCertificateSelectionCallback selector = null;
+                    if (_serverCertificateSelector != null)
                     {
-                        context.Features.Set(sslStream);
-                        var cert = _serverCertificateSelector(context.ConnectionContext, name);
-                        if (cert != null)
+                        selector = (sender, name) =>
                         {
-                            EnsureCertificateIsAllowedForServerAuth(cert);
-                        }
-                        return cert;
+                            context.Features.Set(sslStream);
+                            var cert = _serverCertificateSelector(context, name);
+                            if (cert != null)
+                            {
+                                EnsureCertificateIsAllowedForServerAuth(cert);
+                            }
+                            return cert;
+                        };
+                    }
+
+                    var sslOptions = new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _serverCertificate,
+                        ServerCertificateSelectionCallback = selector,
+                        ClientCertificateRequired = certificateRequired,
+                        EnabledSslProtocols = _options.SslProtocols,
+                        CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+                        ApplicationProtocols = new List<SslApplicationProtocol>()
                     };
+
+                    // This is order sensitive
+                    if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
+                    {
+                        sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
+                        // https://tools.ietf.org/html/rfc7540#section-9.2.1
+                        sslOptions.AllowRenegotiation = false;
+                    }
+
+                    if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)
+                    {
+                        sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
+                    }
+
+                    _options.OnAuthenticate?.Invoke(context, sslOptions);
+
+                    await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
                 }
-
-                var sslOptions = new SslServerAuthenticationOptions
+                catch (OperationCanceledException)
                 {
-                    ServerCertificate = _serverCertificate,
-                    ServerCertificateSelectionCallback = selector,
-                    ClientCertificateRequired = certificateRequired,
-                    EnabledSslProtocols = _options.SslProtocols,
-                    CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
-                    ApplicationProtocols = new List<SslApplicationProtocol>()
-                };
-
-                // This is order sensitive
-                if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
-                {
-                    sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
-                    // https://tools.ietf.org/html/rfc7540#section-9.2.1
-                    sslOptions.AllowRenegotiation = false;
+                    _logger?.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    sslStream.Dispose();
+                    return;
                 }
-
-                if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)
+                catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                 {
-                    sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
+                    _logger?.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    sslStream.Dispose();
+                    return;
                 }
-
-                _options.OnAuthenticate?.Invoke(context.ConnectionContext, sslOptions);
-
-                await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
-                sslStream.Dispose();
-                return _closedAdaptedConnection;
-            }
-            catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
-            {
-                _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
-                sslStream.Dispose();
-                return _closedAdaptedConnection;
-            }
-            finally
-            {
-                timeoutFeature.CancelTimeout();
             }
 
             feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
@@ -208,7 +232,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
             feature.Protocol = sslStream.SslProtocol;
 
-            return new HttpsAdaptedConnection(sslStream);
+            var original = context.Transport;
+
+            try
+            {
+                context.Transport = adaptedPipeline;
+
+                using (sslStream)
+                {
+                    try
+                    {
+                        adaptedPipeline.RunAsync(sslStream);
+
+                        await _next(context);
+                    }
+                    finally
+                    {
+                        await adaptedPipeline.CompleteAsync();
+                    }
+                }
+            }
+            finally
+            {
+                // Restore the original so that it gets closed appropriately
+                context.Transport = original;
+            }
         }
 
         private static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
@@ -232,32 +280,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             return new X509Certificate2(certificate);
-        }
-
-        private class HttpsAdaptedConnection : IAdaptedConnection
-        {
-            private readonly SslStream _sslStream;
-
-            public HttpsAdaptedConnection(SslStream sslStream)
-            {
-                _sslStream = sslStream;
-            }
-
-            public Stream ConnectionStream => _sslStream;
-
-            public void Dispose()
-            {
-                _sslStream.Dispose();
-            }
-        }
-
-        private class ClosedAdaptedConnection : IAdaptedConnection
-        {
-            public Stream ConnectionStream { get; } = new ClosedStream();
-
-            public void Dispose()
-            {
-            }
         }
     }
 }

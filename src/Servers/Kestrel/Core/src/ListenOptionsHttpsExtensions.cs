@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -185,6 +186,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
             }
+
             return listenOptions.UseHttps(options);
         }
 
@@ -199,6 +201,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 return false;
             }
+
             listenOptions.UseHttps(options);
             return true;
         }
@@ -211,10 +214,20 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
         {
-            var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
             // Set the list of protocols from listen options
             httpsOptions.HttpProtocols = listenOptions.Protocols;
-            listenOptions.ConnectionAdapters.Add(new HttpsConnectionAdapter(httpsOptions, loggerFactory));
+            httpsOptions.MaxInputBufferSize = listenOptions.KestrelServerOptions?.Limits.MaxRequestBufferSize;
+            httpsOptions.MaxOutputBufferSize = listenOptions.KestrelServerOptions?.Limits.MaxResponseBufferSize;
+
+            listenOptions.IsTls = true;
+
+            listenOptions.Use(next =>
+            {
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+                return middleware.OnConnectionAsync;
+            });
             return listenOptions;
         }
     }
