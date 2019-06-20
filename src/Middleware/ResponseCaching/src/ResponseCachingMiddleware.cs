@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+
+        // see https://tools.ietf.org/html/rfc7232#section-4.1
+        private static readonly string[] HeadersToIncludeIn304 =
+            new[] { "Cache-Control", "Content-Location", "Date", "ETag", "Expires", "Vary" };
 
         private readonly RequestDelegate _next;
         private readonly ResponseCachingOptions _options;
@@ -157,6 +161,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     _logger.NotModifiedServed();
                     context.HttpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+
+                    if (context.CachedResponseHeaders != null)
+                    {
+                        for (var i = 0; i < HeadersToIncludeIn304.Length; i++)
+                        {
+                            var key = HeadersToIncludeIn304[i];
+                            if (context.CachedResponseHeaders.TryGetValue(key, out var values))
+                            {
+                                context.HttpContext.Response.Headers[key] = values;
+                            }
+                        }
+                    }
                 }
                 else
                 {
