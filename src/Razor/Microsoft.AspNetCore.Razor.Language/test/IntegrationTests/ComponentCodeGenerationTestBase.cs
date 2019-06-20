@@ -959,6 +959,34 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElementWithSuffix_OverridesEvent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+<div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BuiltIn_BindToInputWithoutType_WritesAttributes()
         {
             // Arrange
@@ -1076,6 +1104,60 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputText_CanOverrideEvent()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind=""@CurrentDate"" @bind:event=""oninput"" @bind:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithSuffix()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind-value=""@CurrentDate"" @bind-value:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithSuffix_CanOverrideEvent()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @bind-value=""@CurrentDate"" @bind-value:event=""oninput"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");

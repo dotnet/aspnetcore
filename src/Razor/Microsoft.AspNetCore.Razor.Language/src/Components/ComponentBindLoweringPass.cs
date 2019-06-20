@@ -538,8 +538,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var node = bindEntry.BindNode;
             var attributeName = node.AttributeName;
             valueAttributeName = node.TagHelper.GetValueAttributeName() ?? valueAttributeName;
-            changeAttributeName = node.TagHelper.GetChangeAttributeName() ?? changeAttributeName;
-            expressionAttributeName = node.TagHelper.GetExpressionAttributeName() ?? expressionAttributeName;
+
+            // If there an attribute that specifies the event like @bind:event="oninput",
+            // that should be preferred. Otherwise, use the one from the tag helper.
+            changeAttributeName ??= node.TagHelper.GetChangeAttributeName();
+
+            expressionAttributeName = node.TagHelper.GetExpressionAttributeName();
 
             // We expect 0-1 components per-node.
             var componentTagHelper = (parent as ComponentIntermediateNode)?.Component;

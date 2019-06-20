@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.Components
     // when a specific type attribute is applied.
     [BindInputElement(null, null, "value", "onchange")]
 
+    // Handles cases like <input @bind-value="..." /> - this is a fallback and will be ignored
+    // when a specific type attribute is applied.
+    [BindInputElement(null, "value", "value", "onchange")]
+
     [BindInputElement("checkbox", null, "checked", "onchange")]
     [BindInputElement("text", null, "value", "onchange")]
 
