@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\AzureAD.WebSite\AzureAD.WebSite.csproj" />
+
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <HelixProjectArch Remove="arm64" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,18 +26,21 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)" />
+      DestinationFolder="$(PublishDir)"
+      ContinueOnError="true" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode"
+        ContinueOnError="true" />
     <WriteLinesToFile
         File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode"
+        ContinueOnError="true" />    
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />

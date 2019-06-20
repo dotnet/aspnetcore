@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <HelixProjectArch Include="@(HelixAvailableArch)" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" />
   </ItemGroup>
 

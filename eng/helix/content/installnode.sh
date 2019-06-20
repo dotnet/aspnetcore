@@ -9,16 +9,24 @@ if type -P "node" &>/dev/null; then
 fi
 
 node_version=$1
-osname=`uname -s`
-echo $osname
-if [ "$osname" = "Darwin" ]; then
-   platformarch='darwin-x64'
+arch=`uname -m`
+if [[ $arch == arm* ]]; then 
+    arch="arm64"
 else
-   platformarch='linux-x64'
+    arch="x64"
 fi
+echo "$arch"
+osname=`uname -s`
+if [ "$osname" = "Darwin" ]; then
+   platformarch="darwin-$arch"
+else
+   platformarch="linux-$arch"
+fi
+echo "PlatformArch: $platformarch"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 output_dir="$DIR/node"
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
+echo "Downloading from: $url"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
 trap "rm -rf $tmp" EXIT
 cd "$tmp"
