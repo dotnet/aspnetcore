@@ -11,6 +11,7 @@
 
   <ItemGroup Label="Signing config">
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
+    <ItemsToSign Remove="">
     <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <ItemsToSign Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" />
@@ -24,6 +25,8 @@
     <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
+    <!--TODO confirm that the msi inside of the package is signed before this-->
+    <FileExtensionSignInfo Include=".msi" CertificateName="None" />
 
     <!--
       Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.
