@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    AllowAnyClientCertificate = true
                 });
             }
 
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    AllowAnyClientCertificate = true
                 });
             }
 
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    AllowAnyClientCertificate = true
                 });
             }
 
