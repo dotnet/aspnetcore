@@ -5,7 +5,7 @@ using System.Text;
 namespace Microsoft.AspNetCore.RequestThrottling.Policies
 {
     /// <summary>
-    /// Specifies options for the <see cref="TailDropQueuePolicy"/>
+    /// Specifies options for the <see cref="IQueuePolicy"/>
     /// </summary>
     public class QueuePolicyOptions
     {

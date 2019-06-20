@@ -27,14 +27,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             _middleware_FIFO = TestUtils.CreateTestMiddleware_TailDrop(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
-                next: IncrementAndCheck
-                );
+                next: IncrementAndCheck);
 
             _middleware_LIFO = TestUtils.CreateTestMiddleware_StackPolicy(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
-                next: IncrementAndCheck
-                );
+                next: IncrementAndCheck);
         }
 
         [IterationSetup]

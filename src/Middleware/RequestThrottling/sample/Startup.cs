@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,13 +28,17 @@ namespace RequestThrottlingSample
                 options.RequestQueueLimit = Math.Max(1, _config.GetValue<int>("maxQueue"));
             });
 
-            //services.AddLogging();
+            services.AddLogging();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.UseRequestThrottling();
-            app.UsePlainText();
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("Hello Request Throttling! If you rapidly refresh this page, it will 503.");
+                await Task.Delay(400);
+            });
         }
 
         // Entry point for the application.
@@ -48,7 +54,8 @@ namespace RequestThrottlingSample
                 .UseContentRoot(Directory.GetCurrentDirectory()) // for the cert file
                 .ConfigureLogging(factory =>
                 {
-                    factory.ClearProviders();
+                    factory.SetMinimumLevel(LogLevel.Debug);
+                    factory.AddConsole();
                 })
                 .UseStartup<Startup>()
                 .Build();

@@ -2,13 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using System.Xml.Schema;
 using Microsoft.AspNetCore.RequestThrottling;
 using Microsoft.AspNetCore.RequestThrottling.Policies;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -18,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class QueuePolicyServiceCollectionExtensions
     {
         /// <summary>
-        /// Tells <see cref="RequestThrottlingMiddleware"/> to use a TailDrop queue as its queueing strategy.
+        /// Tells <see cref="RequestThrottlingMiddleware"/> to use a FIFO queue as its queueing strategy.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
         /// <param name="configure">Set the options used by the queue.
@@ -31,6 +26,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        /// <summary>
+        /// Tells <see cref="RequestThrottlingMiddleware"/> to use a LIFO stack as its queueing strategy.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <param name="configure">Set the options used by the queue.
+        /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
+        /// <returns></returns>
         public static IServiceCollection AddStackQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);

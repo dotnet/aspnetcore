@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
 
         public Task<bool> TryEnterAsync()
         {
-
             lock (_bufferLock)
             {
                 if (_freeServerSpots > 0)
@@ -97,6 +96,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
                 }
 
                 _buffer[_head].SetResult(true);
+                _buffer[_head] = null;
                 _queueLength--;
             }
         }
