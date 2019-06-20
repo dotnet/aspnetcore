@@ -13,6 +13,12 @@
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
   </PropertyGroup>
 
+  <ItemGroup>
+    <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
+    <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
+    <JSFiles Include="$(MSBuildProjectDirectory)\dist\**\*.js" />
+  </ItemGroup>
+
   <Target Name="_CheckForInvalidConfiguration">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
   </Target>
@@ -31,8 +37,15 @@
              BuildInParallel="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <Yarn Command="run build" Condition="'$(IsBuildable)' != 'false'" StandardOutputImportance="High" StandardErrorImportance="High" />
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;_Build" >
+  </Target>
+
+  <Target Name="_Build"
+    Condition="'$(IsBuildable)' != 'false'"
+    Inputs="@(TSFiles)"
+    Outputs="$(MSBuildProjectDirectory)\built" >
+    <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)\built" />
   </Target>
 
   <PropertyGroup>
