@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -97,6 +95,10 @@ namespace Microsoft.AspNetCore.Components.Server
         // With this information, we can simply check the cookies the client sends us and discard any cookie for
         // which we can't find a circuit, either connected or disconnected, as when the user closes the browser
         // all sessions (and whatever affinity cookie was set) will go away.
+        // Circuits for which there isn't an already created circuit will contain an additional KeepAlive cookie
+        // that will be used as a filter to avoid deleting the circuit id cookie. The KeepAlive cookie for a given
+        // circuit will go away automatically. We expect this cookie to rarely be used, as we think the most common
+        // scenario will include prerendering one or more components.
         private void CleanupStaleCookies(HttpContext context)
         {
             var cookieCollection = context.Request.Cookies;
@@ -109,7 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server
                     try
                     {
                         var id = CircuitIdFactory.FromCookieValue(cookieCollection[cookieName]);
-                        if (!CircuitRegistry.ContainsCircuit(id.RequestToken))
+                        if (!CircuitRegistry.ContainsCircuit(id.RequestToken) &&
+                            !cookieCollection.ContainsKey(GetKeepAliveCookieName(cookieName)))
                         {
                             context.Response.Cookies.Delete(cookieName, options);
                         }
@@ -129,24 +132,36 @@ namespace Microsoft.AspNetCore.Components.Server
             var cookieName = $"{CookiePrefix}{GetCircuitIdPrefix(id)}";
 
             var options = CreateCookieOptions(cookieName);
-
             Context.Response.Cookies.Append(cookieName, cookieToken, options);
+            if (!CircuitRegistry.ContainsCircuit(id))
+            {
+                var keepAliveCookieName = GetKeepAliveCookieName(cookieName);
+                var keepAliveOptions = CreateCookieOptions(keepAliveCookieName, TimeSpan.FromMinutes(5));
+                Context.Response.Cookies.Append(keepAliveCookieName, "", keepAliveOptions);
+            }
+
             return Task.CompletedTask;
         }
 
-        private CookieOptions CreateCookieOptions(string cookieName)
+        private string GetKeepAliveCookieName(string cookieName) => $"{cookieName}.KeepAlive";
+
+        private CookieOptions CreateCookieOptions(string cookieName, TimeSpan? maxAge = null)
         {
             // We don't want to expose options for this cookie to users as we want to keep it as much of an implementation
             // detail as possible. We might need to consider if users need to be able to change this.
             // At least the name.
-            return new CookieBuilder()
+            var builder = new CookieBuilder()
             {
                 HttpOnly = true,
                 Name = cookieName,
                 SameSite = Http.SameSiteMode.Strict,
                 SecurePolicy = CookieSecurePolicy.SameAsRequest,
-                IsEssential = true
-            }.Build(Context);
+                IsEssential = true,
+                MaxAge = maxAge,
+                Expiration = maxAge
+            };
+
+            return builder.Build(Context);
         }
 
         protected override Task HandleSignOutAsync(AuthenticationProperties properties)
@@ -154,7 +169,9 @@ namespace Microsoft.AspNetCore.Components.Server
             throw new InvalidOperationException("Sign out is not supported.");
         }
 
-        internal static async Task AttachCircuitIdAsync(HttpContext httpContext, CircuitId circuitId)
+        internal static async Task AttachCircuitIdAsync(
+            HttpContext httpContext,
+            CircuitId circuitId)
         {
             // We require to pass in an authenticated principal to SignInAsync, but we are
             // simply going to ignore it inside HandleSignInAsync and use the authentication
@@ -169,7 +186,6 @@ namespace Microsoft.AspNetCore.Components.Server
             var properties = new AuthenticationProperties();
             properties.Items[RequestTokenKey] = circuitId.RequestToken;
             properties.Items[CookieTokenKey] = circuitId.CookieToken;
-
             SetResponseHeaders(httpContext.Response);
 
             await httpContext.SignInAsync(
