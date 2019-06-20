@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // WindowsIdentity just duplicated the handle so we need to close the original.
                 NativeMethods.CloseHandle(handle);
 
-                context.Response.OnCompleted(ClearUserDelegate, (context, winIdentity));
+                context.Response.OnCompleted(ClearUserDelegate, context);
+                context.Response.RegisterForDispose(winIdentity);
                 return new WindowsPrincipal(winIdentity);
             }
 
@@ -180,9 +181,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private static Task ClearUser(object arg)
         {
-            var (context, identity) = (ValueTuple<HttpContext, WindowsIdentity>)arg;
-            identity.Dispose();
-
+            var context = (HttpContext)arg;
             // We don't want loggers accessing a disposed identity.
             // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
             if (context.User is WindowsPrincipal)
