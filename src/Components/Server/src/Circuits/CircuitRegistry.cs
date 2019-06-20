@@ -132,6 +132,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHandlerTask;
         }
 
+        internal bool ContainsCircuit(string circuitId)
+        {
+            return ConnectedCircuits.ContainsKey(circuitId) || DisconnectedCircuits.Get(circuitId) != null;
+        }
+
         protected virtual bool DisconnectCore(CircuitHost circuitHost, string connectionId)
         {
             var circuitId = circuitHost.CircuitId.RequestToken;

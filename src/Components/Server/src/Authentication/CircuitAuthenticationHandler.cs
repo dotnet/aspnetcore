@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -36,14 +38,17 @@ namespace Microsoft.AspNetCore.Components.Server
         public CircuitAuthenticationHandler(
             IOptionsMonitor<CircuitAuthenticationOptions> options,
             CircuitIdFactory circuitIdFactory,
+            CircuitRegistry circuitRegistry,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock) : base(options, logger, encoder, clock)
         {
             CircuitIdFactory = circuitIdFactory;
+            CircuitRegistry = circuitRegistry;
         }
 
         public CircuitIdFactory CircuitIdFactory { get; }
+        public CircuitRegistry CircuitRegistry { get; }
 
         // This handler only runs on the negotiate phase of signalr.
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -69,6 +74,8 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 if (CircuitIdFactory.ValidateCircuitId(circuitId, cookie, out var parsedId))
                 {
+                    CleanupStaleCookies(Context);
+
                     // We create an identity without authentication type so that the presence of this
                     // identity doesn't affect ClaimsPrincipal.IsAuthenticated
                     var principal = new ClaimsPrincipal();
@@ -84,16 +91,55 @@ namespace Microsoft.AspNetCore.Components.Server
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        // Blazor requires stickyness as the circuit is held in memory.
+        // That means that on scale-out scenarios there must be a session cookie and all circuits for a given
+        // session will end up in the same server.
+        // With this information, we can simply check the cookies the client sends us and discard any cookie for
+        // which we can't find a circuit, either connected or disconnected, as when the user closes the browser
+        // all sessions (and whatever affinity cookie was set) will go away.
+        private void CleanupStaleCookies(HttpContext context)
+        {
+            var cookieCollection = context.Request.Cookies;
+
+            foreach (var cookieName in cookieCollection.Keys)
+            {
+                var options = CreateCookieOptions(cookieName);
+                if (cookieName.StartsWith(CookiePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var id = CircuitIdFactory.FromCookieValue(cookieCollection[cookieName]);
+                        if (!CircuitRegistry.ContainsCircuit(id.RequestToken))
+                        {
+                            context.Response.Cookies.Delete(cookieName, options);
+                        }
+                    }
+                    catch
+                    {
+                        context.Response.Cookies.Delete(cookieName, options);
+                    }
+                }
+            }
+        }
+
         protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
             var id = properties.Items[RequestTokenKey];
             var cookieToken = properties.Items[CookieTokenKey];
             var cookieName = $"{CookiePrefix}{GetCircuitIdPrefix(id)}";
 
+            var options = CreateCookieOptions(cookieName);
+
+            Context.Response.Cookies.Append(cookieName, cookieToken, options);
+            return Task.CompletedTask;
+        }
+
+        private CookieOptions CreateCookieOptions(string cookieName)
+        {
             // We don't want to expose options for this cookie to users as we want to keep it as much of an implementation
             // detail as possible. We might need to consider if users need to be able to change this.
             // At least the name.
-            var options = new CookieBuilder()
+            return new CookieBuilder()
             {
                 HttpOnly = true,
                 Name = cookieName,
@@ -101,9 +147,6 @@ namespace Microsoft.AspNetCore.Components.Server
                 SecurePolicy = CookieSecurePolicy.SameAsRequest,
                 IsEssential = true
             }.Build(Context);
-
-            Context.Response.Cookies.Append(cookieName, cookieToken, options);
-            return Task.CompletedTask;
         }
 
         protected override Task HandleSignOutAsync(AuthenticationProperties properties)
