@@ -2310,6 +2310,54 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task HubOptionsCanNotHaveNullSupportedProtocols()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(o =>
+                    {
+                        o.SupportedProtocols = null;
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
+                using (var client = new TestClient(protocol: new MessagePackHubProtocol(msgPackOptions)))
+                {
+                    client.SupportedFormats = TransferFormat.Binary;
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await await client.ConnectAsync(connectionHandler, expectedHandshakeResponseMessage: false)).OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HubOptionsCanNotHaveEmptySupportedProtocols()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(o =>
+                    {
+                        o.SupportedProtocols = new List<string>();
+                    });
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
+                using (var client = new TestClient(protocol: new MessagePackHubProtocol(msgPackOptions)))
+                {
+                    client.SupportedFormats = TransferFormat.Binary;
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await await client.ConnectAsync(connectionHandler, expectedHandshakeResponseMessage: false)).OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public async Task ConnectionUserIdIsAssignedByUserIdProvider()
         {
             using (StartVerifiableLog())
