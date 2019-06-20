@@ -517,6 +517,24 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// <para>
+        /// Indicates that the preceding attribute represents an event handler
+        /// whose execution updates the attribute with name <paramref name="updatesAttributeName"/>.
+        /// </para>
+        /// <para>
+        /// This information is used by the rendering system to determine whether
+        /// to accept a value update for the other attribute when receiving a
+        /// call to the event handler.
+        /// </para>
+        /// </summary>
+        /// <param name="updatesAttributeName">The name of another attribute whose value can be updated when the event handler is executed.</param>
+        public void SetUpdatesAttributeName(string updatesAttributeName)
+        {
+            // TODO: This will be implemented in a later PR, once aspnetcore-tooling
+            // is updated to call this method.
+        }
+
+        /// <summary>
         /// Appends a frame representing a child component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
