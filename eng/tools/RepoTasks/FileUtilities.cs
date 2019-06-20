@@ -7,39 +7,40 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace RepoTasks
 {
-    internal static class FileUtilities
+    internal static partial class FileUtilities
     {
+        private static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(
+            new[] { ".dll", ".exe", ".winmd" },
+            StringComparer.OrdinalIgnoreCase);
+
         public static Version GetFileVersion(string sourcePath)
         {
             var fvi = FileVersionInfo.GetVersionInfo(sourcePath);
 
-            return fvi != null
-                ? new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart)
-                : null;
+            if (fvi != null)
+            {
+                return new Version(fvi.FileMajorPart, fvi.FileMinorPart, fvi.FileBuildPart, fvi.FilePrivatePart);
+            }
+
+            return null;
         }
 
-        private static readonly HashSet<string> _assemblyExtensions = new HashSet<string>(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
-
-        public static Version TryGetAssemblyVersion(string sourcePath)
+        public static AssemblyName GetAssemblyName(string path)
         {
-            var extension = Path.GetExtension(sourcePath);
+            if (!s_assemblyExtensions.Contains(Path.GetExtension(path)))
+            {
+                return null;
+            }
 
-            return _assemblyExtensions.Contains(extension)
-                ? GetAssemblyVersion(sourcePath)
-                : null;
-        }
-
-        private static Version GetAssemblyVersion(string sourcePath)
-        {
             try
             {
-                return AssemblyName.GetAssemblyName(sourcePath)?.Version;
+                return AssemblyName.GetAssemblyName(path);
             }
             catch (BadImageFormatException)
             {
-                // If an .dll file cannot be read, it may be a native .dll which would not have an assembly version.
+                // Not a valid assembly.
                 return null;
             }
         }

@@ -100,6 +100,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
     <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
+
+    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -154,6 +157,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GenerateSharedFxVersionsFiles;
       Crossgen;
       _ResolveSharedFrameworkContent;
+      IncludeFrameworkListFile;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
@@ -275,8 +279,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="GenerateSharedFxDepsFile">
     <ItemGroup>
       <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-
-      <_PackageFiles Include="@(RuntimePackContent)" />
     </ItemGroup>
   </Target>
 
@@ -446,6 +448,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(RedistArchiveOutputPath) ."
       WorkingDirectory="$(RedistSharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+  </Target>
+
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(SharedFxContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RuntimePackContent)" />
+    </ItemGroup>
   </Target>
 
 </Project>
