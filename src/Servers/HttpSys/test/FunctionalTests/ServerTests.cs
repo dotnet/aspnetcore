@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2415", FlakyOn.All)]
         public void Server_MultipleOutstandingSyncRequests_Success()
         {
             int requestLimit = 10;
