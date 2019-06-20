@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public bool CheckCertificateRevocation { get; set; }
 
         /// <summary>
-        /// When set to true, allows any client certificate
+        /// When set to true, allows any client certificate.
         /// </summary>
         public bool AllowAnyClientCertificate { get; set; }
 
