@@ -1568,7 +1568,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance,
-                Options.Create(new MvcOptions())));
+                new AsyncEnumerableReader(options)));
 
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = services.BuildServiceProvider();

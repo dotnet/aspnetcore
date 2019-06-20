@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -25,13 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
+        private readonly AsyncEnumerableReader _reader;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
-            ILogger<SystemTextJsonResultExecutor> logger)
+            ILogger<SystemTextJsonResultExecutor> logger,
+            AsyncEnumerableReader reader)
         {
             _options = options.Value;
             _logger = logger;
+            _reader = reader;
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -70,8 +74,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var writeStream = GetWriteStream(context.HttpContext, resolvedContentTypeEncoding);
             try
             {
-                var type = result.Value?.GetType() ?? typeof(object);
-                await JsonSerializer.WriteAsync(writeStream, result.Value, type, jsonSerializerOptions);
+                var value = result.Value;
+                if (value is IAsyncEnumerable<object> asyncEnumerable)
+                {
+                    Log.EagerlyReadingAsyncEnumerable(_logger, asyncEnumerable);
+                    value = await _reader.ReadAsync(asyncEnumerable);
+                }
+
+                var type = value?.GetType() ?? typeof(object);
+                await JsonSerializer.WriteAsync(writeStream, value, type, jsonSerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally
@@ -123,10 +134,21 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.");
 
+            private static readonly Action<ILogger, string, Exception> _eagerlyReadingAsyncEnumerable = LoggerMessage.Define<string>(
+               LogLevel.Debug,
+               new EventId(2, "EagerReadAsyncEnumerable"),
+               "Eagerly reading IAsyncEnumerable instance of type '{Type}'.");
+
             public static void JsonResultExecuting(ILogger logger, object value)
             {
                 var type = value == null ? "null" : value.GetType().FullName;
                 _jsonResultExecuting(logger, type, null);
+            }
+
+            public static void EagerlyReadingAsyncEnumerable(ILogger logger, object value)
+            {
+                var type = value == null ? "null" : value.GetType().FullName;
+                _eagerlyReadingAsyncEnumerable(logger, type, null);
             }
         }
     }

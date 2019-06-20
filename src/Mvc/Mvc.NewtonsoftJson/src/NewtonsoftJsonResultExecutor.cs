@@ -3,10 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -32,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private readonly MvcOptions _mvcOptions;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
         private readonly IArrayPool<char> _charPool;
+        private readonly AsyncEnumerableReader _asyncEnumerableReader;
 
         /// <summary>
         /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
@@ -41,12 +41,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
+        /// <param name="asyncEnumerableReader">The <see cref="AsyncEnumerableReader"/>.</param>
         public NewtonsoftJsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
             ILogger<NewtonsoftJsonResultExecutor> logger,
             IOptions<MvcOptions> mvcOptions,
             IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
-            ArrayPool<char> charPool)
+            ArrayPool<char> charPool,
+            AsyncEnumerableReader asyncEnumerableReader)
         {
             if (writerFactory == null)
             {
@@ -73,6 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
             _jsonOptions = jsonOptions.Value;
             _charPool = new JsonArrayPool<char>(charPool);
+            _asyncEnumerableReader = asyncEnumerableReader ?? throw new ArgumentNullException(nameof(asyncEnumerableReader));
         }
 
         /// <summary>
@@ -131,7 +134,13 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     jsonWriter.AutoCompleteOnClose = false;
 
                     var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                    jsonSerializer.Serialize(jsonWriter, result.Value);
+                    var value = result.Value;
+                    if (result.Value is IAsyncEnumerable<object> asyncEnumerable)
+                    {
+                        value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+                    }
+
+                    jsonSerializer.Serialize(jsonWriter, value);
                 }
 
                 if (fileBufferingWriteStream != null)

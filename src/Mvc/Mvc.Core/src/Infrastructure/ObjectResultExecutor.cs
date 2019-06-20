@@ -2,19 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -23,15 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
-        private delegate Task<object> ReadAsyncEnumerableDelegate(object value);
-
-        private readonly MethodInfo Converter = typeof(ObjectResultExecutor).GetMethod(
-            nameof(ReadAsyncEnumerable),
-            BindingFlags.NonPublic | BindingFlags.Instance);
-
-        private readonly ConcurrentDictionary<Type, ReadAsyncEnumerableDelegate> _asyncEnumerableConverters =
-            new ConcurrentDictionary<Type, ReadAsyncEnumerableDelegate>();
-        private readonly MvcOptions _mvcOptions;
+        private readonly AsyncEnumerableReader _asyncEnumerableReader;
 
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
@@ -44,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
+            : this(formatterSelector, writerFactory, loggerFactory, asyncEnumerableReader: null)
         {
         }
 
@@ -54,12 +41,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+        /// <param name="asyncEnumerableReader">The <see cref="AsyncEnumerableReader"/>.</param>
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory,
-            IOptions<MvcOptions> mvcOptions)
+            AsyncEnumerableReader asyncEnumerableReader)
         {
             if (formatterSelector == null)
             {
@@ -79,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
-            _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _asyncEnumerableReader = asyncEnumerableReader ?? throw new ArgumentNullException(nameof(asyncEnumerableReader));
         }
 
         /// <summary>
@@ -138,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, IAsyncEnumerable<object> asyncEnumerable)
         {
-            var enumerated = await EnumerateAsyncEnumerable(asyncEnumerable);
+            var enumerated = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
@@ -191,49 +178,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private Task<object> EnumerateAsyncEnumerable(IAsyncEnumerable<object> value)
-        {
-            var type = value.GetType();
-            if (!_asyncEnumerableConverters.TryGetValue(type, out var result))
-            {
-                var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IAsyncEnumerable<>));
-                result = null;
-                if (enumerableType != null)
-                {
-                    var enumeratedObjectType = enumerableType.GetGenericArguments()[0];
-
-                    var converter = (ReadAsyncEnumerableDelegate)Converter
-                        .MakeGenericMethod(enumeratedObjectType)
-                        .CreateDelegate(typeof(ReadAsyncEnumerableDelegate), this);
-
-                    _asyncEnumerableConverters.TryAdd(type, converter);
-                    result = converter;
-                }
-            }
-
-            return result(value);
-        }
-
-        private async Task<object> ReadAsyncEnumerable<T>(object value)
-        {
-            var asyncEnumerable = (IAsyncEnumerable<T>)value;
-            var result = new List<T>();
-            var count = 0;
-
-            await foreach (var item in asyncEnumerable)
-            {
-                if (count++ >= _mvcOptions.MaxIAsyncEnumerableBufferLimit)
-                {
-                    throw new InvalidOperationException(Resources.FormatObjectResultExecutor_MaxEnumerationExceeded(
-                        nameof(ObjectResultExecutor),
-                        _mvcOptions.MaxIAsyncEnumerableBufferLimit,
-                        value.GetType()));
-                }
-
-                result.Add(item);
-            }
-
-            return result;
-        }
+        
     }
 }

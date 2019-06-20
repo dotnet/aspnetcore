@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance,
-                Options.Create(new MvcOptions())));
+                new AsyncEnumerableReader(options)));
 
             return services.BuildServiceProvider();
         }

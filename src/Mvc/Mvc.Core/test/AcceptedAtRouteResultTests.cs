@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance,
-                Options.Create(new MvcOptions())));
+                new AsyncEnumerableReader(Options.Create(new MvcOptions()))));
 
             return services.BuildServiceProvider();
         }

@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 NullLogger<NewtonsoftJsonResultExecutor>.Instance,
                 Options.Create(new MvcOptions()),
                 Options.Create(new MvcNewtonsoftJsonOptions()),
-                ArrayPool<char>.Shared);
+                ArrayPool<char>.Shared,
+                new AsyncEnumerableReader(Options.Create(new MvcOptions())));
 
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<JsonResult>>(executor);

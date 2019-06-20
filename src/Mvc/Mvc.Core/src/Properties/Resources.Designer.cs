@@ -1747,7 +1747,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("Property_MustBeInstanceOfType"), p0, p1, p2);
 
         /// <summary>
-        /// {0} execeeded the maximum configured enumeration limit '{1}' when enumerating async enumerable type '{2}'.
+        /// '{0}' reached the configured maximum size of the buffer when an enumerating a value of type `{1}'. This limit is in place to prevent infinite streams of `IAsyncEnumerable` from continuing indefinitely. If this is not a programming mistake, consider ways to reduce the collection or size, or consider manually converting '{1}' into a list rather than increasing the limit.
         /// </summary>
         internal static string ObjectResultExecutor_MaxEnumerationExceeded
         {
@@ -1755,10 +1755,10 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// {0} execeeded the maximum configured enumeration limit '{1}' when enumerating async enumerable type '{2}'.
+        /// '{0}' reached the configured maximum size of the buffer when an enumerating a value of type `{1}'. This limit is in place to prevent infinite streams of `IAsyncEnumerable` from continuing indefinitely. If this is not a programming mistake, consider ways to reduce the collection or size, or consider manually converting '{1}' into a list rather than increasing the limit.
         /// </summary>
-        internal static string FormatObjectResultExecutor_MaxEnumerationExceeded(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ObjectResultExecutor_MaxEnumerationExceeded"), p0, p1, p2);
+        internal static string FormatObjectResultExecutor_MaxEnumerationExceeded(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ObjectResultExecutor_MaxEnumerationExceeded"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {
