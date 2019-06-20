@@ -24,7 +24,7 @@
     <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
-    <!--TODO confirm that the msi inside of the package is signed before this-->
+    <FileExtensionSignInfo Include=".cab" CertificateName="None" />
     <FileExtensionSignInfo Include=".msi" CertificateName="None" />
 
     <!--
