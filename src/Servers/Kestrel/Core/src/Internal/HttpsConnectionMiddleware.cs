@@ -85,19 +85,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
-            // TODO: Handle the cases where this can be null
             var memoryPoolFeature = context.Features.Get<IMemoryPoolFeature>();
 
             var inputPipeOptions = new StreamPipeReaderOptions
             (
                 pool: memoryPoolFeature.MemoryPool,
                 bufferSize: memoryPoolFeature.MemoryPool.GetMinimumSegmentSize(),
-                minimumReadSize: memoryPoolFeature.MemoryPool.GetMinimumAllocSize()
+                minimumReadSize: memoryPoolFeature.MemoryPool.GetMinimumAllocSize(),
+                leaveOpen: true
             );
 
             var outputPipeOptions = new StreamPipeWriterOptions
             (
-                pool: memoryPoolFeature.MemoryPool
+                pool: memoryPoolFeature.MemoryPool,
+                leaveOpen: true
             );
 
             SslDuplexPipe sslDuplexPipe = null;
