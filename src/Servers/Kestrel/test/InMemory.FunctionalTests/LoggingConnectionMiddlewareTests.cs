@@ -12,18 +12,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
-    public class LoggingConnectionAdapterTests : LoggedTest
+    public class LoggingConnectionMiddlewareTests : LoggedTest
     {
         [Fact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2276", FlakyOn.Helix.All)]
-        public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
+        public async Task LoggingConnectionMiddlewareCanBeAddedBeforeAndAfterHttps()
         {
             await using (var server = new TestServer(context =>
                 {
                     context.Response.ContentLength = 12;
                     return context.Response.WriteAsync("Hello World!");
                 },
-                new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 3 },
+                new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
                     listenOptions.UseConnectionLogging();

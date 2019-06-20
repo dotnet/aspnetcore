@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
-    public class ConnectionAdapterTests : TestApplicationErrorLoggerLoggedTest
+    public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
     {
         public static TheoryData<RequestDelegate> EchoAppRequestDelegates =>
             new TheoryData<RequestDelegate>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 return middleware.OnConnectionAsync;
             });
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
 
@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Theory]
         [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task CanReadAndWriteWithAsyncConnectionAdapter(RequestDelegate requestDelegate)
+        public async Task CanReadAndWriteWithAsyncConnectionMiddleware(RequestDelegate requestDelegate)
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
             {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next => context => throw new InvalidOperationException());
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
             {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
 
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 };
             });
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Theory]
         [MemberData(nameof(EchoAppRequestDelegates))]
-        public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer(RequestDelegate requestDelegate)
+        public async Task ThrowingSynchronousConnectionMiddlewareDoesNotCrashServer(RequestDelegate requestDelegate)
         {
             var connectionId = "";
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 throw new InvalidOperationException();
             });
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
             {
@@ -220,12 +220,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task CanFlushAsyncWithConnectionAdapter()
+        public async Task CanFlushAsyncWithConnectionMiddleware()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                 .UsePassThrough();
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async context =>
             {
@@ -251,12 +251,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task CanFlushAsyncWithConnectionAdapterPipeWriter()
+        public async Task CanFlushAsyncWithConnectionMiddlewarePipeWriter()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                 .UsePassThrough();
 
-            var serviceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async context =>
             {
