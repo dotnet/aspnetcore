@@ -45,9 +45,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs");
-            // We should produced an empty file for build incrementalism
-            Assert.Empty(File.ReadAllText(Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs")));
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs");
+
+            // We should produced a cache file for build incrementalism
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cache");
         }
 
         [Fact]
@@ -59,18 +60,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             var generatedAttributeFile = Path.Combine(IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
+            var cacheFile = Path.Combine(IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cache");
+            var outputFile = Path.Combine(IntermediateOutputPath, "AppWithP2PReference.dll");
             Assert.FileExists(result, generatedAttributeFile);
             Assert.FileContains(result, generatedAttributeFile, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")]");
 
-            var thumbPrint = GetThumbPrint(generatedAttributeFile);
+            var generatedFilethumbPrint = GetThumbPrint(generatedAttributeFile);
+            var cacheFileThumbPrint = GetThumbPrint(cacheFile);
+            var outputFileThumbPrint = GetThumbPrint(outputFile);
 
-            result = await DotnetMSBuild("Build");
+            await AssertIncrementalBuild();
+            await AssertIncrementalBuild();
 
-            Assert.BuildPassed(result);
+            async Task AssertIncrementalBuild()
+            {
+                result = await DotnetMSBuild("Build");
 
-            Assert.FileExists(result, generatedAttributeFile);
-            Assert.Equal(thumbPrint, GetThumbPrint(generatedAttributeFile));
-            Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
+                Assert.BuildPassed(result);
+
+                Assert.FileExists(result, generatedAttributeFile);
+                Assert.Equal(generatedFilethumbPrint, GetThumbPrint(generatedAttributeFile));
+                Assert.Equal(cacheFileThumbPrint, GetThumbPrint(cacheFile));
+                Assert.Equal(outputFileThumbPrint, GetThumbPrint(outputFile));
+                Assert.AssemblyHasAttribute(result, Path.Combine(OutputPath, "AppWithP2PReference.dll"), "Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
+            }
         }
 
         // Regression test for https://github.com/aspnet/AspNetCore/issues/11315
@@ -128,17 +141,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             var generatedAttributeFile = Path.Combine(IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs");
-            Assert.FileExists(result, generatedAttributeFile);
-            Assert.Empty(File.ReadAllText(Path.Combine(result.Project.DirectoryPath, generatedAttributeFile)));
+            var cacheFile = Path.Combine(IntermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cache");
+            var outputFile = Path.Combine(IntermediateOutputPath, "SimpleMvc.dll");
+            Assert.FileDoesNotExist(result, generatedAttributeFile);
+            Assert.FileExists(result, cacheFile);
 
-            var thumbPrint = GetThumbPrint(generatedAttributeFile);
+            var cacheFilethumbPrint = GetThumbPrint(cacheFile);
+            var outputFilethumbPrint = GetThumbPrint(outputFile);
 
-            result = await DotnetMSBuild("Build");
+            // Couple rounds of incremental builds.
+            await AssertIncrementalBuild();
+            await AssertIncrementalBuild();
+            await AssertIncrementalBuild();
 
-            Assert.BuildPassed(result);
+            async Task AssertIncrementalBuild()
+            {
+                result = await DotnetMSBuild("Build");
 
-            Assert.FileExists(result, generatedAttributeFile);
-            Assert.Equal(thumbPrint, GetThumbPrint(generatedAttributeFile));
+                Assert.BuildPassed(result);
+
+                Assert.FileDoesNotExist(result, generatedAttributeFile);
+                Assert.FileExists(result, cacheFile);
+                Assert.Equal(cacheFilethumbPrint, GetThumbPrint(cacheFile));
+                Assert.Equal(outputFilethumbPrint, GetThumbPrint(outputFile));
+            }
         }
     }
 }

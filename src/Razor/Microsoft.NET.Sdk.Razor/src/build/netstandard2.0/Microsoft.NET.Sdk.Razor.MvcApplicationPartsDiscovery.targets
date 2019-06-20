@@ -25,12 +25,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </CoreCompileDependsOn>
 
     <_MvcApplicationPartAttributeGeneratedFile>$(IntermediateOutputPath)$(TargetName).MvcApplicationPartsAssemblyInfo$(DefaultLanguageSourceExtension)</_MvcApplicationPartAttributeGeneratedFile>
+    <_MvcApplicationPartCacheFile>$(IntermediateOutputPath)$(TargetName).MvcApplicationPartsAssemblyInfo.cache</_MvcApplicationPartCacheFile>
   </PropertyGroup>
 
   <Target
     Name="_DiscoverMvcApplicationParts"
     Inputs="$(ProjectAssetsFile);$(MSBuildAllProjects)"
-    Outputs="$(_MvcApplicationPartAttributeGeneratedFile)"
+    Outputs="$(_MvcApplicationPartCacheFile)"
     DependsOnTargets="ResolveAssemblyReferences">
 
     <ItemGroup>
@@ -73,7 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       In this case, delete the file so that future incremental builds can no longer pick it up.
     -->
     <Delete
-      File="$(_MvcApplicationPartAttributeGeneratedFile)"
+      Files="$(_MvcApplicationPartAttributeGeneratedFile)"
       Condition="'@(_ApplicationPartAssemblyNames->Count())' == '0' AND Exists('$(_MvcApplicationPartAttributeGeneratedFile)')" />
 
     <ItemGroup Condition="Exists('$(_MvcApplicationPartAttributeGeneratedFile)')">
@@ -82,6 +83,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <CompileBefore Remove="$(_MvcApplicationPartAttributeGeneratedFile)" Condition="'$(Language)'=='F#'" />
       <CompileBefore Include="$(_MvcApplicationPartAttributeGeneratedFile)"  Condition="'$(Language)'=='F#'" />
+
+      <FileWrites Include="$(_MvcApplicationPartAttributeGeneratedFile)"/>
     </ItemGroup>
 
     <!--
@@ -89,11 +92,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       This is required to play nicely with incremental builds.
     -->
     <Touch
-      Files="$(_MvcApplicationPartAttributeGeneratedFile)"
+      Files="$(_MvcApplicationPartCacheFile)"
       AlwaysCreate="true" />
 
     <ItemGroup>
-      <FileWrites Include="$(_MvcApplicationPartAttributeGeneratedFile)" />
+      <FileWrites Include="$(_MvcApplicationPartCacheFile)" />
     </ItemGroup>
   </Target>
 </Project>
