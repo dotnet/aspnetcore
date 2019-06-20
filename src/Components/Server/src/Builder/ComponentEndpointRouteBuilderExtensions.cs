@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
@@ -48,9 +49,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            endpoints.MapStartCircuitEndpoint(ComponentHub.DefaultPath + "/start");
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions))
+            endpoints.MapStartCircuitEndpoint(ComponentHub.DefaultPath + "/start")
+                .Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
+
+            var result = new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions))
                 .RequireAuthorization(CircuitAuthenticationHandler.AuthorizationPolicyName);
+            result.Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
+
+            return result;
         }
 
         /// <summary>

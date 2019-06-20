@@ -1,11 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -24,6 +27,21 @@ namespace Microsoft.AspNetCore.Builder
 
         public async Task StartCircuitAsync(HttpContext context)
         {
+            // We only accept post so that cross-site requests are forced to go through a preflight.
+            if (!HttpMethods.IsPost(context.Request.Method))
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            // Require a custom header to force CORS requests cross-origin.
+            if(!context.Request.Headers.TryGetValue("X-Requested-With", out var header) &&
+                string.Equals("Blazor", header, StringComparison.Ordinal))
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
             var id = _circuitIdFactory.CreateCircuitId();
             await CircuitAuthenticationHandler.AttachCircuitIdAsync(context, id);
 

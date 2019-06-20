@@ -45,12 +45,22 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public CircuitIdFactory CircuitIdFactory { get; }
 
+        // This handler only runs on the negotiate phase of signalr.
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (!Context.Request.Query.TryGetValue(QueryStringParameterKey, out var circuitId) || circuitId.Count != 1)
             {
                 // There is no circuit id on the query string, so we don't authenticate anything.
                 return Task.FromResult(AuthenticateResult.NoResult());
+            }
+
+            // Signalr requires clients to send the header X-Requested-With or fails.
+            // This means that it will force cross-origin requests to go through CORS
+            // which means we will see a preflight request, in which case we fail.
+            if (HttpMethods.IsOptions(Context.Request.Method) &&
+                Context.Request.Headers.ContainsKey(HeaderNames.AccessControlRequestMethod))
+            {
+                return Task.FromResult(AuthenticateResult.Fail("No CORS requests allowed"));
             }
 
             var key = $"{CookiePrefix}{GetCircuitIdPrefix(circuitId)}";
