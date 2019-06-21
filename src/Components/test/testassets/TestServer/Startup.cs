@@ -66,9 +66,6 @@ namespace TestServer
 
                 subdirApp.UseRouting();
 
-                subdirApp.UseCors();
-                subdirApp.UseAuthorization();
-
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
@@ -78,9 +75,6 @@ namespace TestServer
 
             app.UseStaticFiles();
             app.UseRouting();
-
-            app.UseCors();
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
@@ -96,9 +90,6 @@ namespace TestServer
                 subdirApp.UseStaticFiles();
                 subdirApp.UseRouting();
 
-                subdirApp.UseCors();
-                subdirApp.UseAuthorization();
-
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapRazorPages();
@@ -112,9 +103,6 @@ namespace TestServer
                 startModesApp.UsePathBase("/startmodes");
                 startModesApp.UseStaticFiles();
                 startModesApp.UseRouting();
-
-                startModesApp.UseCors();
-                startModesApp.UseAuthorization();
 
                 startModesApp.UseEndpoints(endpoints =>
                 {

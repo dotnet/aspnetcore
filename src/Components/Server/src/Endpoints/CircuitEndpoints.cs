@@ -32,14 +32,6 @@ namespace Microsoft.AspNetCore.Builder
                 return;
             }
 
-            // Require a custom header to force CORS requests cross-origin.
-            if(!context.Request.Headers.TryGetValue("X-Requested-With", out var header) &&
-                string.Equals("Blazor", header, StringComparison.Ordinal))
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-
             var id = _circuitIdFactory.CreateCircuitId();
             await CircuitMatcherPolicy.AttachCircuitIdAsync(context, id);
 

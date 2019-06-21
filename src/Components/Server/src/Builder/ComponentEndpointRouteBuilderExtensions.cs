@@ -87,13 +87,9 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            endpoints.MapStartCircuitEndpoint(path + "/start")
-                .Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
-
-            var result = new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(path, configureOptions))
-                .ApplyHubMetadata();
-
-            return result;
+            return new ComponentEndpointConventionBuilder(
+                endpoints.MapHub<ComponentHub>(path, configureOptions),
+                endpoints.MapStartCircuitEndpoint(path + "/start"));
         }
 
         /// <summary>
@@ -375,12 +371,6 @@ namespace Microsoft.AspNetCore.Builder
 
             return endpoints.MapBlazorHub(path, configureOptions)
                 .AddComponent(componentType, selector);
-        }
-
-        private static ComponentEndpointConventionBuilder ApplyHubMetadata(this ComponentEndpointConventionBuilder builder)
-        {
-            builder.Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
-            return builder;
         }
     }
 }

@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Components.Server
     /// </summary>
     public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionBuilder
     {
-        private readonly IEndpointConventionBuilder _endpointConventionBuilder;
+        private readonly IEndpointConventionBuilder[] _endpointConventionBuilders;
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal ComponentEndpointConventionBuilder(params IEndpointConventionBuilder[] endpointConventionBuilders)
         {
-            _endpointConventionBuilder = endpointConventionBuilder;
+            _endpointConventionBuilders = endpointConventionBuilders;
         }
 
         /// <summary>
@@ -26,7 +26,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <param name="convention">The convention to add to the builder.</param>
         public void Add(Action<EndpointBuilder> convention)
         {
-            _endpointConventionBuilder.Add(convention);
+            for (int i = 0; i < _endpointConventionBuilders.Length; i++)
+            {
+                _endpointConventionBuilders[i].Add(convention);
+            }
         }
     }
 }
