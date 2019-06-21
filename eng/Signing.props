@@ -14,6 +14,8 @@
     <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.jar"  />
     <ItemsToSign Include="$(InstallersOutputPath)**\*.zip" />
+    <InstallerGlobPatternA Include="$(InstallersOutputPath)**\*.zip" />
+    <InstallerGlobPatternB Include="$(InstallersOutputPath)*.zip" />
 
     <!--
       Map file extensions to a code-sign cert.
