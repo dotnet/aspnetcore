@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             try
             {
-                if (_requestProcessed || Options.DefferToServer)
+                if (_requestProcessed || Options.DeferToServer)
                 {
                     // This request was already processed but something is re-executing it like an exception handler.
                     // Don't re-run because we could corrupt the connection state, e.g. if this was a stage2 NTLM request

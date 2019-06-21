@@ -33,7 +33,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// </summary>
         public bool PersistNtlmCredentials { get; set; } = true;
 
-        internal bool DefferToServer { get; set; }
+        /// <summary>
+        /// Indicates if integrated server Windows Auth is being used instead of this handler.
+        /// See <see cref="PostConfigureNegotiateOptions"/>.
+        /// </summary>
+        internal bool DeferToServer { get; set; }
 
         // For testing
         internal INegotiateStateFactory StateFactory { get; set; } = new ReflectedNegotiateStateFactory();

@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -23,7 +24,15 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return hostBuilder.ConfigureServices(services => {
                 services.AddSingleton<IServer, MessagePump>();
-                services.AddSingleton<IServerIntegratedAuth>(services => (IServerIntegratedAuth)services.GetRequiredService<IServer>());
+                services.AddSingleton<IServerIntegratedAuth>(services =>
+                {
+                    var options = services.GetRequiredService<IOptions<HttpSysOptions>>().Value;
+                    return new ServerIntegratedAuth()
+                    {
+                        IsEnabled = options.Authentication.Schemes != AuthenticationSchemes.None,
+                        AuthenticationScheme = HttpSysDefaults.AuthenticationScheme,
+                    };
+                });
                 services.AddAuthenticationCore();
             });
         }

@@ -4,17 +4,17 @@
 namespace Microsoft.AspNetCore.Hosting.Server
 {
     /// <summary>
-    /// Used by servers to advertise if they support integrated Windows auth, if it's enabled, and it's scheme.
+    /// Used by servers to advertise if they support integrated Windows authentication, if it's enabled, and it's scheme.
     /// </summary>
     public interface IServerIntegratedAuth
     {
         /// <summary>
-        /// Indicates if integrated Windows auth is enabled for the current application instance.
+        /// Indicates if integrated Windows authentication is enabled for the current application instance.
         /// </summary>
         bool IsEnabled { get; }
 
         /// <summary>
-        /// The name of the authentication scheme for the server auth handler.
+        /// The name of the authentication scheme for the server authentication handler.
         /// </summary>
         string AuthenticationScheme { get; }
     }

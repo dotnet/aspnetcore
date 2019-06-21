@@ -12,13 +12,18 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     /// <summary>
-    /// Reconfigures the NegotiateOptions to deffer to the integrated server auth if present.
+    /// Reconfigures the NegotiateOptions to defer to the integrated server authentication if present.
     /// </summary>
     public class PostConfigureNegotiateOptions : IPostConfigureOptions<NegotiateOptions>
     {
         private readonly IServerIntegratedAuth _serverAuth;
         private readonly ILogger<NegotiateHandler> _logger;
 
+        /// <summary>
+        /// Creates a new <see cref="PostConfigureNegotiateOptions"/>
+        /// </summary>
+        /// <param name="serverAuthServices"></param>
+        /// <param name="logger"></param>
         public PostConfigureNegotiateOptions(IEnumerable<IServerIntegratedAuth> serverAuthServices, ILogger<NegotiateHandler> logger)
         {
             _serverAuth = serverAuthServices.LastOrDefault();
@@ -32,7 +37,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <param name="options">The options instance to configure.</param>
         public void PostConfigure(string name, NegotiateOptions options)
         {
-            // If the server supports integrated auth...
+            // If the server supports integrated authentication...
             if (_serverAuth != null)
             {
                 // And it's on...
@@ -43,15 +48,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         Debug.Assert(_serverAuth.AuthenticationScheme != null);
                         options.ForwardDefault = _serverAuth.AuthenticationScheme;
-                        options.DefferToServer = true;
-                        _logger.LogInformation("Deferring to the server's implementation of Windows Authentication.");
+                        options.DeferToServer = true;
+                        _logger.Deferring();
                     }
                 }
                 // Otherwise fail, you shouldn't be using this auth handler on a server that supports integrated auth.
                 else
                 {
                     throw new InvalidOperationException("The Negotiate Authentication handler cannot be used on a server that directly supports Windows Authentication."
-                        + " Enable Windows Authentication for the server and the Negotiate Authentication handler will deffer to it.");
+                        + " Enable Windows Authentication for the server and the Negotiate Authentication handler will defer to it.");
                 }
             }
         }
