@@ -71,13 +71,6 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual System.Threading.Tasks.Task OnConnectedAsync() { throw null; }
         public virtual System.Threading.Tasks.Task OnDisconnectedAsync(System.Exception exception) { throw null; }
     }
-    public partial class HubAuthorizationContext
-    {
-        public HubAuthorizationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, string hubMethodName, object[] hubMethodArguments) { }
-        public Microsoft.AspNetCore.SignalR.HubCallerContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<object> HubMethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string HubMethodName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
     public abstract partial class HubCallerContext
     {
         protected HubCallerContext() { }
@@ -178,6 +171,13 @@ namespace Microsoft.AspNetCore.SignalR
             public bool MoveNext() { throw null; }
             public void Reset() { }
         }
+    }
+    public partial class HubInvocationContext
+    {
+        public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, string hubMethodName, object[] hubMethodArguments) { }
+        public Microsoft.AspNetCore.SignalR.HubCallerContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<object> HubMethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string HubMethodName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public abstract partial class HubLifetimeManager<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
     {

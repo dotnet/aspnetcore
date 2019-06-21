@@ -2205,7 +2205,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task HandleAsync(AuthorizationHandlerContext context)
             {
                 Assert.NotNull(context.Resource);
-                var resource = Assert.IsType<HubAuthorizationContext>(context.Resource);
+                var resource = Assert.IsType<HubInvocationContext>(context.Resource);
                 Assert.Equal(nameof(MethodHub.MultiParamAuthMethod), resource.HubMethodName);
                 Assert.Equal(2, resource.HubMethodArguments?.Count);
                 Assert.Equal("Hello", resource.HubMethodArguments[0]);

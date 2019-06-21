@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubAuthorizationContext
+    public class HubInvocationContext
     {
-        public HubAuthorizationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
+        public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
             HubMethodName = hubMethodName;
             HubMethodArguments = hubMethodArguments;
