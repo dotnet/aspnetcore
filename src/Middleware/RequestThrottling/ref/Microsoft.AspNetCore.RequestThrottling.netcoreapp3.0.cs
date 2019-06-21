@@ -28,11 +28,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public Microsoft.AspNetCore.Http.RequestDelegate OnRejected { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.RequestThrottling.Policies
+namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
 {
-    public partial class TailDropOptions
+    public partial class QueuePolicyOptions
     {
-        public TailDropOptions() { }
+        public QueuePolicyOptions() { }
         public int MaxConcurrentRequests { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int RequestQueueLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class QueuePolicyServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddTailDropQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.Policies.TailDropOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddStackQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.QueuePolicies.QueuePolicyOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddTailDropQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.RequestThrottling.QueuePolicies.QueuePolicyOptions> configure) { throw null; }
     }
 }

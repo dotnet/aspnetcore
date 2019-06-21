@@ -13,7 +13,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
     {
         private const int _numRequests = 20000;
 
-        private RequestThrottlingMiddleware _middleware;
+        private RequestThrottlingMiddleware _middlewareFIFO;
+        private RequestThrottlingMiddleware _middlewareLIFO;
         private RequestDelegate _restOfServer;
 
         [GlobalSetup]
@@ -21,9 +22,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-            _middleware = TestUtils.CreateTestMiddleware_TailDrop(
+            _middlewareFIFO = TestUtils.CreateTestMiddleware_TailDrop(
                 maxConcurrentRequests: 1,
-                requestQueueLimit: 0,
+                requestQueueLimit: 100,
+                next: _restOfServer);
+
+            _middlewareLIFO = TestUtils.CreateTestMiddleware_StackPolicy(
+                maxConcurrentRequests: 1,
+                requestQueueLimit: 100,
                 next: _restOfServer);
         }
 
@@ -40,11 +46,20 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task WithEmptyQueueOverhead()
+        public async Task WithEmptyQueueOverhead_FIFO()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                await _middleware.Invoke(null);
+                await _middlewareFIFO.Invoke(null);
+            }
+        }
+
+        [Benchmark(OperationsPerInvoke = _numRequests)]
+        public async Task WithEmptyQueueOverhead_LIFO()
+        {
+            for (int i = 0; i < _numRequests; i++)
+            {
+                await _middlewareLIFO.Invoke(null);
             }
         }
 

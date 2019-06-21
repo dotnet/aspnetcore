@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Policies
+namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
 {
     /// <summary>
-    /// Specifies options for the <see cref="TailDrop"/>
+    /// Specifies options for the <see cref="IQueuePolicy"/>
     /// </summary>
-    public class TailDropOptions
+    public class QueuePolicyOptions
     {
         /// <summary>
         /// Maximum number of concurrent requests. Any extras will be queued on the server. 

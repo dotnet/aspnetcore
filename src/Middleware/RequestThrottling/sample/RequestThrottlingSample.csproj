@@ -8,6 +8,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.AspNetCore.RequestThrottling" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">

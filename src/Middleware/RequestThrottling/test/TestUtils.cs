@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RequestThrottling.Policies;
+using Microsoft.AspNetCore.RequestThrottling.QueuePolicies;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -37,15 +37,35 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 5000)
+        public static RequestThrottlingMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
-            var options = Options.Create(new TailDropOptions
+            return CreateTestMiddleware(
+                queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
+                onRejected: onRejected,
+                next: next
+                );
+        }
+
+        internal static StackQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        {
+            var options = Options.Create(new QueuePolicyOptions
+            {
+                MaxConcurrentRequests = maxConcurrentRequests,
+                RequestQueueLimit = requestsQueuelimit
+            });
+
+            return new StackQueuePolicy(options);
+        }
+
+        internal static TailDropQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        {
+            var options = Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new TailDrop(options);
+            return new TailDropQueuePolicy(options);
         }
     }
 

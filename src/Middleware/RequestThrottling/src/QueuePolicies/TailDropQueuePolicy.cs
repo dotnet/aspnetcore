@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Policies
+namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
 {
-    internal class TailDrop : IQueuePolicy, IDisposable
+    internal class TailDropQueuePolicy : IQueuePolicy, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Policies
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public TailDrop(IOptions<TailDropOptions> options)
+        public TailDropQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             if (_maxConcurrentRequests <= 0)
