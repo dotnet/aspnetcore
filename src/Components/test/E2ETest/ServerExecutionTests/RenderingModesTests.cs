@@ -24,12 +24,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             _serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
         }
 
-        public override async Task InitializeAsync()
-        {
-            await base.InitializeAsync();
-        }
-
-
         [Fact]
         public void PrerenderedCircuitsShareSameCircuit()
         {

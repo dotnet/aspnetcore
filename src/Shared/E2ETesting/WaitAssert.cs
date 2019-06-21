@@ -81,5 +81,14 @@ namespace Microsoft.AspNetCore.E2ETesting
                 }
             }
         }
+
+        public static Cookie HasCookie(this IWebDriver driver, Predicate<Cookie> selector) =>
+            Assert.Single(driver.Manage().Cookies.AllCookies, selector);
+
+        public static void DoesNotHaveCookie(this IWebDriver driver, string name) =>
+            driver.DoesNotHaveCookie(c => c.Name.Equals(name));
+
+        public static void DoesNotHaveCookie(this IWebDriver driver, Predicate<Cookie> selector) =>
+            Assert.All(driver.Manage().Cookies.AllCookies, c => Assert.False(selector(c)));
     }
 }

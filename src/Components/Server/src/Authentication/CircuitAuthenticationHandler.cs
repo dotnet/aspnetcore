@@ -97,8 +97,7 @@ namespace Microsoft.AspNetCore.Components.Server
         // all sessions (and whatever affinity cookie was set) will go away.
         // Circuits for which there isn't an already created circuit will contain an additional KeepAlive cookie
         // that will be used as a filter to avoid deleting the circuit id cookie. The KeepAlive cookie for a given
-        // circuit will go away automatically. We expect this cookie to rarely be used, as we think the most common
-        // scenario will include prerendering one or more components.
+        // circuit will go away automatically.
         private void CleanupStaleCookies(HttpContext context)
         {
             var cookieCollection = context.Request.Cookies;
@@ -133,12 +132,13 @@ namespace Microsoft.AspNetCore.Components.Server
 
             var options = CreateCookieOptions(cookieName);
             Context.Response.Cookies.Append(cookieName, cookieToken, options);
-            if (!CircuitRegistry.ContainsCircuit(id))
-            {
-                var keepAliveCookieName = GetKeepAliveCookieName(cookieName);
-                var keepAliveOptions = CreateCookieOptions(keepAliveCookieName, TimeSpan.FromMinutes(5));
-                Context.Response.Cookies.Append(keepAliveCookieName, "", keepAliveOptions);
-            }
+
+            // We create a temporary keep alive cookie to preserve the circuit cookie while this companion
+            // cookie is present. This is due to the fact that we only register the circuit as disconnected
+            // after we know for sure the response completed without navigating away (for example redirecting).
+            var keepAliveCookieName = GetKeepAliveCookieName(cookieName);
+            var keepAliveOptions = CreateCookieOptions(keepAliveCookieName, TimeSpan.FromMinutes(5));
+            Context.Response.Cookies.Append(keepAliveCookieName, "", keepAliveOptions);
 
             return Task.CompletedTask;
         }

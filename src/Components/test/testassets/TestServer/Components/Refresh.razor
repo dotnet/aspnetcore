@@ -1,0 +1,18 @@
+@namespace TestServer
+@inject ScopeIdentifierService ScopeIdentifier
+<p><span id="connection-status">@ConnectionStatus</span>: <span id="connection-identifier">@ScopeIdentifier.Id</span></p>
+
+@code{
+    public string ConnectionStatus { get; set; } = "Disconnected";
+
+    private bool alreadyRan = false;
+    protected override void OnAfterRender()
+    {
+        if (!alreadyRan)
+        {
+            alreadyRan = true;
+            ConnectionStatus = "Connected";
+            StateHasChanged();
+        }
+    }
+}

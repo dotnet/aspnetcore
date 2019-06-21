@@ -34,7 +34,7 @@ namespace TestServer
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
-            services.AddSingleton<ScopeIdentifierService>();
+            services.AddScoped<ScopeIdentifierService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,6 +76,7 @@ namespace TestServer
                 });
             });
 
+            app.UseStaticFiles();
             app.UseRouting();
 
             app.UseCors();
@@ -85,6 +86,7 @@ namespace TestServer
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
+                endpoints.MapBlazorHub();
             });
 
             // Separately, mount a prerendered server-side Blazor app on /prerendered
@@ -99,6 +101,7 @@ namespace TestServer
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapRazorPages();
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
                 });
