@@ -149,6 +149,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _applicationLifetime = _applicationServices.GetRequiredService<ApplicationLifetime>();
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
+
+            // Fire IHostedService.Start
+            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
+
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
@@ -158,8 +162,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
-            // Fire IHostedService.Start
-            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.Started();
 
@@ -339,7 +341,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             // Fire the IHostedService.Stop
-            if (_hostedServiceExecutor != null && _startedServer)
+            if (_hostedServiceExecutor != null)
             {
                 await _hostedServiceExecutor.StopAsync(cancellationToken).ConfigureAwait(false);
             }
