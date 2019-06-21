@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.</Description>
@@ -17,7 +17,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="System.Data.SqlClient" />
+    <Reference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

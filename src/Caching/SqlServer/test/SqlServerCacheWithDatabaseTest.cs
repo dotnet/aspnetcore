@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Internal;
@@ -16,7 +18,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 {
     public class SqlServerCacheWithDatabaseTest
     {
-        private const string SkipReason = "This requires SQL Server database to be setup";
+        private const string SkipReason = "This requires SQL Server database to be set up";
 
         private const string ConnectionStringKey = "ConnectionString";
         private const string SchemaNameKey = "SchemaName";
@@ -33,7 +35,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             var memoryConfigurationData = new Dictionary<string, string>
             {
-                { ConnectionStringKey, "Server=localhost;Database=CacheTestDb;Trusted_Connection=True;" },
+                { ConnectionStringKey, @"Server=(localdb)\MSSQLLocalDB;Database=CacheTestDb;Trusted_Connection=True;" },
                 { SchemaNameKey, "dbo" },
                 { TableNameKey, "CacheTest" },
             };

@@ -7,6 +7,6 @@
     <Compile Include="Microsoft.Extensions.Caching.SqlServer.netstandard2.0.cs" />
     <Reference Include="Microsoft.Extensions.Caching.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Options"  />
-    <Reference Include="System.Data.SqlClient"  />
+    <Reference Include="Microsoft.Data.SqlClient"  />
   </ItemGroup>
 </Project>
