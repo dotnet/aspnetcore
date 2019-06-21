@@ -29,6 +29,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.Features.Add(new EventHandlerTagHelperDescriptorProvider());
                 builder.Features.Add(new RefTagHelperDescriptorProvider());
                 builder.Features.Add(new KeyTagHelperDescriptorProvider());
+                builder.Features.Add(new SplatTagHelperDescriptorProvider());
 
                 builder.Features.Add(new DefaultTypeNameFeature());
             }

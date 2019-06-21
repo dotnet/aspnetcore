@@ -130,19 +130,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.WriteLine();
 
             var index = 0;
-            foreach (var attribute in node.Component.Attributes)
+
+            // Preserve order of attributes and splat.
+            foreach (var child in node.Component.Children)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
-                context.CodeWriter.Write(parameters[index].seqName);
-                context.CodeWriter.Write(", ");
+                if (child is ComponentAttributeIntermediateNode attribute)
+                {
+                    context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
+                    context.CodeWriter.Write(parameters[index].seqName);
+                    context.CodeWriter.Write(", ");
 
-                context.CodeWriter.Write($"\"{attribute.AttributeName}\"");
-                context.CodeWriter.Write(", ");
+                    context.CodeWriter.Write($"\"{attribute.AttributeName}\"");
+                    context.CodeWriter.Write(", ");
 
-                context.CodeWriter.Write(parameters[index].parameterName);
-                context.CodeWriter.WriteEndMethodInvocation();
+                    context.CodeWriter.Write(parameters[index].parameterName);
+                    context.CodeWriter.WriteEndMethodInvocation();
+                    index++;
+                }
+                else if (child is SplatIntermediateNode)
+                {
+                    context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddMultipleAttributes);
+                    context.CodeWriter.Write(parameters[index].seqName);
+                    context.CodeWriter.Write(", ");
 
-                index++;
+                    context.CodeWriter.Write(parameters[index].parameterName);
+                    context.CodeWriter.WriteEndMethodInvocation();
+                    index++;
+                }
             }
 
             foreach (var childContent in node.Component.ChildContents)
@@ -189,14 +203,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             List<(string seqName, string typeName, string parameterName)> GetParameterDeclarations()
             {
                 var p = new List<(string seqName, string typeName, string parameterName)>();
-                foreach (var attribute in node.Component.Attributes)
+
+                // Preserve order between attributes and splats
+                foreach (var child in node.Component.Children)
                 {
-                    var typeName = attribute.TypeName;
-                    if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
+                    if (child is ComponentAttributeIntermediateNode attribute)
                     {
-                        typeName = "global::" + typeName;
+                        var typeName = attribute.TypeName;
+                        if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
+                        {
+                            typeName = "global::" + typeName;
+                        }
+                        p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
                     }
-                    p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
+                    else if (child is SplatIntermediateNode splat)
+                    {
+                        var typeName = ComponentsApi.AddMultipleAttributesTypeFullName;
+                        p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
+                    }
                 }
 
                 foreach (var childContent in node.Component.ChildContents)

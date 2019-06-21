@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             public TagHelperDirectiveVisitor(IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
                 // We don't want to consider components in a view document.
-                _tagHelpers = tagHelpers.Where(t => !ComponentMetadata.IsComponentTagHelperKind(t.Kind)).ToList();
+                _tagHelpers = tagHelpers.Where(t => !t.IsAnyComponentDocumentTagHelper()).ToList();
             }
 
             public override string TagHelperPrefix => _tagHelperPrefix;
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _filePath = filePath;
 
                 // We don't want to consider non-component tag helpers in a component document.
-                _tagHelpers = tagHelpers.Where(t => ComponentMetadata.IsComponentTagHelperKind(t.Kind) && !IsTagHelperFromMangledClass(t)).ToList();
+                _tagHelpers = tagHelpers.Where(t => t.IsAnyComponentDocumentTagHelper() && !IsTagHelperFromMangledClass(t)).ToList();
 
                 for (var i = 0; i < _tagHelpers.Count; i++)
                 {

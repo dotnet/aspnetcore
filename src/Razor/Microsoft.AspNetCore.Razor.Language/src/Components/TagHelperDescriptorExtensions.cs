@@ -9,6 +9,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal static class TagHelperDescriptorExtensions
     {
+        public static bool IsAnyComponentDocumentTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return tagHelper.IsComponentTagHelper() || tagHelper.Metadata.ContainsKey(ComponentMetadata.SpecialKindKey);
+        }
+
         public static bool IsBindTagHelper(this TagHelperDescriptor tagHelper)
         {
             if (tagHelper == null)
@@ -151,6 +161,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return
                 tagHelper.Metadata.TryGetValue(ComponentMetadata.SpecialKindKey, out var kind) &&
                 string.Equals(ComponentMetadata.Key.TagHelperKind, kind);
+        }
+
+        public static bool IsSplatTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                tagHelper.Metadata.TryGetValue(ComponentMetadata.SpecialKindKey, out var kind) &&
+                string.Equals(ComponentMetadata.Splat.TagHelperKind, kind);
         }
 
         public static bool IsRefTagHelper(this TagHelperDescriptor tagHelper)

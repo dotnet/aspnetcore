@@ -17,16 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly string ImportsFileName = "_Imports.razor";
 
-        public static bool IsComponentTagHelperKind(string tagHelperKind)
-        {
-            return tagHelperKind == Component.TagHelperKind ||
-                tagHelperKind == ChildContent.TagHelperKind ||
-                tagHelperKind == EventHandler.TagHelperKind ||
-                tagHelperKind == Bind.TagHelperKind ||
-                tagHelperKind == Key.TagHelperKind ||
-                tagHelperKind == Ref.TagHelperKind;
-        }
-
         public static string MangleClassName(string className)
         {
             if (string.IsNullOrEmpty(className))
@@ -127,6 +117,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static class Key
         {
             public readonly static string TagHelperKind = "Components.Key";
+
+            public static readonly string RuntimeName = "Components.None";
+        }
+
+        public static class Splat
+        {
+            public readonly static string TagHelperKind = "Components.Splat";
 
             public static readonly string RuntimeName = "Components.None";
         }

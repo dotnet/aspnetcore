@@ -195,6 +195,9 @@
   <data name="RefTagHelper_Documentation" xml:space="preserve">
     <value>Populates the specified field or property with a reference to the element or component.</value>
   </data>
+  <data name="SplatTagHelper_Documentation" xml:space="preserve">
+    <value>Merges a collection of attributes into the current element or component.</value>
+  </data>
   <data name="TypeParamDirective_Description" xml:space="preserve">
     <value>Declares a generic type parameter for the generated component class.</value>
   </data>

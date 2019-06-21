@@ -231,6 +231,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentEventHandlerLoweringPass());
             builder.Features.Add(new ComponentKeyLoweringPass());
             builder.Features.Add(new ComponentReferenceCaptureLoweringPass());
+            builder.Features.Add(new ComponentSplatLoweringPass());
             builder.Features.Add(new ComponentBindLoweringPass());
             builder.Features.Add(new ComponentTemplateDiagnosticPass());
             builder.Features.Add(new ComponentGenericTypePass());

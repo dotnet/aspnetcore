@@ -183,5 +183,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             VisitDefault(node);
         }
+
+        public virtual void VisitSplat(SplatIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
     }
 }

@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<ComponentPageDirectivePass>(feature),
                 feature => Assert.IsType<ComponentReferenceCaptureLoweringPass>(feature),
                 feature => Assert.IsType<ComponentScriptTagPass>(feature),
+                feature => Assert.IsType<ComponentSplatLoweringPass>(feature),
                 feature => Assert.IsType<ComponentTemplateDiagnosticPass>(feature),
                 feature => Assert.IsType<ComponentWhitespacePass>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),

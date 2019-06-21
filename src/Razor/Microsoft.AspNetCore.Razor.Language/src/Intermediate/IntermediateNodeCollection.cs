@@ -59,6 +59,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             _inner.Add(item);
         }
 
+        public void AddRange(IEnumerable<IntermediateNode> items)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            foreach (var item in items)
+            {
+                _inner.Add(item);
+            }
+        }
+
+        public void AddRange(IntermediateNodeCollection items)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            var count = items.Count;
+            for (var i = 0; i < count; i++)
+            {
+                _inner.Add(items[i]);
+            }
+        }
+
         public void Clear()
         {
             _inner.Clear();

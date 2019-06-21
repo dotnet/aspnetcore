@@ -84,6 +84,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
         }
 
+        public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object>> attributes)
+        {
+        }
+
         public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent
         {
         }

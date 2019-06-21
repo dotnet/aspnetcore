@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             return
                 c as HtmlAttributeIntermediateNode == null &&
+                c as SplatIntermediateNode == null &&
                 c as SetKeyIntermediateNode == null &&
                 c as ReferenceCaptureIntermediateNode == null;
         });

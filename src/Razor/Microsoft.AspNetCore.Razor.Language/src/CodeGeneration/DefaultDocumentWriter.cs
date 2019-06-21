@@ -304,6 +304,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.NodeWriter.WriteSetKey(Context, node);
             }
 
+            public override void VisitSplat(SplatIntermediateNode node)
+            {
+                Context.NodeWriter.WriteSplat(Context, node);
+            }
+
             public override void VisitDefault(IntermediateNode node)
             {
                 Context.RenderChildren(node);

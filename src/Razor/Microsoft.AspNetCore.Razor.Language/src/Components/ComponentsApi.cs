@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         public static readonly string AssemblyName = "Microsoft.AspNetCore.Components";
 
+        public static readonly string AddMultipleAttributesTypeFullName = "global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>>";
+
         public static class ComponentBase
         {
             public static readonly string Namespace = "Microsoft.AspNetCore.Components";
@@ -77,6 +79,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string AddContent = nameof(AddContent);
 
             public static readonly string AddAttribute = nameof(AddAttribute);
+
+            public static readonly string AddMultipleAttributes = nameof(AddMultipleAttributes);
 
             public static readonly string AddElementReferenceCapture = nameof(AddElementReferenceCapture);
 

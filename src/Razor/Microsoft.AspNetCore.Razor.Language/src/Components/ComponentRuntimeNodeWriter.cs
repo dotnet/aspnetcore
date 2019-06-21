@@ -184,10 +184,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 .WriteStringLiteral(node.TagName)
                 .WriteEndMethodInvocation();
 
-            // Render Attributes before creating the scope.
-            foreach (var attribute in node.Attributes)
+            // Render attributes and splats (in order) before creating the scope.
+            foreach (var child in node.Children)
             {
-                context.RenderNode(attribute);
+                if (child is HtmlAttributeIntermediateNode attribute)
+                {
+                    context.RenderNode(attribute);
+                }
+                else if (child is SplatIntermediateNode splat)
+                {
+                    context.RenderNode(splat);
+                }
             }
 
             foreach (var setKey in node.SetKeys)
@@ -348,9 +355,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // We can skip type arguments during runtime codegen, they are handled in the
                 // type/parameter declarations.
 
-                foreach (var attribute in node.Attributes)
+                // Preserve order of attributes and splats
+                foreach (var child in node.Children)
                 {
-                    context.RenderNode(attribute);
+                    if (child is ComponentAttributeIntermediateNode attribute)
+                    {
+                        context.RenderNode(attribute);
+                    }
+                    else if (child is SplatIntermediateNode splat)
+                    {
+                        context.RenderNode(splat);
+                    }
                 }
 
                 foreach (var childContent in node.ChildContents)
@@ -382,7 +397,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // to that method. We pass in all of the attribute values + the sequence numbers.
                 //
                 // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, ..., 2, ..., 3, ...);
-                var attributes = node.Attributes.ToList();
+
+                // Preserve order of attributes and splats
+                var attributes = node.Children.Where(n =>
+                {
+                    return n is ComponentAttributeIntermediateNode || n is SplatIntermediateNode;
+                }).ToList();
                 var childContents = node.ChildContents.ToList();
                 var captures = node.Captures.ToList();
                 var setKeys = node.SetKeys.ToList();
@@ -407,7 +427,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // Don't type check generics, since we can't actually write the type name.
                     // The type checking with happen anyway since we defined a method and we're generating
                     // a call to it.
-                    WriteComponentAttributeInnards(context, attributes[i], canTypeCheck: false);
+                    if (attributes[i] is ComponentAttributeIntermediateNode attribute)
+                    {
+                        WriteComponentAttributeInnards(context, attribute, canTypeCheck: false);
+                    }
+                    else if (attributes[i] is SplatIntermediateNode splat)
+                    {
+                        WriteSplatInnards(context, splat, canTypeCheck: false);
+                    }
 
                     remaining--;
                     if (remaining > 0)
@@ -429,7 +456,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         context.CodeWriter.Write(", ");
                     }
                 }
-                
+
                 for (var i = 0; i < setKeys.Count; i++)
                 {
                     context.CodeWriter.Write((_sourceSequence++).ToString());
@@ -597,12 +624,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeIntermediateNode attribute)
-            {
-                // We generally expect all children to be CSharp, this is here just in case.
-                return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
-            }
-
             IReadOnlyList<IntermediateToken> GetHtmlTokens(HtmlContentIntermediateNode html)
             {
                 // We generally expect all children to be HTML, this is here just in case.
@@ -613,6 +634,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 return node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped();
             }
+        }
+
+        private IReadOnlyList<IntermediateToken> GetCSharpTokens(IntermediateNode node)
+        {
+            // We generally expect all children to be CSharp, this is here just in case.
+            return node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
         }
 
         public override void WriteComponentChildContent(CodeRenderingContext context, ComponentChildContentIntermediateNode node)
@@ -711,6 +738,54 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             });
         }
 
+        public override void WriteSplat(CodeRenderingContext context, SplatIntermediateNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // Looks like:
+            //
+            // builder.AddMultipleAttributes(2, ...);
+            context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddMultipleAttributes}");
+            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.WriteParameterSeparator();
+
+            WriteSplatInnards(context, node, canTypeCheck: true);
+
+            context.CodeWriter.WriteEndMethodInvocation();
+        }
+
+        private void WriteSplatInnards(CodeRenderingContext context, SplatIntermediateNode node, bool canTypeCheck)
+        {
+            var tokens = GetCSharpTokens(node);
+
+            if (canTypeCheck)
+            {
+                context.CodeWriter.Write(ComponentsApi.RuntimeHelpers.TypeCheck);
+                context.CodeWriter.Write("<");
+                context.CodeWriter.Write(ComponentsApi.AddMultipleAttributesTypeFullName);
+                context.CodeWriter.Write(">");
+                context.CodeWriter.Write("(");
+            }
+
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                WriteCSharpToken(context, tokens[i]);
+            }
+
+            if (canTypeCheck)
+            {
+                context.CodeWriter.Write(")");
+            }
+        }
+
         public override void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node)
         {
             // Looks like:
@@ -759,7 +834,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 });
             }
         }
-        
+
         private void WriteAttribute(CodeRenderingContext context, string key, IList<IntermediateToken> value)
         {
             BeginWriteAttribute(context.CodeWriter, key);

@@ -69,6 +69,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             throw new NotSupportedException("This writer does not support components.");
         }
 
+        public virtual void WriteSplat(CodeRenderingContext context, SplatIntermediateNode node)
+        {
+            throw new NotSupportedException("This writer does not support components.");
+        }
+
         public abstract void BeginWriterScope(CodeRenderingContext context, string writer);
 
         public abstract void EndWriterScope(CodeRenderingContext context);
