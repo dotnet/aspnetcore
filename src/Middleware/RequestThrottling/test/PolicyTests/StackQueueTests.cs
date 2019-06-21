@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.RequestThrottling.Policies;
+using Microsoft.AspNetCore.RequestThrottling.QueuePolicies;
 using Microsoft.Extensions.Options;
 using Xunit;
 

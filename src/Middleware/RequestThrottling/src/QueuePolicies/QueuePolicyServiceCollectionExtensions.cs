@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.RequestThrottling;
-using Microsoft.AspNetCore.RequestThrottling.Policies;
+using Microsoft.AspNetCore.RequestThrottling.QueuePolicies;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
