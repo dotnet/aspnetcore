@@ -12,9 +12,11 @@ using System.Text;
 using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -2198,6 +2200,69 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        private class TestAuthHandler : IAuthorizationHandler
+        {
+            public Task HandleAsync(AuthorizationHandlerContext context)
+            {
+                Assert.NotNull(context.Resource);
+                var resource = Assert.IsType<HubInvocationContext>(context.Resource);
+                Assert.Equal(nameof(MethodHub.MultiParamAuthMethod), resource.HubMethodName);
+                Assert.Equal(2, resource.HubMethodArguments?.Count);
+                Assert.Equal("Hello", resource.HubMethodArguments[0]);
+                Assert.Equal("World!", resource.HubMethodArguments[1]);
+                Assert.NotNull(resource.Context);
+                Assert.Equal(context.User, resource.Context.User);
+                Assert.NotNull(resource.Context.GetHttpContext());
+
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public async Task HubMethodWithAuthorizationProvidesResourceToAuthHandlers()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddAuthorization(options =>
+                    {
+                        options.AddPolicy("test", policy =>
+                        {
+                            policy.RequireClaim(ClaimTypes.NameIdentifier);
+                            policy.AddAuthenticationSchemes("Default");
+                        });
+                    });
+
+                    services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
+                }, LoggerFactory);
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+
+                    // Setup a HttpContext to make sure it flows to the AuthHandler correctly
+                    var httpConnectionContext = new HttpContextFeatureImpl();
+                    httpConnectionContext.HttpContext = new DefaultHttpContext();
+                    client.Connection.Features.Set<IHttpContextFeature>(httpConnectionContext);
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var message = await client.InvokeAsync(nameof(MethodHub.MultiParamAuthMethod), "Hello", "World!").OrTimeout();
+
+                    Assert.Null(message.Error);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
         [Fact]
         public async Task HubOptionsCanUseCustomJsonSerializerSettings()
         {
@@ -3631,6 +3696,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
             public int Bar { get; }
             public string Foo { get; }
+        }
+
+        private class HttpContextFeatureImpl : IHttpContextFeature
+        {
+            public HttpContext HttpContext { get; set; }
         }
     }
 }

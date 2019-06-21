@@ -143,6 +143,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
         }
 
+        [Authorize("test")]
+        public void MultiParamAuthMethod(string s1, string s2)
+        {
+        }
+
         public Task SendToAllExcept(string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.AllExcept(excludedConnectionIds).SendAsync("Send", message);
