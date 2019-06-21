@@ -7,9 +7,4 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [24] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (17:0,17 [3] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken -  - CSharp - "foo"
-                            IntermediateToken -  - CSharp - )
+                MarkupBlock -  - <input onclick="foo">

@@ -1,11 +1,11 @@
-Source Location: (69:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     Task OnClick() 
     {
         return Task.CompletedTask;
     }
 |
-Generated Location: (1160:36,7 [73] )
+Generated Location: (1159:36,7 [73] )
 |
     Task OnClick() 
     {

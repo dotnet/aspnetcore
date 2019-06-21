@@ -1,5 +1,5 @@
-Source Location: (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (17:0,17 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |() => { }|
-Generated Location: (999:25,19 [9] )
+Generated Location: (997:25,17 [9] )
 |() => { }|
 

@@ -16,16 +16,16 @@ namespace Test
             builder.OpenElement(0, "div");
             builder.AddMarkupContent(1, "\r\n  ");
             builder.OpenElement(2, "a");
-            builder.AddAttribute(3, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, "test()"));
-            builder.AddAttribute(4, "onclick", 
+            builder.AddAttribute(3, "onclick", "test()");
+            builder.AddAttribute(4, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                  () => {}
+                                () => {}
 
 #line default
 #line hidden
 #nullable disable
-            );
+            ));
             builder.AddContent(5, "Learn the ten cool tricks your compiler author will hate!");
             builder.CloseElement();
             builder.AddMarkupContent(6, "\r\n");

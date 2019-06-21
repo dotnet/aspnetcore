@@ -103,15 +103,16 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 var entry = data[i];
                 var attributeName = "@" + entry.Attribute;
+                var eventArgType = entry.EventArgsType.ToDisplayString();
 
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     attributeName,
-                    entry.EventArgsType.ToDisplayString());
+                    eventArgType);
 
                 builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind);
-                builder.Metadata.Add(ComponentMetadata.EventHandler.EventArgsType, entry.EventArgsType.ToDisplayString());
+                builder.Metadata.Add(ComponentMetadata.EventHandler.EventArgsType, eventArgType);
                 builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
                 builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.EventHandler.RuntimeName;
 
@@ -136,12 +137,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     a.Documentation = string.Format(
                         ComponentResources.EventHandlerTagHelper_Documentation,
                         attributeName,
-                        entry.EventArgsType.ToDisplayString());
+                        eventArgType);
 
                     a.Name = attributeName;
 
-                    // Use a string here so that we get HTML context by default.
-                    a.TypeName = typeof(string).FullName;
+                    // We want event handler directive attributes to default to C# context.
+                    a.TypeName = $"Microsoft.AspNetCore.Components.EventCallback<{eventArgType}>";
 
                     // But make this weakly typed (don't type check) - delegates have their own type-checking
                     // logic that we don't want to interfere with.

@@ -7,18 +7,18 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [74] x:\dir\subdir\Test\TestComponent.cshtml) - p
-                    HtmlAttribute - (17:0,17 [17] x:\dir\subdir\Test\TestComponent.cshtml) - onmouseover=" - "
+                MarkupElement - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    HtmlAttribute - (17:0,17 [16] x:\dir\subdir\Test\TestComponent.cshtml) - onmouseover=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (18:0,18 [16] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnComponentHover
+                            IntermediateToken - (17:0,17 [16] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnComponentHover
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute -  - style=" - "
-                        HtmlAttributeValue - (43:0,43 [11] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (43:0,43 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - background:
-                        CSharpExpressionAttributeValue - (54:0,54 [15] x:\dir\subdir\Test\TestComponent.cshtml) -  
-                            IntermediateToken - (56:0,56 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentBgColor
-                        HtmlAttributeValue - (69:0,69 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (69:0,69 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
-            CSharpCode - (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n
+                        HtmlAttributeValue - (42:0,42 [11] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (42:0,42 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - background:
+                        CSharpExpressionAttributeValue - (53:0,53 [15] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                            IntermediateToken - (55:0,55 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentBgColor
+                        HtmlAttributeValue - (68:0,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (68:0,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
+            CSharpCode - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n

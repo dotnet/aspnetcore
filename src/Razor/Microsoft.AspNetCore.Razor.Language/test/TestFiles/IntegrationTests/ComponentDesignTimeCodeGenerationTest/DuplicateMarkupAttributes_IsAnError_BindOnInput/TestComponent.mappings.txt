@@ -1,18 +1,18 @@
-Source Location: (88:1,81 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (86:1,79 [8] x:\dir\subdir\Test\TestComponent.cshtml)
 |() => {}|
-Generated Location: (1062:25,81 [8] )
+Generated Location: (1060:25,79 [8] )
 |() => {}|
 
 Source Location: (42:1,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
 |text|
-Generated Location: (1316:34,35 [4] )
+Generated Location: (1314:34,35 [4] )
 |text|
 
-Source Location: (129:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (126:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private string text = "hi";
 |
-Generated Location: (1645:45,12 [35] )
+Generated Location: (1643:45,12 [35] )
 |
     private string text = "hi";
 |

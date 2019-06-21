@@ -23,7 +23,7 @@ namespace Test
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  OnComponentHover
+                 OnComponentHover
 
 #line default
 #line hidden
@@ -32,7 +32,7 @@ namespace Test
             __o = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                        ParentBgColor
+                                                       ParentBgColor
 
 #line default
 #line hidden

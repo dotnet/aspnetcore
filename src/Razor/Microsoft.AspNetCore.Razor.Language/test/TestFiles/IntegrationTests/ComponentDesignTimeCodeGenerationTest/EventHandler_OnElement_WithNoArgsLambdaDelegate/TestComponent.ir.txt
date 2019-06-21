@@ -14,9 +14,9 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (17:0,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                MarkupElement - (0:0,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (17:0,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => { }
+                            IntermediateToken - (17:0,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => { }
                             IntermediateToken -  - CSharp - )

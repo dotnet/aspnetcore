@@ -2200,7 +2200,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<DynamicElement @onclick=""@OnClick"" />
+<DynamicElement @onclick=""OnClick"" />
 
 @code {
     private Action<UIMouseEventArgs> OnClick { get; set; }
@@ -2254,7 +2254,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""foo"" />");
+<input onclick=""foo"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2269,7 +2269,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(() => { })"" />");
+<input @onclick=""() => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2284,7 +2284,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(x => { })"" />");
+<input @onclick=""x => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2299,7 +2299,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick() {
     }
@@ -2318,7 +2318,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -2337,7 +2337,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIEventArgs e) {
     }
@@ -2357,7 +2357,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     Task OnClick() 
     {
@@ -2379,7 +2379,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     Task OnClick(UIMouseEventArgs e) 
     {
@@ -2434,7 +2434,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@(x => { })"" />");
+<input @onclick=""x => { }"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2449,7 +2449,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input @onclick=""@OnClick"" />
+<input @onclick=""OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -3907,7 +3907,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <a @onclick=""test()"" onclick=""@(() => {})"">Learn the ten cool tricks your compiler author will hate!</a>
+  <a onclick=""test()"" @onclick=""() => {}"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
             // Assert
@@ -3971,7 +3971,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""@(() => {})""></input>
+  <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""() => {}""></input>
 </div>
 @functions {
     private string text = ""hi"";
@@ -4343,7 +4343,7 @@ Welcome to your new app.
 
             // Act
             var generated = CompileToCSharp(@"
-<p @onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+<p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
@@ -4364,7 +4364,7 @@ Welcome to your new app.
         {
             // Act
             var generated = CompileToCSharp(@"
-<input @onfocus='alert(""Test"");' />
+<input onfocus='alert(""Test"");' />
 ");
 
             // Assert

@@ -17,7 +17,7 @@ namespace Test
             builder.AddAttribute(1, "onmouseover", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  OnComponentHover
+                 OnComponentHover
 
 #line default
 #line hidden
@@ -26,7 +26,7 @@ namespace Test
             builder.AddAttribute(2, "style", "background:" + " " + (
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                        ParentBgColor
+                                                       ParentBgColor
 
 #line default
 #line hidden

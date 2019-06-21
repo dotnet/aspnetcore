@@ -7,11 +7,11 @@ Document -
         UsingDirective - (1:0,1 [30] x:\dir\subdir\Test\TestComponent.cshtml) - System.Threading.Tasks
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (31:1,0 [29] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (48:1,17 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                MarkupElement - (31:1,0 [28] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (49:1,18 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
+                            IntermediateToken - (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
                             IntermediateToken -  - CSharp - )
-            CSharpCode - (69:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (69:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Task OnClick() \n    {\n        return Task.CompletedTask;\n    }\n
+            CSharpCode - (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Task OnClick() \n    {\n        return Task.CompletedTask;\n    }\n

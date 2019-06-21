@@ -13,9 +13,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "onfocus", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIFocusEventArgs>(this, "alert(\"Test\");"));
-            builder.CloseElement();
+            builder.AddMarkupContent(0, "<input onfocus=\"alert(\"Test\");\">");
         }
         #pragma warning restore 1998
     }

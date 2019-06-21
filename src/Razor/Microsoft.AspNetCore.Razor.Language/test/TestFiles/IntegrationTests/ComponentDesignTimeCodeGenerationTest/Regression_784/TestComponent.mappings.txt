@@ -1,14 +1,14 @@
-Source Location: (18:0,18 [16] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (17:0,17 [16] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnComponentHover|
-Generated Location: (998:25,18 [16] )
+Generated Location: (997:25,17 [16] )
 |OnComponentHover|
 
-Source Location: (56:0,56 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (55:0,55 [13] x:\dir\subdir\Test\TestComponent.cshtml)
 |ParentBgColor|
-Generated Location: (1228:34,56 [13] )
+Generated Location: (1226:34,55 [13] )
 |ParentBgColor|
 
-Source Location: (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentBgColor { get; set; } = "#FFFFFF";
 
@@ -16,7 +16,7 @@ Source Location: (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
     {
     }
 |
-Generated Location: (1434:44,7 [132] )
+Generated Location: (1432:44,7 [132] )
 |
     public string ParentBgColor { get; set; } = "#FFFFFF";
 

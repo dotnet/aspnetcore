@@ -14,11 +14,9 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (17:0,17 [14] x:\dir\subdir\Test\TestComponent.cshtml) - onfocus=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIFocusEventArgs>(this, 
-                            IntermediateToken -  - CSharp - "alert(\"Test\");"
-                            IntermediateToken -  - CSharp - )
-                HtmlContent - (35:0,35 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (35:0,35 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (0:0,0 [34] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (6:0,6 [25] x:\dir\subdir\Test\TestComponent.cshtml) -  onfocus=' - '
+                        HtmlAttributeValue - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (16:0,16 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - alert("Test");
+                HtmlContent - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (34:0,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

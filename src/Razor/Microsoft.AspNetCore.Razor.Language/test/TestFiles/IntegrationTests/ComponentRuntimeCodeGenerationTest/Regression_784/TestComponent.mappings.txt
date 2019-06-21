@@ -1,4 +1,4 @@
-Source Location: (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentBgColor { get; set; } = "#FFFFFF";
 
@@ -6,7 +6,7 @@ Source Location: (83:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
     {
     }
 |
-Generated Location: (1337:39,7 [132] )
+Generated Location: (1335:39,7 [132] )
 |
     public string ParentBgColor { get; set; } = "#FFFFFF";
 

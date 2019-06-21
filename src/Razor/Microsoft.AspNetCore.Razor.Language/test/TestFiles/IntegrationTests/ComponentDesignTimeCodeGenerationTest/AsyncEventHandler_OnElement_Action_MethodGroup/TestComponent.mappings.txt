@@ -3,19 +3,19 @@ Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (285:11,0 [28] )
 |using System.Threading.Tasks|
 
-Source Location: (49:1,18 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1114:31,18 [7] )
+Generated Location: (1113:31,17 [7] )
 |OnClick|
 
-Source Location: (69:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     Task OnClick() 
     {
         return Task.CompletedTask;
     }
 |
-Generated Location: (1315:41,7 [73] )
+Generated Location: (1314:41,7 [73] )
 |
     Task OnClick() 
     {

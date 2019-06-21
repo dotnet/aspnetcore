@@ -14,17 +14,17 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [115] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                MarkupElement - (0:0,0 [112] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlContent - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
-                    MarkupElement - (9:1,2 [98] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    MarkupElement - (9:1,2 [95] x:\dir\subdir\Test\TestComponent.cshtml) - input
                         HtmlAttribute -  - type=" - "
                             HtmlAttributeValue - (22:1,15 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                                 IntermediateToken - (22:1,15 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
-                        HtmlAttribute - (86:1,79 [11] x:\dir\subdir\Test\TestComponent.cshtml) - oninput=" - "
+                        HtmlAttribute - (86:1,79 [8] x:\dir\subdir\Test\TestComponent.cshtml) - oninput=" - "
                             CSharpExpressionAttributeValue -  - 
                                 IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIChangeEventArgs>(this, 
-                                IntermediateToken - (88:1,81 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => {}
+                                IntermediateToken - (86:1,79 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => {}
                                 IntermediateToken -  - CSharp - )
                         HtmlAttribute - (41:1,34 [5] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                             CSharpExpressionAttributeValue -  - 
@@ -34,11 +34,11 @@ Document -
                         HtmlAttribute - (41:1,34 [5] x:\dir\subdir\Test\TestComponent.cshtml) - oninput=" - "
                             CSharpExpressionAttributeValue -  - 
                                 IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text)
-                    HtmlContent - (107:1,100 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (107:1,100 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (115:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (115:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (165:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (165:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (129:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (129:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private string text = "hi";\n
+                    HtmlContent - (104:1,97 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (104:1,97 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (112:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (112:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (162:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (162:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (126:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (126:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private string text = "hi";\n

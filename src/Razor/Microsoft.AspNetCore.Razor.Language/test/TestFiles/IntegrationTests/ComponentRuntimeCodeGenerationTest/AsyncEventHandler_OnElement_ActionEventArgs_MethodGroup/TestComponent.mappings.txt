@@ -1,11 +1,11 @@
-Source Location: (69:2,7 [91] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (68:2,7 [91] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     Task OnClick(UIMouseEventArgs e) 
     {
         return Task.CompletedTask;
     }
 |
-Generated Location: (1160:36,7 [91] )
+Generated Location: (1159:36,7 [91] )
 |
     Task OnClick(UIMouseEventArgs e) 
     {

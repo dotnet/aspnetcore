@@ -1,9 +1,9 @@
-Source Location: (38:1,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (37:1,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void OnClick(UIMouseEventArgs e) {
     }
 |
-Generated Location: (1044:30,7 [49] )
+Generated Location: (1043:30,7 [49] )
 |
     void OnClick(UIMouseEventArgs e) {
     }

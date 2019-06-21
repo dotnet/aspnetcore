@@ -13,9 +13,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, "foo"));
-            builder.CloseElement();
+            builder.AddMarkupContent(0, "<input onclick=\"foo\">");
         }
         #pragma warning restore 1998
     }
