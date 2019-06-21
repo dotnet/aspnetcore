@@ -339,11 +339,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.Protocols = httpProtocols;
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                listenOptions.UseHttps(options =>
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.AllowAnyClientCertificate();
                 });
             }
 
@@ -388,11 +388,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                listenOptions.UseHttps(options =>
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.AllowAnyClientCertificate();
                 });
             }
 
@@ -499,15 +499,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task AllowAnyCertOverridesCertificateValidation()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(options =>
+                {
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.ClientCertificateValidation = (certificate, x509Chain, sslPolicyErrors) => false;
+                    options.AllowAnyClientCertificate();
+                });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1 }, ConfigureListenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    var stream = OpenSslStream(connection.Stream);
+                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await AssertConnectionResult(stream, true);
+                }
+            }
+        }
+
+        [Fact]
         public async Task CertificatePassedToHttpContextIsNotDisposed()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                listenOptions.UseHttps(options =>
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    options.ServerCertificate = _x509Certificate2;
+                    options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    options.AllowAnyClientCertificate();
                 });
             }
 
