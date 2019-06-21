@@ -154,9 +154,11 @@ namespace RazorComponentsWeb_CSharp
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
-            app.UseAuthorization();
 
 #endif
+            app.UseCors();
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
 #if (OrganizationalAuth || IndividualAuth)
