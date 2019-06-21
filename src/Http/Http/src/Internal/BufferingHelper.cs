@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public static class BufferingHelper
+    internal static class BufferingHelper
     {
         internal const int DefaultBufferThreshold = 1024 * 30;
 

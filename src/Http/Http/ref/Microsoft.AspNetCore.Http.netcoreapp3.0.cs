@@ -31,11 +31,6 @@ namespace Microsoft.AspNetCore.Http
         public static Microsoft.AspNetCore.Http.BindingAddress Parse(string address) { throw null; }
         public override string ToString() { throw null; }
     }
-    public static partial class BufferingHelper
-    {
-        public static Microsoft.AspNetCore.Http.HttpRequest EnableRewind(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
-        public static Microsoft.AspNetCore.WebUtilities.MultipartSection EnableRewind(this Microsoft.AspNetCore.WebUtilities.MultipartSection section, System.Action<System.IDisposable> registerForDispose, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
-    }
     public sealed partial class DefaultHttpContext : Microsoft.AspNetCore.Http.HttpContext
     {
         public DefaultHttpContext() { }
