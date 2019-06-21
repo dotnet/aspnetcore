@@ -34,26 +34,33 @@ namespace Microsoft.AspNetCore.RequestThrottling
         }
 
         [NonEvent]
-        public ValueStopwatch RequestEnqueued()
+        public QueueFrame QueueTimer()
         {
             Interlocked.Increment(ref _queueLength);
 
             if (IsEnabled())
             {
-                return ValueStopwatch.StartNew();
+                return new QueueFrame
+                {
+                    _timer = ValueStopwatch.StartNew()
+                };
             }
             return default;
         }
 
-        [NonEvent]
-        public void RequestDequeued(ValueStopwatch timer)
+        internal struct QueueFrame : IDisposable
         {
-            Interlocked.Decrement(ref _queueLength);
+            internal ValueStopwatch _timer;
 
-            if (IsEnabled())
+            public void Dispose()
             {
-                var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
-                _queueDuration.WriteMetric(duration);
+                Interlocked.Decrement(ref Log._queueLength);
+
+                if (Log.IsEnabled())
+                {
+                    var duration = _timer.IsActive ? _timer.GetElapsedTime().TotalMilliseconds : 0.0;
+                    Log._queueDuration.WriteMetric(duration);
+                }
             }
         }
 
@@ -79,6 +86,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         }
 
         // two functions for unit tests, hopefully there's a better pattern
+        // put these in an extensions file in the test folder?
         internal int QueuedRequests => _queueLength;
 
         internal void Reset()

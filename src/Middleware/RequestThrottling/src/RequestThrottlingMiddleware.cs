@@ -51,15 +51,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             if (!waitInQueueTask.IsCompleted)
             {
-                var timer = RequestThrottlingEventSource.Log.RequestEnqueued();
-
-                try
+                using (RequestThrottlingEventSource.Log.QueueTimer())
                 {
                     await waitInQueueTask;
-                }
-                finally
-                {
-                    RequestThrottlingEventSource.Log.RequestDequeued(timer);
                 }
             }
 

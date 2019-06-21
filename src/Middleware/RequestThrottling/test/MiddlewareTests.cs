@@ -87,6 +87,30 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         }
 
         [Fact]
+        public void EventCountersTrackQueuedRequests()
+        {
+            var blocker = new TaskCompletionSource<bool>();
+
+            RequestThrottlingEventSource.Log.Reset();
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue: new TestStrategy(
+                    invoke: async () =>
+                    {
+                        return await blocker.Task;
+                    }));
+
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
+
+            var task1 = middleware.Invoke(new DefaultHttpContext());
+            Assert.False(task1.IsCompleted);
+            Assert.Equal(1, RequestThrottlingEventSource.Log.QueuedRequests);
+
+            blocker.SetResult(true);
+
+            Assert.Equal(0, RequestThrottlingEventSource.Log.QueuedRequests);
+        }
+
+        [Fact]
         public async Task CleanupHappensEvenIfNextErrors()
         {
             var flag = false;
