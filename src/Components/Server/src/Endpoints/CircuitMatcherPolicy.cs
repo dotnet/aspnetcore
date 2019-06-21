@@ -2,91 +2,138 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    // Authentication handler for circuit ids.
-    // We pair each circuit id with a cookie.
-    // We use an authentication handler to enable smooth integration with signalr service, as it preserves limited
-    // information about the connection context (amongs it the Principal), that's why we do it that way.
-    internal class CircuitAuthenticationHandler : SignInAuthenticationHandler<CircuitAuthenticationOptions>
+    internal class CircuitMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        // Stands for Blazor Circuit ID
-        // Claim types are supposed to be kept short.
         internal const string IdClaimType = "bcid";
-        internal const string AuthenticationType = "Circuit";
-        internal const string AuthorizationPolicyName = "Circuit";
         internal const string CookiePrefix = "Circuit.";
 
         private const int PrefixLenght = 4;
-        private const string RequestTokenKey = "RequestToken";
-        private const string CookieTokenKey = "CookieToken";
         private const string QueryStringParameterKey = "CircuitId";
 
-        public CircuitAuthenticationHandler(
-            IOptionsMonitor<CircuitAuthenticationOptions> options,
+        private readonly ConcurrentDictionary<Endpoint, Endpoint> _protectedHubEndpointCache = new ConcurrentDictionary<Endpoint, Endpoint>();
+
+        public CircuitMatcherPolicy(
             CircuitIdFactory circuitIdFactory,
-            CircuitRegistry circuitRegistry,
-            ILoggerFactory logger,
-            UrlEncoder encoder,
-            ISystemClock clock) : base(options, logger, encoder, clock)
+            CircuitRegistry circuitRegistry)
         {
             CircuitIdFactory = circuitIdFactory;
             CircuitRegistry = circuitRegistry;
         }
 
+        public override int Order => short.MaxValue;
+
         public CircuitIdFactory CircuitIdFactory { get; }
         public CircuitRegistry CircuitRegistry { get; }
 
-        // This handler only runs on the negotiate phase of signalr.
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            if (!Context.Request.Query.TryGetValue(QueryStringParameterKey, out var circuitId) || circuitId.Count != 1)
+            foreach (var endpoint in endpoints)
+            {
+                if (IsComponentHubEndpoint(endpoint))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool IsComponentHubEndpoint(Endpoint endpoint) =>
+            endpoint.Metadata.GetMetadata<HubMetadata>()?.HubType == typeof(ComponentHub);
+
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                ref var candidate = ref candidates[i];
+                if (IsComponentHubEndpoint(candidate.Endpoint))
+                {
+                    var newEndpoint = _protectedHubEndpointCache.GetOrAdd(candidate.Endpoint, CreateProtectedEndpoint);
+                    candidates.ReplaceEndpoint(i, newEndpoint, candidate.Values);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Endpoint CreateProtectedEndpoint(Endpoint endpoint)
+        {
+            var routeEndpoint = (RouteEndpoint)endpoint;
+
+            // Replaces the negotiate endpoint with one that does the service redirect
+            async Task ProtectedEndpoint(HttpContext context)
+            {
+                if (!ValidateCircuitId(context))
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+
+                await endpoint.RequestDelegate(context);
+            }
+
+            var routeEndpointBuilder = new RouteEndpointBuilder(
+                ProtectedEndpoint,
+                routeEndpoint.RoutePattern,
+                routeEndpoint.Order);
+
+            // Preserve the metadata
+            foreach (var metadata in endpoint.Metadata)
+            {
+                routeEndpointBuilder.Metadata.Add(metadata);
+            }
+
+            return routeEndpointBuilder.Build();
+        }
+
+        private bool ValidateCircuitId(HttpContext context)
+        {
+            if (!context.Request.Query.TryGetValue(QueryStringParameterKey, out var circuitId) || circuitId.Count != 1)
             {
                 // There is no circuit id on the query string, so we don't authenticate anything.
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return false;
             }
 
             // Signalr requires clients to send the header X-Requested-With or fails.
             // This means that it will force cross-origin requests to go through CORS
             // which means we will see a preflight request, in which case we fail.
-            if (HttpMethods.IsOptions(Context.Request.Method) &&
-                Context.Request.Headers.ContainsKey(HeaderNames.AccessControlRequestMethod))
+            if (HttpMethods.IsOptions(context.Request.Method) &&
+                context.Request.Headers.ContainsKey(HeaderNames.AccessControlRequestMethod))
             {
-                return Task.FromResult(AuthenticateResult.Fail("No CORS requests allowed"));
+                return false;
             }
 
             var key = $"{CookiePrefix}{GetCircuitIdPrefix(circuitId)}";
 
-            if (Context.Request.Cookies.TryGetValue(key, out var cookie))
+            if (context.Request.Cookies.TryGetValue(key, out var cookie))
             {
                 if (CircuitIdFactory.ValidateCircuitId(circuitId, cookie, out var parsedId))
                 {
-                    CleanupStaleCookies(Context);
-
-                    // We create an identity without authentication type so that the presence of this
-                    // identity doesn't affect ClaimsPrincipal.IsAuthenticated
-                    var principal = new ClaimsPrincipal();
+                    CleanupStaleCookies(context);
 
                     var identity = new ClaimsIdentity();
                     identity.AddClaim(new Claim(IdClaimType, parsedId.RequestToken));
-                    principal.AddIdentity(identity);
+                    context.User.AddIdentity(identity);
 
-                    return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, AuthenticationType)));
+                    return true;
                 }
             }
 
-            return Task.FromResult(AuthenticateResult.NoResult());
+            return false;
         }
 
         // Blazor requires stickyness as the circuit is held in memory.
@@ -104,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             foreach (var cookieName in cookieCollection.Keys)
             {
-                var options = CreateCookieOptions(cookieName);
+                var options = CreateCookieOptions(context, cookieName);
                 if (cookieName.StartsWith(CookiePrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     try
@@ -124,28 +171,29 @@ namespace Microsoft.AspNetCore.Components.Server
             }
         }
 
-        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        private static Task ApplyCircuitIdCookie(HttpContext context, CircuitId circuitId)
         {
-            var id = properties.Items[RequestTokenKey];
-            var cookieToken = properties.Items[CookieTokenKey];
+            var id = circuitId.RequestToken;
+            var cookieToken = circuitId.CookieToken;
             var cookieName = $"{CookiePrefix}{GetCircuitIdPrefix(id)}";
 
-            var options = CreateCookieOptions(cookieName);
-            Context.Response.Cookies.Append(cookieName, cookieToken, options);
+            var options = CreateCookieOptions(context, cookieName);
+            context.Response.Cookies.Append(cookieName, cookieToken, options);
 
             // We create a temporary keep alive cookie to preserve the circuit cookie while this companion
             // cookie is present. This is due to the fact that we only register the circuit as disconnected
             // after we know for sure the response completed without navigating away (for example redirecting).
             var keepAliveCookieName = GetKeepAliveCookieName(cookieName);
-            var keepAliveOptions = CreateCookieOptions(keepAliveCookieName, TimeSpan.FromMinutes(5));
-            Context.Response.Cookies.Append(keepAliveCookieName, "", keepAliveOptions);
+            var keepAliveOptions = CreateCookieOptions(context, keepAliveCookieName, TimeSpan.FromMinutes(5));
+            context.Response.Cookies.Append(keepAliveCookieName, "", keepAliveOptions);
 
             return Task.CompletedTask;
         }
 
-        private string GetKeepAliveCookieName(string cookieName) => $"{cookieName}.KeepAlive";
 
-        private CookieOptions CreateCookieOptions(string cookieName, TimeSpan? maxAge = null)
+        private static string GetKeepAliveCookieName(string cookieName) => $"{cookieName}.KeepAlive";
+
+        private static CookieOptions CreateCookieOptions(HttpContext context, string cookieName, TimeSpan? maxAge = null)
         {
             // We don't want to expose options for this cookie to users as we want to keep it as much of an implementation
             // detail as possible. We might need to consider if users need to be able to change this.
@@ -161,37 +209,15 @@ namespace Microsoft.AspNetCore.Components.Server
                 Expiration = maxAge
             };
 
-            return builder.Build(Context);
+            return builder.Build(context);
         }
 
-        protected override Task HandleSignOutAsync(AuthenticationProperties properties)
-        {
-            throw new InvalidOperationException("Sign out is not supported.");
-        }
-
-        internal static async Task AttachCircuitIdAsync(
+        internal static Task AttachCircuitIdAsync(
             HttpContext httpContext,
             CircuitId circuitId)
         {
-            // We require to pass in an authenticated principal to SignInAsync, but we are
-            // simply going to ignore it inside HandleSignInAsync and use the authentication
-            // properties to setup the cookie in the request.
-            // This is because what we are authenticating here is the connection and not a specific user.
-            // We might in the future attach some information associated with the user to the connection
-            // so that you also need to be in possesion of the auth cookie to connect to the circuit.
-            var principal = new ClaimsPrincipal();
-            var identity = new ClaimsIdentity(AuthenticationType);
-            principal.AddIdentity(identity);
-
-            var properties = new AuthenticationProperties();
-            properties.Items[RequestTokenKey] = circuitId.RequestToken;
-            properties.Items[CookieTokenKey] = circuitId.CookieToken;
             SetResponseHeaders(httpContext.Response);
-
-            await httpContext.SignInAsync(
-                AuthenticationType,
-                principal,
-                properties);
+            return ApplyCircuitIdCookie(httpContext, circuitId);
         }
 
         private static void SetResponseHeaders(HttpResponse response)

@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -43,7 +41,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var id = _circuitIdFactory.CreateCircuitId();
-            await CircuitAuthenticationHandler.AttachCircuitIdAsync(context, id);
+            await CircuitMatcherPolicy.AttachCircuitIdAsync(context, id);
 
             var circuitId = new RequestCircuitId { Id = id.RequestToken };
 

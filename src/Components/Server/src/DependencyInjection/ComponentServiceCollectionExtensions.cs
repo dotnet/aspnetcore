@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -48,14 +49,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
             });
 
-            services.AddAuthentication()
-                .AddScheme<CircuitAuthenticationOptions, CircuitAuthenticationHandler>(
-                CircuitAuthenticationHandler.AuthenticationType,
-                _ => { });
-
-            services.AddAuthorization();
-
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthorizationOptions>, ConfigureCircuitAuthorization>());
+            // Matcher policy to configure csrf protection on the negotiate endpoint
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, CircuitMatcherPolicy>());
 
             // Register the Blazor specific hub protocol
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());

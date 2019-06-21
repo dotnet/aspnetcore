@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     GetFullUri(context.Request),
                     GetFullBaseUri(context.Request));
 
-                await CircuitAuthenticationHandler.AttachCircuitIdAsync(context, result.CircuitId);
+                await CircuitMatcherPolicy.AttachCircuitIdAsync(context, result.CircuitId);
 
                 result.UnhandledException += CircuitHost_UnhandledException;
                 context.Response.OnCompleted(() =>

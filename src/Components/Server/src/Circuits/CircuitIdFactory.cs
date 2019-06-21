@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 foreach (var claim in user.Claims)
                 {
-                    if (claim.Type.Equals(CircuitAuthenticationHandler.IdClaimType))
+                    if (claim.Type.Equals(CircuitMatcherPolicy.IdClaimType))
                     {
                         var rawRequestId = Base64UrlTextEncoder.Decode(claim.Value);
                         var requestTokenBytes = Base64UrlTextEncoder.Decode(circuitId);

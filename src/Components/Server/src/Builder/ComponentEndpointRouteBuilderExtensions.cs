@@ -379,7 +379,6 @@ namespace Microsoft.AspNetCore.Builder
 
         private static ComponentEndpointConventionBuilder ApplyHubMetadata(this ComponentEndpointConventionBuilder builder)
         {
-            builder = builder.RequireAuthorization(CircuitAuthenticationHandler.AuthorizationPolicyName);
             builder.Add(eb => eb.Metadata.Add(new DisableCorsAttribute()));
             return builder;
         }
