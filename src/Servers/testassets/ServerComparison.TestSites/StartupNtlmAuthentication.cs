@@ -25,6 +25,8 @@ namespace ServerComparison.TestSites
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
             if (IsKestrel)
             {
                 services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
