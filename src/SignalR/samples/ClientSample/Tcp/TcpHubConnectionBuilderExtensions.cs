@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ClientSample;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -47,8 +49,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _endPoint = endPoint;
             }
 
-            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+            public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
             {
+                // HubConnection should be passing in a default HttpEndPoint based on the unconfigured HttpConnectionOptions. Just ignore it.
+                Trace.Assert(endPoint is HttpEndPoint);
+                Trace.Assert(((HttpEndPoint)endPoint).Url == null);
+
                 return new TcpConnection(_endPoint).StartAsync();
             }
 

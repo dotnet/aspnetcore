@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -34,10 +35,13 @@ namespace ClientSample
             baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/chat" : baseUrl;
 
             Console.WriteLine($"Connecting to {baseUrl}...");
-            var connection = new HttpConnection(new Uri(baseUrl));
+
+            var uri = new Uri(baseUrl);
+            var connection = new HttpConnection(new HttpEndPoint(uri), new HttpConnectionOptions(), TransferFormat.Text, loggerFactory: null);
+
             try
             {
-                await connection.StartAsync(TransferFormat.Text);
+                await connection.StartAsync();
 
                 Console.WriteLine($"Connected to {baseUrl}");
                 var shutdown = new TaskCompletionSource<object>();

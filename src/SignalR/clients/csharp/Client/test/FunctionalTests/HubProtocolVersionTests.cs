@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -101,11 +103,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             using (StartServer<VersionStartup>(out var server))
             {
-                var httpConnectionFactory = new HttpConnectionFactory(Options.Create(new HttpConnectionOptions
-                {
-                    Url = new Uri(server.Url + "/version"),
-                    Transports = transportType
-                }), LoggerFactory);
+                var httpConnectionFactory = new HttpConnectionFactory(
+                    new JsonHubProtocol(),
+                    Options.Create(new HttpConnectionOptions
+                    {
+                        Url = new Uri(server.Url + "/version"),
+                        Transports = transportType
+                    }),
+                    LoggerFactory);
                 var tcs = new TaskCompletionSource<object>();
 
                 var proxyConnectionFactory = new ProxyConnectionFactory(httpConnectionFactory);
@@ -192,22 +197,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         private class ProxyConnectionFactory : IConnectionFactory
         {
             private readonly IConnectionFactory _innerFactory;
-            public Task<ConnectionContext> ConnectTask { get; private set; }
+            public ValueTask<ConnectionContext> ConnectTask { get; private set; }
 
             public ProxyConnectionFactory(IConnectionFactory innerFactory)
             {
                 _innerFactory = innerFactory;
             }
 
-            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+            public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
             {
-                ConnectTask = _innerFactory.ConnectAsync(transferFormat, cancellationToken);
+                ConnectTask = _innerFactory.ConnectAsync(endPoint, cancellationToken);
                 return ConnectTask;
-            }
-
-            public Task DisposeAsync(ConnectionContext connection)
-            {
-                return _innerFactory.DisposeAsync(connection);
             }
         }
 

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void BuildCanOnlyBeCalledOnce()
         {
             var builder = new HubConnectionBuilder();
-            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Mock.Of<IHubProtocol>(), Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
 
             Assert.NotNull(builder.Build());
 

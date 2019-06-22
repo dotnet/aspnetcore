@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             ITransport transport = null,
             ITransportFactory transportFactory = null,
             HttpTransportType? transportType = null,
+            TransferFormat transferFormat = TransferFormat.Text,
             Func<Task<string>> accessTokenProvider = null)
         {
             var httpOptions = new HttpConnectionOptions
@@ -35,26 +36,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 httpOptions.Url = new Uri(url);
             }
 
-            return CreateConnection(httpOptions, loggerFactory, transport, transportFactory);
+            return CreateConnection(httpOptions, loggerFactory, transport, transportFactory, transferFormat);
         }
 
-        private static HttpConnection CreateConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory = null, ITransport transport = null, ITransportFactory transportFactory = null)
+        private static HttpConnection CreateConnection(
+            HttpConnectionOptions httpConnectionOptions,
+            ILoggerFactory loggerFactory = null,
+            ITransport transport = null,
+            ITransportFactory transportFactory = null,
+            TransferFormat transferFormat = TransferFormat.Text)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             httpConnectionOptions.Url = httpConnectionOptions.Url ?? new Uri("http://fakeuri.org/");
 
-            if (transportFactory != null)
+            if (transportFactory == null && transport != null)
             {
-                return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
+                transportFactory = new TestTransportFactory(transport);
             }
-            else if (transport != null)
-            {
-                return new HttpConnection(httpConnectionOptions, loggerFactory, new TestTransportFactory(transport));
-            }
-            else
-            {
-                return new HttpConnection(httpConnectionOptions, loggerFactory);
-            }
+
+            return new HttpConnection(httpConnectionOptions, transferFormat, loggerFactory, transportFactory);
         }
 
         private static async Task WithConnectionAsync(HttpConnection connection, Func<HttpConnection, Task> body)

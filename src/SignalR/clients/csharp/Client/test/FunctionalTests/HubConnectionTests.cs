@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -42,6 +44,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var hubConnectionBuilder = new HubConnectionBuilder();
 
+            hubConnectionBuilder.WithUrl(url + path);
+
             if (protocol != null)
             {
                 hubConnectionBuilder.Services.AddSingleton(protocol);
@@ -58,19 +62,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
 
             var delegateConnectionFactory = new DelegateConnectionFactory(
-                GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
-                connection => ((HttpConnection)connection).DisposeAsync().AsTask());
+                GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents));
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             return hubConnectionBuilder.Build();
         }
 
-        private Func<TransferFormat, Task<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
+        private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
         {
-            return async format =>
+            return async endPoint =>
             {
-                var connection = new HttpConnection(new Uri(url + path), transportType, loggerFactory);
-                await connection.StartAsync(format);
+                var httpEndpoint = (HttpEndPoint)endPoint;
+                var options = new HttpConnectionOptions { Url = httpEndpoint.Url, Transports = transportType };
+                var connection = new HttpConnection(httpEndpoint, options, TransferFormat.Binary, loggerFactory);
+
+                await connection.StartAsync();
+
                 return connection;
             };
         }

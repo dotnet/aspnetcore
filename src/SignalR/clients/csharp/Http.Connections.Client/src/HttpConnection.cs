@@ -151,6 +151,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _httpConnectionOptions = httpConnectionOptions ?? throw new ArgumentNullException(nameof(httpConnectionOptions));
             _transferFormat = transferFormat;
 
+            if (httpConnectionOptions.Url != null && httpConnectionOptions.Url != httpEndPoint.Url)
+            {
+                throw new InvalidOperationException($"If {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Url)} is set, it must match {nameof(HttpEndPoint)}.{nameof(httpEndPoint.Url)}.");
+            }
+
             if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
                 _httpClient = CreateHttpClient();
@@ -163,10 +168,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         }
 
         // Used by unit tests
-        internal HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
-            : this(httpConnectionOptions, loggerFactory)
+        internal HttpConnection(HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
+            : this(new HttpEndPoint(httpConnectionOptions.Url), httpConnectionOptions, transferFormat, loggerFactory)
         {
-            _transportFactory = transportFactory;
+            // Don't null out the _transportFactory if one isn't provided.
+            if (transportFactory != null)
+            {
+                _transportFactory = transportFactory;
+            }
         }
 
         /// <summary>

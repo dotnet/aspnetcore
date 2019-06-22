@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 CreateConnection(httpOptions),
                 async (connection) =>
                 {
-                    await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                    await connection.StartAsync().OrTimeout();
                 });
 
             Assert.NotNull(httpClientHandler);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                     });
             }
             catch

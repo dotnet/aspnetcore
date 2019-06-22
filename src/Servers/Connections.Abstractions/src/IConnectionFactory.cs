@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Connections
     /// </summary>
     public interface IConnectionFactory
     {
-
         /// <summary>
         /// Creates a new connection to an endpoint
         /// </summary>
