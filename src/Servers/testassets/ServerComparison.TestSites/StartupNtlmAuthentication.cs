@@ -16,7 +16,8 @@ namespace ServerComparison.TestSites
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpContextAccessor();
-            services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
+            // https://github.com/aspnet/AspNetCore/issues/11462
+            // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
 
             // This will deffer to the server implementations when available.
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
