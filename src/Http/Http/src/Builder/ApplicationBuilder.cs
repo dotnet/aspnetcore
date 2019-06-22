@@ -7,13 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Builder.Internal
+namespace Microsoft.AspNetCore.Builder
 {
     public class ApplicationBuilder : IApplicationBuilder
     {
+        private const string ServerFeaturesKey = "server.Features";
+        private const string ApplicationServicesKey = "application.Services";
+
         private readonly IList<Func<RequestDelegate, RequestDelegate>> _components = new List<Func<RequestDelegate, RequestDelegate>>();
 
         public ApplicationBuilder(IServiceProvider serviceProvider)
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
         public ApplicationBuilder(IServiceProvider serviceProvider, object server)
             : this(serviceProvider)
         {
-            SetProperty(Constants.BuilderProperties.ServerFeatures, server);
+            SetProperty(ServerFeaturesKey, server);
         }
 
         private ApplicationBuilder(ApplicationBuilder builder)
@@ -37,11 +39,11 @@ namespace Microsoft.AspNetCore.Builder.Internal
         {
             get
             {
-                return GetProperty<IServiceProvider>(Constants.BuilderProperties.ApplicationServices);
+                return GetProperty<IServiceProvider>(ApplicationServicesKey);
             }
             set
             {
-                SetProperty<IServiceProvider>(Constants.BuilderProperties.ApplicationServices, value);
+                SetProperty<IServiceProvider>(ApplicationServicesKey, value);
             }
         }
 
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
         {
             get
             {
-                return GetProperty<IFeatureCollection>(Constants.BuilderProperties.ServerFeatures);
+                return GetProperty<IFeatureCollection>(ServerFeaturesKey);
             }
         }
 
