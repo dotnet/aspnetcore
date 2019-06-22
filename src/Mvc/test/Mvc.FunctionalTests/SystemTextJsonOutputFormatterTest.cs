@@ -4,6 +4,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11459")]
         public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 
         [Fact]
@@ -29,13 +30,27 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("\"Hello Mr. \\ud83e\\udd8a\"", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
+        [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
-        public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
+        [Fact]
+        public override async Task Formatting_ProblemDetails()
+        {
+            using var _ = new ActivityReplacer();
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36166")]
+            // Act
+            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.ProblemDetailsResult)}");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+
+            var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
+            Assert.Equal("Not Found", obj.Value<string>("title"));
+            Assert.Equal("404", obj.Value<string>("status"));
+        }
+
+        [Fact]
         public override Task Formatting_PolymorphicModel() => base.Formatting_PolymorphicModel();
     }
 }
