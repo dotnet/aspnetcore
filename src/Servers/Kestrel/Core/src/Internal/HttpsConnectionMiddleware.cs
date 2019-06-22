@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
@@ -112,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     leaveInnerStreamOpen: false,
                     userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                     {
+                        _logger?.LogDebug("userCertificateValidationCallback({sender}, {certificate}, {chain}, {sslPolicyErrors})", sender, certificate, chain, sslPolicyErrors);
                         if (certificate == null)
                         {
                             return _options.ClientCertificateMode != ClientCertificateMode.RequireCertificate;
@@ -158,6 +160,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     {
                         selector = (sender, name) =>
                         {
+                            _logger?.LogDebug("selector({sender}, {name})", sender, name);
+
                             context.Features.Set(sslStream);
                             var cert = _serverCertificateSelector(context, name);
                             if (cert != null)
@@ -194,6 +198,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     _options.OnAuthenticate?.Invoke(context, sslOptions);
 
                     await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+                    var cert = sslStream.RemoteCertificate;
+                    _logger?.LogDebug("sslStream.RemoteCertificate = {cert}", cert);
                 }
                 catch (OperationCanceledException)
                 {
