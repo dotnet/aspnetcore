@@ -9,7 +9,8 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 ECHO Building LoggingBranch
-CALL %RepoRoot%\build.cmd -projects %~dp0LoggingBranch\LB.csproj /bl:artifacts/log/se-lb.binlog %*
+CALL %RepoRoot%\build.cmd -arch x64 -projects %~dp0LoggingBranch\LB.csproj /bl:artifacts/log/se-lb.binlog %*
+CALL %RepoRoot%\build.cmd -arch x86 -projects %~dp0LoggingBranch\LB.csproj /bl:artifacts/log/se-lb.binlog %*
 
 IF %ERRORLEVEL% NEQ 0 (
    EXIT /b %ErrorLevel%
