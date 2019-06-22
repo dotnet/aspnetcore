@@ -2,6 +2,19 @@
 
 ``` diff
  namespace Microsoft.AspNetCore.Http {
++    public class BindingAddress {
++        public BindingAddress();
++        public string Host { get; }
++        public bool IsUnixPipe { get; }
++        public string PathBase { get; }
++        public int Port { get; }
++        public string Scheme { get; }
++        public string UnixPipePath { get; }
++        public override bool Equals(object obj);
++        public override int GetHashCode();
++        public static BindingAddress Parse(string address);
++        public override string ToString();
++    }
      public abstract class ConnectionInfo {
          protected ConnectionInfo();
          public abstract X509Certificate2 ClientCertificate { get; set; }
@@ -144,6 +157,24 @@
              void System.Collections.IEnumerator.Reset();
          }
      }
++    public class FormFile : IFormFile {
++        public FormFile(Stream baseStream, long baseStreamOffset, long length, string name, string fileName);
++        public string ContentDisposition { get; set; }
++        public string ContentType { get; set; }
++        public string FileName { get; }
++        public IHeaderDictionary Headers { get; set; }
++        public long Length { get; }
++        public string Name { get; }
++        public void CopyTo(Stream target);
++        public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default(CancellationToken));
++        public Stream OpenReadStream();
++    }
++    public class FormFileCollection : List<IFormFile>, IEnumerable, IEnumerable<IFormFile>, IFormFileCollection, IReadOnlyCollection<IFormFile>, IReadOnlyList<IFormFile> {
++        public FormFileCollection();
++        public IFormFile this[string name] { get; }
++        public IFormFile GetFile(string name);
++        public IReadOnlyList<IFormFile> GetFiles(string name);
++    }
 -    public struct FragmentString : IEquatable<FragmentString> {
 +    public readonly struct FragmentString : IEquatable<FragmentString> {
          public static readonly FragmentString Empty;
@@ -439,6 +470,28 @@
          public override string ToString();
          public string ToUriComponent();
      }
++    public class QueryCollection : IEnumerable, IEnumerable<KeyValuePair<string, StringValues>>, IQueryCollection {
++        public static readonly QueryCollection Empty;
++        public QueryCollection();
++        public QueryCollection(QueryCollection store);
++        public QueryCollection(Dictionary<string, StringValues> store);
++        public QueryCollection(int capacity);
++        public int Count { get; }
++        public ICollection<string> Keys { get; }
++        public StringValues this[string key] { get; }
++        public bool ContainsKey(string key);
++        public QueryCollection.Enumerator GetEnumerator();
++        IEnumerator<KeyValuePair<string, StringValues>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,Microsoft.Extensions.Primitives.StringValues>>.GetEnumerator();
++        IEnumerator System.Collections.IEnumerable.GetEnumerator();
++        public bool TryGetValue(string key, out StringValues value);
++        public struct Enumerator : IDisposable, IEnumerator, IEnumerator<KeyValuePair<string, StringValues>> {
++            public KeyValuePair<string, StringValues> Current { get; }
++            object System.Collections.IEnumerator.Current { get; }
++            public void Dispose();
++            public bool MoveNext();
++            void System.Collections.IEnumerator.Reset();
++        }
++    }
 -    public struct QueryString : IEquatable<QueryString> {
 +    public readonly struct QueryString : IEquatable<QueryString> {
          public static readonly QueryString Empty;

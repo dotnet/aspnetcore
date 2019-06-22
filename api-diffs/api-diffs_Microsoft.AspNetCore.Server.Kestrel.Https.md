@@ -17,6 +17,7 @@
          public X509Certificate2 ServerCertificate { get; set; }
          public Func<ConnectionContext, string, X509Certificate2> ServerCertificateSelector { get; set; }
          public SslProtocols SslProtocols { get; set; }
++        public void AllowAnyClientCertificate();
      }
  }
 ```

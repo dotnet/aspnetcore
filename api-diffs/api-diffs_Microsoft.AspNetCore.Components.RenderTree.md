@@ -39,6 +39,7 @@
 +        public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent;
 +        public void OpenElement(int sequence, string elementName);
 +        public void SetKey(object value);
++        public void SetUpdatesAttributeName(string updatesAttributeName);
 +    }
 +    public readonly struct RenderTreeDiff {
 +        public readonly ArraySegment<RenderTreeEdit> Edits;

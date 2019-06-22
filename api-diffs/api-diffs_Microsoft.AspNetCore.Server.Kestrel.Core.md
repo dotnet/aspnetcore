@@ -78,8 +78,8 @@
 -    public class ListenOptions : IConnectionBuilder, IEndPointInformation {
 +    public class ListenOptions : IConnectionBuilder {
          public IServiceProvider ApplicationServices { get; }
-         public List<IConnectionAdapter> ConnectionAdapters { get; }
-+        public EndPoint EndPoint { get; }
+-        public List<IConnectionAdapter> ConnectionAdapters { get; }
+
          public ulong FileHandle { get; }
 -        public FileHandleType HandleType { get; set; }
 

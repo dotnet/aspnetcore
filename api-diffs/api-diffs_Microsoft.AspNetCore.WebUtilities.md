@@ -46,6 +46,7 @@
          public override long Position { get; set; }
          public string TempFileName { get; }
          protected override void Dispose(bool disposing);
++        public override ValueTask DisposeAsync();
          public override void Flush();
          public override int Read(byte[] buffer, int offset, int count);
          public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);

@@ -1,7 +1,8 @@
 # Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
 ``` diff
- namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal {
+-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal {
+ {
 -    public class AdaptedPipeline : IDuplexPipe {
  {
 -        public AdaptedPipeline(IDuplexPipe transport, Pipe inputPipe, Pipe outputPipe, IKestrelTrace log);
@@ -19,17 +20,25 @@
 -        public Task RunAsync(Stream stream);
 
 -    }
-     public class ConnectionAdapterContext {
-         public Stream ConnectionStream { get; }
-         public IFeatureCollection Features { get; }
-     }
-     public interface IAdaptedConnection : IDisposable {
-         Stream ConnectionStream { get; }
-     }
-     public interface IConnectionAdapter {
-         bool IsHttps { get; }
-         Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context);
-     }
+-    public class ConnectionAdapterContext {
+ {
+-        public Stream ConnectionStream { get; }
+
+-        public IFeatureCollection Features { get; }
+
+-    }
+-    public interface IAdaptedConnection : IDisposable {
+ {
+-        Stream ConnectionStream { get; }
+
+-    }
+-    public interface IConnectionAdapter {
+ {
+-        bool IsHttps { get; }
+
+-        Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context);
+
+-    }
 -    public class LoggingConnectionAdapter : IConnectionAdapter {
  {
 -        public LoggingConnectionAdapter(ILogger logger);
@@ -82,6 +91,6 @@
 -        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default(CancellationToken));
 
 -    }
- }
+-}
 ```
 

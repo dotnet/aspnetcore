@@ -125,9 +125,11 @@
          public static T Users<T>(this IHubClients<T> hubClients, string user1, string user2, string user3, string user4, string user5, string user6, string user7, string user8);
      }
      public class HubConnectionContext {
-         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory);
-         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval);
-+        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity);
++        public HubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory);
+-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory);
+
+-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval);
+
          public virtual CancellationToken ConnectionAborted { get; }
          public virtual string ConnectionId { get; }
          public virtual IFeatureCollection Features { get; }
@@ -139,8 +141,16 @@
          public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default(CancellationToken));
          public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default(CancellationToken));
      }
++    public class HubConnectionContextOptions {
++        public HubConnectionContextOptions();
++        public TimeSpan ClientTimeoutInterval { get; set; }
++        public TimeSpan KeepAliveInterval { get; set; }
++        public int StreamBufferCapacity { get; set; }
++    }
      public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub {
-         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager, IHubProtocolResolver protocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions, ILoggerFactory loggerFactory, IUserIdProvider userIdProvider, HubDispatcher<THub> dispatcher);
+-        public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager, IHubProtocolResolver protocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions, ILoggerFactory loggerFactory, IUserIdProvider userIdProvider, HubDispatcher<THub> dispatcher);
+
++        public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager, IHubProtocolResolver protocolResolver, IOptions<HubOptions> globalHubOptions, IOptions<HubOptions<THub>> hubOptions, ILoggerFactory loggerFactory, IUserIdProvider userIdProvider, IServiceScopeFactory serviceScopeFactory);
          public override Task OnConnectedAsync(ConnectionContext connection);
      }
      public class HubConnectionStore {
@@ -168,6 +178,12 @@
          public HubException(string message);
          public HubException(string message, Exception innerException);
      }
++    public class HubInvocationContext {
++        public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments);
++        public HubCallerContext Context { get; }
++        public IReadOnlyList<object> HubMethodArguments { get; }
++        public string HubMethodName { get; }
++    }
      public abstract class HubLifetimeManager<THub> where THub : Hub {
          protected HubLifetimeManager();
          public abstract Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default(CancellationToken));
@@ -205,6 +221,14 @@
      public class HubOptions<THub> : HubOptions where THub : Hub {
          public HubOptions();
      }
++    public class HubOptionsSetup : IConfigureOptions<HubOptions> {
++        public HubOptionsSetup(IEnumerable<IHubProtocol> protocols);
++        public void Configure(HubOptions options);
++    }
++    public class HubOptionsSetup<THub> : IConfigureOptions<HubOptions<THub>> where THub : Hub {
++        public HubOptionsSetup(IOptions<HubOptions> options);
++        public void Configure(HubOptions<THub> options);
++    }
      public class HubRouteBuilder {
          public HubRouteBuilder(ConnectionsRouteBuilder routes);
          public void MapHub<THub>(PathString path) where THub : Hub;

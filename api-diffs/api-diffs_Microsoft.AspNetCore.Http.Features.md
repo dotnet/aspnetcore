@@ -159,6 +159,12 @@
 +        bool Available { get; }
 +        IHeaderDictionary Trailers { get; }
 +    }
++    public interface IHttpResetFeature {
++        void Reset(int errorCode);
++    }
++    public interface IHttpResponseCompletionFeature {
++        Task CompleteAsync();
++    }
      public interface IHttpResponseFeature {
          Stream Body { get; set; }
          bool HasStarted { get; }

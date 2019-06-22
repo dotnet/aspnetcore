@@ -302,20 +302,9 @@
 +        public string Kind { get; set; }
 +        public string Type { get; set; }
 +    }
-+    public class UIDragEventArgs : UIEventArgs {
++    public class UIDragEventArgs : UIMouseEventArgs {
 +        public UIDragEventArgs();
-+        public bool AltKey { get; set; }
-+        public long Button { get; set; }
-+        public long Buttons { get; set; }
-+        public long ClientX { get; set; }
-+        public long ClientY { get; set; }
-+        public bool CtrlKey { get; set; }
 +        public DataTransfer DataTransfer { get; set; }
-+        public long Detail { get; set; }
-+        public bool MetaKey { get; set; }
-+        public long ScreenX { get; set; }
-+        public long ScreenY { get; set; }
-+        public bool ShiftKey { get; set; }
 +    }
 +    public class UIErrorEventArgs : UIEventArgs {
 +        public UIErrorEventArgs();
@@ -372,13 +361,13 @@
 +        public bool AltKey { get; set; }
 +        public long Button { get; set; }
 +        public long Buttons { get; set; }
-+        public long ClientX { get; set; }
-+        public long ClientY { get; set; }
++        public double ClientX { get; set; }
++        public double ClientY { get; set; }
 +        public bool CtrlKey { get; set; }
 +        public long Detail { get; set; }
 +        public bool MetaKey { get; set; }
-+        public long ScreenX { get; set; }
-+        public long ScreenY { get; set; }
++        public double ScreenX { get; set; }
++        public double ScreenY { get; set; }
 +        public bool ShiftKey { get; set; }
 +    }
 +    public class UIPointerEventArgs : UIMouseEventArgs {
@@ -411,13 +400,13 @@
 +    }
 +    public class UITouchPoint {
 +        public UITouchPoint();
-+        public long ClientX { get; set; }
-+        public long ClientY { get; set; }
++        public double ClientX { get; set; }
++        public double ClientY { get; set; }
 +        public long Identifier { get; set; }
-+        public long PageX { get; set; }
-+        public long PageY { get; set; }
-+        public long ScreenX { get; set; }
-+        public long ScreenY { get; set; }
++        public double PageX { get; set; }
++        public double PageY { get; set; }
++        public double ScreenX { get; set; }
++        public double ScreenY { get; set; }
 +    }
 +    public class UIWheelEventArgs : UIMouseEventArgs {
 +        public UIWheelEventArgs();

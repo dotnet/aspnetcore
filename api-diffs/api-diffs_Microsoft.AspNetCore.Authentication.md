@@ -415,6 +415,11 @@
          public Exception Failure { get; set; }
          public AuthenticationProperties Properties { get; set; }
      }
++    public class RequestPathBaseCookieBuilder : CookieBuilder {
++        public RequestPathBaseCookieBuilder();
++        protected virtual string AdditionalPath { get; }
++        public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom);
++    }
      public abstract class ResultContext<TOptions> : BaseContext<TOptions> where TOptions : AuthenticationSchemeOptions {
          protected ResultContext(HttpContext context, AuthenticationScheme scheme, TOptions options);
          public ClaimsPrincipal Principal { get; set; }

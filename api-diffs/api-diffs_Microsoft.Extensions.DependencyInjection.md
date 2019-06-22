@@ -58,7 +58,7 @@
 +        public static IServiceCollection AddCertificateForwarding(this IServiceCollection services, Action<CertificateForwardingOptions> configure);
 +    }
 +    public static class ComponentServiceCollectionExtensions {
-+        public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services);
++        public static IServerSideBlazorBuilder AddServerSideBlazor(this IServiceCollection services, Action<CircuitOptions> configure = null);
 +    }
      public static class ConnectionsDependencyInjectionExtensions {
          public static IServiceCollection AddConnections(this IServiceCollection services);
@@ -546,7 +546,8 @@
          public static IServiceCollection AddRouting(this IServiceCollection services);
          public static IServiceCollection AddRouting(this IServiceCollection services, Action<RouteOptions> configureOptions);
      }
-+    public static class ServerSizeBlazorBuilderExtensions {
++    public static class ServerSideBlazorBuilderExtensions {
++        public static IServerSideBlazorBuilder AddCircuitOptions(this IServerSideBlazorBuilder builder, Action<CircuitOptions> configure);
 +        public static IServerSideBlazorBuilder AddHubOptions(this IServerSideBlazorBuilder builder, Action<HubOptions> configure);
 +    }
      public class ServiceCollection : ICollection<ServiceDescriptor>, IEnumerable, IEnumerable<ServiceDescriptor>, IList<ServiceDescriptor>, IServiceCollection {
