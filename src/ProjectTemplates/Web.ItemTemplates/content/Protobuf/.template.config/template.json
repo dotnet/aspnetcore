@@ -24,6 +24,11 @@
   ],
   "defaultName": "protobuf",
   "symbols": {
+    "namespace": {
+      "description": "namespace for the generated code",
+      "replaces": "MyApp.Namespace",
+      "type": "parameter"
+    },
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
