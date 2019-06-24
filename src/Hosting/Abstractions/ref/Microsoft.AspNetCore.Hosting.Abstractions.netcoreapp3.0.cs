@@ -65,6 +65,16 @@ namespace Microsoft.AspNetCore.Hosting
         void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app);
         System.IServiceProvider ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services);
     }
+    [System.ObsoleteAttribute]
+    public partial interface IStartupConfigureContainerFilter<TContainerBuilder>
+    {
+        System.Action<TContainerBuilder> ConfigureContainer(System.Action<TContainerBuilder> container);
+    }
+    [System.ObsoleteAttribute]
+    public partial interface IStartupConfigureServicesFilter
+    {
+        System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> next);
+    }
     public partial interface IStartupFilter
     {
         System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> Configure(System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> next);
@@ -113,16 +123,5 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string StartupAssemblyKey;
         public static readonly string SuppressStatusMessagesKey;
         public static readonly string WebRootKey;
-    }
-}
-namespace Microsoft.AspNetCore.Hosting.Internal
-{
-    public partial interface IStartupConfigureContainerFilter<TContainerBuilder>
-    {
-        System.Action<TContainerBuilder> ConfigureContainer(System.Action<TContainerBuilder> container);
-    }
-    public partial interface IStartupConfigureServicesFilter
-    {
-        System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> next);
     }
 }

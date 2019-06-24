@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Microsoft.Extensions.Hosting
 {

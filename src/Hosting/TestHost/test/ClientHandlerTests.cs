@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -421,7 +420,7 @@ namespace Microsoft.AspNetCore.TestHost
                 HttpCompletionOption.ResponseHeadersRead));
         }
 
-        private class DummyApplication : IHttpApplication<Context>
+        private class DummyApplication : ApplicationWrapper, IHttpApplication<HostingApplication.Context>
         {
             RequestDelegate _application;
 
@@ -430,26 +429,41 @@ namespace Microsoft.AspNetCore.TestHost
                 _application = application;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            internal override object CreateContext(IFeatureCollection features)
             {
-                return new Context()
+                return ((IHttpApplication<HostingApplication.Context>)this).CreateContext(features);
+            }
+
+            HostingApplication.Context IHttpApplication<HostingApplication.Context>.CreateContext(IFeatureCollection contextFeatures)
+            {
+                return new HostingApplication.Context()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            internal override void DisposeContext(object context, Exception exception)
+            {
+                ((IHttpApplication<HostingApplication.Context>)this).DisposeContext((HostingApplication.Context)context, exception);
+            }
+
+            void IHttpApplication<HostingApplication.Context>.DisposeContext(HostingApplication.Context context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            internal override Task ProcessRequestAsync(object context)
+            {
+                return ((IHttpApplication<HostingApplication.Context>)this).ProcessRequestAsync((HostingApplication.Context)context);
+            }
+
+            Task IHttpApplication<HostingApplication.Context>.ProcessRequestAsync(HostingApplication.Context context)
             {
                 return _application(context.HttpContext);
             }
         }
 
-        private class InspectingApplication : IHttpApplication<Context>
+        private class InspectingApplication : ApplicationWrapper, IHttpApplication<HostingApplication.Context>
         {
             Action<IFeatureCollection> _inspector;
 
@@ -458,21 +472,36 @@ namespace Microsoft.AspNetCore.TestHost
                 _inspector = inspector;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            internal override object CreateContext(IFeatureCollection features)
+            {
+                return ((IHttpApplication<HostingApplication.Context>)this).CreateContext(features);
+            }
+
+            HostingApplication.Context IHttpApplication<HostingApplication.Context>.CreateContext(IFeatureCollection contextFeatures)
             {
                 _inspector(contextFeatures);
-                return new Context()
+                return new HostingApplication.Context()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            internal override void DisposeContext(object context, Exception exception)
+            {
+                ((IHttpApplication<HostingApplication.Context>)this).DisposeContext((HostingApplication.Context)context, exception);
+            }
+
+            void IHttpApplication<HostingApplication.Context>.DisposeContext(HostingApplication.Context context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            internal override Task ProcessRequestAsync(object context)
+            {
+                return ((IHttpApplication<HostingApplication.Context>)this).ProcessRequestAsync((HostingApplication.Context)context);
+            }
+
+            Task IHttpApplication<HostingApplication.Context>.ProcessRequestAsync(HostingApplication.Context context)
             {
                 return Task.FromResult(0);
             }

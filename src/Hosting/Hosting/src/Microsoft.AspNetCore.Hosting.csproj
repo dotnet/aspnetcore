@@ -31,4 +31,8 @@
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.TestHost.Tests" />
+  </ItemGroup>
+
 </Project>

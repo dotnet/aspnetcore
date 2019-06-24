@@ -6,11 +6,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.TestHost
     {
         private IWebHost _hostInstance;
         private bool _disposed = false;
-        private IHttpApplication<Context> _application;
+        private ApplicationWrapper _application;
 
         /// <summary>
         /// For use with IHostBuilder or IWebHostBuilder.
@@ -87,7 +85,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         public bool PreserveExecutionContext { get; set; }
 
-        private IHttpApplication<Context> Application
+        private ApplicationWrapper Application
         {
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
         }
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         Task IServer.StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
+            _application = new ApplicationWrapper<TContext>(application, () =>
             {
                 if (_disposed)
                 {
@@ -177,34 +175,6 @@ namespace Microsoft.AspNetCore.TestHost
         Task IServer.StopAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
-        }
-
-        private class ApplicationWrapper<TContext> : IHttpApplication<TContext>
-        {
-            private readonly IHttpApplication<TContext> _application;
-            private readonly Action _preProcessRequestAsync;
-
-            public ApplicationWrapper(IHttpApplication<TContext> application, Action preProcessRequestAsync)
-            {
-                _application = application;
-                _preProcessRequestAsync = preProcessRequestAsync;
-            }
-
-            public TContext CreateContext(IFeatureCollection contextFeatures)
-            {
-                return _application.CreateContext(contextFeatures);
-            }
-
-            public void DisposeContext(TContext context, Exception exception)
-            {
-                _application.DisposeContext(context, exception);
-            }
-
-            public Task ProcessRequestAsync(TContext context)
-            {
-                _preProcessRequestAsync();
-                return _application.ProcessRequestAsync(context);
-            }
         }
     }
 }

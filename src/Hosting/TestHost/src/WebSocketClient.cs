@@ -8,19 +8,17 @@ using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     public class WebSocketClient
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
-        internal WebSocketClient(PathString pathBase, IHttpApplication<Context> application)
+        internal WebSocketClient(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 

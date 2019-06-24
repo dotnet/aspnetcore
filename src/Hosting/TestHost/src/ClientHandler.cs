@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
         /// <summary>
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="pathBase">The base path.</param>
         /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
-        internal ClientHandler(PathString pathBase, IHttpApplication<Context> application)
+        internal ClientHandler(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
