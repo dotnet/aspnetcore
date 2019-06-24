@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Commands
         {
             if (string.IsNullOrWhiteSpace(ApplicationPath.Value))
             {
-                throw new InvalidOperationException($"Invalid path {ApplicationPath.Value}.");
+                throw new InvalidOperationException($"Invalid value for parameter '{nameof(ApplicationPath)}'. Value supplied: '{ApplicationPath.Value}'");
             }
 
             Server.Startup.ApplicationAssembly = ApplicationPath.Value;
