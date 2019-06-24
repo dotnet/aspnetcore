@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" Condition="'$(BuildManaged)' == 'true'" />
+    <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" />
     <ProjectReference Include="..\client-ts.npmproj" />
   </ItemGroup>
 
