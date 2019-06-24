@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
-        public void CreateControllerReleaser_UsesControllerActivatorAndPropertyActivator()
+        public void CreateControllerFactory_UsesControllerActivatorAndPropertyActivator()
         {
             // Arrange
             var expectedProperty1 = new object();
