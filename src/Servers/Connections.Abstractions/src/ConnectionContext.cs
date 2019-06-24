@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Connections
 {
     /// <summary>
-    /// Encapsulates all information about an individual connection irrespective of the underlying transport.
+    /// Encapsulates all information about an individual connection.
     /// </summary>
     public abstract class ConnectionContext : IAsyncDisposable
     {
@@ -33,12 +33,12 @@ namespace Microsoft.AspNetCore.Connections
         public abstract IDictionary<object, object> Items { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IDuplexPipe"/> that can be used to read and write to the this connection.
+        /// Gets or sets the <see cref="IDuplexPipe"/> that can be used to read or write data on this connection.
         /// </summary>
         public abstract IDuplexPipe Transport { get; set; }
 
         /// <summary>
-        /// Notifies when the client connection has closed.
+        /// Triggered when the client connection is closed.
         /// </summary>
         public virtual CancellationToken ConnectionClosed { get; set; }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Aborts the underlying connection.
         /// </summary>
-        /// <param name="abortReason">The reason for aborting the connection.</param>
+        /// <param name="abortReason">An optional <see cref="ConnectionAbortedException"/> describing the reason the connection is being terminated.</param>
         public virtual void Abort(ConnectionAbortedException abortReason)
         {
             // We expect this to be overridden, but this helps maintain back compat

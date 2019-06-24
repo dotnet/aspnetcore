@@ -101,12 +101,13 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the request body <see cref="Stream"/>.
         /// </summary>
-        /// <returns>The request body <see cref="Stream"/>.</returns>
+        /// <value>The request body <see cref="Stream"/>.</value>
         public abstract Stream Body { get; set; }
 
         /// <summary>
         /// Gets the request body <see cref="PipeReader"/>.
         /// </summary>
+        /// <value>The request body <see cref="PipeReader"/>.</value>
         public virtual PipeReader BodyReader { get => throw new NotImplementedException();  }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Connections
     public interface IConnectionListener : IAsyncDisposable
     {
         /// <summary>
-        /// The end point that was bound. This may differ from the requested end point.
+        /// The endpoint that was bound. This may differ from the requested endpoint, such as when the caller requested that any free port be selected.
         /// </summary>
         EndPoint EndPoint { get; }
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Connections
         /// Begins an asynchronous operation to accept an incoming connection.
         /// </summary>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        /// <returns>A <see cref="ValueTask{ConnectionContext}"/> that represents the accepted connection.</returns>
+        /// <returns>A <see cref="ValueTask{ConnectionContext}"/> that completes when a connection is accepted, yielding the <see cref="ConnectionContext" /> representing the connection.</returns>
         ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default);
 
         /// <summary>

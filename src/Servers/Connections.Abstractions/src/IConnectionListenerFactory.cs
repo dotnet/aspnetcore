@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Creates an <see cref="IConnectionListener"/> bound to the specified <see cref="EndPoint"/>.
         /// </summary>
-        /// <param name="endpoint">The endpoint to bind to.</param>
+        /// <param name="endpoint">The <see cref="EndPoint" /> to bind to.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        /// <returns>A <see cref="ValueTask{IConnectionListener}"/> that represents the bound listener.</returns>
+        /// <returns>A <see cref="ValueTask{IConnectionListener}"/> that completes when the listener has been bound, yielding a <see cref="IConnectionListener" /> representing the new listener.</returns>
         ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default);
     }
 }

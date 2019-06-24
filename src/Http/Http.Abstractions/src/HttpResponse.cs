@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the response body <see cref="PipeWriter"/>
         /// </summary>
+        /// <value>The response body <see cref="PipeWriter"/>.</value>
         public virtual PipeWriter BodyWriter { get => throw new NotImplementedException(); }
 
         /// <summary>
