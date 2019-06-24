@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""function(){console.log('hello');};"" />");
+<button onclick=""function(){console.log('hello');};"" />");
 
             // Act
             var frames = GetRenderTree(component);
