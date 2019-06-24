@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private int _queueLength;
 
         internal RequestThrottlingEventSource()
-            : base("Microsoft.AspNet.RequestThrottling")
+            : base("Microsoft.AspNetCore.RequestThrottling")
         {
         }
 
         [Event(1, Level = EventLevel.Warning)]
         public void RequestRejected()
         {
-            Interlocked.Increment(ref _rejectedRequests);
             WriteEvent(1);
+            Interlocked.Increment(ref _rejectedRequests);
         }
 
         [NonEvent]
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
                     DisplayName = "Rejected Requests",
                 };
 
-                _queueLengthCounter ??= new PollingCounter("queued-length", this, () => _queueLength)
+                _queueLengthCounter ??= new PollingCounter("queue-length", this, () => _queueLength)
                 {
                     DisplayName = "Queue Length",
                 };
