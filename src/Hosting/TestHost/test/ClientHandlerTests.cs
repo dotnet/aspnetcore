@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -420,7 +418,7 @@ namespace Microsoft.AspNetCore.TestHost
                 HttpCompletionOption.ResponseHeadersRead));
         }
 
-        private class DummyApplication : ApplicationWrapper, IHttpApplication<HostingApplication.Context>
+        private class DummyApplication : ApplicationWrapper, IHttpApplication<TestHostingContext>
         {
             RequestDelegate _application;
 
@@ -431,12 +429,12 @@ namespace Microsoft.AspNetCore.TestHost
 
             internal override object CreateContext(IFeatureCollection features)
             {
-                return ((IHttpApplication<HostingApplication.Context>)this).CreateContext(features);
+                return ((IHttpApplication<TestHostingContext>)this).CreateContext(features);
             }
 
-            HostingApplication.Context IHttpApplication<HostingApplication.Context>.CreateContext(IFeatureCollection contextFeatures)
+            TestHostingContext IHttpApplication<TestHostingContext>.CreateContext(IFeatureCollection contextFeatures)
             {
-                return new HostingApplication.Context()
+                return new TestHostingContext()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
@@ -444,26 +442,26 @@ namespace Microsoft.AspNetCore.TestHost
 
             internal override void DisposeContext(object context, Exception exception)
             {
-                ((IHttpApplication<HostingApplication.Context>)this).DisposeContext((HostingApplication.Context)context, exception);
+                ((IHttpApplication<TestHostingContext>)this).DisposeContext((TestHostingContext)context, exception);
             }
 
-            void IHttpApplication<HostingApplication.Context>.DisposeContext(HostingApplication.Context context, Exception exception)
+            void IHttpApplication<TestHostingContext>.DisposeContext(TestHostingContext context, Exception exception)
             {
 
             }
 
             internal override Task ProcessRequestAsync(object context)
             {
-                return ((IHttpApplication<HostingApplication.Context>)this).ProcessRequestAsync((HostingApplication.Context)context);
+                return ((IHttpApplication<TestHostingContext>)this).ProcessRequestAsync((TestHostingContext)context);
             }
 
-            Task IHttpApplication<HostingApplication.Context>.ProcessRequestAsync(HostingApplication.Context context)
+            Task IHttpApplication<TestHostingContext>.ProcessRequestAsync(TestHostingContext context)
             {
                 return _application(context.HttpContext);
             }
         }
 
-        private class InspectingApplication : ApplicationWrapper, IHttpApplication<HostingApplication.Context>
+        private class InspectingApplication : ApplicationWrapper, IHttpApplication<TestHostingContext>
         {
             Action<IFeatureCollection> _inspector;
 
@@ -474,13 +472,13 @@ namespace Microsoft.AspNetCore.TestHost
 
             internal override object CreateContext(IFeatureCollection features)
             {
-                return ((IHttpApplication<HostingApplication.Context>)this).CreateContext(features);
+                return ((IHttpApplication<TestHostingContext>)this).CreateContext(features);
             }
 
-            HostingApplication.Context IHttpApplication<HostingApplication.Context>.CreateContext(IFeatureCollection contextFeatures)
+            TestHostingContext IHttpApplication<TestHostingContext>.CreateContext(IFeatureCollection contextFeatures)
             {
                 _inspector(contextFeatures);
-                return new HostingApplication.Context()
+                return new TestHostingContext()
                 {
                     HttpContext = new DefaultHttpContext(contextFeatures)
                 };
@@ -488,23 +486,28 @@ namespace Microsoft.AspNetCore.TestHost
 
             internal override void DisposeContext(object context, Exception exception)
             {
-                ((IHttpApplication<HostingApplication.Context>)this).DisposeContext((HostingApplication.Context)context, exception);
+                ((IHttpApplication<TestHostingContext>)this).DisposeContext((TestHostingContext)context, exception);
             }
 
-            void IHttpApplication<HostingApplication.Context>.DisposeContext(HostingApplication.Context context, Exception exception)
+            void IHttpApplication<TestHostingContext>.DisposeContext(TestHostingContext context, Exception exception)
             {
 
             }
 
             internal override Task ProcessRequestAsync(object context)
             {
-                return ((IHttpApplication<HostingApplication.Context>)this).ProcessRequestAsync((HostingApplication.Context)context);
+                return ((IHttpApplication<TestHostingContext>)this).ProcessRequestAsync((TestHostingContext)context);
             }
 
-            Task IHttpApplication<HostingApplication.Context>.ProcessRequestAsync(HostingApplication.Context context)
+            Task IHttpApplication<TestHostingContext>.ProcessRequestAsync(TestHostingContext context)
             {
                 return Task.FromResult(0);
             }
+        }
+
+        private class TestHostingContext
+        {
+            public HttpContext HttpContext { get; set; }
         }
 
         [Fact]

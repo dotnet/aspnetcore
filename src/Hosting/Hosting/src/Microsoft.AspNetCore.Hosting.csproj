@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
@@ -29,10 +29,6 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.TestHost.Tests" />
   </ItemGroup>
 
 </Project>
