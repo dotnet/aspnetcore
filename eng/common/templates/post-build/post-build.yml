@@ -1,0 +1,67 @@
+parameters:
+  enableSourceLinkValidation: true
+  enableSigningValidation: true
+  enableSymbolValidation: true
+  SDLValidationParameters:
+    enable: false
+    params: ''
+
+stages:
+- stage: validate
+  dependsOn: build
+  displayName: Validate
+  jobs:
+  - ${{ if eq(parameters.enableSigningValidation, 'true') }}:
+    - job:
+      displayName: Signing Validation
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: current
+            artifactName: PackageArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: eng\common\sdk-task.ps1
+            arguments: -task SigningValidation -restore -msbuildEngine dotnet
+              /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+              /p:Configuration=Release
+
+  - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
+    - job:
+      displayName: SourceLink Validation
+      variables:
+        - template: common-variables.yml
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Blob Artifacts
+          inputs:
+            buildType: current
+            artifactName: BlobArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
+              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
+              -GHRepoName $(Build.Repository.Name) 
+              -GHCommit $(Build.SourceVersion)
+              -SourcelinkCliVersion $(SourceLinkCLIVersion)
+
+  - ${{ if eq(parameters.SDLValidationParameters.enable, 'true') }}:
+    - template: /eng/common/templates/job/execute-sdl.yml
+      parameters:
+        additionalParameters: ${{ parameters.SDLValidationParameters.params }}
+
+- template: \eng\common\templates\post-build\channels\public-dev-release.yml
+  parameters:
+    enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+
+- template: \eng\common\templates\post-build\channels\public-validation-release.yml

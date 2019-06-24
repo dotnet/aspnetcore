@@ -3,7 +3,7 @@ Param(
   [string] $Repository,
   [string] $BranchName="master",
   [string] $WorkingDirectory,
-  [string] $DncEngAccessToken,
+  [string] $AzureDevOpsAccessToken,
   [string] $GuardianLoggerLevel="Standard"
 )
 
@@ -12,7 +12,7 @@ Set-StrictMode -Version 2.0
 $LASTEXITCODE = 0
 
 # Construct basic auth from AzDO access token; construct URI to the repository's gdn folder stored in that repository; construct location of zip file
-$encodedPat = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$DncEngAccessToken"))
+$encodedPat = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$AzureDevOpsAccessToken"))
 $escapedRepository = [Uri]::EscapeDataString("/$Repository/$BranchName/.gdn")
 $uri = "https://dev.azure.com/dnceng/internal/_apis/git/repositories/sdl-tool-cfg/Items?path=$escapedRepository&versionDescriptor[versionOptions]=0&`$format=zip&api-version=5.0-preview.1"
 $zipFile = "$WorkingDirectory/gdn.zip"
@@ -44,5 +44,5 @@ Try
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Guardian baseline failed with exit code $LASTEXITCODE."
   }
-  & $(Join-Path $PSScriptRoot "push-gdn.ps1") -Repository $Repository -BranchName $BranchName -GdnFolder $gdnFolder -DncEngAccessToken $DncEngAccessToken -PushReason "Initialize gdn folder"
+  & $(Join-Path $PSScriptRoot "push-gdn.ps1") -Repository $Repository -BranchName $BranchName -GdnFolder $gdnFolder -AzureDevOpsAccessToken $AzureDevOpsAccessToken -PushReason "Initialize gdn folder"
 }

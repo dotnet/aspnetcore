@@ -203,6 +203,7 @@ if [[ "$__LinuxCodeName" == "alpine" ]]; then
       -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/main \
       -X http://dl-cdn.alpinelinux.org/alpine/v$__AlpineVersion/community \
       -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+      -X http://dl-cdn.alpinelinux.org/alpine/edge/main \
       -U --allow-untrusted --root $__RootfsDir --arch $__AlpineArch --initdb \
       add $__AlpinePackages
     rm -r $__ApkToolsDir
