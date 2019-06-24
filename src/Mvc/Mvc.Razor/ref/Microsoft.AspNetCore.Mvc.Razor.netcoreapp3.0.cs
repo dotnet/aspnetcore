@@ -356,7 +356,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("track", Attributes="[src^='~/']", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("video", Attributes="[poster^='~/']")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("video", Attributes="[src^='~/']")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
     public partial class UrlResolutionTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public UrlResolutionTagHelper(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder) { }
