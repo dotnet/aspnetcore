@@ -8,15 +8,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly IRetryPolicy _reconnectPolicy;
-        private readonly HttpEndPoint _httpEndPoint;
+        private readonly EndPoint _endPoint;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
         // Holds all mutable state other than user-defined handlers and settable properties.
@@ -176,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
-        /// <param name="httpConnectionOptions">Options that provide the <see cref="HttpConnectionOptions.Url"/> property to connect to.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="reconnectPolicy">
@@ -186,8 +185,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
         /// </remarks>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IOptions<HttpConnectionOptions> httpConnectionOptions, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
-            : this(connectionFactory, protocol, httpConnectionOptions, serviceProvider, loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, EndPoint endPoint, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
+            : this(connectionFactory, protocol, endPoint, serviceProvider, loggerFactory)
         {
             _reconnectPolicy = reconnectPolicy;
         }
@@ -197,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
-        /// <param name="httpConnectionOptions">Options that provide the <see cref="HttpConnectionOptions.Url"/> property to connect to.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <remarks>
@@ -205,23 +204,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </remarks>
         public HubConnection(IConnectionFactory connectionFactory,
                              IHubProtocol protocol,
-                             IOptions<HttpConnectionOptions> httpConnectionOptions,
+                             EndPoint endPoint,
                              IServiceProvider serviceProvider,
                              ILoggerFactory loggerFactory)
         {
-            if (httpConnectionOptions == null)
-            {
-                throw new ArgumentNullException(nameof(httpConnectionOptions));
-            }
-
-            if (httpConnectionOptions.Value.Url == null)
-            {
-                throw new ArgumentException($"{nameof(HttpConnectionOptions)} does not have a URL specified.", nameof(httpConnectionOptions));
-            }
-
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
-            _httpEndPoint = new HttpEndPoint(httpConnectionOptions.Value.Url);
+            _endPoint = endPoint ?? throw new ArgumentException(nameof(endPoint));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -434,7 +423,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Starting(_logger);
 
             // Start the connection
-            var connection = await _connectionFactory.ConnectAsync(_httpEndPoint, cancellationToken);
+            var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken);
             var startingConnectionState = new ConnectionState(connection, this);
 
             // From here on, if an error occurs we need to shut down the connection because

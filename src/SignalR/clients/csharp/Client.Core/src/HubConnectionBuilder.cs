@@ -3,8 +3,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -51,10 +52,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(IConnectionFactory)} was not configured.");
             }
 
-            var httpConnectionOptions = serviceProvider.GetService<IOptions<HttpConnectionOptions>>();
-            if (httpConnectionOptions.Value.Url == null)
+            var endPoint = serviceProvider.GetService<EndPoint>();
+            if (endPoint == null)
             {
-                throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Url)} was not configured.");
+                throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(EndPoint)} was not configured.");
             }
 
             return serviceProvider.GetService<HubConnection>();

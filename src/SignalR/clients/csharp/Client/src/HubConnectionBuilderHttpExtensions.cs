@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -139,8 +141,20 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 hubConnectionBuilder.Services.Configure(configureHttpConnection);
             }
 
+            // Add HttpConnectionOptionsDerivedHttpEndPoint so HubConnection can read the Url from HttpConnectionOptions
+            // without the Signal.Client.Core project taking a new dependency on Http.Connections.Client.
+            hubConnectionBuilder.Services.AddSingleton<EndPoint, HttpConnectionOptionsDerivedHttpEndPoint>();
+
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory, HttpConnectionFactory>();
             return hubConnectionBuilder;
+        }
+
+        private class HttpConnectionOptionsDerivedHttpEndPoint : HttpEndPoint
+        {
+            public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
+                : base(httpConnectionOptions.Value.Url)
+            {
+            }
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClientSample;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,8 +12,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public static class TcpHubConnectionBuilderExtensions
     {
-        private static readonly Uri _ignoredEndpoint = new Uri("https://www.example.com");
-
         public static IHubConnectionBuilder WithEndPoint(this IHubConnectionBuilder builder, Uri uri)
         {
             if (!string.Equals(uri.Scheme, "net.tcp", StringComparison.Ordinal))
@@ -37,32 +34,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public static IHubConnectionBuilder WithEndPoint(this IHubConnectionBuilder builder, EndPoint endPoint)
         {
-            builder.Services.AddSingleton<IConnectionFactory>(new TcpConnectionFactory(endPoint));
-
-            // Set HttpConnectionOptions.Url, so HubConnectionBuilder.Build() doesn't complain about no URL being configured.
-            builder.Services.Configure<HttpConnectionOptions>(o =>
-            {
-                o.Url = _ignoredEndpoint;
-            });
+            builder.Services.AddSingleton<IConnectionFactory, TcpConnectionFactory>();
+            builder.Services.AddSingleton(endPoint);
 
             return builder;
         }
 
         private class TcpConnectionFactory : IConnectionFactory
         {
-            private readonly EndPoint _endPoint;
-
-            public TcpConnectionFactory(EndPoint endPoint)
-            {
-                _endPoint = endPoint;
-            }
-
             public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
             {
-                // HubConnection should be passing in the HttpEndPoint configured by WithEndPoint. Just ignore it.
-                Trace.Assert(ReferenceEquals(((HttpEndPoint)endPoint).Url, _ignoredEndpoint));
-
-                return new TcpConnection(_endPoint).StartAsync();
+                return new TcpConnection(endPoint).StartAsync();
             }
         }
     }

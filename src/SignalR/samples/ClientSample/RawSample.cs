@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
