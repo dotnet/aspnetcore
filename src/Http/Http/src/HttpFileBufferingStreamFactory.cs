@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Http
 
         public HttpFileBufferingStreamFactory(IOptions<HttpBufferingOptions> bufferingOptions)
         {
+            if (bufferingOptions == null)
+            {
+                throw new ArgumentNullException(nameof(bufferingOptions));
+            }
+
             _bufferingOptions = bufferingOptions.Value;
             _getTempDirectory = () => _tempDirectory;
         }

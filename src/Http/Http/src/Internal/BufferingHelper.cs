@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -21,7 +23,10 @@ namespace Microsoft.AspNetCore.Http
             var body = request.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
+                //In case the Service Provider is not available, creating a default IOptions<HttpBufferingOptions>
+                var httpBufferingOptions = request.HttpContext.RequestServices?.GetService<IOptions<HttpBufferingOptions>>() ?? Options.Create(new HttpBufferingOptions());
+                var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
+                var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 request.Body = fileStream;
                 request.HttpContext.Response.RegisterForDispose(fileStream);
             }
@@ -29,7 +34,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
-            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
+            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null, IOptions<HttpBufferingOptions> httpBufferingOptions = null)
         {
             if (section == null)
             {
@@ -43,7 +48,9 @@ namespace Microsoft.AspNetCore.Http
             var body = section.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
+                httpBufferingOptions ??= Options.Create(new HttpBufferingOptions());
+                var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
+                var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 section.Body = fileStream;
                 registerForDispose(fileStream);
             }
