@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var builder = new HubConnectionBuilder();
             builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Mock.Of<IHubProtocol>(), Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
-            builder.WithUrl("https://www.example.com");
+            builder.WithUrl("http://example.com");
 
             Assert.NotNull(builder.Build());
 

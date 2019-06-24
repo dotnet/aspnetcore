@@ -35,8 +35,7 @@ namespace ClientSample
 
             Console.WriteLine($"Connecting to {baseUrl}...");
 
-            var uri = new Uri(baseUrl);
-            var connection = new HttpConnection(new HttpEndPoint(uri), new HttpConnectionOptions(), TransferFormat.Text, loggerFactory: null);
+            var connection = new HttpConnection(new HttpConnectionOptions() { Url = new Uri(baseUrl) }, TransferFormat.Text, loggerFactory: null);
 
             try
             {

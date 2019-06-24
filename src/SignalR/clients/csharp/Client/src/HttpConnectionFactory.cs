@@ -61,19 +61,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </returns>
         public async ValueTask<ConnectionContext> ConnectAsync(EndPoint httpEndPoint, CancellationToken cancellationToken = default)
         {
-            var castedHttpEndPoint = httpEndPoint as HttpEndPoint;
-
             if (httpEndPoint == null)
             {
                 throw new ArgumentNullException(nameof(httpEndPoint));
             }
 
+            var castedHttpEndPoint = httpEndPoint as HttpEndPoint;
             if (castedHttpEndPoint == null)
             {
                 throw new NotSupportedException($"The provided {nameof(EndPoint)} must be of type {nameof(HttpEndPoint)}.");
             }
 
-            var connection = new HttpConnection(castedHttpEndPoint, _httpConnectionOptions, _transferFormat, _loggerFactory);
+            if (_httpConnectionOptions.Url != null && _httpConnectionOptions.Url != castedHttpEndPoint.Url)
+            {
+                throw new InvalidOperationException($"If {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Url)} was set, it must match the {nameof(HttpEndPoint)}.{nameof(HttpEndPoint.Url)} passed to {nameof(ConnectAsync)}.");
+            }
+
+            var shallowCopiedOptions = ShallowCopyHttpConnectionOptions(_httpConnectionOptions);
+            shallowCopiedOptions.Url ??= castedHttpEndPoint.Url;
+
+            var connection = new HttpConnection(shallowCopiedOptions, _transferFormat, _loggerFactory);
 
             try
             {
@@ -86,6 +93,27 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await connection.DisposeAsync();
                 throw;
             }
+        }
+
+        // Internal for testing
+        internal HttpConnectionOptions ShallowCopyHttpConnectionOptions(HttpConnectionOptions options)
+        {
+            return new HttpConnectionOptions
+            {
+                HttpMessageHandlerFactory = options.HttpMessageHandlerFactory,
+                Headers = options.Headers,
+                ClientCertificates = options.ClientCertificates,
+                Cookies = options.Cookies,
+                Url = options.Url,
+                Transports = options.Transports,
+                SkipNegotiation = options.SkipNegotiation,
+                AccessTokenProvider = options.AccessTokenProvider,
+                CloseTimeout = options.CloseTimeout,
+                Credentials = options.Credentials,
+                Proxy = options.Proxy,
+                UseDefaultCredentials = options.UseDefaultCredentials,
+                WebSocketConfiguration = options.WebSocketConfiguration,
+            };
         }
     }
 }

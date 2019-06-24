@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = default(ReconnectingConnectionFactory);
                     var startCallCount = 0;
                     var originalConnectionId = "originalConnectionId";
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var startCallCount = 0;
 
                     Task OnTestConnectionStart()
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -718,7 +718,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     async Task OnTestConnectionStart()
@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("https://www.example.com");
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 

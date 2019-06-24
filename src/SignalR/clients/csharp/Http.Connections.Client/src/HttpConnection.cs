@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _disposed;
         private bool _hasInherentKeepAlive;
 
-        private readonly HttpEndPoint _httpEndPoint;
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
         private readonly TransferFormat _transferFormat;
@@ -130,11 +129,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="httpConnectionOptions">The connection options to use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
-            : this(ValidateHttpConnnectionOptionAndCreateHttpEndpoint(httpConnectionOptions), httpConnectionOptions, TransferFormat.Binary, loggerFactory)
+            : this(httpConnectionOptions, TransferFormat.Binary, loggerFactory)
         {
         }
 
-        private static HttpEndPoint ValidateHttpConnnectionOptionAndCreateHttpEndpoint(HttpConnectionOptions httpConnectionOptions)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
+        /// </summary>
+        /// <param name="httpConnectionOptions">The connection options to use.</param>
+        /// <param name="transferFormat">The transfer format the connection should use.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        public HttpConnection(HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory)
         {
             if (httpConnectionOptions == null)
             {
@@ -146,29 +151,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
             }
 
-            return new HttpEndPoint(httpConnectionOptions.Url);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
-        /// </summary>
-        /// <param name="httpEndPoint">The <see cref="HttpEndPoint"/> to connect to. This overrides <see cref="HttpConnectionOptions.Url"/>.</param>
-        /// <param name="httpConnectionOptions">The connection options to use.</param>
-        /// <param name="transferFormat">The transfer format the connection should use.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public HttpConnection(HttpEndPoint httpEndPoint, HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory)
-        {
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
-            _httpEndPoint = httpEndPoint ?? throw new ArgumentNullException(nameof(httpEndPoint));
             _httpConnectionOptions = httpConnectionOptions ?? throw new ArgumentNullException(nameof(httpConnectionOptions));
             _transferFormat = transferFormat;
-
-            if (httpConnectionOptions.Url != null && httpConnectionOptions.Url != httpEndPoint.Url)
-            {
-                throw new InvalidOperationException($"If {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Url)} is set, it must match {nameof(HttpEndPoint)}.{nameof(httpEndPoint.Url)}.");
-            }
 
             if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
@@ -183,7 +170,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         // Used by unit tests
         internal HttpConnection(HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
-            : this(new HttpEndPoint(httpConnectionOptions.Url), httpConnectionOptions, transferFormat, loggerFactory)
+            : this(httpConnectionOptions, transferFormat, loggerFactory)
         {
             // Don't null out the _transportFactory if one isn't provided.
             if (transportFactory != null)
@@ -299,7 +286,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
-            var uri = _httpEndPoint.Url;
+            var uri = _httpConnectionOptions.Url;
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
 

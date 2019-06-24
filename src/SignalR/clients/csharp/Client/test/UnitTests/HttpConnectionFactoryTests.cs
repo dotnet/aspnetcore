@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -31,6 +32,37 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             // We care that the handler (and by extension the client) was disposed
             Assert.True(testHandler.Disposed);
+        }
+
+        [Fact]
+        public async Task DoesNotSupportNonHttpEndPoints()
+        {
+            var factory = new HttpConnectionFactory(
+                Mock.Of<IHubProtocol>(p => p.TransferFormat == TransferFormat.Text),
+                Options.Create(new HttpConnectionOptions()),
+                NullLoggerFactory.Instance);
+
+            var ex = await Assert.ThrowsAsync<NotSupportedException>(async () => await factory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 0)));
+
+            Assert.Equal("The provided EndPoint must be of type HttpEndPoint.", ex.Message);
+        }
+
+        [Fact]
+        public async Task OptionsUrlMustMatchEndPointIfSet()
+        {
+            var url1 = new Uri("http://example.com/1");
+            var url2 = new Uri("http://example.com/2");
+
+            var factory = new HttpConnectionFactory(
+                Mock.Of<IHubProtocol>(p => p.TransferFormat == TransferFormat.Text),
+                Options.Create(new HttpConnectionOptions
+                {
+                    Url = url1
+                }),
+                NullLoggerFactory.Instance);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await factory.ConnectAsync(new HttpEndPoint(url2)));
+            Assert.Equal("If HttpConnectionOptions.Url was set, it must match the HttpEndPoint.Url passed to ConnectAsync.", ex.Message);
         }
     }
 }

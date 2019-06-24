@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 var httpEndpoint = (HttpEndPoint)endPoint;
                 var options = new HttpConnectionOptions { Url = httpEndpoint.Url, Transports = transportType };
-                var connection = new HttpConnection(httpEndpoint, options, transferFormat, loggerFactory);
+                var connection = new HttpConnection(options, transferFormat, loggerFactory);
 
                 await connection.StartAsync();
 

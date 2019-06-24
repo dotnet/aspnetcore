@@ -78,8 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartServer<Startup>(out var server))
             {
                 var url = server.Url + "/echo";
-                var endPoint = new HttpEndPoint(new Uri(url));
-                var connection = new HttpConnection(endPoint, new HttpConnectionOptions { Transports = transportType }, TransferFormat.Text, LoggerFactory);
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType }, TransferFormat.Text, LoggerFactory);
                 await connection.StartAsync().OrTimeout();
                 await connection.DisposeAsync().OrTimeout();
             }
@@ -266,8 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Major Key";
 
                 var url = server.Url + "/echo";
-                var endPoint = new HttpEndPoint(new Uri(url));
-                var connection = new HttpConnection(endPoint, new HttpConnectionOptions { Transports = transportType }, requestedTransferFormat, LoggerFactory);
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType }, requestedTransferFormat, LoggerFactory);
                 try
                 {
                     logger.LogInformation("Starting connection to {url}", url);
@@ -472,11 +470,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
 
                 var url = server.Url + "/auth";
-                var endPoint = new HttpEndPoint(new Uri(url));
                 var connection = new HttpConnection(
-                    endPoint,
                     new HttpConnectionOptions()
                     {
+                        Url = new Uri(url),
                         AccessTokenProvider = () => Task.FromResult(token),
                         Transports = HttpTransportType.ServerSentEvents
                     },
