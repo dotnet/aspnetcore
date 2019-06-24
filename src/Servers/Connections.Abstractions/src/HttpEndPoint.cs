@@ -6,6 +6,9 @@ using System.Net;
 
 namespace Microsoft.AspNetCore.Connections
 {
+    /// <summary>
+    /// An <see cref="EndPoint"/> defined by a <see cref="Uri"/>.
+    /// </summary>
     public class HttpEndPoint : EndPoint
     {
         public HttpEndPoint(Uri url)
@@ -13,6 +16,9 @@ namespace Microsoft.AspNetCore.Connections
             Url = url ?? throw new ArgumentNullException(nameof(url));
         }
 
+        /// <summary>
+        /// The <see cref="Uri"/> defining the <see cref="EndPoint"/>.
+        /// </summary>
         public Uri Url { get;  }
     }
 }
