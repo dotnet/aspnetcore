@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""@(x => Clicked = true)"" />
+<button @onclick=""x => Clicked = true"" />
 @code {
     public bool Clicked { get; set; }
 }");
@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""@OnClick"" />
+<button @onclick=""OnClick"" />
 @code {
     public void OnClick(UIMouseEventArgs e) { Clicked = true; }
     public bool Clicked { get; set; }

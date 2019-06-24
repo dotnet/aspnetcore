@@ -144,7 +144,7 @@
 
 <h2>Select</h2>
 <p>
-    <select id="select-box" @bind="@selectValue">
+    <select id="select-box" @bind="selectValue">
         <option value=@SelectableValue.First>First choice</option>
         <option value=@SelectableValue.Second>Second choice</option>
         <option value=@SelectableValue.Third>Third choice</option>
@@ -154,7 +154,7 @@
         }
     </select>
     <span id="select-box-value">@selectValue</span>
-    <button id="select-box-add-option" @onclick="@AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
 </p>
 
 @code {
