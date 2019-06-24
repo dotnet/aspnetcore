@@ -13,14 +13,19 @@ namespace Microsoft.AspNetCore.RequestThrottling
     internal sealed class RequestThrottlingEventSource : EventSource
     {
         public static readonly RequestThrottlingEventSource Log = new RequestThrottlingEventSource();
+        private static QueueFrame _cachedNonTimerResult = new QueueFrame
+        {
+            _parent = Log
+        };
 
         private PollingCounter _rejectedRequestsCounter;   // incrementing polling counter
         private PollingCounter _queueLengthCounter;        // polling counter
         private EventCounter _queueDuration;     // event counter average
 
-        private long _rejectedRequests;
-        private int _queueLength;
+        internal long _rejectedRequests;
+        internal int _queueLength;
 
+    
         internal RequestThrottlingEventSource()
             : base("Microsoft.AspNetCore.RequestThrottling")
         {
@@ -52,7 +57,8 @@ namespace Microsoft.AspNetCore.RequestThrottling
                     _parent = this
                 };
             }
-            return default;
+
+            return _cachedNonTimerResult;
         }
 
         internal struct QueueFrame : IDisposable
@@ -64,10 +70,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 Interlocked.Decrement(ref _parent._queueLength);
 
-                if (Log.IsEnabled())
+                if (_parent.IsEnabled())
                 {
                     var duration = _timer.IsActive ? _timer.GetElapsedTime().TotalMilliseconds : 0.0;
-                    Log._queueDuration.WriteMetric(duration);
+                    _parent._queueDuration.WriteMetric(duration);
                 }
             }
         }
@@ -92,14 +98,5 @@ namespace Microsoft.AspNetCore.RequestThrottling
                 };
             }
         }
-
-        // two functions for unit tests, hopefully there's a better pattern
-        // put these in an extensions file in the test folder?
-        internal int QueuedRequests => _queueLength;
-
-        internal void Reset()
-        {
-            _queueLength = 0;
-        }
-    }
+     }
 }

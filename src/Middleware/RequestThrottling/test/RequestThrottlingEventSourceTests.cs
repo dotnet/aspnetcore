@@ -59,10 +59,9 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             using var eventSource = GetRequestThrottlingEventSource();
 
-            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
             var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token).GetAsyncEnumerator();
-            //var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
 
             eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
                 new Dictionary<string, string>
@@ -89,6 +88,48 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             Assert.True(await UntilValueMatches(lengthValues, 0));
         }
 
+        [Fact]
+        public async Task TracksDurationSpentInQueue()
+        {
+            // Arrange
+            using var eventListener = new TestCounterListener(new[] {
+                "queue-length",
+                "queue-duration",
+                "requests-rejected",
+            });
+
+            using var eventSource = GetRequestThrottlingEventSource();
+
+            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+            var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
+
+            eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
+                new Dictionary<string, string>
+                {
+                    {"EventCounterIntervalSec", "1" }
+                });
+
+            // Act
+            Assert.True(await UntilValueMatches(durationValues, 0));
+
+            using (eventSource.QueueTimer())
+            {
+                Assert.True(await UntilValueMatches(durationValues, 0));
+            }
+
+            // check that something (anything!) has been written
+            while (await durationValues.MoveNextAsync())
+            {
+                if (durationValues.Current > 0)
+                {
+                    return;
+                }
+            }
+
+            throw new TimeoutException();
+        }
+
         private async Task<bool> UntilValueMatches(IAsyncEnumerator<double> enumerator, int value)
         {
             while (await enumerator.MoveNextAsync())
@@ -98,7 +139,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     return true;
                 }
             }
-            return default;
+
+            return false;
         }
 
         private static RequestThrottlingEventSource GetRequestThrottlingEventSource()
