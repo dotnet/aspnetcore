@@ -33,22 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact]
-        public override async Task Formatting_ProblemDetails()
-        {
-            using var _ = new ActivityReplacer();
-
-            // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.ProblemDetailsResult)}");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-
-            var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
-            Assert.Equal("Not Found", obj.Value<string>("title"));
-            Assert.Equal("404", obj.Value<string>("status"));
-        }
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11522")]
+        public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
         [Fact]
         public override Task Formatting_PolymorphicModel() => base.Formatting_PolymorphicModel();

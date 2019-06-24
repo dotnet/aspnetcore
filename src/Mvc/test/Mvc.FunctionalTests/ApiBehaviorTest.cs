@@ -340,57 +340,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact]
-        public override async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/pull/11460")]
+        public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
         {
-            // Arrange
-            using var _ = new ActivityReplacer();
-
-            var contactModel = new Contact
-            {
-                Name = "Abc",
-                City = "Redmond",
-                State = "WA",
-                Zip = "Invalid",
-            };
-            var contactString = JsonConvert.SerializeObject(contactModel);
-
-            // Act
-            var response = await Client.PostAsJsonAsync("/contact", contactModel);
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
-            var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(
-                await response.Content.ReadAsStringAsync(),
-                new JsonSerializerSettings
-                {
-                    Converters = { new ValidationProblemDetailsConverter() }
-                });
-            Assert.Collection(
-                problemDetails.Errors.OrderBy(kvp => kvp.Key),
-                kvp =>
-                {
-                    Assert.Equal("Name", kvp.Key);
-                    var error = Assert.Single(kvp.Value);
-                    Assert.Equal("The field Name must be a string with a minimum length of 5 and a maximum length of 30.", error);
-                },
-                kvp =>
-                {
-                    Assert.Equal("Zip", kvp.Key);
-                    var error = Assert.Single(kvp.Value);
-                    Assert.Equal("The field Zip must match the regular expression '\\d{5}'.", error);
-                }
-            );
-
-            Assert.Collection(
-                problemDetails.Extensions,
-                 kvp =>
-                 {
-                     Assert.Equal("extensions", kvp.Key);
-                     var jObject = Assert.IsType<JObject>(kvp.Value);
-                     Assert.Equal("traceId", Assert.Single(jObject.Properties()).Name);
-                 });
+            return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
         }
 
         [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
