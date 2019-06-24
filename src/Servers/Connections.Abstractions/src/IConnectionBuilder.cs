@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Connections
     public interface IConnectionBuilder
     {
         /// <summary>
-        /// Gets or sets the <see cref="IServiceProvider"/> that provides access to the application's service container.
+        /// Gets the <see cref="IServiceProvider"/> that provides access to the application's service container.
         /// </summary>
         IServiceProvider ApplicationServices { get; }
 
