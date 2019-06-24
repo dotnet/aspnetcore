@@ -25,6 +25,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public void CannotCreateConnectionWithNullUrlOnOptions()
+        {
+            var builder = new HubConnectionBuilder();
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Mock.Of<IHubProtocol>(), Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+            Assert.Equal("Cannot create HubConnection instance. HttpConnectionOptions.Url was not configured.", ex.Message);
+        }
+
+        [Fact]
         public void AddJsonProtocolSetsHubProtocolToJsonWithDefaultOptions()
         {
             var serviceProvider = new HubConnectionBuilder().AddNewtonsoftJsonProtocol().Services.BuildServiceProvider();

@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             if (httpConnectionOptions.Value.Url == null)
             {
-                throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
+                throw new ArgumentException($"{nameof(HttpConnectionOptions)} does not have a URL specified.", nameof(httpConnectionOptions));
             }
 
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));

@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 using ClientSample;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
+using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
     public static class TcpHubConnectionBuilderExtensions
     {
+        private static readonly Uri _ignoredEndpoint = new Uri("https://www.example.com");
+
         public static IHubConnectionBuilder WithEndPoint(this IHubConnectionBuilder builder, Uri uri)
         {
             if (!string.Equals(uri.Scheme, "net.tcp", StringComparison.Ordinal))
@@ -37,6 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             builder.Services.AddSingleton<IConnectionFactory>(new TcpConnectionFactory(endPoint));
 
+            // Set HttpConnectionOptions.Url, so HubConnectionBuilder.Build() doesn't complain about no URL being configured.
+            builder.Services.Configure<HttpConnectionOptions>(o =>
+            {
+                o.Url = _ignoredEndpoint;
+            });
+
             return builder;
         }
 
@@ -51,16 +59,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
             {
-                // HubConnection should be passing in a default HttpEndPoint based on the unconfigured HttpConnectionOptions. Just ignore it.
-                Trace.Assert(endPoint is HttpEndPoint);
-                Trace.Assert(((HttpEndPoint)endPoint).Url == null);
+                // HubConnection should be passing in the HttpEndPoint configured by WithEndPoint. Just ignore it.
+                Trace.Assert(ReferenceEquals(((HttpEndPoint)endPoint).Url, _ignoredEndpoint));
 
                 return new TcpConnection(_endPoint).StartAsync();
-            }
-
-            public Task DisposeAsync(ConnectionContext connection)
-            {
-                return connection.DisposeAsync().AsTask();
             }
         }
     }
