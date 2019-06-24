@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
+    internal class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature, IThreadPoolWorkItem
     {
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
@@ -21,9 +21,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
         private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly long _id;
+        private readonly ServiceContext _serviceContext;
+        private readonly ConnectionDelegate _connectionDelegate;
 
-        public KestrelConnection(ConnectionContext connectionContext, ILogger logger)
+        public KestrelConnection(long id,
+                                 ServiceContext serviceContext,
+                                 ConnectionDelegate connectionDelegate,
+                                 ConnectionContext connectionContext,
+                                 IKestrelTrace logger)
         {
+            _id = id;
+            _serviceContext = serviceContext;
+            _connectionDelegate = connectionDelegate;
             Logger = logger;
             TransportConnection = connectionContext;
 
@@ -35,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
-        private ILogger Logger { get; }
+        private IKestrelTrace Logger { get; }
 
         public ConnectionContext TransportConnection { get; set; }
         public CancellationToken ConnectionClosedRequested { get; set; }
@@ -165,6 +175,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _completionTcs.TrySetResult(null);
 
             _connectionClosingCts.Dispose();
+        }
+
+        public void Execute()
+        {
+            _ = ExecuteAsync(this);
+        }
+
+        private async Task ExecuteAsync(KestrelConnection connection)
+        {
+            var connectionContext = connection.TransportConnection;
+
+            try
+            {
+                _serviceContext.ConnectionManager.AddConnection(_id, connection);
+
+                Logger.ConnectionStart(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStart(connectionContext);
+
+                using (BeginConnectionScope(connectionContext))
+                {
+                    try
+                    {
+                        await _connectionDelegate(connectionContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(0, ex, "Unhandled exception while processing {ConnectionId}.", connectionContext.ConnectionId);
+                    }
+                }
+            }
+            finally
+            {
+                await connection.FireOnCompletedAsync();
+
+                Logger.ConnectionStop(connectionContext.ConnectionId);
+                KestrelEventSource.Log.ConnectionStop(connectionContext);
+
+                // Dispose the transport connection, this needs to happen before removing it from the
+                // connection manager so that we only signal completion of this connection after the transport
+                // is properly torn down.
+                await connection.TransportConnection.DisposeAsync();
+
+                _serviceContext.ConnectionManager.RemoveConnection(_id);
+            }
+        }
+
+        private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
+        {
+            if (Logger.IsEnabled(LogLevel.Critical))
+            {
+                return Logger.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
+            }
+
+            return null;
         }
     }
 }
