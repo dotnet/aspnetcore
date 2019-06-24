@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // Internal for testing
-        internal HttpConnectionOptions ShallowCopyHttpConnectionOptions(HttpConnectionOptions options)
+        internal static HttpConnectionOptions ShallowCopyHttpConnectionOptions(HttpConnectionOptions options)
         {
             return new HttpConnectionOptions
             {
