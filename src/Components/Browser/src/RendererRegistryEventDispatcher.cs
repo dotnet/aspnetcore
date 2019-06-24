@@ -21,9 +21,38 @@ namespace Microsoft.AspNetCore.Components.Browser
         public static Task DispatchEvent(
             BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
+            InterpretEventDescriptor(eventDescriptor);
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
             var renderer = RendererRegistry.Current.Find(eventDescriptor.BrowserRendererId);
-            return renderer.DispatchEventAsync(eventDescriptor.EventHandlerId, eventArgs);
+            return renderer.DispatchEventAsync(eventDescriptor.EventHandlerId, eventDescriptor.EventFieldInfo, eventArgs);
+        }
+
+        private static void InterpretEventDescriptor(BrowserEventDescriptor eventDescriptor)
+        {
+            // The incoming field value can be either a bool or a string, but since the .NET property
+            // type is 'object', it will deserialize initially as a JsonElement
+            var fieldInfo = eventDescriptor.EventFieldInfo;
+            if (fieldInfo != null)
+            {
+                if (fieldInfo.FieldValue is JsonElement attributeValueJsonElement)
+                {
+                    switch (attributeValueJsonElement.Type)
+                    {
+                        case JsonValueType.True:
+                        case JsonValueType.False:
+                            fieldInfo.FieldValue = attributeValueJsonElement.GetBoolean();
+                            break;
+                        default:
+                            fieldInfo.FieldValue = attributeValueJsonElement.GetString();
+                            break;
+                    }
+                }
+                else
+                {
+                    // Unanticipated value type. Ensure we don't do anything with it.
+                    eventDescriptor.EventFieldInfo = null;
+                }
+            }
         }
 
         private static UIEventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
@@ -105,6 +134,11 @@ namespace Microsoft.AspNetCore.Components.Browser
             /// For framework use only.
             /// </summary>
             public string EventArgsType { get; set; }
+
+            /// <summary>
+            /// For framework use only.
+            /// </summary>
+            public EventFieldInfo EventFieldInfo { get; set; }
         }
     }
 }
