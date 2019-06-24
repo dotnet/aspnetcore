@@ -490,8 +490,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(frames,
-                frame => AssertFrame.Element(frame, "button", 2, 0),
-                frame => AssertFrame.Attribute(frame, "onclick", "function(){console.log('hello');};", 1));
+                frame => AssertFrame.Markup(frame, "<button onclick=\"function(){console.log('hello');};\"></button>", 0));
         }
 
         [Fact]
