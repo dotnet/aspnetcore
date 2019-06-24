@@ -23,8 +23,7 @@ namespace Microsoft.AspNetCore.Http
             var body = request.Body;
             if (!body.CanSeek)
             {
-                //In case the Service Provider is not available, creating a default IOptions<HttpBufferingOptions>
-                var httpBufferingOptions = request.HttpContext.RequestServices?.GetService<IOptions<HttpBufferingOptions>>() ?? Options.Create(new HttpBufferingOptions());
+                var httpBufferingOptions = request.HttpContext.RequestServices.GetService<IOptions<HttpBufferingOptions>>() ?? Options.Create(new HttpBufferingOptions());
                 var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
                 var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 request.Body = fileStream;

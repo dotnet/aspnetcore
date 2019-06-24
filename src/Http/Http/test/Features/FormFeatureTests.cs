@@ -7,6 +7,8 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public async Task ReadFormAsync_0ContentLength_ReturnsEmptyForm()
         {
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public async Task FormFeatureReadsOptionsFromDefaultHttpContext()
         {
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
             context.FormOptions = new FormOptions
             {
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public async Task ReadFormAsync_SimpleData_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
@@ -89,7 +91,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public async Task ReadFormAsync_SimpleData_ReplacePipeReader_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
@@ -198,7 +200,7 @@ InvalidContentDispositionValue +
         public async Task ReadForm_EmptyMultipart_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(EmptyMultipartForm);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -233,7 +235,7 @@ InvalidContentDispositionValue +
         public async Task ReadForm_MultipartWithField_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithField);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -270,7 +272,7 @@ InvalidContentDispositionValue +
         public async Task ReadFormAsync_MultipartWithFile_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithFile);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -318,7 +320,7 @@ InvalidContentDispositionValue +
         public async Task ReadFormAsync_MultipartWithFileAndQuotedBoundaryString_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithSpecialCharacters);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentTypeWithSpecialCharacters;
@@ -355,7 +357,7 @@ InvalidContentDispositionValue +
         public async Task ReadFormAsync_MultipartWithEncodedFilename_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithEncodedFilename);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -403,7 +405,7 @@ InvalidContentDispositionValue +
         public async Task ReadFormAsync_MultipartWithFieldAndFile_ReturnsParsedFormCollection(bool bufferRequest)
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithFieldAndFile);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -455,7 +457,7 @@ InvalidContentDispositionValue +
             formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormField));
             formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
 
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -480,7 +482,7 @@ InvalidContentDispositionValue +
             formContent.AddRange(Encoding.UTF8.GetBytes(MultipartFormEnd));
 
 
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -505,7 +507,7 @@ InvalidContentDispositionValue +
         {
             var fileContents = CreateFile(fileSize);
             var formContent = CreateMultipartWithFormAndFile(fileContents);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -548,7 +550,7 @@ InvalidContentDispositionValue +
         public async Task ReadFormAsync_MultipartWithInvalidContentDisposition_Throw()
         {
             var formContent = Encoding.UTF8.GetBytes(MultipartFormWithInvalidContentDispositionValue);
-            var context = new DefaultHttpContext();
+            var context = GetDefaultHttpContext();
             var responseFeature = new FakeResponseFeature();
             context.Features.Set<IHttpResponseFeature>(responseFeature);
             context.Request.ContentType = MultipartContentType;
@@ -624,6 +626,17 @@ MultipartFormField +
                 Assert.Equal(readA, readB);
                 loops++;
             }
+        }
+
+        private static DefaultHttpContext GetDefaultHttpContext()
+        {
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new ServiceCollection()
+                .AddSingleton(Options.Create(new HttpBufferingOptions()))
+                .BuildServiceProvider()
+            };
+            return httpContext;
         }
     }
 }
