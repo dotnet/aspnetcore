@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     [HtmlTargetElement("track", Attributes = "[src^='~/']", TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("video", Attributes = "[src^='~/']")]
     [HtmlTargetElement("video", Attributes = "[poster^='~/']")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public class UrlResolutionTagHelper : TagHelper
     {
         // Valid whitespace characters defined by the HTML5 spec.
