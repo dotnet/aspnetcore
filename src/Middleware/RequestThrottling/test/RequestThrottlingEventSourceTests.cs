@@ -1,16 +1,16 @@
+// Copyright(c) .NET Foundation.All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             // Arrange
             var expectedId = 1;
             var eventListener = new TestEventListener(expectedId);
-            var eventSource = new RequestThrottlingEventSource();
+            var eventSource = GetRequestThrottlingEventSource();
             eventListener.EnableEvents(eventSource, EventLevel.Informational);
 
             // Act
@@ -47,12 +47,63 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             Assert.Empty(eventData.Payload);
         }
 
+        [Fact]
+        public async Task TracksQueueLength()
+        {
+            // Arrange
+            using var eventListener = new TestCounterListener(new[] {
+                "queue-length",
+                "queue-duration",
+                "requests-rejected",
+            });
 
-        // TODO test:
-        //  the queue length tracking
-        //  the queue duration tracking
+            using var eventSource = GetRequestThrottlingEventSource();
 
-        // this means using TestCounterListener
+            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
+            var lengthValues = eventListener.GetCounterValues("queue-length", timeoutTokenSource.Token).GetAsyncEnumerator();
+            //var durationValues = eventListener.GetCounterValues("queue-duration", timeoutTokenSource.Token).GetAsyncEnumerator();
+
+            eventListener.EnableEvents(eventSource, EventLevel.Informational, EventKeywords.None,
+                new Dictionary<string, string>
+                {
+                    {"EventCounterIntervalSec", "1" }
+                });
+
+            // Act
+            eventSource.RequestRejected();
+
+            Assert.True(await UntilValueMatches(lengthValues, 0));
+            using (eventSource.QueueTimer())
+            {
+                Assert.True(await UntilValueMatches(lengthValues, 1));
+
+                using (eventSource.QueueTimer())
+                {
+                    Assert.True(await UntilValueMatches(lengthValues, 2));
+                }
+
+                Assert.True(await UntilValueMatches(lengthValues, 1));
+            }
+
+            Assert.True(await UntilValueMatches(lengthValues, 0));
+        }
+
+        private async Task<bool> UntilValueMatches(IAsyncEnumerator<double> enumerator, int value)
+        {
+            while (await enumerator.MoveNextAsync())
+            {
+                if (enumerator.Current == value)
+                {
+                    return true;
+                }
+            }
+            return default;
+        }
+
+        private static RequestThrottlingEventSource GetRequestThrottlingEventSource()
+        {
+            return new RequestThrottlingEventSource(Guid.NewGuid().ToString());
+        }
     }
 }

@@ -206,6 +206,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     { "EventCounterIntervalSec", "1" }
                 });
 
+            // Act & Assert
             hostingEventSource.RequestStart("GET", "/");
 
             Assert.Equal(1, await totalRequestValues.FirstOrDefault(v => v == 1));

@@ -26,11 +26,17 @@ namespace Microsoft.AspNetCore.RequestThrottling
         {
         }
 
+        // Used for testing
+        internal RequestThrottlingEventSource(string eventSourceName)
+            : base(eventSourceName)
+        {
+        }
+
         [Event(1, Level = EventLevel.Warning)]
         public void RequestRejected()
         {
-            WriteEvent(1);
             Interlocked.Increment(ref _rejectedRequests);
+            WriteEvent(1);
         }
 
         [NonEvent]
@@ -42,7 +48,8 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 return new QueueFrame
                 {
-                    _timer = ValueStopwatch.StartNew()
+                    _timer = ValueStopwatch.StartNew(),
+                    _parent = this
                 };
             }
             return default;
@@ -51,10 +58,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
         internal struct QueueFrame : IDisposable
         {
             internal ValueStopwatch _timer;
+            internal RequestThrottlingEventSource _parent;
 
             public void Dispose()
             {
-                Interlocked.Decrement(ref Log._queueLength);
+                Interlocked.Decrement(ref _parent._queueLength);
 
                 if (Log.IsEnabled())
                 {
