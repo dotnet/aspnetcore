@@ -4,6 +4,8 @@
 using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
@@ -15,11 +17,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private static object CircuitHostKey = new object();
         private static object CancellationStatusKey = new object();
+        private static readonly JsonSerializerOptions _jsonSerializationOptions =
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _registry;
 
-        public CircuitPrerenderer(CircuitFactory circuitFactory, CircuitRegistry registry)
+        public CircuitPrerenderer(
+            CircuitFactory circuitFactory,
+            CircuitRegistry registry)
         {
             _circuitFactory = circuitFactory;
             _registry = registry;
@@ -76,8 +82,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Prerendered = true
             });
 
+            var record = JsonSerializer.ToString(new PrerenderedComponentRecord(
+                    circuitHost.CircuitId.Replace("--", ".."), // We need to do this due to the fact that -- is not allowed within HTML comments and HTML doesn't encode '-'.
+                    circuitHost.Renderer.Id,
+                    renderResult.ComponentId),
+                _jsonSerializationOptions);
+
             var result = (new[] {
-                $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
+                $"<!-- M.A.C.Component: {record} -->",
             }).Concat(renderResult.Tokens).Concat(
                 new[] {
                     $"<!-- M.A.C.Component: {renderResult.ComponentId} -->"
@@ -167,6 +179,22 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             return result;
+        }
+
+        private struct PrerenderedComponentRecord
+        {
+            public PrerenderedComponentRecord(string circuitId, int rendererId, int componentId)
+            {
+                CircuitId = circuitId;
+                RendererId = rendererId;
+                ComponentId = componentId;
+            }
+
+            public string CircuitId { get; }
+
+            public int RendererId { get; }
+
+            public int ComponentId { get; }
         }
 
         private class PrerenderingCancellationStatus
