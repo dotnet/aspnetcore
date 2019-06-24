@@ -48,7 +48,7 @@ namespace RoutingWebSite
         private class Transformer : DynamicRouteValueTransformer
         {
             // Turns a format like `controller=Home,action=Index` into an RVD
-            public override Task<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
+            public override ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
             {
                 var kvps = ((string)values["slug"]).Split(",");
 
@@ -59,7 +59,7 @@ namespace RoutingWebSite
                     results[split[0]] = split[1];
                 }
 
-                return Task.FromResult(results);
+                return new ValueTask<RouteValueDictionary>(results);
             }
         }
     }

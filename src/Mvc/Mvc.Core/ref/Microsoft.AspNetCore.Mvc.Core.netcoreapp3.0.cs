@@ -2914,7 +2914,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public abstract partial class DynamicRouteValueTransformer
     {
         protected DynamicRouteValueTransformer() { }
-        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Routing.RouteValueDictionary> TransformAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary values);
+        public abstract System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Routing.RouteValueDictionary> TransformAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary values);
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
     public abstract partial class HttpMethodAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.Routing.IActionHttpMethodProvider, Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider
