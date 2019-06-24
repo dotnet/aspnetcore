@@ -11,6 +11,14 @@
 
     <RazorSdkCurrentVersionProps>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
     <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
+  
+    <!-- Necessary while testing with unreleased packages. -->
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
+      https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
+      https://api.nuget.org/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 
   <PropertyGroup>

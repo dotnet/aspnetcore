@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static readonly string[] AllowedBuildWarnings = new[]
         {
             "MSB3491" , // The process cannot access the file. As long as the build succeeds, we're ok.
+            "NETSDK1071", // "A PackageReference to 'Microsoft.NETCore.App' specified a Version ..."
         };
 
         public static void BuildPassed(MSBuildResult result, bool allowWarnings = false)
