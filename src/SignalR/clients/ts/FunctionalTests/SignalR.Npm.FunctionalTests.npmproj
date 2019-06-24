@@ -7,7 +7,7 @@
     <BrowserTestHostName Condition="'$(ContinuousIntegrationBuild)' == 'true'">sauce.local</BrowserTestHostName>
     <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
-    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:local --no-color --configuration $(Configuration)</NpmTestArgs>
+    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:inner --no-color --configuration $(Configuration)</NpmTestArgs>
   </PropertyGroup>
 
   <ItemGroup>
