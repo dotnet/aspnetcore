@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public string StartCircuit(string circuitId, string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
-            var preregisterredDescriptors = DefaultCircuitFactory.ResolveComponentMetadata(
+            var preregisteredDescriptors = DefaultCircuitFactory.ResolveComponentMetadata(
                 Context.GetHttpContext(),
                 circuitClient);
 
