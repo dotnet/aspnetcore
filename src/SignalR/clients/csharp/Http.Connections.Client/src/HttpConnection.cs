@@ -131,8 +131,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="httpConnectionOptions">The connection options to use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
-            : this(new HttpEndPoint(httpConnectionOptions.Url), httpConnectionOptions, TransferFormat.Binary, loggerFactory)
+            : this(ValidateHttpConnnectionOptionAndCreateHttpEndpoint(httpConnectionOptions), httpConnectionOptions, TransferFormat.Binary, loggerFactory)
         {
+        }
+
+        private static HttpEndPoint ValidateHttpConnnectionOptionAndCreateHttpEndpoint(HttpConnectionOptions httpConnectionOptions)
+        {
+            if (httpConnectionOptions == null)
+            {
+                throw new ArgumentNullException(nameof(httpConnectionOptions));
+            }
+
+            if (httpConnectionOptions.Url == null)
+            {
+                throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
+            }
+
+            return new HttpEndPoint(httpConnectionOptions.Url);
         }
 
         /// <summary>

@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     new JsonHubProtocol(),
                     Options.Create(new HttpConnectionOptions
                     {
-                        Url = new Uri(server.Url + "/version"),
                         Transports = transportType
                     }),
                     LoggerFactory);
@@ -116,6 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var proxyConnectionFactory = new ProxyConnectionFactory(httpConnectionFactory);
 
                 var connectionBuilder = new HubConnectionBuilder()
+                    .WithUrl(new Uri(server.Url + "/version"))
                     .WithLoggerFactory(LoggerFactory);
                 connectionBuilder.Services.AddSingleton<IHubProtocol>(new VersionedJsonHubProtocol(1000));
                 connectionBuilder.Services.AddSingleton<IConnectionFactory>(proxyConnectionFactory);

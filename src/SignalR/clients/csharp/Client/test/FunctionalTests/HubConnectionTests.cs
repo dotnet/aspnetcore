@@ -46,10 +46,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             hubConnectionBuilder.WithUrl(url + path);
 
-            if (protocol != null)
-            {
-                hubConnectionBuilder.Services.AddSingleton(protocol);
-            }
+            protocol ??= new JsonHubProtocol();
+            hubConnectionBuilder.Services.AddSingleton(protocol);
 
             if (loggerFactory != null)
             {
@@ -61,20 +59,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 hubConnectionBuilder.WithAutomaticReconnect();
             }
 
+            transportType ??= HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents;
+
             var delegateConnectionFactory = new DelegateConnectionFactory(
-                GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents));
+                GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             return hubConnectionBuilder.Build();
         }
 
-        private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
+        private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType, TransferFormat transferFormat)
         {
             return async endPoint =>
             {
                 var httpEndpoint = (HttpEndPoint)endPoint;
                 var options = new HttpConnectionOptions { Url = httpEndpoint.Url, Transports = transportType };
-                var connection = new HttpConnection(httpEndpoint, options, TransferFormat.Binary, loggerFactory);
+                var connection = new HttpConnection(httpEndpoint, options, transferFormat, loggerFactory);
 
                 await connection.StartAsync();
 

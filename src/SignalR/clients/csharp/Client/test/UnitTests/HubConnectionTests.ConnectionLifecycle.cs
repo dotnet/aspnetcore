@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     createCount += 1;
                     return new TestConnection().StartAsync();
                 }
-                var builder = new HubConnectionBuilder();
+                var builder = new HubConnectionBuilder().WithUrl("https://www.example.com");
                 var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return new TestConnection(onDispose: createCount == 1 ? onDisposeForFirstConnection : null).StartAsync();
                 }
 
-                var builder = new HubConnectionBuilder();
+                var builder = new HubConnectionBuilder().WithUrl("https://www.example.com");
                 var delegateConnectionFactory = new DelegateConnectionFactory(ConnectionFactory);
                 builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task HubConnectionClosesWithErrorIfTerminatedWithPartialMessage()
             {
-                var builder = new HubConnectionBuilder();
+                var builder = new HubConnectionBuilder().WithUrl("https://www.example.com");
                 var innerConnection = new TestConnection();
 
                 var delegateConnectionFactory = new DelegateConnectionFactory(
