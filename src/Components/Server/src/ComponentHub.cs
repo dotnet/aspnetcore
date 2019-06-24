@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             // For existing circuits we will simply trigger the rendering of non prerendered
             // components. Otherwise we do a full initialization. Once the reconnection gets
-            // stablished the rest of the lifecycle events will run and the circuit will
+            // established the rest of the lifecycle events will run and the circuit will
             // become connected.
             _ = circuitHost.InitializeAsync(Context.ConnectionAborted, existingCircuit);
 
