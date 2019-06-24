@@ -11,4 +11,17 @@
     <Reference Include="Microsoft.AspNetCore.Blazor" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      $(GetCurrentProjectStaticWebAssetsDependsOn);
+      _ClearCurrentStaticWebAssetsForReferenceDiscovery
+    </GetCurrentProjectStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_ClearCurrentStaticWebAssetsForReferenceDiscovery">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)" Condition="'%(SourceType)' == ''" />
+    </ItemGroup>
+  </Target>
+
 </Project>
