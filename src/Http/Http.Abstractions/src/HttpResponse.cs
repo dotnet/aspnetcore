@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets the response body pipe <see cref="PipeWriter"/>
+        /// Gets the response body <see cref="PipeWriter"/>
         /// </summary>
         public virtual PipeWriter BodyWriter { get => throw new NotImplementedException(); }
 
