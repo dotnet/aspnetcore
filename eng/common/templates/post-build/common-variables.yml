@@ -1,0 +1,9 @@
+variables:
+  # .NET Core 3 Dev
+  PublicDevRelease_30_Channel_Id: 3
+
+  # .NET Tools - Validation
+  PublicValidationRelease_30_Channel_Id: 9
+
+  SourceLinkCLIVersion: 3.0.0
+  SymbolToolVersion: 1.0.1

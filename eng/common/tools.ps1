@@ -92,69 +92,6 @@ function Exec-Process([string]$command, [string]$commandArgs) {
   }
 }
 
-function Write-PipelineTaskError {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Message,
-    [Parameter(Mandatory = $false)]
-    [string]$Type = 'error',
-    [string]$ErrCode,
-    [string]$SourcePath,
-    [string]$LineNumber,
-    [string]$ColumnNumber,
-    [switch]$AsOutput)
-
-    if(!$ci) {
-      if($Type -eq 'error') {
-        Write-Host $Message -ForegroundColor Red
-        return
-      }
-      elseif ($Type -eq 'warning') {
-        Write-Host $Message -ForegroundColor Yellow
-        return
-      }
-    }
-
-    if(($Type -ne 'error') -and ($Type -ne 'warning')) {
-      Write-Host $Message
-      return
-    }
-    if(-not $PSBoundParameters.ContainsKey('Type')) {
-      $PSBoundParameters.Add('Type', 'error')
-    }
-    Write-LogIssue @PSBoundParameters
-}
-
-function Write-PipelineSetVariable {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Name,
-    [string]$Value,
-    [switch]$Secret,
-    [switch]$AsOutput)
-
-    if($ci) {
-      Write-LoggingCommand -Area 'task' -Event 'setvariable' -Data $Value -Properties @{
-        'variable' = $Name
-        'isSecret' = $Secret
-        'isOutput' = 'true'
-      } -AsOutput:$AsOutput
-    }
-}
-
-function Write-PipelinePrependPath {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory=$true)]
-    [string]$Path,
-    [switch]$AsOutput)
-    if($ci) {
-      Write-LoggingCommand -Area 'task' -Event 'prependpath' -Data $Path -AsOutput:$AsOutput
-    }
-}
-
 function InitializeDotNetCli([bool]$install) {
   if (Test-Path variable:global:_DotNetInstallDir) {
     return $global:_DotNetInstallDir
@@ -197,7 +134,7 @@ function InitializeDotNetCli([bool]$install) {
       if ($install) {
         InstallDotNetSdk $dotnetRoot $dotnetSdkVersion
       } else {
-        Write-PipelineTaskError "Unable to find dotnet with SDK version '$dotnetSdkVersion'"
+        Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Unable to find dotnet with SDK version '$dotnetSdkVersion'"
         ExitWithExitCode 1
       }
     }
@@ -245,7 +182,7 @@ function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $archit
 
   & $installScript @installParameters
   if ($lastExitCode -ne 0) {
-    Write-PipelineTaskError -Message "Failed to install dotnet cli (exit code '$lastExitCode')."
+    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Failed to install dotnet cli (exit code '$lastExitCode')."
     ExitWithExitCode $lastExitCode
   }
 }
@@ -419,7 +356,7 @@ function InitializeBuildTool() {
 
   if ($msbuildEngine -eq "dotnet") {
     if (!$dotnetRoot) {
-      Write-PipelineTaskError "/global.json must specify 'tools.dotnet'."
+      Write-PipelineTelemetryError -Category "InitializeToolset" -Message "/global.json must specify 'tools.dotnet'."
       ExitWithExitCode 1
     }
 
@@ -428,13 +365,13 @@ function InitializeBuildTool() {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
     } catch {
-      Write-PipelineTaskError $_
+      Write-PipelineTelemetryError -Category "InitializeToolset" -Message $_
       ExitWithExitCode 1
     }
 
     $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "net472" }
   } else {
-    Write-PipelineTaskError "Unexpected value of -msbuildEngine: '$msbuildEngine'."
+    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Unexpected value of -msbuildEngine: '$msbuildEngine'."
     ExitWithExitCode 1
   }
 
@@ -451,7 +388,7 @@ function GetDefaultMSBuildEngine() {
     return "dotnet"
   }
 
-  Write-PipelineTaskError "-msbuildEngine must be specified, or /global.json must specify 'tools.dotnet' or 'tools.vs'."
+  Write-PipelineTelemetryError -Category "InitializeToolset" -Message "-msbuildEngine must be specified, or /global.json must specify 'tools.dotnet' or 'tools.vs'."
   ExitWithExitCode 1
 }
 
@@ -504,7 +441,7 @@ function InitializeToolset() {
   }
 
   if (-not $restore) {
-    Write-PipelineTaskError "Toolset version $toolsetVersion has not been restored."
+    Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Toolset version $toolsetVersion has not been restored."
     ExitWithExitCode 1
   }
 
@@ -564,11 +501,13 @@ function MSBuild() {
 function MSBuild-Core() {
   if ($ci) {
     if (!$binaryLog) {
-      throw "Binary log must be enabled in CI build."
+      Write-PipelineTaskError -Message "Binary log must be enabled in CI build."
+      ExitWithExitCode 1
     }
 
     if ($nodeReuse) {
-      throw "Node reuse must be disabled in CI build."
+      Write-PipelineTaskError -Message "Node reuse must be disabled in CI build."
+      ExitWithExitCode 1
     }
   }
 
@@ -589,7 +528,7 @@ function MSBuild-Core() {
   $exitCode = Exec-Process $buildTool.Path $cmdArgs
 
   if ($exitCode -ne 0) {
-    Write-PipelineTaskError "Build failed."
+    Write-PipelineTaskError -Message "Build failed."
 
     $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
     if ($buildLog -ne $null) {
@@ -617,7 +556,7 @@ function GetMSBuildBinaryLogCommandLineArgument($arguments) {
   return $null
 }
 
-. $PSScriptRoot\LoggingCommandFunctions.ps1
+. $PSScriptRoot\pipeline-logging-functions.ps1
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $EngRoot = Resolve-Path (Join-Path $PSScriptRoot "..")

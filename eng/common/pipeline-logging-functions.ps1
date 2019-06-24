@@ -1,4 +1,4 @@
-# Source for this file was taken from https://github.com/microsoft/azure-pipelines-task-lib/blob/11c9439d4af17e6475d9fe058e6b2e03914d17e6/powershell/VstsTaskSdk/LoggingCommandFunctions.ps1
+# Source for this file was taken from https://github.com/microsoft/azure-pipelines-task-lib/blob/11c9439d4af17e6475d9fe058e6b2e03914d17e6/powershell/VstsTaskSdk/LoggingCommandFunctions.ps1 and modified.
 
 # NOTE: You should not be calling these method directly as they are likely to change.  Instead you should be calling the Write-Pipeline* functions defined in tools.ps1
 
@@ -11,6 +11,93 @@ $script:loggingCommandEscapeMappings = @( # TODO: WHAT ABOUT "="? WHAT ABOUT "%"
 )
 # TODO: BUG: Escape % ???
 # TODO: Add test to verify don't need to escape "=".
+
+function Write-PipelineTelemetryError {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Category,
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+        [Parameter(Mandatory = $false)]
+        [string]$Type = 'error',
+        [string]$ErrCode,
+        [string]$SourcePath,
+        [string]$LineNumber,
+        [string]$ColumnNumber,
+        [switch]$AsOutput)
+
+        $PSBoundParameters.Remove("Category") | Out-Null
+
+        $Message = "(NETCORE_ENGINEERING_TELEMETRY=$Category) $Message"
+        $PSBoundParameters.Remove("Message") | Out-Null
+        $PSBoundParameters.Add("Message", $Message)
+
+        Write-PipelineTaskError @PSBoundParameters
+}
+
+function Write-PipelineTaskError {
+    [CmdletBinding()]
+    param(
+      [Parameter(Mandatory = $true)]
+      [string]$Message,
+      [Parameter(Mandatory = $false)]
+      [string]$Type = 'error',
+      [string]$ErrCode,
+      [string]$SourcePath,
+      [string]$LineNumber,
+      [string]$ColumnNumber,
+      [switch]$AsOutput)
+  
+      if(!$ci) {
+        if($Type -eq 'error') {
+          Write-Host $Message -ForegroundColor Red
+          return
+        }
+        elseif ($Type -eq 'warning') {
+          Write-Host $Message -ForegroundColor Yellow
+          return
+        }
+      }
+  
+      if(($Type -ne 'error') -and ($Type -ne 'warning')) {
+        Write-Host $Message
+        return
+      }
+      if(-not $PSBoundParameters.ContainsKey('Type')) {
+        $PSBoundParameters.Add('Type', 'error')
+      }
+      Write-LogIssue @PSBoundParameters
+  }
+  
+  function Write-PipelineSetVariable {
+    [CmdletBinding()]
+    param(
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [string]$Value,
+      [switch]$Secret,
+      [switch]$AsOutput)
+  
+      if($ci) {
+        Write-LoggingCommand -Area 'task' -Event 'setvariable' -Data $Value -Properties @{
+          'variable' = $Name
+          'isSecret' = $Secret
+          'isOutput' = 'true'
+        } -AsOutput:$AsOutput
+      }
+  }
+  
+  function Write-PipelinePrependPath {
+    [CmdletBinding()]
+    param(
+      [Parameter(Mandatory=$true)]
+      [string]$Path,
+      [switch]$AsOutput)
+      if($ci) {
+        Write-LoggingCommand -Area 'task' -Event 'prependpath' -Data $Path -AsOutput:$AsOutput
+      }
+  }
 
 <########################################
 # Private functions.
