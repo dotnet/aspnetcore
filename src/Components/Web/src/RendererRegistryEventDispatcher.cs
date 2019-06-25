@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Browser
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Provides mechanisms for dispatching events to components in a <see cref="Renderer"/>.

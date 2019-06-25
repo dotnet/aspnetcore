@@ -21,13 +21,6 @@ namespace Microsoft.AspNetCore.Builder
         public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Components.Browser.Rendering
-{
-    public partial class RemoteRendererException : System.Exception
-    {
-        public RemoteRendererException(string message) { }
-    }
-}
 namespace Microsoft.AspNetCore.Components.Server
 {
     public partial class CircuitOptions
@@ -89,6 +82,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
         public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
+    }
+}
+namespace Microsoft.AspNetCore.Components.Web.Rendering
+{
+    public partial class RemoteRendererException : System.Exception
+    {
+        public RemoteRendererException(string message) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
