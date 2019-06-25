@@ -2,6 +2,7 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
+    [Parameter(Mandatory=$true)][string]$Name,
     [Parameter(Mandatory=$true)][string]$MsiPath,
     [Parameter(Mandatory=$false)][string]$CabPath,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
@@ -11,10 +12,9 @@ param(
     [Parameter(Mandatory=$true)][string]$RepoRoot,
     [Parameter(Mandatory=$true)][string]$MajorVersion,
     [Parameter(Mandatory=$true)][string]$MinorVersion
-
 )
 
-$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Architecture"
+$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Name\$Architecture"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 
 if (-not (Test-Path $NuGetDir)) {

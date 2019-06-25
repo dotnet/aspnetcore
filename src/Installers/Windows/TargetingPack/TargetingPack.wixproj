@@ -82,6 +82,7 @@
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>
       <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
                       '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
