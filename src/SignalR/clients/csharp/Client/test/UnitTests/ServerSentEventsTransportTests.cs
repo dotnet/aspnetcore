@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).OrTimeout());
 
                 Assert.Equal("transferFormat", ex.ParamName);
-                Assert.Equal($"The 'Binary' transfer format is not supported by this transport.", ex.GetLocalizationSafeMessage());
+                Assert.Equal($"The 'Binary' transfer format is not supported by this transport. (Parameter 'transferFormat')", ex.GetLocalizationSafeMessage());
             }
         }
 
