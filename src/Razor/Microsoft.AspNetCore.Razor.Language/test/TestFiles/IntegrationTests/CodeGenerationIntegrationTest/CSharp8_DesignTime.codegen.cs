@@ -98,10 +98,31 @@ __o = val;
 #line default
 #line hidden
 #nullable disable
+#nullable restore
+#line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = Person!.Name;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 41 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = People![0]!.Name![1];
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 42 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+__o = DoSomething!(Person!);
+
+#line default
+#line hidden
+#nullable disable
         }
         #pragma warning restore 1998
 #nullable restore
-#line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
+#line 44 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml"
             
     enum TestEnum
     {
@@ -113,6 +134,17 @@ __o = val;
     {
         var disposables = (IDisposable[])ViewData["disposables"];
         return disposables[range][^1];
+    }
+
+    private Human? Person { get; set; }
+
+    private Human?[]? People { get; set; }
+
+    private Func<Human, string>? DoSomething { get; set; }
+
+    private class Human
+    {
+        public string? Name { get; set; }
     }
 
 #line default

@@ -2251,7 +2251,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 bool allowRazorInCodeBlockDirectives = false,
                 bool allowUsingVariableDeclarations = false,
                 bool allowConditionalDataDashAttributesInComponents = false,
-                bool allowCSharpInMarkupAttributeArea = true)
+                bool allowCSharpInMarkupAttributeArea = true,
+                bool allowNullableForgivenessOperator = false)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelper;
@@ -2260,6 +2261,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 AllowUsingVariableDeclarations = allowUsingVariableDeclarations;
                 AllowConditionalDataDashAttributes = allowConditionalDataDashAttributesInComponents;
                 AllowCSharpInMarkupAttributeArea = allowCSharpInMarkupAttributeArea;
+                AllowNullableForgivenessOperator = allowNullableForgivenessOperator;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -2275,6 +2277,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public override bool AllowConditionalDataDashAttributes { get; }
 
             public override bool AllowCSharpInMarkupAttributeArea { get; }
+
+            public override bool AllowNullableForgivenessOperator { get; }
         }
     }
 }

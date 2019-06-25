@@ -37,6 +37,10 @@
     @val
 }
 
+@Person!.Name
+@People![0]!.Name![1]
+@DoSomething!(Person!)
+
 @functions {
     enum TestEnum
     {
@@ -48,5 +52,16 @@
     {
         var disposables = (IDisposable[])ViewData["disposables"];
         return disposables[range][^1];
+    }
+
+    private Human? Person { get; set; }
+
+    private Human?[]? People { get; set; }
+
+    private Func<Human, string>? DoSomething { get; set; }
+
+    private class Human
+    {
+        public string? Name { get; set; }
     }
 }

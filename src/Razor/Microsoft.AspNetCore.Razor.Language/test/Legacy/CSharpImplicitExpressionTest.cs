@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -215,6 +216,195 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Act & Assert
             ParseDocumentTest("@val?.more(null ?? true)?.abc");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_NestedCodeBlock()
+        {
+            // Act & Assert
+            ParseDocumentTest("@{ @val!.Name![0]!?.Bar }");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_DirectiveCodeBlock()
+        {
+            // Act & Assert
+            ParseDocumentTest("@functions { public void Foo() { @Model!.Name![0]!?.Bar } }", new[] { FunctionsDirective.Directive });
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_DoubleBang_IncompleteBracket()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!![");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_IncompleteBracket()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_IncompleteParenthesis()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!(");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_IncompleteBracketWithIdentifier()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![more");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Brackets()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![0]");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_IncompleteBracketWithHtml()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![<p>");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_MixedIncompleteBracket()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![more.<p>");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_MixedNullConditional()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val?![more<p>");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_SingleOperator()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![-1]!");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Multiple_Incomplete()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![abc]![def");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Multiple()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![abc]![2]");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_MultipleMixed()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![abc]!.more![def]");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_MultipleMixed2()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![abc]!.more!.abc");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Bracket15()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![null! ?? true]");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Nested()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val![abc!.gef![-1]]");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Ending()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_CombinedWithNullConditional()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!?");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Combined()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!?.more");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_EndingDotedOperator()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_CombinedEnding()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!?.");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_InvalidMethodEnding()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.(abc)");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Incomplete_ContinuedHtml()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.<p>");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_FullExpression()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.more");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_FullExpressionWithHtml()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.more<p>");
+        }
+
+        [Fact]
+        public void ParsesNullForgivenessOperatorImplicitExpression_Complex()
+        {
+            // Act & Assert
+            ParseDocumentTest("@val!.more(false)!.<p>");
         }
 
         [Fact]

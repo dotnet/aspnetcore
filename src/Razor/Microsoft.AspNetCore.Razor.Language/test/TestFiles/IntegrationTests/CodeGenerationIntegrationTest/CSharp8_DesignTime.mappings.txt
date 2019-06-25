@@ -94,7 +94,22 @@ Generated Location: (2486:94,8 [3] )
 |
 }|
 
-Source Location: (682:39,12 [245] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+Source Location: (671:39,1 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|Person!.Name|
+Generated Location: (2650:102,6 [12] )
+|Person!.Name|
+
+Source Location: (686:40,1 [20] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|People![0]!.Name![1]|
+Generated Location: (2824:109,6 [20] )
+|People![0]!.Name![1]|
+
+Source Location: (709:41,1 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|DoSomething!(Person!)|
+Generated Location: (3006:116,6 [21] )
+|DoSomething!(Person!)|
+
+Source Location: (746:43,12 [480] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
 |
     enum TestEnum
     {
@@ -107,8 +122,19 @@ Source Location: (682:39,12 [245] TestFiles/IntegrationTests/CodeGenerationInteg
         var disposables = (IDisposable[])ViewData["disposables"];
         return disposables[range][^1];
     }
+
+    private Human? Person { get; set; }
+
+    private Human?[]? People { get; set; }
+
+    private Func<Human, string>? DoSomething { get; set; }
+
+    private class Human
+    {
+        public string? Name { get; set; }
+    }
 |
-Generated Location: (2705:104,12 [245] )
+Generated Location: (3244:125,12 [480] )
 |
     enum TestEnum
     {
@@ -120,6 +146,17 @@ Generated Location: (2705:104,12 [245] )
     {
         var disposables = (IDisposable[])ViewData["disposables"];
         return disposables[range][^1];
+    }
+
+    private Human? Person { get; set; }
+
+    private Human?[]? People { get; set; }
+
+    private Func<Human, string>? DoSomething { get; set; }
+
+    private class Human
+    {
+        public string? Name { get; set; }
     }
 |
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -9,7 +8,20 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class RazorParserFeatureFlagsTest
     {
         [Fact]
-        public void Create_LatestVersion_AllowsMinimizedBooleanTagHelperAttributes()
+        public void Create_LatestVersion_AllowsLatestFeatures()
+        {
+            // Arrange & Act
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Latest, FileKinds.Legacy);
+
+            // Assert
+            Assert.True(context.AllowComponentFileKind);
+            Assert.True(context.AllowRazorInAllCodeBlocks);
+            Assert.True(context.AllowUsingVariableDeclarations);
+            Assert.True(context.AllowNullableForgivenessOperator);
+        }
+
+        [Fact]
+        public void Create_21Version_Allows21Features()
         {
             // Arrange & Act
             var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_1, FileKinds.Legacy);
@@ -20,14 +32,18 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Create_OlderVersion_DoesNotAllowMinimizedBooleanTagHelperAttributes()
+        public void Create_OldestVersion_DoesNotAllowLatestFeatures()
         {
             // Arrange & Act
-            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_1_1, FileKinds.Legacy);
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_1_0, FileKinds.Legacy);
 
             // Assert
             Assert.False(context.AllowMinimizedBooleanTagHelperAttributes);
             Assert.False(context.AllowHtmlCommentsInTagHelpers);
+            Assert.False(context.AllowComponentFileKind);
+            Assert.False(context.AllowRazorInAllCodeBlocks);
+            Assert.False(context.AllowUsingVariableDeclarations);
+            Assert.False(context.AllowNullableForgivenessOperator);
         }
     }
 }

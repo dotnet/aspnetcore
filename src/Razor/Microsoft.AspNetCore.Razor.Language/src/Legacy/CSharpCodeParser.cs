@@ -433,6 +433,65 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                     }
                 }
+                else if (At(SyntaxKind.Not) && Context.FeatureFlags.AllowNullableForgivenessOperator)
+                {
+                    // C# 8.0 Null forgiveness Operator
+
+                    var next = Lookahead(count: 1);
+                    if (next == null)
+                    {
+                        // Null forgiveness operator at the end of the file, don't include it in the expression.
+                        // We don't allow trailing null forgiveness operators to avoid breaking scenarios such as:
+                        //
+                        // <p>Hello @Person! Good day!</p>
+                        return false;
+                    }
+
+                    if (next.Kind == SyntaxKind.Dot)
+                    {
+                        var nextNext = Lookahead(count: 2);
+                        if (nextNext == null)
+                        {
+                            // End of file after the dot (!.EOF)
+                            return false;
+                        }
+
+                        if (nextNext.Kind == SyntaxKind.Identifier || nextNext.Kind == SyntaxKind.Keyword)
+                        {
+                            // Accept null forgiveness operator followed by a dot (!.)
+                            AcceptAndMoveNext();
+
+                            // Accept the dot
+                            AcceptAndMoveNext();
+                            return true;
+                        }
+
+                        // We're in an odd situation where the user is attempting to use a null-forgiven implicit expression at the
+                        // end of a sentence, i.e.
+                        //
+                        // <p>@Person!.</p>
+                        //
+                        // We don't allow trailing null forgiveness operators so don't include it in the implicit expression.
+                        return false;
+                    }
+                    else if (next.Kind == SyntaxKind.QuestionMark)
+                    {
+                        // We're at the ! for a null forgiveness + null conditional operator (!?).
+                        AcceptAndMoveNext();
+
+                        return true;
+                    }
+                    else if (next.Kind == SyntaxKind.LeftBracket || next.Kind == SyntaxKind.LeftParenthesis)
+                    {
+                        // We're at the ! for a null forgiveness bracket or parenthesis operator (![).
+                        AcceptAndMoveNext();
+
+                        // Accept the [ or ( and any content inside (it will attempt to balance).
+                        return ParseMethodCallOrArrayIndex(builder, acceptedCharacters);
+                    }
+
+                    return false;
+                }
                 else if (At(SyntaxKind.Dot))
                 {
                     var dot = CurrentToken;
@@ -1369,7 +1428,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     builder.Add(BuildDirective());
                                     return;
                                 }
-                                
+
                                 break;
                         }
 
