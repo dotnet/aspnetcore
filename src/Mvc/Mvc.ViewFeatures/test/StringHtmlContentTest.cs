@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var tearsOfJoy = new StringHtmlContent("😂2");
 
             // Assert
-            using (var stringWritter = new StringWriter())
+            using (var stringWriter = new StringWriter())
             {
-                tearsOfJoy.WriteTo(stringWritter, HtmlEncoder.Default);
-                Assert.Equal("&#x1f602;2", stringWritter.ToString(), ignoreCase: true);
+                tearsOfJoy.WriteTo(stringWriter, HtmlEncoder.Default);
+                Assert.Equal("&#x1f602;2", stringWriter.ToString(), ignoreCase: true);
             }
         }
     }
