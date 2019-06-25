@@ -22,14 +22,6 @@ namespace Microsoft.AspNetCore.TestHost
         /// <summary>
         /// For use with IHostBuilder.
         /// </summary>
-        public TestServer()
-            : this(new ServiceCollection().BuildServiceProvider())
-        {
-        }
-
-        /// <summary>
-        /// For use with IHostBuilder.
-        /// </summary>
         /// <param name="services"></param>
         public TestServer(IServiceProvider services)
             : this(new FeatureCollection(), services)

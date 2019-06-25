@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.TestHost
     }
     public partial class TestServer : Microsoft.AspNetCore.Hosting.Server.IServer, System.IDisposable
     {
-        public TestServer() { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
         public TestServer(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection, System.IServiceProvider services) { }

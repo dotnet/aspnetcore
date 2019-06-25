@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,20 +28,22 @@ namespace Microsoft.AspNetCore.TestHost
     public class TestServerTests
     {
         [Fact]
-        public async Task GenericRawCreate()
+        public async Task GenericRawCreateAndStartHost_GetTestServer()
         {
-            var server = new TestServer();
             using var host = new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
-                        .UseServer(server)
+                        .ConfigureServices(services =>
+                        {
+                            services.AddSingleton<IServer>(serviceProvider => new TestServer(serviceProvider));
+                        })
                         .Configure(app => { });
                 })
                 .Build();
             await host.StartAsync();
 
-            var response = await server.CreateClient().GetAsync("/");
+            var response = await host.GetTestServer().CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -278,13 +281,16 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public void TestServerConstructorWithEmptyServiceProvider()
+        public void TestServerConstructorShouldProvideServicesFromPassedServiceProvider()
         {
-            // Arrange & Act
-            var testServer = new TestServer();
+            // Arrange
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+
+            // Act
+            var testServer = new TestServer(serviceProvider);
 
             // Assert
-            Assert.NotNull(testServer.Services);
+            Assert.Equal(serviceProvider, testServer.Services);
         }
 
         [Fact]
