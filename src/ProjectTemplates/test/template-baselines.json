@@ -1234,6 +1234,7 @@
         "ClientApp/src/store/WeatherForecasts.ts",
         "ClientApp/src/App.tsx",
         "ClientApp/src/App.test.tsx",
+        "ClientApp/src/custom.css",
         "ClientApp/src/index.tsx",
         "ClientApp/src/react-app-env.d.ts",
         "ClientApp/src/registerServiceWorker.ts",
