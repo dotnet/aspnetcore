@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ILogger _logger;
         private DataContractSerializerSettings _serializerSettings;
         private MvcOptions _mvcOptions;
+        private IFileBufferingStreamFactory _fileBufferingStreamFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
@@ -268,7 +269,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             FileBufferingWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
+                _fileBufferingStreamFactory ??= new HttpFileBufferingStreamFactory(
+                    httpContext.RequestServices.GetRequiredService<IOptions<HttpBufferingOptions>>());
+                fileBufferingWriteStream = _fileBufferingStreamFactory.CreateWriteStream();
                 responseStream = fileBufferingWriteStream;
             }
 
