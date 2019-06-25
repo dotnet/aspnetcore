@@ -33,11 +33,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.Razor.Tasks.GetDefaultStaticWebAssetsBasePath"
-    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
-    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
-
-  <UsingTask
     TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAsssetsPropsFile"
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
@@ -220,23 +215,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- StaticWebAssets from the current project -->
 
-    <!-- Computes a default safe base path from the $(PackageId) that will be a prefix
-         to all the resources being exported from this library by default. The convention
-         consists of removing intermediate whitespaces, dots and lower casing all letters
-         in the package id using an invariant culture.
-
-         We don't aim to handle all possible cases for this prefix, as it can get really
-         complicated (non-unicode characters for example), so for that case,
-         StaticWebAssetBasePath can be set explicitly and we won't interfere.
-    -->
-    <GetDefaultStaticWebAssetsBasePath
-      BasePath="$(PackageId)"
-      Condition="'$(StaticWebAssetBasePath)' == ''">
-      <Output TaskParameter="SafeBasePath" PropertyName="_StaticWebAssetSafeBasePath" />
-    </GetDefaultStaticWebAssetsBasePath>
-
     <PropertyGroup>
-      <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(_StaticWebAssetSafeBasePath)</StaticWebAssetBasePath>
+      <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(PackageId)</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>
