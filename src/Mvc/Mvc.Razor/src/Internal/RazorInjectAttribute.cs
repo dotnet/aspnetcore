@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
-    /// Specifies that attributed property should be bound using request services.
+    /// Specifies that the attributed property should be bound using request services.
     /// <para>
     /// This attribute is used as the backing attribute for the <code>@inject</code>
     /// Razor directive.
