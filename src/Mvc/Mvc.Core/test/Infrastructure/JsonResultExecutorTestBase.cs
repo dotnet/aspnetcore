@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -310,6 +311,24 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.StartsWith("Property 'JsonResult.SerializerSettings' must be an instance of type", ex.Message);
         }
 
+        [Fact]
+        public async Task ExecuteAsync_SerializesAsyncEnumerables()
+        {
+            // Arrange
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new[] { "Hello", "world" }));
+
+            var context = GetActionContext();
+            var result = new JsonResult(TestAsyncEnumerable());
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            Assert.Equal(expected, written);
+        }
+
         protected IActionResultExecutor<JsonResult> CreateExecutor() => CreateExecutor(NullLoggerFactory.Instance);
 
         protected abstract IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory);
@@ -353,6 +372,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private class TestModel
         {
             public string Property { get; set; }
+        }
+
+        private async IAsyncEnumerable<string> TestAsyncEnumerable()
+        {
+            await Task.Yield();
+            yield return "Hello";
+            yield return "world";
         }
     }
 }
