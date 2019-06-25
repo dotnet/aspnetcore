@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // 1. We verify the parameter name separately
             // 2. It is localized, so we don't want our tests to break in non-US environments
             var message = argEx.Message;
-            var lastNewline = message.LastIndexOf(Environment.NewLine, StringComparison.Ordinal);
+            var lastNewline = message.LastIndexOf(" (Parameter", StringComparison.Ordinal);
             if (lastNewline < 0)
             {
                 return message;

@@ -284,8 +284,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var ex = Assert.Throws<ArgumentNullException>(
                 () => tokenProvider.TryValidateTokenSet(httpContext, null, fieldtoken, out message));
 
-            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
-            Assert.Equal(@"The required antiforgery cookie token must be provided.", trimmed);
+            Assert.StartsWith(@"The required antiforgery cookie token must be provided.", ex.Message);
         }
 
         [Fact]
@@ -307,8 +306,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var ex = Assert.Throws<ArgumentNullException>(
                 () => tokenProvider.TryValidateTokenSet(httpContext, cookieToken, null, out message));
 
-            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
-            Assert.Equal("The required antiforgery request token must be provided.", trimmed);
+            Assert.StartsWith("The required antiforgery request token must be provided.", ex.Message);
         }
 
         [Fact]
