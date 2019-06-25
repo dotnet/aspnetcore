@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
             var body = request.Body;
             if (!body.CanSeek)
             {
-                var httpBufferingOptions = request.HttpContext.RequestServices.GetService<IOptions<HttpBufferingOptions>>() ?? Options.Create(new HttpBufferingOptions());
+                var httpBufferingOptions = request.HttpContext.RequestServices.GetRequiredService<IOptions<HttpBufferingOptions>>();
                 var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
                 var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 request.Body = fileStream;

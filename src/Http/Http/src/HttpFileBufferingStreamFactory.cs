@@ -43,15 +43,13 @@ namespace Microsoft.AspNetCore.Http
         {
             get
             {
-                // Look for folders in the following order.
-                var temp = _bufferingOptions?.TempFileDirectory ?? Path.GetTempPath();
-
-                if (!Directory.Exists(temp))
+                // TempFileDirectory defaults to Path.GetTempPath() if it's not modified
+                if (!Directory.Exists(_bufferingOptions.TempFileDirectory))
                 {
-                    throw new DirectoryNotFoundException(temp);
+                    throw new DirectoryNotFoundException(_bufferingOptions.TempFileDirectory);
                 }
 
-                return temp;
+                return _bufferingOptions.TempFileDirectory;
             }
         }
     }
