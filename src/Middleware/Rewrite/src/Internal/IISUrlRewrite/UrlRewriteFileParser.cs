@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             var grouping = ParseEnum(conditions, RewriteTags.LogicalGrouping, LogicalGrouping.MatchAll);
             var trackAllCaptures = ParseBool(conditions, RewriteTags.TrackAllCaptures, defaultValue: false);
             var adds = conditions.Elements(RewriteTags.Add);
-            if (adds == null || adds.Count() == 0)
+            if (adds == null || !adds.Any())
             {
                 return;
             }
