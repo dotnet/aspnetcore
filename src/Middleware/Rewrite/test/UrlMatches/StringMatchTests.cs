@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlMatches

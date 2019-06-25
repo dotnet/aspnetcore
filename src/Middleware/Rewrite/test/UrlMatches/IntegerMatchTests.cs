@@ -4,9 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlMatches

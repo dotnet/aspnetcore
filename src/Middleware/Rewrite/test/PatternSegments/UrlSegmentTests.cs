@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
-using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.PatternSegments;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
