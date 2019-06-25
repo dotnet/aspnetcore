@@ -93,6 +93,8 @@
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
                       '$(PackageVersion)' ^
-                      '$(RepoRoot)'" />
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)'" />
   </Target>
 </Project>
