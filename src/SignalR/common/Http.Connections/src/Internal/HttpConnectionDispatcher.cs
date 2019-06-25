@@ -19,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
         private static readonly AvailableTransport _webSocketAvailableTransport =
             new AvailableTransport

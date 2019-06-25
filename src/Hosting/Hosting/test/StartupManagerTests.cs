@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Hosting.Fakes;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Tests.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,8 +21,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: true));
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(2, overrideAfterService: true));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(VoidReturningStartupServicesFiltersStartup);
@@ -44,8 +43,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(2, overrideAfterService: true));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(VoidReturningStartupServicesFiltersStartup);
@@ -64,15 +65,19 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(IServiceProviderReturningStartupServicesFiltersStartup);
             var startup = StartupLoader.LoadMethods(services, type, "");
 
+#pragma warning disable CS0612 // Type or member is obsolete
             var expectedMessage = $"A ConfigureServices method that returns an {nameof(IServiceProvider)} is " +
                 $"not compatible with the use of one or more {nameof(IStartupConfigureServicesFilter)}. " +
                 $"Use a void returning ConfigureServices method instead or a ConfigureContainer method.";
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var exception = Assert.Throws<InvalidOperationException>(() => startup.ConfigureServicesDelegate(serviceCollection));
 
@@ -84,8 +89,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(1, overrideAfterService: true));
             serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(ConfigureContainerStartupServicesFiltersStartup);
@@ -104,8 +111,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(1, overrideAfterService: false));
             serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(ConfigureContainerStartupServicesFiltersStartup);
@@ -124,8 +133,10 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+#pragma warning disable CS0612 // Type or member is obsolete
             serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
             serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+#pragma warning restore CS0612 // Type or member is obsolete
             var services = serviceCollection.BuildServiceProvider();
 
             var type = typeof(ConfigureServicesAndConfigureContainerStartup);
@@ -171,7 +182,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             }
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         public class TestConfigureContainerFilter : IStartupConfigureContainerFilter<MyContainer>
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             public TestConfigureContainerFilter(object additionalData, bool overrideAfterService)
             {
@@ -218,7 +231,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             }
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         public class TestStartupServicesFilter : IStartupConfigureServicesFilter
+#pragma warning restore CS0612 // Type or member is obsolete
         {
             public TestStartupServicesFilter(object additionalData, bool overrideAfterService)
             {

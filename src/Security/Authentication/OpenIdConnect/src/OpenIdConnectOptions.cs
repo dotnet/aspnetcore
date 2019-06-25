@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;

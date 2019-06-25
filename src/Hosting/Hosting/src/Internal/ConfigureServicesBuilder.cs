@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConfigureServicesBuilder
+    internal class ConfigureServicesBuilder
     {
         public ConfigureServicesBuilder(MethodInfo configureServices)
         {

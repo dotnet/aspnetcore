@@ -45,13 +45,17 @@ _kill iisexpresstray.exe
 _kill w3wp.exe
 _kill msbuild.exe
 _kill vbcscompiler.exe
-_kill git.exe
 _kill vctip.exe
-_kill chrome.exe
 _kill h2spec.exe
 _kill WerFault.exe
 _killJavaInstances
 _killSeleniumTrackedProcesses
+
+# Special case these. When testing with -ci locally, you typically don't actually want to kill your browser or git command line
+if ($env:TF_BUILD) {
+    _kill chrome.exe
+    _kill git.exe
+}
 
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart

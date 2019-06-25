@@ -238,6 +238,12 @@ namespace Microsoft.AspNetCore.Authentication
         public System.Exception Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class RequestPathBaseCookieBuilder : Microsoft.AspNetCore.Http.CookieBuilder
+    {
+        public RequestPathBaseCookieBuilder() { }
+        protected virtual string AdditionalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context, System.DateTimeOffset expiresFrom) { throw null; }
+    }
     public abstract partial class ResultContext<TOptions> : Microsoft.AspNetCore.Authentication.BaseContext<TOptions> where TOptions : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions
     {
         protected ResultContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, TOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(TOptions)) { }
@@ -295,15 +301,6 @@ namespace Microsoft.AspNetCore.Authentication
         public virtual void Write(System.IO.BinaryWriter writer, Microsoft.AspNetCore.Authentication.AuthenticationTicket ticket) { }
         protected virtual void WriteClaim(System.IO.BinaryWriter writer, System.Security.Claims.Claim claim) { }
         protected virtual void WriteIdentity(System.IO.BinaryWriter writer, System.Security.Claims.ClaimsIdentity identity) { }
-    }
-}
-namespace Microsoft.AspNetCore.Authentication.Internal
-{
-    public partial class RequestPathBaseCookieBuilder : Microsoft.AspNetCore.Http.CookieBuilder
-    {
-        public RequestPathBaseCookieBuilder() { }
-        protected virtual string AdditionalPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override Microsoft.AspNetCore.Http.CookieOptions Build(Microsoft.AspNetCore.Http.HttpContext context, System.DateTimeOffset expiresFrom) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Builder

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             if (xmlRoot == null)
             {
-                return null;
+                throw new InvalidUrlRewriteFormatException(new XElement(RewriteTags.Rewrite), "The root element '<rewrite>' is missing");
             }
 
             _inputParser = new InputParser(RewriteMapParser.Parse(xmlRoot), alwaysUseManagedServerVariables);
@@ -113,9 +113,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             var grouping = ParseEnum(conditions, RewriteTags.LogicalGrouping, LogicalGrouping.MatchAll);
             var trackAllCaptures = ParseBool(conditions, RewriteTags.TrackAllCaptures, defaultValue: false);
+            var adds = conditions.Elements(RewriteTags.Add);
+            if (!adds.Any())
+            {
+                return;
+            }
+
             builder.ConfigureConditionBehavior(grouping, trackAllCaptures);
 
-            foreach (var cond in conditions.Elements(RewriteTags.Add))
+            foreach (var cond in adds)
             {
                 ParseCondition(cond, builder, patternSyntax);
             }

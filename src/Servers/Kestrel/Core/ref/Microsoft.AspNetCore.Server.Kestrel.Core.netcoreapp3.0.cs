@@ -143,7 +143,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         internal ListenOptions() { }
         public System.IServiceProvider ApplicationServices { get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public ulong FileHandle { get { throw null; } }
         public System.Net.IPEndPoint IPEndPoint { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions KestrelServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -158,24 +157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public MinDataRate(double bytesPerSecond, System.TimeSpan gracePeriod) { }
         public double BytesPerSecond { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.TimeSpan GracePeriod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
-{
-    public partial class ConnectionAdapterContext
-    {
-        internal ConnectionAdapterContext() { }
-        public System.IO.Stream ConnectionStream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
-    }
-    public partial interface IAdaptedConnection : System.IDisposable
-    {
-        System.IO.Stream ConnectionStream { get; }
-    }
-    public partial interface IConnectionAdapter
-    {
-        bool IsHttps { get; }
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext context);
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
@@ -301,6 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public System.Security.Cryptography.X509Certificates.X509Certificate2 ServerCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, string, System.Security.Cryptography.X509Certificates.X509Certificate2> ServerCertificateSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Authentication.SslProtocols SslProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public void AllowAnyClientCertificate() { }
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal

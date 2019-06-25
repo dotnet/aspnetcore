@@ -66,7 +66,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Hello from fallback controller: /Admin/Fallback", content);
+            Assert.Equal("Hello from fallback controller: /link_generation/Admin/Fallback/Index", content);
+        }
+
+        [Fact]
+        public async Task Fallback_CanFallbackToControllerInArea_WithActionConstraints()
+        {
+            // Arrange
+            var url = "http://localhost/Admin/Foo";
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello from fallback controller POST: /link_generation/Admin/Fallback/Index", content);
         }
 
         [Fact]
@@ -82,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Hello from fallback controller POST: /Admin/Fallback", content);
+            Assert.Equal("Hello from fallback controller POST: /link_generation/Admin/Fallback/Index", content);
         }
 
         [Fact]

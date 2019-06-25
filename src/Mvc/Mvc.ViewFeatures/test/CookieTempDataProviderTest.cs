@@ -4,10 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -86,10 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
 
             var context = new DefaultHttpContext();
-            context.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { CookieTempDataProvider.CookieName, base64AndUrlEncodedDataInCookie }
-            });
+            context.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
             var tempDataDictionary = tempDataProvider.LoadTempData(context);
@@ -110,17 +107,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
-            var requestCookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { CookieTempDataProvider.CookieName, base64AndUrlEncodedDataInCookie }
-            });
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-               .Setup(hc => hc.Request.Cookies)
-               .Returns(requestCookies);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers[HeaderNames.Cookie] = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedDataInCookie}";
 
             // Act
-            var actualValues = tempDataProvider.LoadTempData(httpContext.Object);
+            var actualValues = tempDataProvider.LoadTempData(httpContext);
 
             // Assert
             Assert.Equal(expectedDataToUnprotect, dataProtector.DataToUnprotect);
@@ -311,35 +302,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var base64AndUrlEncodedData = WebEncoders.Base64UrlEncode(serializedData);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
-            var requestCookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { CookieTempDataProvider.CookieName, base64AndUrlEncodedData }
-            });
-            var responseCookies = new MockResponseCookieCollection();
-            var httpContext = new Mock<HttpContext>();
-            httpContext
-                .SetupGet(hc => hc.Request.PathBase)
-                .Returns("/");
-            httpContext
-                .Setup(hc => hc.Request.Cookies)
-                .Returns(requestCookies);
-            httpContext
-                .Setup(hc => hc.Response.Cookies)
-                .Returns(responseCookies);
-            httpContext
-                .Setup(hc => hc.Response.Headers)
-                .Returns(new HeaderDictionary());
+            var requestCookies = $"{CookieTempDataProvider.CookieName}={base64AndUrlEncodedData}";
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.PathBase = "/";
+            httpContext.Request.Headers[HeaderNames.Cookie] = requestCookies;
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, new Dictionary<string, object>());
+            tempDataProvider.SaveTempData(httpContext, new Dictionary<string, object>());
 
             // Assert
-            Assert.Equal(1, responseCookies.Count);
-            var cookie = responseCookies[CookieTempDataProvider.CookieName];
+            var responseCookies = httpContext.Response.GetTypedHeaders().SetCookie;
+            Assert.Single(responseCookies);
+            var cookie = responseCookies.Single();
             Assert.NotNull(cookie);
+            Assert.Equal(CookieTempDataProvider.CookieName, cookie.Name);
             Assert.Equal(string.Empty, cookie.Value);
-            Assert.NotNull(cookie.Options.Expires);
-            Assert.True(cookie.Options.Expires.Value < DateTimeOffset.Now); // expired cookie
+            Assert.NotNull(cookie.Expires);
+            Assert.True(cookie.Expires.Value < DateTimeOffset.Now); // expired cookie
         }
 
         [Fact]
@@ -364,30 +343,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static HttpContext GetHttpContext()
         {
-            var context = new Mock<HttpContext>();
-            context
-                .SetupGet(hc => hc.Request.PathBase)
-                .Returns("/");
-            context
-                .SetupGet(hc => hc.Response.Cookies)
-                .Returns(new MockResponseCookieCollection());
-            return context.Object;
+            var context = new DefaultHttpContext();
+            context.Request.PathBase = "/";
+            return context;
         }
 
         private void UpdateRequestWithCookies(HttpContext httpContext)
         {
-            var responseCookies = (MockResponseCookieCollection)httpContext.Response.Cookies;
+            var responseCookies = httpContext.Response.GetTypedHeaders().SetCookie;
 
-            var values = new Dictionary<string, string>();
 
-            foreach (var responseCookie in responseCookies)
+            if (responseCookies.Count > 0)
             {
-                values.Add(responseCookie.Key, responseCookie.Value);
-            }
+                var stringBuilder = new StringBuilder();
+                foreach (var cookie in responseCookies)
+                {
+                    stringBuilder.Append(cookie.Name.AsSpan());
+                    stringBuilder.Append("=");
+                    stringBuilder.Append(cookie.Value.AsSpan());
+                    stringBuilder.Append(";");
+                }
 
-            if (values.Count > 0)
-            {
-                httpContext.Request.Cookies = new RequestCookieCollection(values);
+                httpContext.Request.Headers[HeaderNames.Cookie] = stringBuilder.ToString();
             }
         }
 

@@ -23,4 +23,11 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+  </ItemGroup>
+
 </Project>

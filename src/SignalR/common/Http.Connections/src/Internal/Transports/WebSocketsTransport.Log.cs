@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public partial class WebSocketsTransport
+    internal partial class WebSocketsTransport
     {
         private static class Log
         {

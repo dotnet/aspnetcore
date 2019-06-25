@@ -5,8 +5,9 @@
 Commonly used types:
 Microsoft.AspNetCore.DataProtection.IDataProtectionProvider
 Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsShippingPackage>true</IsShippingPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
   </PropertyGroup>

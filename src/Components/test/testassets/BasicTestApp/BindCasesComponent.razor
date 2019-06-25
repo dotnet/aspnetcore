@@ -15,6 +15,13 @@
     <input id="textbox-initially-populated-mirror" @bind="textboxInitiallyPopulatedValue" readonly />
     <button id="textbox-initially-populated-setnull" @onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
 </p>
+<p>
+    Bind with value-suffix, Initially populated:
+    <input id="bind-with-suffix-textbox-initially-populated" @bind-value="textboxInitiallyPopulatedValue" />
+    <span id="bind-with-suffix-textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
+    <input type="text" id="bind-with-suffix-textbox-initially-populated-mirror" @bind-value="textboxInitiallyPopulatedValue" readonly />
+    <button id="bind-with-suffix-textbox-initially-populated-setnull" @onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
+</p>
 
 <h2>Numeric Textboxes</h2>
 <p>
@@ -137,7 +144,7 @@
 
 <h2>Select</h2>
 <p>
-    <select id="select-box" @bind="@selectValue">
+    <select id="select-box" @bind="selectValue">
         <option value=@SelectableValue.First>First choice</option>
         <option value=@SelectableValue.Second>Second choice</option>
         <option value=@SelectableValue.Third>Third choice</option>
@@ -147,7 +154,7 @@
         }
     </select>
     <span id="select-box-value">@selectValue</span>
-    <button id="select-box-add-option" @onclick="@AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
 </p>
 
 @code {

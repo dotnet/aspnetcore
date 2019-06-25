@@ -81,8 +81,6 @@ namespace Identity.ExternalClaims
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
-
             app.UseRouting();
 
             app.UseAuthentication();

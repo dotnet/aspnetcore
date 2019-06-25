@@ -5,12 +5,12 @@ using System;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public static class HostingEnvironmentExtensions
+    internal static class HostingEnvironmentExtensions
     {
 #pragma warning disable CS0618 // Type or member is obsolete
-        public static void Initialize(this IHostingEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
+        internal static void Initialize(this IHostingEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
 #pragma warning restore CS0618 // Type or member is obsolete
         {
             if (options == null)
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 hostingEnvironment.EnvironmentName;
         }
 
-        public static void Initialize(this IWebHostEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
+        internal static void Initialize(this IWebHostEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
         {
             if (options == null)
             {

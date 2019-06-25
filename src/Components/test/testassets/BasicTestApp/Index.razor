@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Components.RenderTree
 <div id="test-selector">
   Select test:
-    <select @bind=@SelectedComponentTypeName>
+    <select @bind=SelectedComponentTypeName>
         <option value="none">Choose...</option>
         <option value="BasicTestApp.InteropComponent">Interop component</option>
         <option value="BasicTestApp.AsyncEventHandlerComponent">Async event handlers</option>
@@ -57,6 +57,8 @@
         <option value="BasicTestApp.AuthTest.CascadingAuthenticationStateParent">Cascading authentication state</option>
         <option value="BasicTestApp.AuthTest.AuthRouter">Auth cases</option>
         <option value="BasicTestApp.DuplicateAttributesComponent">Duplicate attributes</option>
+        <option value="BasicTestApp.MovingCheckboxesComponent">Moving checkboxes diff case</option>
+        <option value="BasicTestApp.LaggyTypingComponent">Laggy typing</option>
     </select>
 
   @if (SelectedComponentType != null)

@@ -28,14 +28,6 @@
     <Yarn Command="install --mutex network" />
   </Target>
 
-  <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
-    <ItemGroup>
-      <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
-        <Targets>YarnInstall</Targets>
-      </CustomRestoreTargets>
-    </ItemGroup>
-  </Target>
-
   <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <Exec Command="node node_modules/webpack/bin/webpack.js" />
   </Target>

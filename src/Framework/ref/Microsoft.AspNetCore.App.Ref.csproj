@@ -36,6 +36,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <!-- Platform manifest data -->
+    <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,6 +71,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
+      IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
       _CreateTargetingPackArchive;
@@ -113,8 +118,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
       <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-
-      <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>
 
@@ -172,6 +175,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(TarArchiveOutputPath) ."
       WorkingDirectory="$(TargetingPackLayoutRoot)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
+  </Target>
+
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(RefPackContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RefPackContent)" />
+    </ItemGroup>
   </Target>
 
 </Project>

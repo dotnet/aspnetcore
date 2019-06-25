@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http

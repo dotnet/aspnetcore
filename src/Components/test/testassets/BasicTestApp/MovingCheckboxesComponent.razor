@@ -1,0 +1,56 @@
+<p>
+    This component represents a case that's difficult for the diff algorithm if it doesn't
+    understand how the underlying DOM gets mutated when you check a box.
+</p>
+<p>
+    If we didn't have the RenderTreeUpdater, then if you checked the first incomplete item,
+    the diff algoritm would see the subsequent render has only one "todo" item left, and would
+    match it with the existing 'li' element. Since that's still not done, the algorithm would
+    think no change was needed to the checkbox. But since you just clicked that checkbox, the
+    UI would show it as checked. It would look as if you have completed all four items instead
+    of just three.
+</p>
+<p>
+    RenderTreeUpdater fixes this by patching the old render tree to match the latest state of
+    the DOM, so the diff algoritm sees it must explicitly uncheck the remaining 'todo' box.
+</p>
+
+<h2>To do</h2>
+
+<ul class="incomplete-items">
+    @foreach (var item in items.Where(x => !x.IsDone))
+    {
+        <li>
+            <input class="item-isdone" type="checkbox" @bind="@item.IsDone" />
+            <span class="item-text">@item.Text</span>
+        </li>
+    }
+</ul>
+
+<h2>Done</h2>
+
+<ul class="complete-items">
+    @foreach (var item in items.Where(x => x.IsDone))
+    {
+        <li>
+            <input class="item-isdone" type="checkbox" @bind="@item.IsDone" />
+            <span class="item-text">@item.Text</span>
+        </li>
+    }
+</ul>
+
+@code {
+    List<TodoItem> items = new List<TodoItem>
+    {
+        new TodoItem { Text = "Alpha" },
+        new TodoItem { Text = "Beta" },
+        new TodoItem { Text = "Gamma", IsDone = true },
+        new TodoItem { Text = "Delta", IsDone = true },
+    };
+
+    class TodoItem
+    {
+        public bool IsDone { get; set; }
+        public string Text { get; set; }
+    }
+}

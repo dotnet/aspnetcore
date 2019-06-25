@@ -3,7 +3,7 @@
 
 namespace Ignitor
 {
-    internal abstract class Node
+    public abstract class Node
     {
         public virtual ContainerNode Parent { get; set; }
     }

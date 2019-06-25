@@ -1,7 +1,7 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <_BlazorDevServerDll>$(MSBuildThisFileDirectory)../tools/blazor-devserver.dll</_BlazorDevServerDll>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>&quot;$(_BlazorDevServerDll)&quot; serve</RunArguments>
+    <RunArguments>&quot;$(_BlazorDevServerDll)&quot; serve &quot;$(MSBuildProjectDirectory)/$(OutputPath)$(TargetFileName)&quot;</RunArguments>
   </PropertyGroup>
 </Project>

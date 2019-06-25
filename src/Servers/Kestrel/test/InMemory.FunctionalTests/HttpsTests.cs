@@ -326,7 +326,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     listenOptions.UseHttps(o =>
                     {
                         o.ServerCertificate = new X509Certificate2(TestResources.GetTestCertificate());
-                        o.OnAuthenticate = (_, __) => handshakeStartedTcs.SetResult(null);
+                        o.OnAuthenticate = (_, __) =>
+                        {
+                            handshakeStartedTcs.SetResult(null);
+                        };
 
                         handshakeTimeout = o.HandshakeTimeout;
                     });
@@ -462,7 +465,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             public ILogger CreateLogger(string categoryName)
             {
-                if (categoryName == TypeNameHelper.GetTypeDisplayName(typeof(HttpsConnectionAdapter)))
+                if (categoryName == TypeNameHelper.GetTypeDisplayName(typeof(HttpsConnectionMiddleware)))
                 {
                     return FilterLogger;
                 }

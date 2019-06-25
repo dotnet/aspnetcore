@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,24 +16,21 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ApiBehaviorTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+    public abstract class ApiBehaviorTestBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
     {
-        public ApiBehaviorTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+        protected ApiBehaviorTestBase(MvcTestFixture<TStartup> fixture)
         {
-            Client = fixture.CreateDefaultClient();
-
-            var factory = fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-            CustomInvalidModelStateClient = factory.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<BasicWebSite.StartupWithCustomInvalidModelStateFactory>();
+            builder.UseStartup<TStartup>();
 
         public HttpClient Client { get; }
-        public HttpClient CustomInvalidModelStateClient { get; }
 
         [Fact]
-        public async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
+        public virtual async Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
             using (new ActivityReplacer())
@@ -123,34 +119,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ActionsReturnBadRequest_UsesProblemDescriptionProviderAndApiConventionsToConfigureErrorResponse()
-        {
-            // Arrange
-            var contactModel = new Contact
-            {
-                Name = "Abc",
-                City = "Redmond",
-                State = "WA",
-                Zip = "Invalid",
-            };
-            var expected = new Dictionary<string, string[]>
-            {
-                {"Name", new[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
-                {"Zip", new[] { @"The field Zip must match the regular expression '\d{5}'."}}
-            };
-
-            // Act
-            var response = await CustomInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            Assert.Equal("application/vnd.error+json", response.Content.Headers.ContentType.MediaType);
-            var content = await response.Content.ReadAsStringAsync();
-            var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(content);
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
         public Task ActionsWithApiBehavior_InferFromBodyParameters()
             => ActionsWithApiBehaviorInferFromBodyParameters("ActionWithInferredFromBodyParameter");
 
@@ -171,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.PostAsJsonAsync($"/contact/{action}", input);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
             Assert.Equal(input.ContactId, result.ContactId);
             Assert.Equal(input.Name, result.Name);
@@ -188,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.PostAsync(url, new StringContent(string.Empty));
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
             Assert.Equal(id, result.ContactId);
             Assert.Equal(name, result.Name);
@@ -208,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync(url);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
 
             var result = await response.Content.ReadAsAsync<Contact>();
             Assert.Equal(id, result.ContactId);
@@ -229,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync(url);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
 
             var result = await response.Content.ReadAsAsync<Contact>();
             Assert.Equal(id, result.ContactId);
@@ -247,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync("/contact/ActionWithInferredModelBinderType?foo=Hello!");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, result);
         }
@@ -262,13 +230,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync("/contact/ActionWithInferredModelBinderTypeWithExplicitModelName?bar=Hello!");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, result);
         }
 
         [Fact]
-        public async Task ClientErrorResultFilterExecutesForStatusCodeResults()
+        public virtual async Task ClientErrorResultFilterExecutesForStatusCodeResults()
         {
             using (new ActivityReplacer())
             {
@@ -296,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task SerializingProblemDetails_IgnoresNullValuedProperties()
+        public virtual async Task SerializingProblemDetails_IgnoresNullValuedProperties()
         {
             // Arrange
             var expected = new[] { "status", "title", "traceId", "type" };
@@ -314,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task SerializingProblemDetails_WithAllValuesSpecified()
+        public virtual async Task SerializingProblemDetails_WithAllValuesSpecified()
         {
             // Arrange
             var expected = new[] { "detail", "instance", "status", "title", "tracking-id", "type" };
@@ -330,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task SerializingValidationProblemDetails_WithExtensionData()
+        public virtual async Task SerializingValidationProblemDetails_WithExtensionData()
         {
             // Act
             var response = await Client.GetAsync("/contact/ActionReturningValidationProblemDetails");
@@ -362,6 +330,87 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     Assert.Equal("Error1", kvp.Key);
                     Assert.Equal(new[] { "Error Message" }, kvp.Value);
                 });
+        }
+    }
+
+    public class ApiBehaviorTest : ApiBehaviorTestBase<BasicWebSite.StartupWithSystemTextJson>
+    {
+        public ApiBehaviorTest(MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> fixture)
+            : base(fixture)
+        {
+        }
+
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/pull/11460")]
+        public override Task ActionsReturnBadRequest_WhenModelStateIsInvalid()
+        {
+            return base.ActionsReturnBadRequest_WhenModelStateIsInvalid();
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        public override Task ClientErrorResultFilterExecutesForStatusCodeResults()
+        {
+            return base.ClientErrorResultFilterExecutesForStatusCodeResults();
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        public override Task SerializingProblemDetails_IgnoresNullValuedProperties()
+        {
+            return base.SerializingProblemDetails_IgnoresNullValuedProperties();
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        public override Task SerializingProblemDetails_WithAllValuesSpecified()
+        {
+            return base.SerializingProblemDetails_WithAllValuesSpecified();
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/38769")]
+        public override Task SerializingValidationProblemDetails_WithExtensionData()
+        {
+            return base.SerializingValidationProblemDetails_WithExtensionData();
+        }
+    }
+
+    public class ApiBehaviorTestNewtonsoftJson : ApiBehaviorTestBase<BasicWebSite.StartupWithoutEndpointRouting>
+    {
+        public ApiBehaviorTestNewtonsoftJson(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+            : base(fixture)
+        {
+            var factory = fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            CustomInvalidModelStateClient = factory.CreateDefaultClient();
+        }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<BasicWebSite.StartupWithCustomInvalidModelStateFactory>();
+
+        public HttpClient CustomInvalidModelStateClient { get; }
+
+        [Fact]
+        public async Task ActionsReturnBadRequest_UsesProblemDescriptionProviderAndApiConventionsToConfigureErrorResponse()
+        {
+            // Arrange
+            var contactModel = new Contact
+            {
+                Name = "Abc",
+                City = "Redmond",
+                State = "WA",
+                Zip = "Invalid",
+            };
+            var expected = new Dictionary<string, string[]>
+            {
+                {"Name", new[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
+                {"Zip", new[] { @"The field Zip must match the regular expression '\d{5}'."}}
+            };
+
+            // Act
+            var response = await CustomInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            Assert.Equal("application/vnd.error+json", response.Content.Headers.ContentType.MediaType);
+            var content = await response.Content.ReadAsStringAsync();
+            var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(content);
+            Assert.Equal(expected, actual);
         }
     }
 }

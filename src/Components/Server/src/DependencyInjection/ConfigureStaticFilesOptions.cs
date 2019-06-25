@@ -60,56 +60,7 @@ namespace Microsoft.AspNetCore.Components.Server
             // Add our provider
             var provider = new ManifestEmbeddedFileProvider(typeof(ConfigureStaticFilesOptions).Assembly);
 
-            options.FileProvider = new CompositeFileProvider(provider, new ContentReferencesFileProvider(), options.FileProvider);
-        }
-
-        private class ContentReferencesFileProvider : IFileProvider
-        {
-            byte[] _data = Encoding.UTF8.GetBytes(@"{ ""cssReferences"": [], ""jsReferences"": [] }");
-
-            public IDirectoryContents GetDirectoryContents(string subpath)
-            {
-                return new NotFoundDirectoryContents();
-            }
-
-            public IFileInfo GetFileInfo(string subpath)
-            {
-                if (subpath.Equals("/_framework/blazor.boot.json", StringComparison.OrdinalIgnoreCase))
-                {
-                    return new MemoryFileInfo(_data);
-                }
-
-                return new NotFoundFileInfo(subpath);
-            }
-
-            public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
-
-            private class MemoryFileInfo : IFileInfo
-            {
-                private readonly byte[] _data;
-
-                public MemoryFileInfo(byte[] data)
-                {
-                    _data = data;
-                }
-
-                public bool Exists => true;
-
-                public long Length => _data.Length;
-
-                public string PhysicalPath => null;
-
-                public string Name => "blazor.boot.json";
-
-                public DateTimeOffset LastModified => DateTimeOffset.FromUnixTimeSeconds(0);
-
-                public bool IsDirectory => false;
-
-                public Stream CreateReadStream()
-                {
-                    return new MemoryStream(_data, writable: false);
-                }
-            }
+            options.FileProvider = new CompositeFileProvider(provider, options.FileProvider);
         }
     }
 }

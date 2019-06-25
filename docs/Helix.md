@@ -13,13 +13,13 @@ To run Helix tests for one particular test project:
 
 ```
 cd src/MyCode/test
-dotnet build /t:Helix
+dotnet msbuild /t:Helix
 ```
 
 To run tests for the entire repo, run:
 
 ```
-.\build.cmd /t:Helix
+.\eng\scripts\TestHelix.ps1
 ```
 
 This will restore, and then publish all of the test projects including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assemblies on the helix machine, and upload the job to helix, it won't wait for the jobs to complete, but you can go to https://mc.dot.net/#/user/$(your user name)/builds.

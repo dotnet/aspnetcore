@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Rewrite.Logging;
@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         {
             context.HttpContext.Abort();
             context.Result = RuleResult.EndResponse;
-            context.Logger?.AbortedRequest(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString);
+            context.Logger.AbortedRequest(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString);
         }
     }
 }

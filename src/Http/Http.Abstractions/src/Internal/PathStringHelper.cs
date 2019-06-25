@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     internal static class PathStringHelper
     {

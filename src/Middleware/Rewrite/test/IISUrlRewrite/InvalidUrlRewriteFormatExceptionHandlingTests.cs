@@ -208,6 +208,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     </rules>
 </rewrite>",
             "Could not parse the UrlRewrite file. Message: 'The appendQueryString parameter 'foo' was not recognized'. Line number '5': '14'.")]
+        [InlineData(
+            "<rules><rule></rule></rules>",
+            "Could not parse the UrlRewrite file. Message: 'The root element '<rewrite>' is missing'. Line number '0': '0'.")]
         public void ThrowInvalidUrlRewriteFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert
