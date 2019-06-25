@@ -260,7 +260,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
             services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
-            services.TryAddSingleton<AsyncEnumerableReader>();
 
             //
             // Route Handlers

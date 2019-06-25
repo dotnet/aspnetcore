@@ -10,9 +10,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Options;
 
+#if JSONNET
+namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
+#else
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
+#endif
 {
     using ReaderFunc = Func<IAsyncEnumerable<object>, Task<ICollection>>;
 
@@ -22,10 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// </summary>
     /// <remarks>
     /// This type is used to create a strongly typed synchronous <see cref="ICollection{T}"/> instance from
-    /// an <see cref="IAsyncEnumerable{T}"/>. An accurate <see cref="ICollection{T}"/> is required for XML formatters to 
+    /// an <see cref="IAsyncEnumerable{T}"/>. An accurate <see cref="ICollection{T}"/> is required for XML formatters to
     /// correctly serialize.
     /// </remarks>
-    public sealed class AsyncEnumerableReader
+    internal sealed class AsyncEnumerableReader
     {
         private readonly MethodInfo Converter = typeof(AsyncEnumerableReader).GetMethod(
             nameof(ReadInternal),
@@ -39,9 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Initializes a new instance of <see cref="AsyncEnumerableReader"/>.
         /// </summary>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
-        public AsyncEnumerableReader(IOptions<MvcOptions> mvcOptions)
+        public AsyncEnumerableReader(MvcOptions mvcOptions)
         {
-            _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _mvcOptions = mvcOptions;
         }
 
         /// <summary>

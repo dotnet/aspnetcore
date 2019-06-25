@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             // Arrange
             var options = new MvcOptions();
-            var reader = new AsyncEnumerableReader(Options.Create(options));
+            var reader = new AsyncEnumerableReader(options);
 
             // Act
             var result = await reader.ReadAsync(TestEnumerable());
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // This test ensures the reader does not fail if you have a type that implements IAsyncEnumerable for multiple Ts
             // Arrange
             var options = new MvcOptions();
-            var reader = new AsyncEnumerableReader(Options.Create(options));
+            var reader = new AsyncEnumerableReader(options);
 
             // Act
             var result = await reader.ReadAsync(new MultiAsyncEnumerable());
@@ -48,11 +48,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             // Arrange
             var enumerable = TestEnumerable(11);
-            var expected = $"'AsyncEnumerableReader' reached the configured maximum size of the buffer when an enumerating a value of type `{enumerable.GetType()}'. " +
-                "This limit is in place to prevent infinite streams of `IAsyncEnumerable<>` from continuing indefinitely. If this is not a programming mistake, " +
-                $"consider ways to reduce the collection or size, or consider manually converting '{enumerable.GetType()}' into a list rather than increasing the limit.";
+            var expected = $"'AsyncEnumerableReader' reached the configured maximum size of the buffer when enumerating a value of type '{enumerable.GetType()}'. " +
+                "This limit is in place to prevent infinite streams of 'IAsyncEnumerable<>' from continuing indefinitely. If this is not a programming mistake, " +
+                $"consider ways to reduce the collection size, or consider manually converting '{enumerable.GetType()}' into a list rather than increasing the limit.";
             var options = new MvcOptions { MaxIAsyncEnumerableBufferLimit = 10 };
-            var reader = new AsyncEnumerableReader(Options.Create(options));
+            var reader = new AsyncEnumerableReader(options);
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => reader.ReadAsync(enumerable));

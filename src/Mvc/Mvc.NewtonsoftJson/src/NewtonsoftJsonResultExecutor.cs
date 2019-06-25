@@ -41,14 +41,12 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
-        /// <param name="asyncEnumerableReader">The <see cref="AsyncEnumerableReader"/>.</param>
         public NewtonsoftJsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
             ILogger<NewtonsoftJsonResultExecutor> logger,
             IOptions<MvcOptions> mvcOptions,
             IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
-            ArrayPool<char> charPool,
-            AsyncEnumerableReader asyncEnumerableReader)
+            ArrayPool<char> charPool)
         {
             if (writerFactory == null)
             {
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
             _jsonOptions = jsonOptions.Value;
             _charPool = new JsonArrayPool<char>(charPool);
-            _asyncEnumerableReader = asyncEnumerableReader ?? throw new ArgumentNullException(nameof(asyncEnumerableReader));
+            _asyncEnumerableReader = new AsyncEnumerableReader(_mvcOptions);
         }
 
         /// <summary>
@@ -114,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 response.StatusCode = result.StatusCode.Value;
             }
 
-            _logger.JsonResultExecuting(result.Value);
+            Log.JsonResultExecuting(_logger, result.Value);
 
             var responseStream = response.Body;
             FileBufferingWriteStream fileBufferingWriteStream = null;
@@ -137,6 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     var value = result.Value;
                     if (result.Value is IAsyncEnumerable<object> asyncEnumerable)
                     {
+                        Log.BufferingAsyncEnumerable(_logger, asyncEnumerable);
                         value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
                     }
 
@@ -176,6 +175,34 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
                 return settingsFromResult;
             }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+
+            static Log()
+            {
+                _jsonResultExecuting = LoggerMessage.Define<string>(
+                    LogLevel.Information,
+                    new EventId(1, "JsonResultExecuting"),
+                    "Executing JsonResult, writing value of type '{Type}'.");
+
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                   LogLevel.Debug,
+                   new EventId(1, "BufferingAsyncEnumerable"),
+                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            }
+
+            public static void JsonResultExecuting(ILogger logger, object value)
+            {
+                var type = value == null ? "null" : value.GetType().FullName;
+                _jsonResultExecuting(logger, type, null);
+            }
+
+            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }
 }

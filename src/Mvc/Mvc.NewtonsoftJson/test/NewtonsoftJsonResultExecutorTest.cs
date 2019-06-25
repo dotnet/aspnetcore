@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 loggerFactory.CreateLogger< NewtonsoftJsonResultExecutor>(),
                 Options.Create(new MvcOptions()),
                 Options.Create(new MvcNewtonsoftJsonOptions()),
-                ArrayPool<char>.Shared,
-                new AsyncEnumerableReader(Options.Create(new MvcOptions())));
+                ArrayPool<char>.Shared);
         }
 
         protected override object GetIndentedSettings()

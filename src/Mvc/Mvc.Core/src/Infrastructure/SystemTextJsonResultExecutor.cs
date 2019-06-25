@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
-        private readonly AsyncEnumerableReader _reader;
+        private readonly AsyncEnumerableReader _asyncEnumerableReader;
 
         public SystemTextJsonResultExecutor(
             IOptions<JsonOptions> options,
             ILogger<SystemTextJsonResultExecutor> logger,
-            AsyncEnumerableReader reader)
+            IOptions<MvcOptions> mvcOptions)
         {
             _options = options.Value;
             _logger = logger;
-            _reader = reader;
+            _asyncEnumerableReader = new AsyncEnumerableReader(mvcOptions.Value);
         }
 
         public async Task ExecuteAsync(ActionContext context, JsonResult result)
@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var value = result.Value;
                 if (value is IAsyncEnumerable<object> asyncEnumerable)
                 {
-                    Log.EagerlyReadingAsyncEnumerable(_logger, asyncEnumerable);
-                    value = await _reader.ReadAsync(asyncEnumerable);
+                    Log.BufferingAsyncEnumerable(_logger, asyncEnumerable);
+                    value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
                 }
 
                 var type = value?.GetType() ?? typeof(object);
@@ -134,10 +134,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new EventId(1, "JsonResultExecuting"),
                 "Executing JsonResult, writing value of type '{Type}'.");
 
-            private static readonly Action<ILogger, string, Exception> _eagerlyReadingAsyncEnumerable = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
                LogLevel.Debug,
-               new EventId(2, "EagerReadAsyncEnumerable"),
-               "Eagerly reading IAsyncEnumerable instance of type '{Type}'.");
+               new EventId(2, "BufferingAsyncEnumerable"),
+               "Buffering IAsyncEnumerable instance of type '{Type}'.");
 
             public static void JsonResultExecuting(ILogger logger, object value)
             {
@@ -145,11 +145,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 _jsonResultExecuting(logger, type, null);
             }
 
-            public static void EagerlyReadingAsyncEnumerable(ILogger logger, object value)
-            {
-                var type = value == null ? "null" : value.GetType().FullName;
-                _eagerlyReadingAsyncEnumerable(logger, type, null);
-            }
+            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }
 }

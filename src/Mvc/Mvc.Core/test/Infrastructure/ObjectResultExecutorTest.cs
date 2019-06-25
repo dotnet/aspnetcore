@@ -485,8 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             options ??= new MvcOptions();
             var optionsAccessor = Options.Create(options);
             var selector = new DefaultOutputFormatterSelector(optionsAccessor, NullLoggerFactory.Instance);
-            var reader = new AsyncEnumerableReader(optionsAccessor);
-            return new ObjectResultExecutor(selector, new TestHttpResponseStreamWriterFactory(), NullLoggerFactory.Instance, reader);
+            return new ObjectResultExecutor(selector, new TestHttpResponseStreamWriterFactory(), NullLoggerFactory.Instance, optionsAccessor);
         }
 
         private class CannotWriteFormatter : IOutputFormatter

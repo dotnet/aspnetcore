@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance,
-                new AsyncEnumerableReader(options)));
+                options));
 
             return services.BuildServiceProvider();
         }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return new SystemTextJsonResultExecutor(
                 Options.Create(new JsonOptions()), 
                 loggerFactory.CreateLogger<SystemTextJsonResultExecutor>(),
-                new AsyncEnumerableReader(Options.Create(new MvcOptions())));
+                Options.Create(new MvcOptions()));
         }
 
         protected override object GetIndentedSettings()

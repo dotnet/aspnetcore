@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, asyncEnumerableReader: null)
+            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
         {
         }
 
@@ -41,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="asyncEnumerableReader">The <see cref="AsyncEnumerableReader"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory,
-            AsyncEnumerableReader asyncEnumerableReader)
+            IOptions<MvcOptions> mvcOptions)
         {
             if (formatterSelector == null)
             {
@@ -66,7 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
-            _asyncEnumerableReader = asyncEnumerableReader ?? throw new ArgumentNullException(nameof(asyncEnumerableReader));
+            var options = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _asyncEnumerableReader = new AsyncEnumerableReader(options);
         }
 
         /// <summary>
@@ -125,6 +127,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private async Task ExecuteAsyncEnumerable(ActionContext context, ObjectResult result, IAsyncEnumerable<object> asyncEnumerable)
         {
+            Log.BufferingAsyncEnumerable(Logger, asyncEnumerable);
+
             var enumerated = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
@@ -178,6 +182,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+
+            static Log()
+            {
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                   LogLevel.Debug,
+                   new EventId(1, "BufferingAsyncEnumerable"),
+                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            }
+
+            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+        }
     }
 }
