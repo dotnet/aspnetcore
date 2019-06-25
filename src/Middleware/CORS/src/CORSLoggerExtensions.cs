@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Cors.Internal
+namespace Microsoft.AspNetCore.Cors
 {
     internal static class CORSLoggerExtensions
     {
