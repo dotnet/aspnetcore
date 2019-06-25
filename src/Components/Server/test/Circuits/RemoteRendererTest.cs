@@ -16,7 +16,7 @@ using Microsoft.JSInterop;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     public class RemoteRendererTest : HtmlRendererTestBase
     {

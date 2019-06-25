@@ -39,9 +39,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "Blazor\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "Blazor\testassets\StandaloneApp\StandaloneApp.csproj", "{C0FFB29E-4696-4875-9039-E5FA1AC5A42A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Browser", "Browser", "{A27FF193-195B-4474-8E6C-840B2E339373}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{A27FF193-195B-4474-8E6C-840B2E339373}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser", "Browser\src\Microsoft.AspNetCore.Components.Browser.csproj", "{3B1A56F8-B3E0-4F33-A717-50BDD4FBE12E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web", "Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{3B1A56F8-B3E0-4F33-A717-50BDD4FBE12E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{3D9B9B2C-E379-41BD-83D4-2E099FBDA107}"
 EndProject
