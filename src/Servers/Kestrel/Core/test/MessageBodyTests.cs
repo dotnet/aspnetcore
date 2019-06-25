@@ -1252,8 +1252,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Add("asdf");
 
-                reader.Complete();
                 reader.AdvanceTo(readResult.Buffer.End);
+                reader.Complete();
 
                 await body.ConsumeAsync();
             }
@@ -1284,7 +1284,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await body.StopAsync();
             }
         }
-
 
         [Fact]
         public async Task CompleteForChunkedAllowsConsumeToWork()
