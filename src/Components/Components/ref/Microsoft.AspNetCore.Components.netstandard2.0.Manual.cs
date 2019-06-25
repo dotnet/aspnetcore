@@ -153,16 +153,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected InputBase() { }
         [Parameter(CaptureUnmatchedValues = true)]
         public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Class { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected string CssClass { get { throw null; } }
         protected T CurrentValue { get { throw null; } set { } }
         protected string CurrentValueAsString { get { throw null; } set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected string FieldClass { get { throw null; } }
         protected Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
