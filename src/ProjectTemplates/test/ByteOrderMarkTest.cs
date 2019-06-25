@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,7 +37,7 @@ namespace Templates.Test
                 foreach (var file in files)
                 {
                     var filePath = Path.GetFullPath(file);
-                    var fileStream = new FileStream(filePath, FileMode.Open);
+                    using var fileStream = new FileStream(filePath, FileMode.Open);
 
                     var bytes = new byte[3];
                     fileStream.Read(bytes, 0, 3);
@@ -75,13 +76,16 @@ namespace Templates.Test
                 foreach (var file in files)
                 {
                     var filePath = Path.GetFullPath(file);
-                    var fileStream = new FileStream(filePath, FileMode.Open);
+                    using var fileStream = new FileStream(filePath, FileMode.Open);
 
                     var bytes = new byte[3];
                     fileStream.Read(bytes, 0, 3);
 
                     // Check for UTF8 BOM 0xEF,0xBB,0xBF
-                    Assert.True(bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF, $"File {filePath} doesn't contains UTF-8 BOM characters.");
+                    var expectedBytes = Encoding.UTF8.GetPreamble();
+                    Assert.True(
+                        bytes[0] == expectedBytes[0] && bytes[1] == expectedBytes[1] && bytes[2] == expectedBytes[2],
+                        $"File {filePath} doesn't contains UTF-8 BOM characters.");
                 }
             }
         }
