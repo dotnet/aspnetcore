@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly long _contentLength;
         private long _inputLength;
         private bool _readCompleted;
-        private bool _completed;
         private bool _isReading;
         private int _userCanceled;
         private long _totalExaminedInPreviousReadResult;
@@ -29,10 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _inputLength = _contentLength;
         }
 
-        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfCompleted();
+            return ReadAsyncInternal(cancellationToken);
+        }
 
+        public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
+        {
             if (_isReading)
             {
                 throw new InvalidOperationException("Reading is already in progress.");
@@ -112,7 +115,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override bool TryRead(out ReadResult readResult)
         {
             ThrowIfCompleted();
+            return TryReadInternal(out readResult);
+        }
 
+        public override bool TryReadInternal(out ReadResult readResult)
+        {
             if (_isReading)
             {
                 throw new InvalidOperationException("Reading is already in progress.");
@@ -163,14 +170,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return OnConsumeAsync();
-        }
-        
-        private void ThrowIfCompleted()
-        {
-            if (_completed)
-            {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
-            }
         }
 
         private void CreateReadResultFromConnectionReadResult()

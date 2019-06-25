@@ -51,6 +51,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryRead(out ReadResult readResult)
         {
+            ThrowIfCompleted();
+
+            return TryReadInternal(out readResult);
+        }
+
+        public override bool TryReadInternal(out ReadResult readResult)
+        {
             TryStart();
 
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
@@ -65,7 +72,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return boolResult;
         }
 
-        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            ThrowIfCompleted();
+            return ReadAsyncInternal(cancellationToken);
+        }
+
+        public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
         {
             TryStart();
 
@@ -92,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception)
         {
-            _requestBodyPipe.Reader.Complete();
+            _completed = true;
             _context.ReportApplicationError(exception);
         }
 
