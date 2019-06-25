@@ -5,9 +5,8 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
-using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.PatternSegments;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
