@@ -17,6 +17,7 @@
     <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -46,6 +47,24 @@
       <PreprocessorVariable>var.AspNetCoreSharedFrameworkSource</PreprocessorVariable>
     </HarvestDirectory>
   </ItemGroup>
+
+  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
+    </PropertyGroup>
+      <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(PackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)'" />
+  </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

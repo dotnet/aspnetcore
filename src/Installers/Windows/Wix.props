@@ -32,6 +32,7 @@
     <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
     <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
     <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>
