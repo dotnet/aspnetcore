@@ -309,6 +309,29 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal(testService, testServer.Services.GetService<TestService>());
         }
 
+        [Fact]
+        public async Task TestServerConstructorShouldProvideServicesFromHostBuilder()
+        {
+            // Arrange
+            var testService = new TestService();
+            var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .ConfigureServices(services => services.AddSingleton(testService))
+                        .Configure(_ => { });
+                })
+                .StartAsync();
+
+            // Act
+            // By calling GetTestServer(), a new TestServer instance will be instantiated
+            var testServer = host.GetTestServer();
+
+            // Assert
+            Assert.Equal(testService, testServer.Services.GetService<TestService>());
+        }
+
         public class TestService { public string Message { get; set; } }
 
         public class TestRequestServiceMiddleware
