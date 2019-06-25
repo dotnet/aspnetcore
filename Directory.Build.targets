@@ -31,6 +31,9 @@
     <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
     <TargetingPackVersion Condition=" '$(VersionSuffix)' != '' ">$(TargetingPackVersionPrefix)-$(VersionSuffix)</TargetingPackVersion>
 
+    <SiteExtensionSuffix>$(VersionSuffix.Replace('.','-'))</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion>$(VersionPrefix)-$(SiteExtensionSuffix)</SiteExtensionPackageVersion>
+
     <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
   </PropertyGroup>
 
