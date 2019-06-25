@@ -10,11 +10,6 @@ fi
 
 node_version=$1
 arch=$2
-if [[ $arch == arm* ]]; then 
-    arch="arm64"
-else
-    arch="x64"
-fi
 osname=`uname -s`
 if [ "$osname" = "Darwin" ]; then
    platformarch="darwin-$arch"
