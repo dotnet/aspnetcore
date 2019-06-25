@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     internal static class DiagnosticsEntityFrameworkCoreLoggerExtensions
     {
