@@ -960,6 +960,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public ProblemDetails() { }
         public string Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Text.Json.Serialization.JsonExtensionDataAttribute]
         public System.Collections.Generic.IDictionary<string, object> Extensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int? Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
