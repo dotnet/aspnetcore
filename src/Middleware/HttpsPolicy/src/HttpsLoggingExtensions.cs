@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.HttpsPolicy.Internal
+namespace Microsoft.AspNetCore.HttpsPolicy
 {
     internal static class HttpsLoggingExtensions
     {
