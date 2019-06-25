@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var flag = false;
 
             var middleware = TestUtils.CreateTestMiddleware(
-                queue: TestStrategy.AlwaysPass,
+                queue: TestPolicy.AlwaysPass,
                 next: (context) => {
                     flag = true;
                     return Task.CompletedTask;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async Task RequestRejectsIfQueueReturnsFalse()
         {
             var middleware = TestUtils.CreateTestMiddleware(
-                queue: TestStrategy.AlwaysReject);
+                queue: TestPolicy.AlwaysReject);
 
             var context = new DefaultHttpContext();
             await middleware.Invoke(context);
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             bool onRejectedInvoked = false;
 
             var middleware = TestUtils.CreateTestMiddleware(
-                queue: TestStrategy.AlwaysReject,
+                queue: TestPolicy.AlwaysReject,
                 onRejected: httpContext =>
                 {
                     onRejectedInvoked = true;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async void RequestsBlockedIfQueueFull()
         {
             var middleware = TestUtils.CreateTestMiddleware(
-                queue: TestStrategy.AlwaysReject,
+                queue: TestPolicy.AlwaysReject,
                 next: httpContext =>
                 {
                     // throttle should bounce the request; it should never get here
@@ -73,17 +74,16 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void IncomingRequestsFillUpQueue()
         {
-            RequestThrottlingEventSource.Log._queueLength = 0;
-            var middleware = TestUtils.CreateTestMiddleware(
-                queue: TestStrategy.AlwaysBlock);
+            var testQueue = TestPolicy.AlwaysBlock;
+            var middleware = TestUtils.CreateTestMiddleware(testQueue);
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
-
-            _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(1, testQueue.QueuedRequests);
+
+            _ = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(2, testQueue.QueuedRequests);
         }
 
         [Fact]
@@ -92,23 +92,22 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var blocker = new TaskCompletionSource<bool>();
 
             // requires
-            RequestThrottlingEventSource.Log._queueLength = 0;
-            var middleware = TestUtils.CreateTestMiddleware(
-                queue: new TestStrategy(
-                    invoke: async () =>
-                    {
-                        return await blocker.Task;
-                    }));
+            var testQueue = new TestPolicy(
+                invoke: async (_) =>
+                {
+                    return await blocker.Task;
+                });
+            var middleware = TestUtils.CreateTestMiddleware(testQueue);
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
 
             var task1 = middleware.Invoke(new DefaultHttpContext());
             Assert.False(task1.IsCompleted);
-            Assert.Equal(1, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(1, testQueue.QueuedRequests);
 
             blocker.SetResult(true);
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
         }
 
         [Fact]
@@ -116,20 +115,21 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var flag = false;
 
-            RequestThrottlingEventSource.Log._queueLength = 0;
+            var testQueue = new TestPolicy(
+                    invoke: (_) => true,
+                    onExit: () => { flag = true; });
+
             var middleware = TestUtils.CreateTestMiddleware(
-                queue: new TestStrategy(
-                    invoke: (() => true),
-                    onExit: () => { flag = true; }),
+                queue: testQueue,
                 next: httpContext =>
                 {
                     throw new DivideByZeroException();
                 });
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
             await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
             Assert.True(flag);
         }
 
@@ -138,7 +138,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
 
-            RequestThrottlingEventSource.Log._queueLength = 0;
+            var testQueue = new TestPolicy(
+                invoke: (state) =>
+                {
+                    return state.QueuedRequests == 0;
+                });
+
             var middleware = TestUtils.CreateTestMiddleware(
                 onRejected: httpContext =>
                 {
@@ -163,7 +168,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.True(thirdRequest.IsCompletedSuccessfully);
 
-            Assert.Equal(0, RequestThrottlingEventSource.Log._queueLength);
+            Assert.Equal(0, testQueue.QueuedRequests);
         }
     }
 }

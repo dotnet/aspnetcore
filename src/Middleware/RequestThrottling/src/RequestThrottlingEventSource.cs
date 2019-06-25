@@ -13,19 +13,27 @@ namespace Microsoft.AspNetCore.RequestThrottling
     internal sealed class RequestThrottlingEventSource : EventSource
     {
         public static readonly RequestThrottlingEventSource Log = new RequestThrottlingEventSource();
-        private static QueueFrame _cachedNonTimerResult = new QueueFrame
+        private static QueueFrame _cachedNonTimerResult
         {
-            _parent = Log
-        };
+            get
+            {
+                if (_queueFrameCache == null)
+                {
+                    _queueFrameCache = new QueueFrame { _parent = Log };
+                }
+                return _queueFrameCache.Value;
+            }
+        }
 
-        private PollingCounter _rejectedRequestsCounter;   // incrementing polling counter
-        private PollingCounter _queueLengthCounter;        // polling counter
-        private EventCounter _queueDuration;     // event counter average
+        private static QueueFrame? _queueFrameCache = null;
 
-        internal long _rejectedRequests;
-        internal int _queueLength;
+        private PollingCounter _rejectedRequestsCounter;
+        private PollingCounter _queueLengthCounter;
+        private EventCounter _queueDuration;
 
-    
+        private long _rejectedRequests;
+        private int _queueLength;
+
         internal RequestThrottlingEventSource()
             : base("Microsoft.AspNetCore.RequestThrottling")
         {
@@ -98,5 +106,5 @@ namespace Microsoft.AspNetCore.RequestThrottling
                 };
             }
         }
-     }
+    }
 }

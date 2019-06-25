@@ -69,30 +69,33 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         }
     }
 
-    public class TestStrategy : IQueuePolicy
+    internal class TestPolicy : IQueuePolicy
     {
-        private Func<Task<bool>> _invoke { get; }
+        private Func<TestPolicy, Task<bool>> _invoke { get; }
         private Action _onExit { get; }
 
-        public TestStrategy(Func<Task<bool>> invoke, Action onExit = null)
+        private int _queuedRequests;
+        public int QueuedRequests { get => _queuedRequests; }
+
+        public TestPolicy(Func<TestPolicy, Task<bool>> invoke, Action onExit = null)
         {
             _invoke = invoke;
             _onExit = onExit ?? (() => { });
         }
 
-        public TestStrategy(Func<bool> invoke, Action onExit = null)
-            : this(async () =>
-            {
-                await Task.CompletedTask;
-                return invoke();
-            },
-            onExit)
-        { }
-
+        public TestPolicy(Func<TestPolicy, bool> invoke, Action onExit = null) :
+            this(async (state) =>
+           {
+               await Task.CompletedTask;
+               return invoke(state);
+           }, onExit) { }
+ 
         public async Task<bool> TryEnterAsync()
         {
-            await Task.CompletedTask;
-            return await _invoke();
+            Interlocked.Increment(ref _queuedRequests);
+            var result = await _invoke(this);
+            Interlocked.Decrement(ref _queuedRequests);
+            return result;
         }
 
         public void OnExit()
@@ -100,14 +103,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             _onExit();
         }
 
-        public static TestStrategy AlwaysReject =
-            new TestStrategy(() => false);
+        public static TestPolicy AlwaysReject =
+            new TestPolicy((_) => false);
 
-        public static TestStrategy AlwaysPass =
-            new TestStrategy(() => true);
+        public static TestPolicy AlwaysPass =
+            new TestPolicy((_) => true);
 
-        public static TestStrategy AlwaysBlock =
-            new TestStrategy(async () =>
+        public static TestPolicy AlwaysBlock =
+            new TestPolicy(async (_) =>
             {
                 await new SemaphoreSlim(0).WaitAsync();
                 return false;
