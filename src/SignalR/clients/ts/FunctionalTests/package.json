@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@aspnet/signalr": "link:../signalr",
-    "@aspnet/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
+    "@microsoft/signalr": "link:../signalr",
+    "@microsoft/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
     "msgpack5": "^4.0.2"
   },
   "devDependencies": {
