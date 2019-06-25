@@ -661,6 +661,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return output.Reader;
         }
 
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerable(IDerivedParameterTestObject param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerable(DerivedParameterTestObjectBase param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerableWithCancellation(IDerivedParameterTestObject param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerableWithCancellation(DerivedParameterTestObjectBase param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
         public class AsyncEnumerableImpl<T> : IAsyncEnumerable<T>
         {
             private readonly IAsyncEnumerable<T> _inner;
@@ -753,6 +777,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
         }
+
+        public interface IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public abstract class DerivedParameterTestObjectBase : IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public class DerivedParameterTestObject : DerivedParameterTestObjectBase { }
     }
 
     public class SimpleHub : Hub
