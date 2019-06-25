@@ -2,19 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     internal class HttpContextBuilder : IHttpBodyControlFeature
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
         
@@ -25,10 +22,10 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
         private bool _returningResponse;
-        private Context _testContext;
+        private object _testContext;
         private Action<HttpContext> _responseReadCompleteCallback;
 
-        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO, bool preserveExecutionContext)
+        internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
             AllowSynchronousIO = allowSynchronousIO;

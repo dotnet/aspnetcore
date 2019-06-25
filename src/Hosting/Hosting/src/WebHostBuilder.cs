@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

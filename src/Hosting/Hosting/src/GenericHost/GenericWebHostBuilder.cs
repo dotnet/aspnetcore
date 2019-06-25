@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
