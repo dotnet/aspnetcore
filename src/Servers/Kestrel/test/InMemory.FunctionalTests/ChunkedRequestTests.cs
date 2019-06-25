@@ -1007,7 +1007,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var readResult = await request.BodyReader.ReadAsync();
                 request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyReader.Complete();
+                request.BodyReader.Complete();
 
             }, testContext))
             {
