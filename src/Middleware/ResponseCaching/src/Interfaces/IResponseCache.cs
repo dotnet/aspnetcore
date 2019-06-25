@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal interface IResponseCache
     {

@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal static class StringBuilderExtensions
     {

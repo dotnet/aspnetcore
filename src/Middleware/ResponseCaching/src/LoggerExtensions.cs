@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     /// <summary>
     /// Defines *all* the logger messages produced by response caching

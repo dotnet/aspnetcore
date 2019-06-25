@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal static class CacheEntryHelpers
     {

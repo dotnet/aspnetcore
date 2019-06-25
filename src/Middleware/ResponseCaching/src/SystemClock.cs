@@ -3,16 +3,16 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     /// <summary>
-    /// Abstracts the system clock to facilitate testing.
+    /// Provides access to the normal system clock.
     /// </summary>
-    internal interface ISystemClock
+    internal class SystemClock : ISystemClock
     {
         /// <summary>
         /// Retrieves the current system time in UTC.
         /// </summary>
-        DateTimeOffset UtcNow { get; }
+        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
     }
 }

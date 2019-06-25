@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal class CachedResponse : IResponseCacheEntry
     {
