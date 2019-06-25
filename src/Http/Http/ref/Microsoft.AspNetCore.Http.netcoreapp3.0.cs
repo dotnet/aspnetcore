@@ -142,6 +142,11 @@ namespace Microsoft.AspNetCore.Http
             void System.Collections.IEnumerator.Reset() { }
         }
     }
+    public partial class HttpBufferingOptions
+    {
+        public HttpBufferingOptions() { }
+        public string TempFileDirectory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     public partial class HttpContextAccessor : Microsoft.AspNetCore.Http.IHttpContextAccessor
     {
         public HttpContextAccessor() { }
@@ -157,6 +162,13 @@ namespace Microsoft.AspNetCore.Http
         public Microsoft.AspNetCore.Http.HttpContext Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { throw null; }
         public void Dispose(Microsoft.AspNetCore.Http.HttpContext httpContext) { }
     }
+    public partial class HttpFileBufferingStreamFactory : Microsoft.AspNetCore.Http.IFileBufferingStreamFactory
+    {
+        public HttpFileBufferingStreamFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.HttpBufferingOptions> bufferingOptions) { }
+        public Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?)) { throw null; }
+        public Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream() { throw null; }
+        public Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?)) { throw null; }
+    }
     public static partial class HttpRequestRewindExtensions
     {
         public static void EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest request) { }
@@ -167,6 +179,12 @@ namespace Microsoft.AspNetCore.Http
     public partial interface IDefaultHttpContextContainer
     {
         Microsoft.AspNetCore.Http.DefaultHttpContext HttpContext { get; }
+    }
+    public partial interface IFileBufferingStreamFactory
+    {
+        Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?));
+        Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream();
+        Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?));
     }
     public partial class MiddlewareFactory : Microsoft.AspNetCore.Http.IMiddlewareFactory
     {
