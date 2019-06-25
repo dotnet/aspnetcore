@@ -22,10 +22,10 @@ namespace RequestThrottlingSample
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTailDropQueue((options) =>
+            services.AddStackQueue((options) =>
             {
                 options.MaxConcurrentRequests = Math.Max(1, _config.GetValue<int>("maxCores"));
-                options.RequestQueueLimit = Math.Max(1, _config.GetValue<int>("maxQueue"));
+                options.RequestQueueLimit = Math.Max(5, _config.GetValue<int>("maxQueue"));
             });
 
             services.AddLogging();
