@@ -6,7 +6,7 @@
     "id": "1029"
   },
   "description": {
-    "text": "A project template for creating a Blazor application that runs server-side inside an ASP.NET Core application. This template can be used for web applications with rich dynamic user interfaces (UIs).",
+    "text": "A project template for creating a Blazor server app that runs server-side inside an ASP.NET Core app and handles user interactions over a SignalR connection. This template can be used for web apps with rich dynamic user interfaces (UIs).",
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1030"
   },

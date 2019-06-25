@@ -877,8 +877,8 @@
   },
   "razorcomponents": {
     "Individual": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside -au Individual",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver -au Individual",
       "Files": [
         "app.db",
         "App.razor",
@@ -920,8 +920,8 @@
       ]
     },
     "IndividualB2C": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside -au IndividualB2C",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver -au IndividualB2C",
       "Files": [
         "App.razor",
         "appsettings.Development.json",
@@ -956,8 +956,8 @@
       ]
     },
     "MultiOrg": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside -au MultiOrg",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver -au MultiOrg",
       "Files": [
         "App.razor",
         "appsettings.Development.json",
@@ -992,8 +992,8 @@
       ]
     },
     "None": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver",
       "Files": [
         "App.razor",
         "appsettings.Development.json",
@@ -1027,8 +1027,8 @@
       ]
     },
     "SingleOrg": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside -au SingleOrg",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver -au SingleOrg",
       "Files": [
         "App.razor",
         "appsettings.Development.json",
@@ -1063,8 +1063,8 @@
       ]
     },
     "Windows": {
-      "Template": "blazorserverside",
-      "Arguments": "new blazorserverside -au Windows",
+      "Template": "blazorserver",
+      "Arguments": "new blazorserver -au Windows",
       "Files": [
         "App.razor",
         "appsettings.Development.json",

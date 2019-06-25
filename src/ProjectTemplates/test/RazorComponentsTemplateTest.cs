@@ -29,9 +29,9 @@ namespace Templates.Test
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task RazorComponentsTemplateWorks_NoAuth()
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserversidenoauth", Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("blazorserverside");
+            var createResult = await Project.RunDotNetNewAsync("blazorserver");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
@@ -79,9 +79,9 @@ namespace Templates.Test
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task RazorComponentsTemplateWorks_IndividualAuth(bool useLocalDB)
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserversideindividual" + (useLocalDB ? "uld" : ""), Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("blazorserverside", auth: "Individual", useLocalDB: useLocalDB);
+            var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: "Individual", useLocalDB: useLocalDB);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
