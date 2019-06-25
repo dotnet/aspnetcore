@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.ResponseCompression.Internal
+namespace Microsoft.AspNetCore.ResponseCompression
 {
     internal static class ResponseCompressionLoggingExtensions
     {
