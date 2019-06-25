@@ -22,10 +22,6 @@ namespace Microsoft.AspNetCore.Hosting
         public virtual void ConfigureContainer(TBuilder builder) { }
         public override System.IServiceProvider CreateServiceProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
     }
-    public static partial class StaticWebAssetsWebHostBuilderExtensions
-    {
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
-    }
     public partial class WebHostBuilder : Microsoft.AspNetCore.Hosting.IWebHostBuilder
     {
         public WebHostBuilder() { }
@@ -47,6 +43,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseDefaultServiceProvider(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Action<Microsoft.Extensions.DependencyInjection.ServiceProviderOptions> configure) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.Type startupType) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStartup<TStartup>(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder) where TStartup : class { throw null; }
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
     }
     public static partial class WebHostExtensions
     {
