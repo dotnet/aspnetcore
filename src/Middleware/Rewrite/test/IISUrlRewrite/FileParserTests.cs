@@ -158,6 +158,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.False(rules[1].Global);
         }
 
+        [Fact]
+        public void Should_skip_empty_conditions()
+        {
+            // arrange
+            var xml = @"<rewrite>
+                            <rules>
+                                <rule name=""redirect-aspnet-mvc"" enabled=""true"" stopProcessing=""true"">
+                                    <match url=""^aspnet/Mvc"" />
+                                    <conditions logicalGrouping=""MatchAll"" trackAllCaptures=""false"" />
+                                    <action type=""Redirect"" url=""https://github.com/aspnet/AspNetCore"" />
+                                </rule>
+                            </rules>
+                        </rewrite>";
+
+            // act
+            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
+
+            // assert
+            Assert.Null(rules[0].Conditions);
+        }
+
         // Creates a rule with appropriate default values of the url rewrite rule.
         private IISUrlRewriteRule CreateTestRule(ConditionCollection conditions,
             string name = "",
