@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace PlatformBenchmarks
 {
     /// <summary>
     /// Manages the generation of the date header value.
