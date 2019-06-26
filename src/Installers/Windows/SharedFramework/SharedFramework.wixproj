@@ -18,6 +18,7 @@
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
+    <InstallersOutputPath>artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,10 +59,10 @@
                       '$(MsiFullPath)' ^
                       '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
-                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(InstallersOutputPath)' ^
                       '$(Platform)' ^
                       '$(PackageVersion)' ^
-                      '$(RepoRoot)' ^
+                      '$(RepositoryRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)'" />
   </Target>

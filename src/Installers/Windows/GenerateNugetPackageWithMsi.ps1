@@ -14,7 +14,7 @@ param(
     [Parameter(Mandatory=$true)][string]$MinorVersion
 )
 
-$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Name\$Architecture"
+$NuGetDir = Join-Path $RepoRoot "obj\Tools\nuget\$Name\$Architecture"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 
 if (-not (Test-Path $NuGetDir)) {
