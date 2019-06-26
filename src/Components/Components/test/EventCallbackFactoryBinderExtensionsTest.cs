@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -513,6 +514,45 @@ namespace Microsoft.AspNetCore.Components
                 $"The type '{typeof(ClassWithoutTypeConverter).FullName}' does not have an associated TypeConverter that supports conversion from a string. " +
                 $"Apply 'TypeConverterAttribute' to the type to register a converter.",
                 ex.Message);
+        }
+
+        [Fact]
+        [ReplaceCulture("fr-FR", "fr-FR")]
+        public async Task CreateBinder_NumericType_WithCurrentCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, culture: null);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42 000,00", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NumericType_WithInvariantCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, CultureInfo.InvariantCulture);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42,000.00", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
         }
 
         private class EventCountingComponent : IComponent, IHandleEvent
