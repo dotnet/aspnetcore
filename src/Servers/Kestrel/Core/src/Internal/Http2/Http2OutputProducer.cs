@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly int _streamId;
         private readonly Http2FrameWriter _frameWriter;
         private readonly TimingPipeFlusher _flusher;
+        private readonly IKestrelTrace _log;
 
         // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
         // FrameWriter's connection-level write lock.
@@ -46,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _frameWriter = frameWriter;
             _flowControl = flowControl;
             _stream = stream;
+            _log = log;
+
             _dataPipe = CreateDataPipe(pool);
             _flusher = new TimingPipeFlusher(_dataPipe.Writer, timeoutControl, log);
             _dataWriteProcessingTask = ProcessDataWrites();
@@ -327,7 +330,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else if (readResult.IsCompleted && _streamEnded)
                     {
-                        Debug.Assert(readResult.Buffer.Length == 0);
+                        if (readResult.Buffer.Length != 0)
+                        {
+                            throw new Exception("Http2OutpuProducer.ProcessDataWrites() observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                        }
 
                         // Headers have already been written and there is no other content to write
                         flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
@@ -346,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Exception ex)
             {
-                Debug.Assert(false, ex.ToString());
+                _log.LogCritical(ex, "Http2OutpuProducer.ProcessDataWrites() observed an unexpected exception.");
             }
 
             _dataPipe.Reader.Complete();
