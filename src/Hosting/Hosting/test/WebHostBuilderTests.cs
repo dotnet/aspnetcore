@@ -1271,6 +1271,80 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.True(service.StopCalled);
         }
 
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public async Task HostedServicesStartedBeforeServer(IWebHostBuilder builder)
+        {
+            builder.Configure(app => { })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<StartOrder>();
+                    services.AddHostedService<MustBeStartedFirst>();
+                    services.AddSingleton<IServer, ServerMustBeStartedSecond>();
+                });
+
+            using var host = builder.Build();
+            await host.StartAsync();
+            var ordering = host.Services.GetRequiredService<StartOrder>();
+            Assert.Equal(2, ordering.Order);
+            await host.StopAsync();
+        }
+
+        private class StartOrder
+        {
+            public int Order { get; set; }
+        }
+
+        private class MustBeStartedFirst : IHostedService
+        {
+            public MustBeStartedFirst(StartOrder ordering)
+            {
+                Ordering = ordering;
+            }
+
+            public StartOrder Ordering { get; }
+
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                Assert.Equal(0, Ordering.Order);
+                Ordering.Order++;
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+        }
+
+        private class ServerMustBeStartedSecond : IServer
+        {
+            public ServerMustBeStartedSecond(StartOrder ordering)
+            {
+                Ordering = ordering;
+            }
+
+            public StartOrder Ordering { get; }
+
+            public IFeatureCollection Features => null;
+
+            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+            {
+                Assert.Equal(1, Ordering.Order);
+                Ordering.Order++;
+                return Task.CompletedTask;
+            }
+
+            public Task StopAsync(CancellationToken cancellationToken)
+            {
+                return Task.CompletedTask;
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+
         private static void StaticConfigureMethod(IApplicationBuilder app) { }
 
         private IWebHostBuilder CreateWebHostBuilder()

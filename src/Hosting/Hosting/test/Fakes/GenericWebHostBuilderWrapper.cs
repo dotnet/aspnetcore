@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
         // This is the only one that doesn't pass through
         public IWebHost Build()
         {
+            _hostBuilder.ConfigureServices((context, services) => services.AddHostedService<GenericWebHostService>());
             return new GenericWebHost(_hostBuilder.Build());
         }
 
