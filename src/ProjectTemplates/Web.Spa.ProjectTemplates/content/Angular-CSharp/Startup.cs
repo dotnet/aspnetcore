@@ -36,13 +36,13 @@ namespace Company.WebApplication1
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
 
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -92,12 +92,11 @@ namespace Company.WebApplication1
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
-
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller}/{action=Index}/{id?}");
             });
 
             app.UseSpa(spa =>
