@@ -3,10 +3,9 @@
 
 using System;
 using System.Buffers;
-using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -32,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private readonly MvcOptions _mvcOptions;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
         private readonly IArrayPool<char> _charPool;
+        private readonly AsyncEnumerableReader _asyncEnumerableReader;
 
         /// <summary>
         /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
             _jsonOptions = jsonOptions.Value;
             _charPool = new JsonArrayPool<char>(charPool);
+            _asyncEnumerableReader = new AsyncEnumerableReader(_mvcOptions);
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 response.StatusCode = result.StatusCode.Value;
             }
 
-            _logger.JsonResultExecuting(result.Value);
+            Log.JsonResultExecuting(_logger, result.Value);
 
             var responseStream = response.Body;
             FileBufferingWriteStream fileBufferingWriteStream = null;
@@ -131,7 +132,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     jsonWriter.AutoCompleteOnClose = false;
 
                     var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                    jsonSerializer.Serialize(jsonWriter, result.Value);
+                    var value = result.Value;
+                    if (result.Value is IAsyncEnumerable<object> asyncEnumerable)
+                    {
+                        Log.BufferingAsyncEnumerable(_logger, asyncEnumerable);
+                        value = await _asyncEnumerableReader.ReadAsync(asyncEnumerable);
+                    }
+
+                    jsonSerializer.Serialize(jsonWriter, value);
                 }
 
                 if (fileBufferingWriteStream != null)
@@ -167,6 +175,34 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
                 return settingsFromResult;
             }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
+            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+
+            static Log()
+            {
+                _jsonResultExecuting = LoggerMessage.Define<string>(
+                    LogLevel.Information,
+                    new EventId(1, "JsonResultExecuting"),
+                    "Executing JsonResult, writing value of type '{Type}'.");
+
+                _bufferingAsyncEnumerable = LoggerMessage.Define<string>(
+                   LogLevel.Debug,
+                   new EventId(1, "BufferingAsyncEnumerable"),
+                   "Buffering IAsyncEnumerable instance of type '{Type}'.");
+            }
+
+            public static void JsonResultExecuting(ILogger logger, object value)
+            {
+                var type = value == null ? "null" : value.GetType().FullName;
+                _jsonResultExecuting(logger, type, null);
+            }
+
+            public static void BufferingAsyncEnumerable(ILogger logger, IAsyncEnumerable<object> asyncEnumerable)
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
         }
     }
 }

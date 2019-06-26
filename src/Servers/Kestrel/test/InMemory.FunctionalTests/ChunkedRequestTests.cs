@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -989,6 +990,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
                 await server.StopAsync();
             }
+        }
+
+        [Fact]
+        public async Task ChunkedRequestCallCompleteDoesNotCauseException()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                var request = httpContext.Request;
+
+                // This read may receive all data, but what we care about
+                // is that ConsumeAsync is called and doesn't error. Calling
+                // TryRead before would always fail.
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
+
+                request.BodyReader.Complete();
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1",
+                        "H",
+                        "4",
+                        "ello",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    // start another request to make sure OnComsumeAsync is hit
+                    await connection.Send(
+                       "POST / HTTP/1.1",
+                       "Host:",
+                       "Transfer-Encoding: chunked",
+                       "",
+                       "0",
+                       "",
+                       "");
+                }
+            }
+
+            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
         }
 
         [Fact]

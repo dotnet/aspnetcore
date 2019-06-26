@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -15,52 +15,52 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
     public class ServerVariableTests
     {
         [Theory]
-        [InlineData("CONTENT_LENGTH", "10", UriMatchPart.Path)]
-        [InlineData("CONTENT_TYPE", "json", UriMatchPart.Path)]
-        [InlineData("HTTP_ACCEPT", "accept", UriMatchPart.Path)]
-        [InlineData("HTTP_COOKIE", "cookie", UriMatchPart.Path)]
-        [InlineData("HTTP_HOST", "example.com", UriMatchPart.Path)]
-        [InlineData("HTTP_REFERER", "referer", UriMatchPart.Path)]
-        [InlineData("HTTP_USER_AGENT", "useragent", UriMatchPart.Path)]
-        [InlineData("HTTP_CONNECTION", "connection", UriMatchPart.Path)]
-        [InlineData("HTTP_URL", "/foo", UriMatchPart.Path)]
-        [InlineData("HTTP_URL", "http://example.com/foo?bar=1", UriMatchPart.Full)]
-        [InlineData("QUERY_STRING", "bar=1", UriMatchPart.Path)]
-        [InlineData("REQUEST_FILENAME", "/foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "/foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", UriMatchPart.Full)]
-        [InlineData("REQUEST_METHOD", "GET", UriMatchPart.Full)]
-        public void CheckServerVariableParsingAndApplication(string variable, string expected, UriMatchPart uriMatchPart)
+        [InlineData("CONTENT_LENGTH", "10", (int)UriMatchPart.Path)]
+        [InlineData("CONTENT_TYPE", "json", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_ACCEPT", "accept", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_COOKIE", "cookie", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_HOST", "example.com", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_REFERER", "referer", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_USER_AGENT", "useragent", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_CONNECTION", "connection", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+        [InlineData("QUERY_STRING", "bar=1", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_FILENAME", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "GET", (int)UriMatchPart.Full)]
+        public void CheckServerVariableParsingAndApplication(string variable, string expected, int uriMatchPart)
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, (UriMatchPart)uriMatchPart, true);
             var lookup = serverVar.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
             // Assert
             Assert.Equal(expected, lookup);
         }
 
         [Theory]
-        [InlineData("CONTENT_LENGTH", "20", UriMatchPart.Path)]
-        [InlineData("CONTENT_TYPE", "text/xml", UriMatchPart.Path)]
-        [InlineData("HTTP_ACCEPT", "other-accept", UriMatchPart.Path)]
-        [InlineData("HTTP_COOKIE", "other-cookie", UriMatchPart.Path)]
-        [InlineData("HTTP_HOST", "otherexample.com", UriMatchPart.Path)]
-        [InlineData("HTTP_REFERER", "other-referer", UriMatchPart.Path)]
-        [InlineData("HTTP_USER_AGENT", "other-useragent", UriMatchPart.Path)]
-        [InlineData("HTTP_CONNECTION", "other-connection", UriMatchPart.Path)]
-        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", UriMatchPart.Full)]
-        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", UriMatchPart.Path)]
-        [InlineData("QUERY_STRING", "bar=2", UriMatchPart.Path)]
-        [InlineData("REQUEST_FILENAME", "/other-foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Full)]
-        [InlineData("REQUEST_METHOD", "POST", UriMatchPart.Full)]
-        public void CheckServerVariableFeatureHasPrecedenceWhenEnabled(string variable, string expected, UriMatchPart uriMatchPart)
+        [InlineData("CONTENT_LENGTH", "20", (int)UriMatchPart.Path)]
+        [InlineData("CONTENT_TYPE", "text/xml", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_ACCEPT", "other-accept", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_COOKIE", "other-cookie", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_HOST", "otherexample.com", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_REFERER", "other-referer", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_USER_AGENT", "other-useragent", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_CONNECTION", "other-connection", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", (int)UriMatchPart.Full)]
+        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", (int)UriMatchPart.Path)]
+        [InlineData("QUERY_STRING", "bar=2", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_FILENAME", "/other-foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/other-foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/other-foo", (int)UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "POST", (int)UriMatchPart.Full)]
+        public void CheckServerVariableFeatureHasPrecedenceWhenEnabled(string variable, string expected, int uriMatchPart)
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, (UriMatchPart)uriMatchPart, false);
             var httpContext = CreateTestHttpContext();
             httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
@@ -87,26 +87,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         }
 
         [Theory]
-        [InlineData("CONTENT_LENGTH", "10", UriMatchPart.Path)]
-        [InlineData("CONTENT_TYPE", "json", UriMatchPart.Path)]
-        [InlineData("HTTP_ACCEPT", "accept", UriMatchPart.Path)]
-        [InlineData("HTTP_COOKIE", "cookie", UriMatchPart.Path)]
-        [InlineData("HTTP_HOST", "example.com", UriMatchPart.Path)]
-        [InlineData("HTTP_REFERER", "referer", UriMatchPart.Path)]
-        [InlineData("HTTP_USER_AGENT", "useragent", UriMatchPart.Path)]
-        [InlineData("HTTP_CONNECTION", "connection", UriMatchPart.Path)]
-        [InlineData("HTTP_URL", "/foo", UriMatchPart.Path)]
-        [InlineData("HTTP_URL", "http://example.com/foo?bar=1", UriMatchPart.Full)]
-        [InlineData("QUERY_STRING", "bar=1", UriMatchPart.Path)]
-        [InlineData("REQUEST_FILENAME", "/foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "/foo", UriMatchPart.Path)]
-        [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", UriMatchPart.Full)]
-        [InlineData("REQUEST_METHOD", "GET", UriMatchPart.Full)]
-        public void CheckServerVariableFeatureIsntUsedWhenDisabled(string variable, string expected, UriMatchPart uriMatchPart)
+        [InlineData("CONTENT_LENGTH", "10", (int)UriMatchPart.Path)]
+        [InlineData("CONTENT_TYPE", "json", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_ACCEPT", "accept", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_COOKIE", "cookie", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_HOST", "example.com", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_REFERER", "referer", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_USER_AGENT", "useragent", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_CONNECTION", "connection", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+        [InlineData("QUERY_STRING", "bar=1", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_FILENAME", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "GET", (int)UriMatchPart.Full)]
+        public void CheckServerVariableFeatureIsntUsedWhenDisabled(string variable, string expected, int uriMatchPart)
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, (UriMatchPart)uriMatchPart, true);
             var httpContext = CreateTestHttpContext();
             httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
