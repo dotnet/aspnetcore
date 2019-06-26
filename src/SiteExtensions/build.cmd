@@ -10,8 +10,9 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 ECHO Building LoggingBranch
-CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x64 -projects %~dp0LoggingBranch\LB.csproj /bl:artifacts/log/SiteExtensions-LoggingBranch-x64.binlog %*
-CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x86 -projects %~dp0LoggingBranch\LB.csproj /bl:artifacts/log/SiteExtensions-LoggingBranch-x86.binlog %*
+REM Remove /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true which workarounds dotnet store and publish behaviour changes in preview 6
+CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x64 -projects %~dp0LoggingBranch\LB.csproj /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x64.binlog %*
+CALL %RepoRoot%\build.cmd -forceCoreMsbuild -arch x86 -projects %~dp0LoggingBranch\LB.csproj /p:DisablePackageAssetsCache=true /p:DisableTransitiveFrameworkReferences=true /bl:artifacts/log/SiteExtensions-LoggingBranch-x86.binlog %*
 
 IF %ERRORLEVEL% NEQ 0 (
    EXIT /b %ErrorLevel%
@@ -24,4 +25,4 @@ IF %ERRORLEVEL% NEQ 0 (
    EXIT /b %ErrorLevel%
 )
 
-ECHO SiteExtensions successly built!
+ECHO SiteExtensions successfully built!
