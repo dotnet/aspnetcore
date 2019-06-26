@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object model;
             try
             {
-                model = await JsonSerializer.ReadAsync(inputStream, context.ModelType, SerializerOptions);
+                model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
             }
             catch (JsonException jsonException)
             {

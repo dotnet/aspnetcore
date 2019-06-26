@@ -91,7 +91,7 @@
         var invocations = new Dictionary<string, string>();
         foreach (var interopResult in JavaScriptInterop.Invocations)
         {
-            var interopResultValue = JsonSerializer.ToString(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
+            var interopResultValue = JsonSerializer.Serialize(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
             invocations[interopResult.Key] = interopResultValue;
         }
 

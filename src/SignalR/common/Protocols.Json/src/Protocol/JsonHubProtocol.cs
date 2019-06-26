@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 writer.WritePropertyName(ResultPropertyNameBytes);
-                JsonSerializer.WriteValue(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
             }
         }
 
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             writer.WritePropertyName(ItemPropertyNameBytes);
-            JsonSerializer.WriteValue(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 else
                 {
-                    JsonSerializer.WriteValue(writer, argument, type, _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, argument, type, _payloadSerializerOptions);
                 }
             }
             writer.WriteEndArray();
@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private object BindType(ref Utf8JsonReader reader, Type type)
         {
-            return JsonSerializer.ReadValue(ref reader, type, _payloadSerializerOptions);
+            return JsonSerializer.Deserialize(ref reader, type, _payloadSerializerOptions);
         }
 
         private object[] BindTypes(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes)

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.Browser
 
         private static T Deserialize<T>(string eventArgsJson)
         {
-            return JsonSerializer.Parse<T>(eventArgsJson, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Deserialize<T>(eventArgsJson, JsonSerializerOptionsProvider.Options);
         }
 
         private static UIChangeEventArgs DeserializeUIEventChangeArgs(string eventArgsJson)
