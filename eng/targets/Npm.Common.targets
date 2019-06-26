@@ -36,15 +36,14 @@
              BuildInParallel="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;_Build" >
-  </Target>
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;_Build" />
 
   <Target Name="_Build"
     Condition="'$(IsBuildable)' != 'false'"
     Inputs="@(TSFiles)"
-    Outputs="$(MSBuildProjectDirectory)\build-sentinel" >
+    Outputs="$(BaseIntermediateOutputPath)\build-sentinel" >
     <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
-    <WriteLinesToFile File="$(MSBuildProjectDirectory)\build-sentinel" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
   </Target>
 
   <PropertyGroup>
