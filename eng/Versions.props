@@ -234,7 +234,7 @@
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.1</NewtonsoftJsonPackageVersion>
-    <NSwagApiDescriptionClientPackageVersion>12.3.0</NSwagApiDescriptionClientPackageVersion>
+    <NSwagApiDescriptionClientPackageVersion>13.0.2</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverChromeDriverPackageVersion>2.43.0</SeleniumWebDriverChromeDriverPackageVersion>
