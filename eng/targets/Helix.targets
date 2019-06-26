@@ -43,18 +43,15 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
 
     <ItemGroup>
       <!-- Include default queues based on platform -->
-      <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '$(_SelectedArchs.Contains(%(Arch)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
+      <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
 
       <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)'" />
     </ItemGroup>
 
-    <Message Text="ProjectTargetQueue: @(_HelixProjectTargetQueue)" />
-    <Message Text="ProjectTargetQueue: @(_HelixApplicableTargetQueue)" />
-    
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' && '$(_SelectedArchs.Contains('arm64'))' == 'false'">false</BuildHelixPayload>
     </PropertyGroup>
-
   </Target>
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
