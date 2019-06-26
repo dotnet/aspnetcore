@@ -11,15 +11,13 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class ResponseBodyPipeWriter : PipeWriter, IResponseBodyPipeFeature
+    internal class ResponseBodyPipeWriter : PipeWriter
     {
         private readonly Func<Task> _onFirstWriteAsync;
         private readonly Pipe _pipe;
 
         private bool _firstWrite;
         private bool _complete;
-
-        PipeWriter IResponseBodyPipeFeature.Writer => this;
 
         internal ResponseBodyPipeWriter(Pipe pipe, Func<Task> onFirstWriteAsync)
         {

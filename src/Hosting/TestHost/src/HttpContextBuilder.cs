@@ -43,13 +43,15 @@ namespace Microsoft.AspNetCore.TestHost
             _responseReaderStream = new ResponseBodyReaderStream(pipe, AbortRequest, () => _responseReadCompleteCallback?.Invoke(_httpContext));
             _responsePipeWriter = new ResponseBodyPipeWriter(pipe, ReturnResponseMessageAsync);
             _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
+            _responseFeature.BodySnapshot = _responseFeature.Body;
+            _responseFeature.BodyWriter = _responsePipeWriter;
 
             _httpContext.Features.Set<IHttpBodyControlFeature>(this);
             _httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpResponseStartFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
-            _httpContext.Features.Set<IResponseBodyPipeFeature>(_responsePipeWriter);
+            _httpContext.Features.Set<IResponseBodyPipeFeature>(_responseFeature);
         }
 
         public bool AllowSynchronousIO { get; set; }
