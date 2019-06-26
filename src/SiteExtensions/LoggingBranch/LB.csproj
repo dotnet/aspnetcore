@@ -14,7 +14,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <PackageVersion>$(SiteExtensionPackageVersion)</PackageVersion>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>
