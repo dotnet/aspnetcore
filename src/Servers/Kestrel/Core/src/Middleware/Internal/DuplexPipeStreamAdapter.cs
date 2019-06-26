@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             catch (Exception ex)
             {
-                Log?.LogError(0, ex, $"{GetType().Name}.{nameof(WriteOutputAsync)}");
+                Log?.LogCritical(0, ex, $"{GetType().Name}.{nameof(WriteOutputAsync)}");
             }
             finally
             {
