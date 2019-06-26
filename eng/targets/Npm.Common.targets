@@ -16,7 +16,6 @@
   <ItemGroup>
     <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
     <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
-    <JSFiles Include="$(MSBuildProjectDirectory)\dist\**\*.js" />
   </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
@@ -43,9 +42,9 @@
   <Target Name="_Build"
     Condition="'$(IsBuildable)' != 'false'"
     Inputs="@(TSFiles)"
-    Outputs="$(MSBuildProjectDirectory)\built" >
+    Outputs="$(MSBuildProjectDirectory)\build-sentinel" >
     <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
-    <WriteLinesToFile File="$(MSBuildProjectDirectory)\built" />
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)\build-sentinel" />
   </Target>
 
   <PropertyGroup>
