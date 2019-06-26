@@ -148,40 +148,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2415", FlakyOn.All)]
-        public void Server_MultipleOutstandingSyncRequests_Success()
-        {
-            int requestLimit = 10;
-            int requestCount = 0;
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
-            {
-                if (Interlocked.Increment(ref requestCount) == requestLimit)
-                {
-                    tcs.TrySetResult(null);
-                }
-                else
-                {
-                    tcs.Task.Wait();
-                }
-
-                return Task.FromResult(0);
-            }))
-            {
-                List<Task> requestTasks = new List<Task>();
-                for (int i = 0; i < requestLimit; i++)
-                {
-                    Task<string> requestTask = SendRequestAsync(address);
-                    requestTasks.Add(requestTask);
-                }
-
-                Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(60)), "Timed out");
-            }
-        }
-
-        [ConditionalFact]
         public void Server_MultipleOutstandingAsyncRequests_Success()
         {
             int requestLimit = 10;
