@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     /// <typeparam name="TStream"></typeparam>
     internal class DuplexPipeStreamAdapter<TStream> : DuplexPipeStream, IDuplexPipe where TStream : Stream
     {
+        private readonly Pipe _output;
         private Task _outputTask;
 
         public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, Func<Stream, TStream> createStream) :
@@ -36,18 +37,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                                                 useSynchronizationContext: false);
 
             Input = PipeReader.Create(Stream, readerOptions);
-            Output = new Pipe(outputOptions);
+
+            // We're using a pipe here because the HTTP/2 stack in Kestrel currently makes assumptions
+            // about when it is ok to write to the PipeWriter. This should be reverted back to PipeWriter.Create once
+            // those patterns are fixed.
+            _output = new Pipe(outputOptions);
         }
 
         public ILogger Log { get; set; }
 
         public TStream Stream { get; }
 
-        private Pipe Output { get; }
-
         public PipeReader Input { get; }
-        
-        PipeWriter IDuplexPipe.Output
+
+        public PipeWriter Output
         {
             get
             {
@@ -56,14 +59,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _outputTask = WriteOutputAsync();
                 }
 
-                return Output.Writer;
+                return _output.Writer;
             }
         }
 
         public override async ValueTask DisposeAsync()
         {
             Input.Complete();
-            Output.Writer.Complete();
+            _output.Writer.Complete();
 
             if (_outputTask != null)
             {
@@ -79,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 while (true)
                 {
-                    var result = await Output.Reader.ReadAsync();
+                    var result = await _output.Reader.ReadAsync();
                     var buffer = result.Buffer;
 
                     try
@@ -90,6 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             {
                                 break;
                             }
+
                             await Stream.FlushAsync();
                         }
                         else if (buffer.IsSingleSegment)
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                     finally
                     {
-                        Output.Reader.AdvanceTo(buffer.End);
+                        _output.Reader.AdvanceTo(buffer.End);
                     }
                 }
             }
@@ -116,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                Output.Reader.Complete();
+                _output.Reader.Complete();
             }
         }
     }
