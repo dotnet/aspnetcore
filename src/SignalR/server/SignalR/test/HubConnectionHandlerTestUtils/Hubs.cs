@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -789,6 +791,25 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         public class DerivedParameterTestObject : DerivedParameterTestObjectBase { }
+
+        public class DerivedParameterKnownTypesBinder : ISerializationBinder
+        {
+            private static readonly IEnumerable<Type> _knownTypes = new List<Type>()
+            {
+                typeof(DerivedParameterTestObject)
+            };
+
+            public static ISerializationBinder Instance { get; } = new DerivedParameterKnownTypesBinder();
+
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                assemblyName = null;
+                typeName = serializedType.Name;
+            }
+
+            public Type BindToType(string assemblyName, string typeName) =>
+                _knownTypes.Single(type => type.Name == typeName);
+        }
     }
 
     public class SimpleHub : Hub

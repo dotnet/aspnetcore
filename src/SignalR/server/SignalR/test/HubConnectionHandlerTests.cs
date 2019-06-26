@@ -3595,11 +3595,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     PayloadSerializerSettings = new JsonSerializerSettings()
                     {
-                        // The usage of TypeNameHandling.All is a security risk.
-                        // If you're implementing this in your own application instead use your own 'type' field and a custom JsonConverter
-                        // or ensure you're restricting to only known types with a custom SerializationBinder.
-                        // See https://github.com/aspnet/AspNetCore/issues/11495#issuecomment-505047422
-                        TypeNameHandling = TypeNameHandling.All
+                        TypeNameHandling = TypeNameHandling.All,
+                        SerializationBinder = StreamingHub.DerivedParameterKnownTypesBinder.Instance
                     }
                 };
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
