@@ -249,6 +249,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public NavLink() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string ActiveClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues = true)]
+        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public RenderFragment ChildContent { get; set; }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.Routing.NavLinkMatch Match { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
