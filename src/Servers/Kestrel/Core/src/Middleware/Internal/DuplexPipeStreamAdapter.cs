@@ -80,7 +80,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             try
             {
-                await _output.Reader.CopyToAsync(Stream);
+                while (true)
+                {
+                    var result = await _output.Reader.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    try
+                    {
+                        if (buffer.IsEmpty)
+                        {
+                            if (result.IsCompleted)
+                            {
+                                break;
+                            }
+
+                            await Stream.FlushAsync();
+                        }
+                        else if (buffer.IsSingleSegment)
+                        {
+                            await Stream.WriteAsync(buffer.First);
+                        }
+                        else
+                        {
+                            foreach (var memory in buffer)
+                            {
+                                await Stream.WriteAsync(memory);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _output.Reader.AdvanceTo(buffer.End);
+                    }
+                }
             }
             catch (Exception ex)
             {
