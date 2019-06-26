@@ -17,9 +17,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
   <PropertyGroup>
-    <GenerateMvcApplicationPartsAttribute Condition="'$(GenerateMvcApplicationPartsAssemblyAttributes)' == '' AND '$(OutputType)' == 'Exe'">true</GenerateMvcApplicationPartsAttribute>
+    <GenerateMvcApplicationPartsAssemblyAttributes Condition="'$(GenerateMvcApplicationPartsAssemblyAttributes)' == '' AND '$(OutputType)' == 'Exe'">true</GenerateMvcApplicationPartsAssemblyAttributes>
 
-    <CoreCompileDependsOn Condition="'$(GenerateMvcApplicationPartsAttribute)' == 'true' AND '$(DesignTimeBuild)' != 'true'">
+    <CoreCompileDependsOn Condition="'$(GenerateMvcApplicationPartsAssemblyAttributes)' == 'true' AND '$(DesignTimeBuild)' != 'true'">
       _DiscoverMvcApplicationParts;
       $(CoreCompileDependsOn);
     </CoreCompileDependsOn>

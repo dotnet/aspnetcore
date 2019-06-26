@@ -38,6 +38,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        public async Task Build_ProjectWithDependencyThatReferencesMvc_DoesNotGenerateAttributeIfFlagIsReset()
+        {
+            var result = await DotnetMSBuild("Build /p:GenerateMvcApplicationPartsAssemblyAttributes=false");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ProjectWithoutMvcReferencingDependencies_DoesNotGenerateAttribute()
         {
