@@ -76,10 +76,6 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ProjectListFile>$(MSBuildThisFileDirectory)..\eng\ProjectReferences.props</ProjectListFile>
-      <RefsTargetFramework>$(TargetFrameworks)</RefsTargetFramework>
-      <RefsTargetFramework Condition="'$(RefsTargetFramework)' == ''">$(TargetFramework)</RefsTargetFramework>
-
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">
