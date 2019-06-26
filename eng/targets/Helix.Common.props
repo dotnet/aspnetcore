@@ -7,7 +7,7 @@
   </ItemDefinitionGroup>
 
   <!-- this file is shared between Helix.proj and .csproj files -->
-  <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'>
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
