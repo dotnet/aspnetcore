@@ -17,8 +17,8 @@
     <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
-    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
-    <InstallersOutputPath>artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
+    <ToolsetInstallerNuspecFile>$(RepositoryRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
+    <InstallersOutputPath>$(RepositoryRoot)artifacts/bin/$(Configuration)/installers/</InstallersOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,7 +51,8 @@
 
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
-      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+      <!--TODO this may not have en-US. it's confusing-->
+      <MsiFullPath>$(InstallersOutputPath)\en-US\$(TargetFileName)</MsiFullPath>
       <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
     </PropertyGroup>
       <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
