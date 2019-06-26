@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Output = new Pipe(outputOptions);
         }
 
-        public ILogger Log { get; private set; }
+        public ILogger Log { get; set; }
 
         public TStream Stream { get; }
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             catch (Exception ex)
             {
-                Log.LogError(0, ex, $"{GetType().Name}.{nameof(WriteOutputAsync)}");
+                Log?.LogError(0, ex, $"{GetType().Name}.{nameof(WriteOutputAsync)}");
             }
             finally
             {
