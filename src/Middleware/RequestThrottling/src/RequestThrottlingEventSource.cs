@@ -13,19 +13,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     internal sealed class RequestThrottlingEventSource : EventSource
     {
         public static readonly RequestThrottlingEventSource Log = new RequestThrottlingEventSource();
-        private static QueueFrame _cachedNonTimerResult
-        {
-            get
-            {
-                if (_queueFrameCache == null)
-                {
-                    _queueFrameCache = new QueueFrame { _parent = Log };
-                }
-                return _queueFrameCache.Value;
-            }
-        }
-
-        private static QueueFrame? _queueFrameCache = null;
+        private static QueueFrame CachedNonTimerResult = new QueueFrame(null, Log);
 
         private PollingCounter _rejectedRequestsCounter;
         private PollingCounter _queueLengthCounter;
@@ -53,34 +41,45 @@ namespace Microsoft.AspNetCore.RequestThrottling
         }
 
         [NonEvent]
+        public void QueueSkipped()
+        {
+            if (IsEnabled())
+            {
+                _queueDuration.WriteMetric(0);
+            }
+        }
+
+        [NonEvent]
         public QueueFrame QueueTimer()
         {
             Interlocked.Increment(ref _queueLength);
 
             if (IsEnabled())
             {
-                return new QueueFrame
-                {
-                    _timer = ValueStopwatch.StartNew(),
-                    _parent = this
-                };
+                return new QueueFrame(ValueStopwatch.StartNew(), this);
             }
 
-            return _cachedNonTimerResult;
+            return CachedNonTimerResult;
         }
 
         internal struct QueueFrame : IDisposable
         {
-            internal ValueStopwatch _timer;
-            internal RequestThrottlingEventSource _parent;
+            private ValueStopwatch? _timer;
+            private RequestThrottlingEventSource _parent;
+
+            public QueueFrame(ValueStopwatch? timer, RequestThrottlingEventSource parent)
+            {
+                _timer = timer;
+                _parent = parent;
+            }
 
             public void Dispose()
             {
                 Interlocked.Decrement(ref _parent._queueLength);
 
-                if (_parent.IsEnabled())
+                if (_parent.IsEnabled() && _timer != null)
                 {
-                    var duration = _timer.IsActive ? _timer.GetElapsedTime().TotalMilliseconds : 0.0;
+                    var duration = _timer.Value.IsActive ? _timer.Value.GetElapsedTime().TotalMilliseconds : 0.0;
                     _parent._queueDuration.WriteMetric(duration);
                 }
             }
@@ -102,7 +101,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
                 _queueDuration ??= new EventCounter("queue-duration", this)
                 {
-                    DisplayName = "Average Queue Duration",
+                    DisplayName = "Average Time in Queue",
                 };
             }
         }

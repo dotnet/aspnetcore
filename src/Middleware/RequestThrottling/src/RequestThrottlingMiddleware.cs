@@ -49,7 +49,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
         {
             var waitInQueueTask = _queuePolicy.TryEnterAsync();
 
-            if (!waitInQueueTask.IsCompleted)
+            if (waitInQueueTask.IsCompleted)
+            {
+                RequestThrottlingEventSource.Log.QueueSkipped();
+            }
+            else
             {
                 using (RequestThrottlingEventSource.Log.QueueTimer())
                 {
