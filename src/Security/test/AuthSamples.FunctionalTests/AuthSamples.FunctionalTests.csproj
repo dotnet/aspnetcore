@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <SkipArm>true</SkipArm64>
+    <SkipArm>true</SkipArm>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
