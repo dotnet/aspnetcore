@@ -27,5 +27,5 @@ if (-not (Test-Path $NuGetExe)) {
     wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
 }
 
-& $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=MajorVersion`;MINOR=MinorVersion`;
+& $NuGetExe pack $NuspecFile -Version $PackageVersion -OutputDirectory $OutputDirectory -NoDefaultExcludes -NoPackageAnalysis -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;
 Exit $LastExitCode
