@@ -53,7 +53,7 @@
     <PropertyGroup>
       <!--TODO this may not have en-US. it's confusing-->
       <MsiFullPath>$(InstallersOutputPath)en-US/$(TargetFileName)</MsiFullPath>
-      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
+      <CabFullPath>$(InstallersOutputPath)en-US/$(Cabinet)</CabFullPath>
     </PropertyGroup>
       <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
