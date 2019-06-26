@@ -4,13 +4,15 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <SkipArm>true</SkipArm64>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
     <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <HelixProjectArch Remove="arm64" />    
+    <HelixProjectArch Remove="arm64" />
+    
   </ItemGroup>
     
   <ItemGroup>
