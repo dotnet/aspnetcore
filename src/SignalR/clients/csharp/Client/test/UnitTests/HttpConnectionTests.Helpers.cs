@@ -55,7 +55,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 transportFactory = new TestTransportFactory(transport);
             }
 
-            return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
+            if (transportFactory != null)
+            {
+                return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
+            }
+            else
+            {
+                // Use the public constructor to get the default transport factory.
+                return new HttpConnection(httpConnectionOptions, loggerFactory);
+            }
         }
 
         private static async Task WithConnectionAsync(HttpConnection connection, Func<HttpConnection, Task> body)

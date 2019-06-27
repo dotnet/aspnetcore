@@ -159,11 +159,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         internal HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
             : this(httpConnectionOptions, loggerFactory)
         {
-            // Don't null out the _transportFactory if one isn't provided.
-            if (transportFactory != null)
-            {
-                _transportFactory = transportFactory;
-            }
+            _transportFactory = transportFactory;
         }
 
         /// <summary>
