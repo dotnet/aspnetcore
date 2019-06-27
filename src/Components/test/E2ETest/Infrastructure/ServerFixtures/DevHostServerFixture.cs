@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             {
                 "--urls", "http://127.0.0.1:0",
                 "--contentroot", ContentRoot,
-                "--pathbase", PathBase
+                "--pathbase", PathBase,
+                "--applicationpath", typeof(TProgram).Assembly.Location,
             };
 
             if (!string.IsNullOrEmpty(Environment))
