@@ -4,12 +4,12 @@
 // This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
 // tslint:disable:no-floating-promises
 
-import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@aspnet/signalr";
+import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
 import { eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
-import { HttpConnection } from "@aspnet/signalr/dist/esm/HttpConnection";
+import { HttpConnection } from "@microsoft/signalr/dist/esm/HttpConnection";
 import "./LogBannerReporter";
 
 const commonOptions: IHttpConnectionOptions = {

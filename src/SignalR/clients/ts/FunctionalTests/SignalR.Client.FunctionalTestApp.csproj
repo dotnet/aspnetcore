@@ -66,9 +66,9 @@
       <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
 
       <ItemGroup>
-        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/browser/*" />
-        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr-protocol-msgpack/dist/browser/*" />
-        <SignalRJSWebWorkerClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/webworker/*" />
+        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/browser/*" />
+        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/*" />
+        <SignalRJSWebWorkerClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@microsoft/signalr/dist/webworker/*" />
       </ItemGroup>
       <Copy SourceFiles="@(SignalRJSBrowserClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
       <Copy SourceFiles="@(SignalRJSWebWorkerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr-webworker" />
