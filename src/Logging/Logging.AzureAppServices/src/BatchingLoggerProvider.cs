@@ -10,7 +10,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
-    public abstract class BatchingLoggerProvider: ILoggerProvider, ISupportExternalScope
+    /// <summary>
+    /// A provider of <see cref="BatchingLogger"/>'s.
+    /// </summary>
+    public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternalScope
     {
         private readonly List<LogMessage> _currentBatch = new List<LogMessage>();
         private readonly TimeSpan _interval;
@@ -51,6 +54,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             UpdateOptions(options.CurrentValue);
         }
 
+        /// <summary>
+        /// Checks if the queue is enabled.
+        /// </summary>
         public bool IsEnabled { get; private set; }
 
         private void UpdateOptions(BatchingLoggerOptions options)
@@ -113,6 +119,12 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
+        /// <summary>
+        /// Wait for the given <see cref="TimeSpan"/>.
+        /// </summary>
+        /// <param name="interval">The amount of time to wait.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the delay.</param>
+        /// <returns>A <see cref="Task"/> which completes when the <paramref name="interval"/> has passed or the <paramref name="cancellationToken"/> has been canceled.</returns>
         protected virtual Task IntervalAsync(TimeSpan interval, CancellationToken cancellationToken)
         {
             return Task.Delay(interval, cancellationToken);
@@ -163,6 +175,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _optionsChangeToken?.Dispose();
@@ -172,11 +185,20 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="BatchingLogger"/> with the given <paramref name="categoryName"/>.
+        /// </summary>
+        /// <param name="categoryName">The name of the category to create this logger with.</param>
+        /// <returns>The <see cref="BatchingLogger"/> that was created.</returns>
         public ILogger CreateLogger(string categoryName)
         {
             return new BatchingLogger(this, categoryName);
         }
 
+        /// <summary>
+        /// Sets the scope on this provider.
+        /// </summary>
+        /// <param name="scopeProvider">Provides the scope.</param>
         void ISupportExternalScope.SetScopeProvider(IExternalScopeProvider scopeProvider)
         {
             _scopeProvider = scopeProvider;

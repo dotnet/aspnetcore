@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// <summary>
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">The options to use when creating a provider.</param>
         public BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
             : this(options, null)
         {

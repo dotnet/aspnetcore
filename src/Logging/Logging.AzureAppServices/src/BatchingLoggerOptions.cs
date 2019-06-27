@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
+    /// <summary>
+    /// Options for a logger which batches up log messages.
+    /// </summary>
     public class BatchingLoggerOptions
     {
         private int? _batchSize;

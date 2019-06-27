@@ -10,6 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
+    /// <summary>
+    /// A <see cref="BatchingLoggerProvider"/> which writes out to a file.
+    /// </summary>
     [ProviderAlias("AzureAppServicesFile")]
     public class FileLoggerProvider : BatchingLoggerProvider
     {
@@ -18,6 +21,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         private readonly int? _maxFileSize;
         private readonly int? _maxRetainedFiles;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="FileLoggerProvider"/>.
+        /// </summary>
+        /// <param name="options">The options to use when creating a provider.</param>
         public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
         {
             var loggerOptions = options.CurrentValue;
