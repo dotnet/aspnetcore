@@ -4,14 +4,10 @@
 
   <!-- Ensuring that everything is ready before build -->
 
-  <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-
-    <Message Condition="'$(EnforcePrerequisites)' == ''"
-      Importance="High"
-      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
-
-    <Yarn Command="install --mutex network" />
+  <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" DependsOnTargets="EnsurePrerequisites" BeforeTargets="Build">
+    <Message Condition="'$(EnforcePrerequisites)' == 'true' or '$(JavaIsInstalled)' == 'true'" Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
+    <Message Condition="'$(EnforcePrerequisites)' != 'true' and '$(JavaIsInstalled)' != 'true'" Text="Skipping yarn install on $(MSBuildProjectFile) since Java is not installed and prerequisites are not enforced." Importance="High" />
+    <Yarn Condition="'$(EnforcePrerequisites)' == 'true' or '$(JavaIsInstalled)' == 'true'" Command="install --mutex network" />
   </Target>
 
   <Target
@@ -23,19 +19,46 @@
 
   <!-- Running prerequisites -->
 
-  <Target Name="EnsurePrerequisites" Condition="'$(EnforcePrerequisites)' == 'true'" BeforeTargets="EnsureNodeJSRestored">
+  <Target Name="EnsurePrerequisites">
+    <Message Condition="'$(EnforcePrerequisites)' == 'false'"
+      Importance="High"
+      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
+
     <PropertyGroup>
       <_PackageJson>$(MSBuildProjectDirectory)\package.json</_PackageJson>
     </PropertyGroup>
 
     <!-- JAVA -->
-    <!-- https://github.com/aspnet/AspNetCore-Internal/issues/2555 -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
-    <Exec Command="java -version" />
-    <Message Importance="High" Text="JAVA is available on the PATH" />
+    <Exec Command="java -version" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    </Exec>
+
+    <Message
+      Condition="'$(ErrorCode)' == '0'"
+      Importance="High"
+      Text="JAVA is available on the PATH" />
+    <Message
+      Condition="'$(ErrorCode)' != '0' and '$(EnforcePrerequisites)' == 'false'"
+      Importance="High"
+      Text="JAVA is not available on the PATH. Running Yarn or the E2E tests might fail as a result." />
+    <Error
+      Condition="'$(ErrorCode)' != '0' and '$(EnforcePrerequisites)' != 'false'"
+      Text="JAVA is not available on the PATH. Running Yarn or the E2E tests might fail as a result." />
+
+    <PropertyGroup Condition="'$(ErrorCode)' == '0'">
+      <JavaIsInstalled>true</JavaIsInstalled>
+    </PropertyGroup>
 
     <!-- package.json -->
-    <Error Condition="!Exists('$(_PackageJson)')" Text="Can't find $(_PackageJson)" />
+    <Message
+      Condition="!Exists('$(_PackageJson)') and '$(EnforcePrerequisites)' == 'false'"
+      Importance="High"
+      Text="Can't find $(_PackageJson)" />
+    <Error
+      Condition="!Exists('$(_PackageJson)') and '$(EnforcePrerequisites)' != 'false'"
+      Text="Can't find $(_PackageJson)" />
+
     <ReadLinesFromFile File="$(_PackageJson)">
       <Output TaskParameter="Lines" ItemName="_PackageJsonLines" />
     </ReadLinesFromFile>
@@ -45,8 +68,12 @@
       <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^6.15.4&quot;</_PackageJsonSeleniumPackage>
     </PropertyGroup>
 
+    <Message
+      Condition="!$(_PackageJsonLinesContent.Contains ('$(_PackageJsonSeleniumPackage)')) and '$(EnforcePrerequisites)' == 'false'"
+      Importance="High"
+      Text="Can't find dependency $(_PackageJsonSeleniumPackage) in '$(_PackageJson)'" />
     <Error
-      Condition="!$(_PackageJsonLinesContent.Contains ('$(_PackageJsonSeleniumPackage)'))"
+      Condition="!$(_PackageJsonLinesContent.Contains ('$(_PackageJsonSeleniumPackage)')) and '$(EnforcePrerequisites)' != 'false'"
       Text="Can't find dependency $(_PackageJsonSeleniumPackage) in '$(_PackageJson)'" />
   </Target>
 
