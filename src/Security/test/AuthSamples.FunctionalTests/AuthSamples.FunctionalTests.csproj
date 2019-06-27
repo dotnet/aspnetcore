@@ -4,17 +4,12 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <SkipArm>true</SkipArm>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
-  <ItemGroup>
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <HelixProjectArch Remove="arm64" />
-    
-  </ItemGroup>
-    
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
@@ -53,44 +48,35 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)"  />
     <Copy
       SourceFiles="@(_claimsWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot" />
     <Copy
       SourceFiles="@(_cookiesWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Cookies\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\Cookies\wwwroot"  />
     <Copy
       SourceFiles="@(_customProviderFiles)"
-      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />
     <Copy
       SourceFiles="@(_schemesWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot" />
     <Copy
       SourceFiles="@(_pathWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Identity.ExternalClaims\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\Identity.ExternalClaims\wwwroot" />
     <Copy
       SourceFiles="@(_schemesWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot" />
     <Copy
       SourceFiles="@(_staticFiles)"
-      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
     
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"
-        ContinueOnError="true" />
+        Encoding="Unicode"/>
   </Target>
 
 </Project>
