@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
     <SkipHelixArm>true</SkipHelixArm>
    </PropertyGroup>
 
   <ItemGroup>
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <HelixProjectArch Remove="arm64" />
     
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
@@ -38,15 +37,13 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)" />
     <Copy
       SourceFiles="@(_PagesFiles)"
       DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages"/>
     <Copy
       SourceFiles="@(_wwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
