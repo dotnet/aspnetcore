@@ -11,9 +11,6 @@
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
-                                           
-    <HelixAvailableArch Include="x64" />
-    <HelixAvailableArch Include="arm64" />
   </ItemGroup>
     
     <!-- x64 queues -->
