@@ -36,14 +36,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 NullLoggerFactory.Instance);
 
             // We don't care about the specific exception
-            await Assert.ThrowsAnyAsync<Exception>(async () => await factory.ConnectAsync(new HttpEndPoint(new Uri("http://example.com"))));
+            await Assert.ThrowsAnyAsync<Exception>(async () => await factory.ConnectAsync(new UriEndPoint(new Uri("http://example.com"))));
 
             // We care that the handler (and by extension the client) was disposed
             Assert.True(testHandler.Disposed);
         }
 
         [Fact]
-        public async Task DoesNotSupportNonHttpEndPoints()
+        public async Task DoesNotSupportNonUriEndPoints()
         {
             var factory = new HttpConnectionFactory(
                 Options.Create(new HttpConnectionOptions { DefaultTransferFormat = TransferFormat.Text }),
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var ex = await Assert.ThrowsAsync<NotSupportedException>(async () => await factory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 0)));
 
-            Assert.Equal("The provided EndPoint must be of type HttpEndPoint.", ex.Message);
+            Assert.Equal("The provided EndPoint must be of type UriEndPoint.", ex.Message);
         }
 
         [Fact]
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }),
                 NullLoggerFactory.Instance);
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await factory.ConnectAsync(new HttpEndPoint(url2)));
-            Assert.Equal("If HttpConnectionOptions.Url was set, it must match the HttpEndPoint.Url passed to ConnectAsync.", ex.Message);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await factory.ConnectAsync(new UriEndPoint(url2)));
+            Assert.Equal("If HttpConnectionOptions.Url was set, it must match the UriEndPoint.Uri passed to ConnectAsync.", ex.Message);
         }
 
         [Fact]

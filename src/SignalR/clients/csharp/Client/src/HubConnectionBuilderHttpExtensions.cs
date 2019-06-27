@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        private class HttpConnectionOptionsDerivedHttpEndPoint : HttpEndPoint
+        private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
         {
             public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
                 : base(httpConnectionOptions.Value.Url)

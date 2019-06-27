@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _pipe = new TestDuplexPipe();
 
             var hubConnectionBuilder = new HubConnectionBuilder();
-            var delegateConnectionFactory = new DelegateConnectionFactory(endPoinnt =>
+            var delegateConnectionFactory = new DelegateConnectionFactory(endPoint =>
             {
                 var connection = new DefaultConnectionContext();
                 // prevents keep alive time being activated
