@@ -45,7 +45,7 @@ namespace Test
        
         private object someObject = new object();
 
-        [Parameter] protected int Min { get; set; }
+        [Parameter] public int Min { get; set; }
     
 
 #line default

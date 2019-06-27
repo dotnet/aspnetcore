@@ -32,13 +32,13 @@ namespace Test
         }
 
         [Parameter]
-        string MyProperty { get; set; }
+        public string MyProperty { get; set; }
 
         [Parameter]
-        Action<string> MyPropertyChanged { get; set; }
+        public Action<string> MyPropertyChanged { get; set; }
 
         [Parameter]
-        Expression<Func<string>> MyPropertyExpression { get; set; }
+        public Expression<Func<string>> MyPropertyExpression { get; set; }
     }
 }
 "));
@@ -156,10 +156,10 @@ namespace Test
         }
 
         [Parameter]
-        string MyProperty { get; set; }
+        public string MyProperty { get; set; }
 
         [Parameter]
-        EventCallback<string> MyPropertyChanged { get; set; }
+        public EventCallback<string> MyPropertyChanged { get; set; }
     }
 }
 "));

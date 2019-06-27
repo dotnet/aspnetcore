@@ -39,10 +39,10 @@ namespace Test
         }
 
         [Parameter]
-        List<TItem> Items { get; set; }
+        public List<TItem> Items { get; set; }
 
         [Parameter]
-        RenderFragment<Context> ChildContent { get; set; }
+        public RenderFragment<Context> ChildContent { get; set; }
 
         public class Context
         {
@@ -68,13 +68,13 @@ namespace Test
         }
 
         [Parameter]
-        TItem1 Item1 { get; set; }
+        public TItem1 Item1 { get; set; }
 
         [Parameter]
-        TItem2 Item2 { get; set; }
+        public TItem2 Item2 { get; set; }
 
         [Parameter]
-        TItem3 Item3 { get; set; }
+        public TItem3 Item3 { get; set; }
     }
 }
 ");

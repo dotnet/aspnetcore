@@ -174,10 +174,10 @@ namespace Test
 
     public class MyComponent : ComponentBase
     {
-        [Parameter] int IntProperty { get; set; }
-        [Parameter] bool BoolProperty { get; set; }
-        [Parameter] string StringProperty { get; set; }
-        [Parameter] SomeType ObjectProperty { get; set; }
+        [Parameter] public int IntProperty { get; set; }
+        [Parameter] public bool BoolProperty { get; set; }
+        [Parameter] public string StringProperty { get; set; }
+        [Parameter] public SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -215,9 +215,9 @@ namespace Test
     </p>
 }
 @code {
-    [Parameter] TItem1 Item1 { get; set; }
-    [Parameter] List<TItem2> Items2 { get; set; }
-    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 }");
 
             // Assert
@@ -238,7 +238,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string StringProperty { get; set; }
+        public string StringProperty { get; set; }
     }
 }
 "));
@@ -289,7 +289,7 @@ namespace Test
 {
     public class CoolnessMeter : ComponentBase
     {
-        [Parameter] private int Coolness { get; set; }
+        [Parameter] public int Coolness { get; set; }
     }
 }
 "));
@@ -415,10 +415,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -448,10 +448,10 @@ namespace Test
     public class InputText : ComponentBase
     {
         [Parameter]
-        string Value { get; set; }
+        public string Value { get; set; }
 
         [Parameter]
-        Action<string> ValueChanged { get; set; }
+        public Action<string> ValueChanged { get; set; }
     }
 }"));
 
@@ -495,10 +495,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -534,10 +534,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -567,10 +567,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -634,10 +634,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> OnChanged { get; set; }
+        public Action<int> OnChanged { get; set; }
     }
 }"));
             // Act
@@ -694,13 +694,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<int>> ValueExpression { get; set; }
+        public Expression<Func<int>> ValueExpression { get; set; }
     }
 }"));
 
@@ -731,13 +731,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        EventCallback<int> ValueChanged { get; set; }
+        public EventCallback<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<int>> ValueExpression { get; set; }
+        public Expression<Func<int>> ValueExpression { get; set; }
     }
 }"));
 
@@ -768,13 +768,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
 
         [Parameter]
-        Expression<Func<string>> ValueExpression { get; set; }
+        public Expression<Func<string>> ValueExpression { get; set; }
     }
 }"));
 
@@ -807,13 +807,13 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        T SomeParam { get; set; }
+        public T SomeParam { get; set; }
 
         [Parameter]
-        Action<T> SomeParamChanged { get; set; }
+        public Action<T> SomeParamChanged { get; set; }
 
         [Parameter]
-        Expression<Func<T>> SomeParamExpression { get; set; }
+        public Expression<Func<T>> SomeParamExpression { get; set; }
     }
 }"));
 
@@ -844,13 +844,13 @@ namespace Test
     public class MyComponent<T> : ComponentBase
     {
         [Parameter]
-        T SomeParam { get; set; }
+        public T SomeParam { get; set; }
 
         [Parameter]
-        EventCallback<T> SomeParamChanged { get; set; }
+        public EventCallback<T> SomeParamChanged { get; set; }
 
         [Parameter]
-        Expression<Func<T>> SomeParamExpression { get; set; }
+        public Expression<Func<T>> SomeParamExpression { get; set; }
     }
 }"));
 
@@ -1372,10 +1372,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1402,10 +1402,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1433,10 +1433,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1467,10 +1467,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1501,7 +1501,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1528,7 +1528,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -1555,7 +1555,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
     }
 }
 "));
@@ -1582,10 +1582,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment Header { get; set; }
+        public RenderFragment Header { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1615,12 +1615,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> Header { get; set; }
-
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment ChildContent { get; set; }
+
+        [Parameter]
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1650,13 +1651,13 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<string> Header { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment Footer { get; set; }
     }
 }
 "));
@@ -1849,7 +1850,7 @@ namespace Test
     public class HeaderComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment Header { get; set; }
+        public RenderFragment Header { get; set; }
     }
 }
 
@@ -1858,7 +1859,7 @@ namespace AnotherTest
     public class FooterComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment<DateTime> Footer { get; set; }
+        public RenderFragment<DateTime> Footer { get; set; }
     }
 }
 "));
@@ -1900,7 +1901,7 @@ namespace Test
     public class HeaderComponent : ComponentBase
     {
         [Parameter]
-        string Header { get; set; }
+        public string Header { get; set; }
     }
 }
 
@@ -1909,7 +1910,7 @@ namespace AnotherTest
     public class FooterComponent : ComponentBase
     {
         [Parameter]
-        string Footer { get; set; }
+        public string Footer { get; set; }
     }
 }
 "));
@@ -1948,7 +1949,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -1983,7 +1984,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2018,7 +2019,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -2053,7 +2054,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -2088,7 +2089,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -2124,7 +2125,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback OnClick { get; set; }
+        public EventCallback OnClick { get; set; }
     }
 }
 "));
@@ -2160,7 +2161,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2195,7 +2196,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2230,7 +2231,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2266,7 +2267,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2302,7 +2303,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2346,7 +2347,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIEventArgs> OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2413,7 +2414,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIEventArgs> OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -2664,7 +2665,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2690,7 +2691,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2716,7 +2717,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2744,7 +2745,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2770,7 +2771,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -2798,10 +2799,10 @@ namespace Test
     public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
-        TItem Item { get; set; }
+        public TItem Item { get; set; }
 
         [Parameter]
-        Action<TItem> ItemChanged { get; set; }
+        public Action<TItem> ItemChanged { get; set; }
     }
 }
 "));
@@ -2832,10 +2833,10 @@ namespace Test
     public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
-        TItem Item { get; set; }
+        public TItem Item { get; set; }
 
         [Parameter]
-        Action<TItem> ItemChanged { get; set; }
+        public Action<TItem> ItemChanged { get; set; }
     }
 }
 "));
@@ -2895,7 +2896,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Value { get; set; }
+        [Parameter] public TItem Value { get; set; }
     }
 }
 "));
@@ -2924,9 +2925,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -2954,9 +2955,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -2984,11 +2985,11 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> GenericFragment { get; set; }
+        [Parameter] public RenderFragment<TItem> GenericFragment { get; set; }
 
-        [Parameter] RenderFragment<int> IntFragment { get; set; }
+        [Parameter] public RenderFragment<int> IntFragment { get; set; }
     }
 }
 "));
@@ -3017,9 +3018,9 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
 
-        [Parameter] RenderFragment<TItem> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem> ChildContent { get; set; }
     }
 }
 "));
@@ -3047,11 +3048,11 @@ namespace Test
 {
     public class MyComponent<TItem1, TItem2> : ComponentBase
     {
-        [Parameter] TItem1 Item { get; set; }
+        [Parameter] public TItem1 Item { get; set; }
 
-        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem1> ChildContent { get; set; }
 
-        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+        [Parameter] public RenderFragment<Context> AnotherChildContent { get; set; }
 
         public class Context
         {
@@ -3088,13 +3089,13 @@ namespace Test
 {
     public class MyComponent<TItem1, TItem2> : ComponentBase
     {
-        [Parameter] TItem1 Item { get; set; }
+        [Parameter] public TItem1 Item { get; set; }
 
-        [Parameter] List<TItem2> Items { get; set; }
+        [Parameter] public List<TItem2> Items { get; set; }
 
-        [Parameter] RenderFragment<TItem1> ChildContent { get; set; }
+        [Parameter] public RenderFragment<TItem1> ChildContent { get; set; }
 
-        [Parameter] RenderFragment<Context> AnotherChildContent { get; set; }
+        [Parameter] public RenderFragment<Context> AnotherChildContent { get; set; }
 
         public class Context
         {
@@ -3130,7 +3131,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3161,7 +3162,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3192,7 +3193,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3253,7 +3254,7 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
+        [Parameter] public TItem Item { get; set; }
     }
 }
 "));
@@ -3318,8 +3319,8 @@ namespace Test
 {
     public class MyComponent<TItem> : ComponentBase
     {
-        [Parameter] TItem Item { get; set; }
-        [Parameter] MyClass Foo { get; set; }
+        [Parameter] public TItem Item { get; set; }
+        [Parameter] public MyClass Foo { get; set; }
     }
 }
 
@@ -3379,7 +3380,7 @@ namespace Test.Shared
 @code {
         private object someObject = new object();
 
-        [Parameter] protected int Min { get; set; }
+        [Parameter] public int Min { get; set; }
     }
 ");
 
@@ -3606,7 +3607,7 @@ namespace Test
 {
     public class MyComponent<T> : ComponentBase
     {
-        [Parameter] T Value { get; set;}
+        [Parameter] public T Value { get; set;}
     }
 }
 "));
@@ -3651,7 +3652,7 @@ namespace Test
 <input type=""text"" data-slider-min=""@Min"" @ref=""@_element"" />
 
 @code {
-        [Parameter] protected int Min { get; set; }
+        [Parameter] public int Min { get; set; }
     }
 ");
 
@@ -3874,7 +3875,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] string Name { get; set; }
+        [Parameter] public string Name { get; set; }
     }
 }
 "));
@@ -3909,7 +3910,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] string Name { get; set; }
+        [Parameter] public string Name { get; set; }
     }
 }
 "));
@@ -3947,7 +3948,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment Template { get; set; }
+        [Parameter] public RenderFragment Template { get; set; }
     }
 }
 "));
@@ -3975,7 +3976,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment<Person> PersonTemplate { get; set; }
+        [Parameter] public RenderFragment<Person> PersonTemplate { get; set; }
     }
 
     public class Person
@@ -4008,7 +4009,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] RenderFragment<Context> Template { get; set; }
+        [Parameter] public RenderFragment<Context> Template { get; set; }
     }
 
     public class Context
@@ -4742,7 +4743,7 @@ namespace Test
 {
     public class SurveyPrompt : ComponentBase
     {
-        [Parameter] private string Title { get; set; }
+        [Parameter] public string Title { get; set; }
     }
 }
 "));
@@ -4780,7 +4781,7 @@ namespace Test
 {
     public class SurveyPrompt : ComponentBase
     {
-        [Parameter] private string Title { get; set; }
+        [Parameter] public string Title { get; set; }
     }
 }
 "));

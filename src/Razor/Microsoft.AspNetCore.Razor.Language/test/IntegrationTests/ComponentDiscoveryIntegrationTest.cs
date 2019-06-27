@@ -91,7 +91,7 @@ namespace Test.AnotherNamespace
             var result = CompileToCSharp("UniqueName.cshtml", @"
 @typeparam TItem
 @functions {
-    [Parameter] TItem Item { get; set; }
+    [Parameter] public TItem Item { get; set; }
 }");
 
             // Assert
@@ -110,7 +110,7 @@ namespace Test.AnotherNamespace
 @typeparam TItem2
 @typeparam TItem3
 @functions {
-    [Parameter] TItem1 Item { get; set; }
+    [Parameter] public TItem1 Item { get; set; }
 }");
 
             // Assert

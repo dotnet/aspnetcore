@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public class TestLayout : IComponent
         {
             [Parameter]
-            RenderFragment Body { get; set; }
+            public RenderFragment Body { get; set; }
 
             public void Configure(RenderHandle renderHandle)
             {

@@ -14,16 +14,16 @@ Generated Location: (1407:51,0 [3] )
 |}
 |
 
-Source Location: (188:11,7 [164] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (188:11,7 [185] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    [Parameter] TItem1 Item1 { get; set; }
-    [Parameter] List<TItem2> Items2 { get; set; }
-    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 |
-Generated Location: (1587:60,7 [164] )
+Generated Location: (1587:60,7 [185] )
 |
-    [Parameter] TItem1 Item1 { get; set; }
-    [Parameter] List<TItem2> Items2 { get; set; }
-    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }
+    [Parameter] public TItem1 Item1 { get; set; }
+    [Parameter] public List<TItem2> Items2 { get; set; }
+    [Parameter] public RenderFragment<TItem2> ChildContent { get; set; }
 |
 

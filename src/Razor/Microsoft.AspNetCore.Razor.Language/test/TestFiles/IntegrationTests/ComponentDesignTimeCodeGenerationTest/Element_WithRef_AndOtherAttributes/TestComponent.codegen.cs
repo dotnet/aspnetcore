@@ -46,7 +46,7 @@ namespace Test
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-        [Parameter] protected int Min { get; set; }
+        [Parameter] public int Min { get; set; }
     
 
 #line default

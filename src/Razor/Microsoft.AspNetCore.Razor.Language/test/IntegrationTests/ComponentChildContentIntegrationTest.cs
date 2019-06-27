@@ -23,7 +23,7 @@ namespace Test
         }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 ");
@@ -41,10 +41,10 @@ namespace Test
         }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
 
         [Parameter]
-        string Value { get; set; }
+        public string Value { get; set; }
     }
 }
 ");
@@ -64,19 +64,19 @@ namespace Test
         }
 
         [Parameter]
-        string Name { get; set; }
+        public string Name { get; set; }
 
         [Parameter]
-        RenderFragment<string> Header { get; set; }
+        public RenderFragment<string> Header { get; set; }
 
         [Parameter]
-        RenderFragment<string> ChildContent { get; set; }
+        public RenderFragment<string> ChildContent { get; set; }
 
         [Parameter]
-        RenderFragment Footer { get; set; }
+        public RenderFragment Footer { get; set; }
 
         [Parameter]
-        string Value { get; set; }
+        public string Value { get; set; }
     }
 }
 ");

@@ -31,9 +31,9 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] int Value { get; set; }
-        [Parameter] Action<int> ValueChanged { get; set; }
-        [Parameter] string AnotherValue { get; set; }
+        [Parameter] public int Value { get; set; }
+        [Parameter] public Action<int> ValueChanged { get; set; }
+        [Parameter] public string AnotherValue { get; set; }
     }
 
     public class ModelState
@@ -105,9 +105,9 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] int Value { get; set; }
-        [Parameter] Action<int> ValueChanged { get; set; }
-        [Parameter] string AnotherValue { get; set; }
+        [Parameter] public int Value { get; set; }
+        [Parameter] public Action<int> ValueChanged { get; set; }
+        [Parameter] public string AnotherValue { get; set; }
     }
 
     public class ModelState
