@@ -215,6 +215,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanBindSelectToMarkup()
+        {
+            var target = new SelectElement(Browser.FindElement(By.Id("select-markup-box")));
+            var boundValue = Browser.FindElement(By.Id("select-markup-box-value"));
+            Assert.Equal("Second choice", target.SelectedOption.Text);
+            Assert.Equal("Second", boundValue.Text);
+
+            // Modify target; verify value is updated
+            target.SelectByText("Third choice");
+            Browser.Equal("Third", () => boundValue.Text);
+        }
+
+        [Fact]
         public void CanBindTextboxInt()
         {
             var target = Browser.FindElement(By.Id("textbox-int"));
