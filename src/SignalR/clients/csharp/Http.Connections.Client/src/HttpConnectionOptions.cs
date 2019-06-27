@@ -111,7 +111,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public bool? UseDefaultCredentials { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="TransferFormat" /> to use if none is passed via <see cref="HttpConnection.StartAsync(TransferFormat, CancellationToken)"/>.
+        /// Gets or sets the default <see cref="TransferFormat" /> to use if <see cref="HttpConnection.StartAsync(CancellationToken)"/>
+        /// is called instead of <see cref="HttpConnection.StartAsync(TransferFormat, CancellationToken)"/>.
         /// </summary>
         public TransferFormat DefaultTransferFormat { get; set; } = TransferFormat.Binary;
 
