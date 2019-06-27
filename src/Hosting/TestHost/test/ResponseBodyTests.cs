@@ -15,33 +15,35 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         [Fact]
         public async Task BodyWriter_GetMemoryAdvance_AutoCompleted()
         {
+            var length = -1;
             using var host = await CreateHost(httpContext =>
             {
                 var writer = httpContext.Response.BodyWriter;
-                writer.GetMemory(100);
-                writer.Advance(100);
+                length = writer.GetMemory().Length;
+                writer.Advance(length);
                 return Task.CompletedTask;
             });
 
             var response = await host.GetTestServer().CreateClient().GetAsync("/");
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            Assert.Equal(100, bytes.Length);
+            Assert.Equal(length, bytes.Length);
         }
 
         [Fact]
         public async Task BodyWriter_StartAsyncGetMemoryAdvance_AutoCompleted()
         {
+            var length = -1;
             using var host = await CreateHost(async httpContext =>
             {
                 await httpContext.Response.StartAsync();
                 var writer = httpContext.Response.BodyWriter;
-                writer.GetMemory(100);
-                writer.Advance(100);
+                length = writer.GetMemory().Length;
+                writer.Advance(length);
             });
 
             var response = await host.GetTestServer().CreateClient().GetAsync("/");
             var bytes = await response.Content.ReadAsByteArrayAsync();
-            Assert.Equal(100, bytes.Length);
+            Assert.Equal(length, bytes.Length);
         }
 
         private Task<IHost> CreateHost(RequestDelegate appDelegate)

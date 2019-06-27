@@ -52,14 +52,14 @@ namespace Microsoft.AspNetCore.TestHost
             _pipe.Writer.Complete(new IOException(string.Empty, innerException));
         }
 
-        internal void CompleteWrites()
+        internal void Complete()
         {
             if (_complete)
             {
                 return;
             }
 
-            // Throw for further writes, but not reads.  Allow reads to drain the buffered data and then return 0 for further reads.
+            // Throw for further writes, but not reads. Allow reads to drain the buffered data and then return 0 for further reads.
             _complete = true;
             _pipe.Writer.Complete();
         }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             if (_complete)
             {
-                throw new IOException("The request was aborted or the pipeline has finished");
+                throw new IOException("The request was aborted or the pipeline has finished.");
             }
         }
 

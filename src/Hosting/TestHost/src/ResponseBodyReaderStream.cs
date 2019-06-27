@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Pipelines;
@@ -32,64 +31,34 @@ namespace Microsoft.AspNetCore.TestHost
             _readComplete = readComplete;
         }
 
-        public override bool CanRead
-        {
-            get { return true; }
-        }
+        public override bool CanRead => true;
 
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
+        public override bool CanSeek => false;
 
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
+        public override bool CanWrite => false;
 
         #region NotSupported
 
-        public override long Length
-        {
-            get { throw new NotSupportedException(); }
-        }
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
-            get { throw new NotSupportedException(); }
-            set { throw new NotSupportedException(); }
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException();
-        }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
+        public override void SetLength(long value) => throw new NotSupportedException();
 
-        public override void Flush()
-        {
-            throw new NotSupportedException();
-        }
+        public override void Flush() => throw new NotSupportedException();
 
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
+        public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 
         // Write with count 0 will still trigger OnFirstWrite
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotSupportedException();
-        }
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         #endregion NotSupported
 
@@ -123,7 +92,7 @@ namespace Microsoft.AspNetCore.TestHost
             var actual = Math.Min(readableBuffer.Length, count);
             readableBuffer = readableBuffer.Slice(0, actual);
             readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
-            _pipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
+            _pipe.Reader.AdvanceTo(readableBuffer.End);
             return (int)actual;
         }
 

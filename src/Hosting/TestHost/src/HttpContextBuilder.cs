@@ -126,14 +126,14 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 _requestLifetimeFeature.Abort();
             }
-            _responsePipeWriter.CompleteWrites();
+            _responsePipeWriter.Complete();
         }
 
         internal async Task CompleteResponseAsync()
         {
             _pipelineFinished = true;
             await ReturnResponseMessageAsync();
-            _responsePipeWriter.CompleteWrites();
+            _responsePipeWriter.Complete();
             await _responseFeature.FireOnResponseCompletedAsync();
         }
 
