@@ -177,7 +177,7 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Returns all strings in the specified culture.
         /// </summary>
-        /// <param name="includeParentCultures"></param>
+        /// <param name="includeParentCultures">Whether to include parent cultures in the search for a resource.</param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
         /// <returns>The strings.</returns>
         protected IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures, CultureInfo culture)
