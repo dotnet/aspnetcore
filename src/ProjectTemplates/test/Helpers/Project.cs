@@ -184,7 +184,8 @@ namespace Templates.Test.Helpers
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
@@ -196,6 +197,7 @@ namespace Templates.Test.Helpers
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
             };
 
             var projectDll = $"{ProjectName}.dll";

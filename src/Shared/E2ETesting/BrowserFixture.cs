@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -78,7 +79,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            opts.AddArgument("--headless");
+            if (!Debugger.IsAttached)
+            {
+                opts.AddArgument("--headless");
+            }
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
