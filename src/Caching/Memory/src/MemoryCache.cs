@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// Creates a new <see cref="MemoryCache"/> instance.
         /// </summary>
         /// <param name="optionsAccessor">The options of the cache.</param>
-        /// <param name="loggerFactory"></param>
+        /// <param name="loggerFactory">The factory used to create loggers.</param>
         public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor, ILoggerFactory loggerFactory)
         {
             if (optionsAccessor == null)
