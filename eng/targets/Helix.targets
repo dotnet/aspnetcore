@@ -38,7 +38,6 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
   <Target Name="_SetCreateHelixPayload">
     <PropertyGroup>
       <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
-      <_SelectedArchs>@(HelixProjectArch)</_SelectedArchs>
     </PropertyGroup>
 
     <ItemGroup>
@@ -50,7 +49,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
 
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
-      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>
 
