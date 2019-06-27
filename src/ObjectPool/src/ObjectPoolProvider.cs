@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.ObjectPool
 {
     /// <summary>
-    /// A provider of <see cref="ObjectPool<T>"/>'s.
+    /// A provider of <see cref="ObjectPool{T}"/>'s.
     /// </summary>
     public abstract class ObjectPoolProvider
     {
@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.ObjectPool
         }
 
         /// <summary>
-        /// Creates an <see cref="ObjectPool"/> with the given <see cref="IPooledObjectPolicy<T>"/>.
+        /// Creates an <see cref="ObjectPool"/> with the given <see cref="IPooledObjectPolicy{T}"/>.
         /// </summary>
         /// <typeparam name="T">The type to create a pool for.</typeparam>
         public abstract ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy) where T : class;

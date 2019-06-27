@@ -9,7 +9,7 @@ using System.Threading;
 namespace Microsoft.Extensions.ObjectPool
 {
     /// <summary>
-    /// Default implementation of <see cref="ObjectPool<T>"/>.
+    /// Default implementation of <see cref="ObjectPool{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type to pool objects for.</typeparam>
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.ObjectPool
         private protected readonly PooledObjectPolicy<T> _fastPolicy;
 
         /// <summary>
-        /// Creates an instance of <see cref="DefaultObjectPool<T>"/>.
+        /// Creates an instance of <see cref="DefaultObjectPool{T}"/>.
         /// </summary>
         /// <param name="policy">The pooling policy to use.</param>
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.ObjectPool
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="DefaultObjectPool<T>"/>.
+        /// Creates an instance of <see cref="DefaultObjectPool{T}"/>.
         /// </summary>
         /// <param name="policy">The pooling policy to use.</param>
         /// <param name="maximumRetained">The maximum number of objects to retain in the pool.</param>
