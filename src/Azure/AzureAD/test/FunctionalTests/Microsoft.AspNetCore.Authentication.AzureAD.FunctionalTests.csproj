@@ -34,14 +34,12 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"
-        ContinueOnError="true" />
+        Encoding="Unicode" />
     <WriteLinesToFile
         File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"
-        ContinueOnError="true" />    
+        Encoding="Unicode" />    
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
