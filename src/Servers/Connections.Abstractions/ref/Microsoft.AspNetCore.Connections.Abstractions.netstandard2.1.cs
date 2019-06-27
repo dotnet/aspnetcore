@@ -109,6 +109,10 @@ namespace Microsoft.AspNetCore.Connections
         Microsoft.AspNetCore.Connections.ConnectionDelegate Build();
         Microsoft.AspNetCore.Connections.IConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate> middleware);
     }
+    public partial interface IConnectionFactory
+    {
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+    }
     public partial interface IConnectionListener : System.IAsyncDisposable
     {
         System.Net.EndPoint EndPoint { get; }
@@ -124,6 +128,11 @@ namespace Microsoft.AspNetCore.Connections
     {
         Binary = 1,
         Text = 2,
+    }
+    public partial class UriEndPoint : System.Net.EndPoint
+    {
+        public UriEndPoint(System.Uri uri) { }
+        public System.Uri Uri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Connections.Features

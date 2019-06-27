@@ -3,13 +3,6 @@
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
-    public partial class HttpConnectionFactory : Microsoft.AspNetCore.SignalR.Client.IConnectionFactory
-    {
-        public HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public System.Threading.Tasks.Task DisposeAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection) { throw null; }
-    }
     public static partial class HubConnectionBuilderHttpExtensions
     {
         public static Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder WithUrl(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder hubConnectionBuilder, string url) { throw null; }
