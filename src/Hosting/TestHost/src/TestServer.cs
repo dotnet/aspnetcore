@@ -24,19 +24,19 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="services"></param>
         public TestServer(IServiceProvider services)
-            : this(new FeatureCollection(), services)
+            : this(services, new FeatureCollection())
         {
         }
 
         /// <summary>
         /// For use with IHostBuilder.
         /// </summary>
-        /// <param name="featureCollection"></param>
         /// <param name="services"></param>
-        public TestServer(IFeatureCollection featureCollection, IServiceProvider services)
+        /// <param name="featureCollection"></param>
+        public TestServer(IServiceProvider services, IFeatureCollection featureCollection)
         {
-            Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
             Services = services ?? throw new ArgumentNullException(nameof(services));
+            Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
         }
 
         /// <summary>
@@ -80,9 +80,9 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        public IFeatureCollection Features { get; }
-
         public IServiceProvider Services { get; }
+
+        public IFeatureCollection Features { get; }
 
         /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>. The default value is <see langword="false" />.

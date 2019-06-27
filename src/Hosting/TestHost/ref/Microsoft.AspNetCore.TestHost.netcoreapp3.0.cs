@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.TestHost
     {
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
-        public TestServer(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection, System.IServiceProvider services) { }
         public TestServer(System.IServiceProvider services) { }
+        public TestServer(System.IServiceProvider services, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
