@@ -3,8 +3,13 @@
     <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
     <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))artifacts\tmp\selenium\</SeleniumProcessTrackingFolder>
-    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT' and '$(BuildJava)' == 'true'">true</SeleniumE2ETestsSupported>
-    <EnforcePrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and '$(EnforcePrerequisites)' == ''">true</EnforcePrerequisites>
+    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
+
+    <!-- We want to enforce prerequisites when we build from the CI or within Visual Studio -->
+    <EnforcedE2EBuildEnvironment Condition="'$(CI)' == 'true' or '$(BuildingInsideVisualStudio)' == 'true'">true</EnforcedE2EBuildEnvironment>
+
+    <!-- If not explicitly set, enforce E2E test prerequisites when the platform is supported and we are building on the CI or visual studio -->
+    <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and $(EnforcedE2EBuildEnvironment) == 'true' and '$(EnforceE2ETestPrerequisites)' == ''">true</EnforceE2ETestPrerequisites>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>

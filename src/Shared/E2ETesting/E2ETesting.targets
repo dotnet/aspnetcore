@@ -7,7 +7,7 @@
   <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
 
-    <Message Condition="'$(EnforcePrerequisites)' == ''"
+    <Message Condition="'$(EnforceE2ETestPrerequisites)' == ''"
       Importance="High"
       Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
 
@@ -23,7 +23,7 @@
 
   <!-- Running prerequisites -->
 
-  <Target Name="EnsurePrerequisites" Condition="'$(EnforcePrerequisites)' == 'true'" BeforeTargets="EnsureNodeJSRestored">
+  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="EnsureNodeJSRestored">
     <PropertyGroup>
       <_PackageJson>$(MSBuildProjectDirectory)\package.json</_PackageJson>
     </PropertyGroup>
