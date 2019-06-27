@@ -10,6 +10,10 @@
          public bool SuppressPathMatching { get; set; }
          public string Template { get; set; }
      }
++    public abstract class DynamicRouteValueTransformer {
++        protected DynamicRouteValueTransformer();
++        public abstract ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values);
++    }
      public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider {
          public HttpMethodAttribute(IEnumerable<string> httpMethods);
          public HttpMethodAttribute(IEnumerable<string> httpMethods, string template);

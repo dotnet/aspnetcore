@@ -658,6 +658,7 @@
 -        public InputFormatterExceptionPolicy InputFormatterExceptionPolicy { get; set; }
 
          public FormatterCollection<IInputFormatter> InputFormatters { get; }
++        public int MaxIAsyncEnumerableBufferLimit { get; set; }
 +        public int MaxModelBindingCollectionSize { get; set; }
 +        public int MaxModelBindingRecursionDepth { get; set; }
          public int MaxModelValidationErrors { get; set; }

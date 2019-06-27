@@ -135,6 +135,7 @@
      }
      public class ObjectResultExecutor : IActionResultExecutor<ObjectResult> {
          public ObjectResultExecutor(OutputFormatterSelector formatterSelector, IHttpResponseStreamWriterFactory writerFactory, ILoggerFactory loggerFactory);
++        public ObjectResultExecutor(OutputFormatterSelector formatterSelector, IHttpResponseStreamWriterFactory writerFactory, ILoggerFactory loggerFactory, IOptions<MvcOptions> mvcOptions);
          protected OutputFormatterSelector FormatterSelector { get; }
          protected ILogger Logger { get; }
          protected Func<Stream, Encoding, TextWriter> WriterFactory { get; }

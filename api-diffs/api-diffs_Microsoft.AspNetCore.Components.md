@@ -250,6 +250,15 @@
 +        public NavigationException(string uri);
 +        public string Location { get; }
 +    }
++    public class PageDisplay : IComponent {
++        public PageDisplay();
++        public RenderFragment AuthorizingContent { get; private set; }
++        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
++        public Type Page { get; private set; }
++        public IDictionary<string, object> PageParameters { get; private set; }
++        public void Configure(RenderHandle renderHandle);
++        public Task SetParametersAsync(ParameterCollection parameters);
++    }
 +    public readonly struct Parameter {
 +        public bool Cascading { get; }
 +        public string Name { get; }

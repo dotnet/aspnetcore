@@ -25,6 +25,7 @@
 +    }
 +    public class JSException : Exception {
 +        public JSException(string message);
++        public JSException(string message, Exception innerException);
 +    }
 +    public abstract class JSInProcessRuntimeBase : JSRuntimeBase, IJSInProcessRuntime, IJSRuntime {
 +        protected JSInProcessRuntimeBase();

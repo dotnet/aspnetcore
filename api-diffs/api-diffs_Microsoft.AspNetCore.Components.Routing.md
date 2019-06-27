@@ -25,6 +25,8 @@
 +    public class Router : IComponent, IDisposable {
 +        public Router();
 +        public Assembly AppAssembly { get; private set; }
++        public RenderFragment AuthorizingContent { get; private set; }
++        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
 +        public RenderFragment NotFoundContent { get; private set; }
 +        public void Configure(RenderHandle renderHandle);
 +        public void Dispose();

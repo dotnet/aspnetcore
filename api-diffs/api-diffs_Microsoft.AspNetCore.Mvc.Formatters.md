@@ -216,7 +216,7 @@
          public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding encoding);
      }
 +    public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy {
-+        public SystemTextJsonInputFormatter(JsonOptions options);
++        public SystemTextJsonInputFormatter(JsonOptions options, ILogger<SystemTextJsonInputFormatter> logger);
 +        InputFormatterExceptionPolicy Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy { get; }
 +        public JsonSerializerOptions SerializerOptions { get; }
 +        public sealed override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding);

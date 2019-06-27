@@ -283,6 +283,49 @@
          Sign = 256,
          ViewAcl = 4096,
      }
++    public sealed class MediaPermission : CodeAccessPermission, IUnrestrictedPermission {
++        public MediaPermission();
++        public MediaPermission(MediaPermissionAudio permissionAudio);
++        public MediaPermission(MediaPermissionAudio permissionAudio, MediaPermissionVideo permissionVideo, MediaPermissionImage permissionImage);
++        public MediaPermission(MediaPermissionImage permissionImage);
++        public MediaPermission(MediaPermissionVideo permissionVideo);
++        public MediaPermission(PermissionState state);
++        public MediaPermissionAudio Audio { get; }
++        public MediaPermissionImage Image { get; }
++        public MediaPermissionVideo Video { get; }
++        public override IPermission Copy();
++        public override void FromXml(SecurityElement securityElement);
++        public override IPermission Intersect(IPermission target);
++        public override bool IsSubsetOf(IPermission target);
++        public bool IsUnrestricted();
++        public override SecurityElement ToXml();
++        public override IPermission Union(IPermission target);
++    }
++    public sealed class MediaPermissionAttribute : CodeAccessSecurityAttribute {
++        public MediaPermissionAttribute(SecurityAction action);
++        public MediaPermissionAudio Audio { get; set; }
++        public MediaPermissionImage Image { get; set; }
++        public MediaPermissionVideo Video { get; set; }
++        public override IPermission CreatePermission();
++    }
++    public enum MediaPermissionAudio {
++        AllAudio = 3,
++        NoAudio = 0,
++        SafeAudio = 2,
++        SiteOfOriginAudio = 1,
++    }
++    public enum MediaPermissionImage {
++        AllImage = 3,
++        NoImage = 0,
++        SafeImage = 2,
++        SiteOfOriginImage = 1,
++    }
++    public enum MediaPermissionVideo {
++        AllVideo = 3,
++        NoVideo = 0,
++        SafeVideo = 2,
++        SiteOfOriginVideo = 1,
++    }
      public sealed class PermissionSetAttribute : CodeAccessSecurityAttribute {
          public PermissionSetAttribute(SecurityAction action);
          public string File { get; set; }
@@ -589,6 +632,29 @@
          public string Url { get; set; }
          public override IPermission CreatePermission();
      }
++    public sealed class WebBrowserPermission : CodeAccessPermission, IUnrestrictedPermission {
++        public WebBrowserPermission();
++        public WebBrowserPermission(PermissionState state);
++        public WebBrowserPermission(WebBrowserPermissionLevel webBrowserPermissionLevel);
++        public WebBrowserPermissionLevel Level { get; set; }
++        public override IPermission Copy();
++        public override void FromXml(SecurityElement securityElement);
++        public override IPermission Intersect(IPermission target);
++        public override bool IsSubsetOf(IPermission target);
++        public bool IsUnrestricted();
++        public override SecurityElement ToXml();
++        public override IPermission Union(IPermission target);
++    }
++    public sealed class WebBrowserPermissionAttribute : CodeAccessSecurityAttribute {
++        public WebBrowserPermissionAttribute(SecurityAction action);
++        public WebBrowserPermissionLevel Level { get; set; }
++        public override IPermission CreatePermission();
++    }
++    public enum WebBrowserPermissionLevel {
++        None = 0,
++        Safe = 1,
++        Unrestricted = 2,
++    }
      public sealed class ZoneIdentityPermission : CodeAccessPermission {
          public ZoneIdentityPermission(PermissionState state);
          public ZoneIdentityPermission(SecurityZone zone);

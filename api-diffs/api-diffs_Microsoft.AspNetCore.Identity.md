@@ -29,7 +29,10 @@
          public TimeSpan TokenLifespan { get; set; }
      }
      public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUser> where TUser : class {
-         public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options);
+-        public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options);
+
++        public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options, ILogger<DataProtectorTokenProvider<TUser>> logger);
++        public ILogger<DataProtectorTokenProvider<TUser>> Logger { get; }
          public string Name { get; }
          protected DataProtectionTokenProviderOptions Options { get; private set; }
          protected IDataProtector Protector { get; private set; }

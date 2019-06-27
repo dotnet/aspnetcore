@@ -6,6 +6,11 @@
 +        public int ComponentId { get; }
 +        public IEnumerable<string> Tokens { get; }
 +    }
++    public class EventFieldInfo {
++        public EventFieldInfo();
++        public int ComponentId { get; set; }
++        public object FieldValue { get; set; }
++    }
 +    public class HtmlRenderer : Renderer {
 +        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher);
 +        protected override void HandleException(Exception exception);
@@ -32,7 +37,7 @@
 +        protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment);
 +        protected internal int AssignRootComponentId(IComponent component);
 +        public static IDispatcher CreateDefaultDispatcher();
-+        public virtual Task DispatchEventAsync(int eventHandlerId, UIEventArgs eventArgs);
++        public virtual Task DispatchEventAsync(int eventHandlerId, EventFieldInfo fieldInfo, UIEventArgs eventArgs);
 +        public void Dispose();
 +        protected virtual void Dispose(bool disposing);
 +        protected abstract void HandleException(Exception exception);

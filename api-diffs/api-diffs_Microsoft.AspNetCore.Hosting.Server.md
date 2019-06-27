@@ -12,6 +12,15 @@
          Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken);
          Task StopAsync(CancellationToken cancellationToken);
      }
++    public interface IServerIntegratedAuth {
++        string AuthenticationScheme { get; }
++        bool IsEnabled { get; }
++    }
++    public class ServerIntegratedAuth : IServerIntegratedAuth {
++        public ServerIntegratedAuth();
++        public string AuthenticationScheme { get; set; }
++        public bool IsEnabled { get; set; }
++    }
  }
 ```
 

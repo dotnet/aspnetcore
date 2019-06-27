@@ -8,6 +8,7 @@
 +            public BrowserEventDescriptor();
 +            public int BrowserRendererId { get; set; }
 +            public string EventArgsType { get; set; }
++            public EventFieldInfo EventFieldInfo { get; set; }
 +            public int EventHandlerId { get; set; }
 +        }
 +    }

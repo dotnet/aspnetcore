@@ -1,4 +1,4 @@
-# API Difference C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\2.2.1 vs C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.0.0-preview7.19321.9\ref\netcoreapp3.0
+# API Difference C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\2.2.1 vs C:\Program Files\dotnet\packs\Microsoft.AspNetCore.App.Ref\3.0.0-preview7.19326.6\ref\netcoreapp3.0
 
 API listing follows standard diff formatting. Lines preceded by a '+' are
 additions and a '-' indicates removal.
@@ -270,3 +270,4 @@ additions and a '-' indicates removal.
 * [Microsoft.JSInterop](api-diffs_Microsoft.JSInterop.md)
 * [Microsoft.JSInterop.Internal](api-diffs_Microsoft.JSInterop.Internal.md)
 * [Microsoft.Net.Http.Headers](api-diffs_Microsoft.Net.Http.Headers.md)
+

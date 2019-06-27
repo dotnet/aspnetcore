@@ -69,6 +69,7 @@
 +        public static ControllerActionEndpointConventionBuilder MapControllerRoute(this IEndpointRouteBuilder endpoints, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null);
 +        public static ControllerActionEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints);
 +        public static ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints);
++        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern) where TTransformer : DynamicRouteValueTransformer;
 +        public static IEndpointConventionBuilder MapFallbackToAreaController(this IEndpointRouteBuilder endpoints, string action, string controller, string area);
 +        public static IEndpointConventionBuilder MapFallbackToAreaController(this IEndpointRouteBuilder endpoints, string pattern, string action, string controller, string area);
 +        public static IEndpointConventionBuilder MapFallbackToController(this IEndpointRouteBuilder endpoints, string action, string controller);
@@ -382,6 +383,7 @@
 +        public void Add(Action<EndpointBuilder> convention);
 +    }
 +    public static class RazorPagesEndpointRouteBuilderExtensions {
++        public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern) where TTransformer : DynamicRouteValueTransformer;
 +        public static IEndpointConventionBuilder MapFallbackToAreaPage(this IEndpointRouteBuilder endpoints, string page, string area);
 +        public static IEndpointConventionBuilder MapFallbackToAreaPage(this IEndpointRouteBuilder endpoints, string pattern, string page, string area);
 +        public static IEndpointConventionBuilder MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page);

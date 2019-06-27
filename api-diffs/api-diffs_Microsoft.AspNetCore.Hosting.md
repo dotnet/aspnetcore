@@ -65,6 +65,12 @@
          void Configure(IApplicationBuilder app);
          IServiceProvider ConfigureServices(IServiceCollection services);
      }
++    public interface IStartupConfigureContainerFilter<TContainerBuilder> {
++        Action<TContainerBuilder> ConfigureContainer(Action<TContainerBuilder> container);
++    }
++    public interface IStartupConfigureServicesFilter {
++        Action<IServiceCollection> ConfigureServices(Action<IServiceCollection> next);
++    }
      public interface IStartupFilter {
          Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next);
      }
@@ -121,9 +127,6 @@
          public virtual void ConfigureContainer(TBuilder builder);
          public override IServiceProvider CreateServiceProvider(IServiceCollection services);
      }
-+    public static class StaticWebAssetsWebHostBuilderExtensions {
-+        public static IWebHostBuilder UseStaticWebAssets(this IWebHostBuilder builder);
-+    }
      public class WebHostBuilder : IWebHostBuilder {
          public WebHostBuilder();
          public IWebHost Build();
@@ -149,6 +152,7 @@
          public static IWebHostBuilder UseDefaultServiceProvider(this IWebHostBuilder hostBuilder, Action<ServiceProviderOptions> configure);
          public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Type startupType);
          public static IWebHostBuilder UseStartup<TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class;
++        public static IWebHostBuilder UseStaticWebAssets(this IWebHostBuilder builder);
      }
      public static class WebHostBuilderHttpSysExtensions {
          public static IWebHostBuilder UseHttpSys(this IWebHostBuilder hostBuilder);
