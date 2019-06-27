@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             var testService = new TestService();
-            var host = await new HostBuilder()
+            using var host = await new HostBuilder()
                 .ConfigureWebHost(webBuilder =>
                 {
                     webBuilder
