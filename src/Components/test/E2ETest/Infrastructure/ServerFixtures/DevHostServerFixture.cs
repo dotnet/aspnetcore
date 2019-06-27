@@ -2,7 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using DevHostServerProgram = Microsoft.AspNetCore.Blazor.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -32,7 +38,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 args.Add(Environment);
             }
 
-            return DevHostServerProgram.BuildWebHost(args.ToArray());
+            return new FakeWebHost(DevHostServerProgram.BuildWebHost(args.ToArray()));
+        }
+
+        private class FakeWebHost : IWebHost
+        {
+            private readonly IHost _realHost;
+
+            public FakeWebHost(IHost realHost)
+            {
+                _realHost = realHost;
+            }
+
+            public IFeatureCollection ServerFeatures => ((IServer)_realHost.Services.GetService(typeof(IServer))).Features;
+
+            public IServiceProvider Services => _realHost.Services;
+
+            public void Dispose() => _realHost.Dispose();
+
+            public void Start() => _realHost.Start();
+
+            public Task StartAsync(CancellationToken cancellationToken = default) => _realHost.StartAsync();
+
+            public Task StopAsync(CancellationToken cancellationToken = default) => _realHost.StopAsync();
         }
     }
 }
