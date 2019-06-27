@@ -89,7 +89,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange/Act
             var resultJson = DotNetDispatcher.Invoke(thisAssemblyName, "InvocableStaticNonVoid", default, null);
-            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
+            var result = JsonSerializer.Deserialize<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
 
             // Assert
             Assert.Equal("Test", result.StringVal);
@@ -101,7 +101,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange/Act
             var resultJson = DotNetDispatcher.Invoke(thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, null);
-            var result = JsonSerializer.Parse<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
+            var result = JsonSerializer.Deserialize<TestDTO>(resultJson, JsonSerializerOptionsProvider.Options);
 
             // Assert
             Assert.Equal("InvokableMethodWithoutCustomIdentifier", result.StringVal);
@@ -117,7 +117,7 @@ namespace Microsoft.JSInterop.Tests
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Arrange: Remaining args
-            var argsJson = JsonSerializer.ToString(new object[]
+            var argsJson = JsonSerializer.Serialize(new object[]
             {
                 new TestDTO { StringVal = "Another string", IntVal = 456 },
                 new[] { 100, 200 },
@@ -130,7 +130,7 @@ namespace Microsoft.JSInterop.Tests
             var root = result.RootElement;
 
             // Assert: First result value marshalled via JSON
-            var resultDto1 = JsonSerializer.Parse<TestDTO>(root[0].GetRawText(), JsonSerializerOptionsProvider.Options);
+            var resultDto1 = JsonSerializer.Deserialize<TestDTO>(root[0].GetRawText(), JsonSerializerOptionsProvider.Options);
 
             Assert.Equal("ANOTHER STRING", resultDto1.StringVal);
             Assert.Equal(756, resultDto1.IntVal);
@@ -156,7 +156,7 @@ namespace Microsoft.JSInterop.Tests
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Arrange: Remaining args
-            var argsJson = JsonSerializer.ToString(new object[]
+            var argsJson = JsonSerializer.Serialize(new object[]
             {
                 new TestDTO { StringVal = "Another string", IntVal = 456 },
                 new[] { 100, 200 },
@@ -262,7 +262,7 @@ namespace Microsoft.JSInterop.Tests
         public void CannotInvokeWithIncorrectNumberOfParams()
         {
             // Arrange
-            var argsJson = JsonSerializer.ToString(new object[] { 1, 2, 3, 4 }, JsonSerializerOptionsProvider.Options);
+            var argsJson = JsonSerializer.Serialize(new object[] { 1, 2, 3, 4 }, JsonSerializerOptionsProvider.Options);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(() =>
@@ -284,7 +284,7 @@ namespace Microsoft.JSInterop.Tests
             jsRuntime.Invoke<object>("unimportant", arg1Ref, arg2Ref);
 
             // Arrange: all args
-            var argsJson = JsonSerializer.ToString(new object[]
+            var argsJson = JsonSerializer.Serialize(new object[]
             {
                 new TestDTO { IntVal = 1000, StringVal = "String via JSON" },
                 arg2Ref,
@@ -306,12 +306,12 @@ namespace Microsoft.JSInterop.Tests
             Assert.True(result[1].GetBoolean()); // Success flag
 
             // Assert: First result value marshalled via JSON
-            var resultDto1 = JsonSerializer.Parse<TestDTO>(resultValue[0].GetRawText(), JsonSerializerOptionsProvider.Options);
+            var resultDto1 = JsonSerializer.Deserialize<TestDTO>(resultValue[0].GetRawText(), JsonSerializerOptionsProvider.Options);
             Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
             Assert.Equal(2000, resultDto1.IntVal);
 
             // Assert: Second result value marshalled by ref
-            var resultDto2Ref = JsonSerializer.Parse<DotNetObjectRef<TestDTO>>(resultValue[1].GetRawText(), JsonSerializerOptionsProvider.Options);
+            var resultDto2Ref = JsonSerializer.Deserialize<DotNetObjectRef<TestDTO>>(resultValue[1].GetRawText(), JsonSerializerOptionsProvider.Options);
             var resultDto2 = resultDto2Ref.Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(2468, resultDto2.IntVal);

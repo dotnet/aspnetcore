@@ -111,7 +111,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.IsType<JsonException>(jsException.InnerException);
 
             // Verify we've disposed the JsonDocument.
-            Assert.Throws<ObjectDisposedException>(() => jsonDocument.RootElement.Type);
+            Assert.Throws<ObjectDisposedException>(() => jsonDocument.RootElement.ValueKind);
         }
 
         [Fact]

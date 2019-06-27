@@ -51,7 +51,7 @@ namespace Microsoft.JSInterop
                 return null;
             }
 
-            return JsonSerializer.ToString(syncResult, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Serialize(syncResult, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
@@ -177,9 +177,9 @@ namespace Microsoft.JSInterop
             var shouldDisposeJsonDocument = true;
             try
             {
-                if (jsonDocument.RootElement.Type != JsonValueType.Array)
+                if (jsonDocument.RootElement.ValueKind != JsonValueKind.Array)
                 {
-                    throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");
+                    throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.ValueKind}.");
                 }
 
                 var suppliedArgsLength = jsonDocument.RootElement.GetArrayLength();
@@ -211,7 +211,7 @@ namespace Microsoft.JSInterop
                     }
                     else
                     {
-                        suppliedArgs[index] = JsonSerializer.Parse(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
+                        suppliedArgs[index] = JsonSerializer.Deserialize(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
                     }
 
                     index++;
@@ -236,7 +236,7 @@ namespace Microsoft.JSInterop
                 // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
                 // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
                 // but we aren't assigning to DotNetObjectRef{T}.
-                return item.Type == JsonValueType.Object &&
+                return item.ValueKind == JsonValueKind.Object &&
                     item.TryGetProperty(DotNetObjectRefKey, out _) &&
                      !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
             }
