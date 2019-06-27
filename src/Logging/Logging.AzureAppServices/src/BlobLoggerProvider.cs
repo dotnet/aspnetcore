@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
         /// </summary>
         /// <param name="blobReferenceFactory">The container to store logs to.</param>
-        /// <param name="options"></param>
+        /// <param name="options">Options to be used in creating a logger.</param>
         internal BlobLoggerProvider(
             IOptionsMonitor<AzureBlobLoggerOptions> options,
             Func<string, ICloudAppendBlob> blobReferenceFactory) :
