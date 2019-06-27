@@ -449,9 +449,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private Task CloseAsync(ConnectionContext connection)
+        private ValueTask CloseAsync(ConnectionContext connection)
         {
-            return connection.DisposeAsync().AsTask();
+            return connection.DisposeAsync();
         }
 
         // This method does both Dispose and Start, the 'disposing' flag indicates which.
