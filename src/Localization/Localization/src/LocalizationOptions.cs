@@ -9,6 +9,12 @@ namespace Microsoft.Extensions.Localization
     public class LocalizationOptions
     {
         /// <summary>
+        /// Creates a new <see cref="LocalizationOptions" />.
+        /// </summary>
+        public LocalizationOptions()
+        { }
+
+        /// <summary>
         /// The relative path under application root where resource files are located.
         /// </summary>
         public string ResourcesPath { get; set; } = string.Empty;

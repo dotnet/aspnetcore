@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
@@ -56,6 +56,10 @@ namespace Microsoft.Extensions.Localization
             SearchedLocation = searchedLocation;
         }
 
+        /// <summary>
+        /// Implicitly converts the <see cref="LocalizedString"/> to a <see cref="string"/>.
+        /// </summary>
+        /// <param name="localizedString">The string to be implicitly converted.</param>
         public static implicit operator string(LocalizedString localizedString)
         {
             return localizedString?.Value;

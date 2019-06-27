@@ -8,6 +8,10 @@ using System.Threading;
 
 namespace Microsoft.Extensions.ObjectPool
 {
+    /// <summary>
+    /// Default implementation of <see cref="ObjectPool<T>"/>.
+    /// </summary>
+    /// <typeparam name="T">The type to pool objects for.</typeparam>
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     {
         private protected readonly ObjectWrapper[] _items;
@@ -18,11 +22,20 @@ namespace Microsoft.Extensions.ObjectPool
         // This class was introduced in 2.1 to avoid the interface call where possible
         private protected readonly PooledObjectPolicy<T> _fastPolicy;
 
+        /// <summary>
+        /// Creates an instance of <see cref="DefaultObjectPool<T>"/>.
+        /// </summary>
+        /// <param name="policy">The pooling policy to use.</param>
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
             : this(policy, Environment.ProcessorCount * 2)
         {
         }
 
+        /// <summary>
+        /// Creates an instance of <see cref="DefaultObjectPool<T>"/>.
+        /// </summary>
+        /// <param name="policy">The pooling policy to use.</param>
+        /// <param name="maximumRetained">The maximum number of objects to retain in the pool.</param>
         public DefaultObjectPool(IPooledObjectPolicy<T> policy, int maximumRetained)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
