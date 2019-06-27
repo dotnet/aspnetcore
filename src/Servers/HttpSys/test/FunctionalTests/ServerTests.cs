@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ct.Register(() => canceled.SetResult(0));
                 received.SetResult(0);
                 await aborted.Task.TimeoutAfter(interval);
-                Assert.True(ct.WaitHandle.WaitOne(interval), "CT Wait");
+                await canceled.Task.TimeoutAfter(interval);
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
             }))
             {
