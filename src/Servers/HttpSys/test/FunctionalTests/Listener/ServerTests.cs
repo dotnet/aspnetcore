@@ -38,9 +38,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var ct = context.DisconnectToken;
                     Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                     ct.Register(() => canceled.SetResult(0));
-                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
                     await canceled.Task.TimeoutAfter(interval);
+                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
 
                     context.Dispose();
                 }
