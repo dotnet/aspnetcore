@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -17,10 +15,6 @@ namespace Microsoft.CodeAnalysis.Razor
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
                 .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions & (~SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
-
-        private static MethodInfo WithMetadataImportOptionsMethodInfo =
-            typeof(CSharpCompilationOptions)
-                .GetMethod("WithMetadataImportOptions", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         public bool IncludeDocumentation { get; set; }
 
@@ -39,9 +33,6 @@ namespace Microsoft.CodeAnalysis.Razor
                 // No compilation, nothing to do.
                 return;
             }
-
-            // We need to see private members too
-            compilation = WithMetadataImportOptionsAll(compilation);
 
             var symbols = ComponentSymbols.Create(compilation);
 
@@ -79,13 +70,6 @@ namespace Microsoft.CodeAnalysis.Razor
                     context.Results.Add(CreateChildContentDescriptor(symbols, fullyQualifiedNameMatchingDescriptor, childContent));
                 }
             }
-        }
-
-        private Compilation WithMetadataImportOptionsAll(Compilation compilation)
-        {
-            var newCompilationOptions = (CSharpCompilationOptions)WithMetadataImportOptionsMethodInfo
-                .Invoke(compilation.Options, new object[] { /* All */ (byte)2 });
-            return compilation.WithOptions(newCompilationOptions);
         }
 
         private TagHelperDescriptor CreateShortNameMatchingDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
@@ -216,9 +200,9 @@ namespace Microsoft.CodeAnalysis.Razor
                 }
 
                 // We need to check for cases like:
-                // [Parameter] List<T> MyProperty { get; set; }
+                // [Parameter] public List<T> MyProperty { get; set; }
                 // AND
-                // [Parameter] List<string> MyProperty { get; set; }
+                // [Parameter] public List<string> MyProperty { get; set; }
                 //
                 // We need to inspect the type arguments to tell the difference between a property that
                 // uses the containing class' type parameter(s) and a vanilla usage of generic types like
@@ -333,6 +317,7 @@ namespace Microsoft.CodeAnalysis.Razor
         // a dictionary keyed on property name.
         //
         // We consider parameters to be defined by properties satisfying all of the following:
+        // - are public
         // - are visible (not shadowed)
         // - have the [Parameter] attribute
         // - have a setter, even if private
@@ -367,6 +352,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     }
 
                     var kind = PropertyKind.Default;
+                    if (property.DeclaredAccessibility != Accessibility.Public)
+                    {
+                        // Not public
+                        kind = PropertyKind.Ignored;
+                    }
+
                     if (property.Parameters.Length != 0)
                     {
                         // Indexer
@@ -376,6 +367,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     if (property.SetMethod == null)
                     {
                         // No setter
+                        kind = PropertyKind.Ignored;
+                    }
+                    else if (property.SetMethod.DeclaredAccessibility != Accessibility.Public)
+                    {
+                        // No public setter
                         kind = PropertyKind.Ignored;
                     }
 

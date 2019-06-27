@@ -4574,7 +4574,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
+        [Parameter] public string Message { get; set; }
     }
 }
 "));
@@ -4603,7 +4603,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
+        [Parameter] public string Message { get; set; }
     }
 }
 "));
@@ -4634,7 +4634,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
+        [Parameter] public string Message { get; set; }
     }
 }
 "));
@@ -4664,9 +4664,9 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
-        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
-        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+        [Parameter] public string Message { get; set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; set; }
     }
 }
 "));
@@ -4699,9 +4699,9 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
-        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
-        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+        [Parameter] public string Message { get; set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; set; }
     }
 }
 "));
@@ -4734,9 +4734,9 @@ namespace Test
 {
     public class MyComponent : ComponentBase
     {
-        [Parameter] public string Message { get; private set; }
-        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
-        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+        [Parameter] public string Message { get; set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; set; }
     }
 }
 "));

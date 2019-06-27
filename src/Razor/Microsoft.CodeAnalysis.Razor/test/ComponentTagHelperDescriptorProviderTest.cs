@@ -246,6 +246,86 @@ namespace Test
             Assert.Equal("System.String", attribute.TypeName);
         }
 
+        [Fact]
+        public void Execute_IgnoresPrivateParameters_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        private string MyProperty { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            components = AssertAndExcludeFullyQualifiedNameMatchComponents(components, expectedCount: 1);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            Assert.Empty(component.BoundAttributes);
+        }
+
+        [Fact]
+        public void Execute_IgnoresParametersWithPrivateSetters_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        public string MyProperty { get; private set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            components = AssertAndExcludeFullyQualifiedNameMatchComponents(components, expectedCount: 1);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            Assert.Empty(component.BoundAttributes);
+        }
+
         [Fact] // bool properties support minimized attributes
         public void Execute_BoolProperty_CreatesDescriptor()
         {
