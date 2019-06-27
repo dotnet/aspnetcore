@@ -7,7 +7,7 @@
   <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
 
-    <Message Condition="'$(EnforceE2ETestPrerequisites)' == ''"
+    <Message Condition="'$(EnforceE2ETestPrerequisites)' != 'true'"
       Importance="High"
       Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
 
@@ -17,7 +17,7 @@
   <Target
     Name="WarnSeleniumNotSupported"
     BeforeTargets="Build"
-    Condition="'$(SeleniumE2ETestsSupported)' == ''">
+    Condition="'$(SeleniumE2ETestsSupported)' != 'true'">
     <Message Importance="High" Text="Selenium tests are not supported for OS '$(OS)' and architecture '$(TargetArchitecture)'." />
   </Target>
 

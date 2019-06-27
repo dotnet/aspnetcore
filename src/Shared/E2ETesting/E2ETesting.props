@@ -12,7 +12,7 @@
     <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and $(EnforcedE2EBuildEnvironment) == 'true' and '$(EnforceE2ETestPrerequisites)' == ''">true</EnforceE2ETestPrerequisites>
 
     <!-- Never enforce E2E test prerequisites if the platform is not supported -->
-    <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' == ''"></EnforceE2ETestPrerequisites>
+    <EnforceE2ETestPrerequisites Condition="'$(SeleniumE2ETestsSupported)' != 'true'">false</EnforceE2ETestPrerequisites>
 
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
