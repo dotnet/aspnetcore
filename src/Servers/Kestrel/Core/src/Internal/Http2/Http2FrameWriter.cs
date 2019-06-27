@@ -89,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _completed = true;
                 _connectionOutputFlowControl.Abort();
-                _outputWriter.Complete();
             }
         }
 
