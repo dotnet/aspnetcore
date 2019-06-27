@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace RazorComponentsWeb_CSharp.Areas.Identity
 {
@@ -16,7 +16,7 @@ namespace RazorComponentsWeb_CSharp.Areas.Identity
     /// </summary>
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class RevalidatingAuthenticationStateProvider<TUser>
-        : AuthenticationStateProvider, IDisposable where TUser: class
+        : AuthenticationStateProvider, IDisposable where TUser : class
     {
         private readonly static TimeSpan RevalidationInterval = TimeSpan.FromMinutes(30);
 
