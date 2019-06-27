@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void CannotCreateConnectionWithNoEndPoint()
         {
             var builder = new HubConnectionBuilder();
-            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Mock.Of<IHubProtocol>(), Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
 
             var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
             Assert.Equal("Cannot create HubConnection instance. An EndPoint was not configured.", ex.Message);
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void BuildCanOnlyBeCalledOnce()
         {
             var builder = new HubConnectionBuilder();
-            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Mock.Of<IHubProtocol>(), Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
             builder.WithUrl("http://example.com");
 
             Assert.NotNull(builder.Build());

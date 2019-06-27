@@ -47,14 +47,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             TransferFormat transferFormat = TransferFormat.Text)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-            httpConnectionOptions.Url = httpConnectionOptions.Url ?? new Uri("http://fakeuri.org/");
+            httpConnectionOptions.Url ??= new Uri("http://fakeuri.org/");
+            httpConnectionOptions.DefaultTransferFormat = transferFormat;
 
             if (transportFactory == null && transport != null)
             {
                 transportFactory = new TestTransportFactory(transport);
             }
 
-            return new HttpConnection(httpConnectionOptions, transferFormat, loggerFactory, transportFactory);
+            return new HttpConnection(httpConnectionOptions, loggerFactory, transportFactory);
         }
 
         private static async Task WithConnectionAsync(HttpConnection connection, Func<HttpConnection, Task> body)

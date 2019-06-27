@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -72,8 +71,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             return async endPoint =>
             {
                 var httpEndpoint = (HttpEndPoint)endPoint;
-                var options = new HttpConnectionOptions { Url = httpEndpoint.Url, Transports = transportType };
-                var connection = new HttpConnection(options, transferFormat, loggerFactory);
+                var options = new HttpConnectionOptions { Url = httpEndpoint.Url, Transports = transportType, DefaultTransferFormat = transferFormat };
+                var connection = new HttpConnection(options, loggerFactory);
 
                 await connection.StartAsync();
 

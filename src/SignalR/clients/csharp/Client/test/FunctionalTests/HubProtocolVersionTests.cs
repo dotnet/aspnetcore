@@ -18,7 +18,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -104,10 +103,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (StartServer<VersionStartup>(out var server))
             {
                 var httpConnectionFactory = new HttpConnectionFactory(
-                    new JsonHubProtocol(),
                     Options.Create(new HttpConnectionOptions
                     {
-                        Transports = transportType
+                        Transports = transportType,
+                        DefaultTransferFormat = TransferFormat.Text
                     }),
                     LoggerFactory);
                 var tcs = new TaskCompletionSource<object>();

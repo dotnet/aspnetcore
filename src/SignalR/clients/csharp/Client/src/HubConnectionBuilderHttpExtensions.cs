@@ -6,6 +6,7 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -145,6 +146,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // without the Signal.Client.Core project taking a new dependency on Http.Connections.Client.
             hubConnectionBuilder.Services.AddSingleton<EndPoint, HttpConnectionOptionsDerivedHttpEndPoint>();
 
+            // Configure the HttpConnection so that it uses the correct transfer format for the configured IHubProtocol.
+            hubConnectionBuilder.Services.AddSingleton<IConfigureOptions<HttpConnectionOptions>, HubProtocolDerivedHttpOptionsConfigurer>();
+
+            // If and when HttpConnectionFactory is made public, it can be moved out of this assembly and into Http.Connections.Client.
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory, HttpConnectionFactory>();
             return hubConnectionBuilder;
         }
@@ -154,6 +159,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
                 : base(httpConnectionOptions.Value.Url)
             {
+            }
+        }
+
+        private class HubProtocolDerivedHttpOptionsConfigurer : IConfigureNamedOptions<HttpConnectionOptions>
+        {
+            private readonly TransferFormat _defaultTransferFormat;
+
+            public HubProtocolDerivedHttpOptionsConfigurer(IHubProtocol hubProtocol)
+            {
+                _defaultTransferFormat = hubProtocol.TransferFormat;
+            }
+
+            public void Configure(string name, HttpConnectionOptions options)
+            {
+                Configure(options);
+            }
+
+            public void Configure(HttpConnectionOptions options)
+            {
+                options.DefaultTransferFormat = _defaultTransferFormat;
             }
         }
     }

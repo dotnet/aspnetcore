@@ -292,6 +292,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         await transport.Receiving.OrTimeout();
                     });
             }
+
+            [Fact]
+            public Task StartAsyncTransferFormatOverridesOptions()
+            {
+                var transport = new TestTransport();
+
+                return WithConnectionAsync(
+                    CreateConnection(transport: transport, transferFormat: TransferFormat.Binary),
+                    async (connection) =>
+                    {
+                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+
+                        Assert.Equal(TransferFormat.Text, transport.Format);
+                    });
+            }
         }
     }
 }

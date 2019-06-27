@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -29,9 +28,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             testHandler.OnRequest((req, next, ct) => Task.FromException<HttpResponseMessage>(new Exception("BOOM")));
 
             var factory = new HttpConnectionFactory(
-                Mock.Of<IHubProtocol>(p => p.TransferFormat == TransferFormat.Text),
-                Options.Create(new HttpConnectionOptions() {
-                    HttpMessageHandlerFactory = _ => testHandler
+                Options.Create(new HttpConnectionOptions
+                {
+                    DefaultTransferFormat = TransferFormat.Text,
+                    HttpMessageHandlerFactory = _ => testHandler,
                 }),
                 NullLoggerFactory.Instance);
 
@@ -46,8 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task DoesNotSupportNonHttpEndPoints()
         {
             var factory = new HttpConnectionFactory(
-                Mock.Of<IHubProtocol>(p => p.TransferFormat == TransferFormat.Text),
-                Options.Create(new HttpConnectionOptions()),
+                Options.Create(new HttpConnectionOptions { DefaultTransferFormat = TransferFormat.Text }),
                 NullLoggerFactory.Instance);
 
             var ex = await Assert.ThrowsAsync<NotSupportedException>(async () => await factory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 0)));
@@ -62,10 +61,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var url2 = new Uri("http://example.com/2");
 
             var factory = new HttpConnectionFactory(
-                Mock.Of<IHubProtocol>(p => p.TransferFormat == TransferFormat.Text),
                 Options.Create(new HttpConnectionOptions
                 {
-                    Url = url1
+                    Url = url1,
+                    DefaultTransferFormat = TransferFormat.Text
                 }),
                 NullLoggerFactory.Instance);
 
@@ -94,6 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 { $"{nameof(HttpConnectionOptions.Credentials)}", Mock.Of<ICredentials>() },
                 { $"{nameof(HttpConnectionOptions.Proxy)}", Mock.Of<IWebProxy>() },
                 { $"{nameof(HttpConnectionOptions.UseDefaultCredentials)}", true },
+                { $"{nameof(HttpConnectionOptions.DefaultTransferFormat)}", TransferFormat.Text },
                 { $"{nameof(HttpConnectionOptions.WebSocketConfiguration)}", webSocketConfig },
             };
 

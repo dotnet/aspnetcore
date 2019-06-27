@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
 
                 // The test logic lives in the TestTransportFactory and FakeTransport.
-                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url) }, TransferFormat.Text, LoggerFactory, new TestTransportFactory());
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), DefaultTransferFormat = TransferFormat.Text }, LoggerFactory, new TestTransportFactory());
                 await connection.StartAsync().OrTimeout();
                 await connection.DisposeAsync().OrTimeout();
             }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartServer<Startup>(out var server))
             {
                 var url = server.Url + "/echo";
-                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType }, TransferFormat.Text, LoggerFactory);
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType, DefaultTransferFormat = TransferFormat.Text }, LoggerFactory);
                 await connection.StartAsync().OrTimeout();
                 await connection.DisposeAsync().OrTimeout();
             }
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 const string message = "Major Key";
 
                 var url = server.Url + "/echo";
-                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType }, requestedTransferFormat, LoggerFactory);
+                var connection = new HttpConnection(new HttpConnectionOptions { Url = new Uri(url), Transports = transportType, DefaultTransferFormat = requestedTransferFormat }, LoggerFactory);
                 try
                 {
                     logger.LogInformation("Starting connection to {url}", url);
@@ -475,9 +475,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     {
                         Url = new Uri(url),
                         AccessTokenProvider = () => Task.FromResult(token),
-                        Transports = HttpTransportType.ServerSentEvents
+                        Transports = HttpTransportType.ServerSentEvents,
+                        DefaultTransferFormat = TransferFormat.Text,
                     },
-                    TransferFormat.Text,
                     LoggerFactory);
 
                 try

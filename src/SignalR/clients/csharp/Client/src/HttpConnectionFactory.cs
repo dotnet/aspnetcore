@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,38 +15,25 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// <summary>
     /// A factory for creating <see cref="HttpConnection"/> instances.
     /// </summary>
-    public class HttpConnectionFactory : IConnectionFactory
+    internal class HttpConnectionFactory : IConnectionFactory
     {
-        private readonly TransferFormat _transferFormat; 
         private readonly HttpConnectionOptions _httpConnectionOptions;
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionFactory"/> class.
         /// </summary>
-        /// <param name="hubProtocol">The <see cref="IHubProtocol"/> that will use the connections.</param>
         /// <param name="options">The connection options.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        public HttpConnectionFactory(IHubProtocol hubProtocol, IOptions<HttpConnectionOptions> options, ILoggerFactory loggerFactory)
+        public HttpConnectionFactory(IOptions<HttpConnectionOptions> options, ILoggerFactory loggerFactory)
         {
-            if (hubProtocol == null)
-            {
-                throw new ArgumentNullException(nameof(hubProtocol));
-            }
-
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            _transferFormat = hubProtocol.TransferFormat;
             _httpConnectionOptions = options.Value;
-            _loggerFactory = loggerFactory;
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <summary>
@@ -77,10 +63,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new InvalidOperationException($"If {nameof(HttpConnectionOptions)}.{nameof(HttpConnectionOptions.Url)} was set, it must match the {nameof(HttpEndPoint)}.{nameof(HttpEndPoint.Url)} passed to {nameof(ConnectAsync)}.");
             }
 
+            // Shallow copy before setting the Url property so we don't mutate the user-defined options object.
             var shallowCopiedOptions = ShallowCopyHttpConnectionOptions(_httpConnectionOptions);
-            shallowCopiedOptions.Url ??= castedHttpEndPoint.Url;
+            shallowCopiedOptions.Url = castedHttpEndPoint.Url;
 
-            var connection = new HttpConnection(shallowCopiedOptions, _transferFormat, _loggerFactory);
+            var connection = new HttpConnection(shallowCopiedOptions, _loggerFactory);
 
             try
             {
@@ -112,6 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 Credentials = options.Credentials,
                 Proxy = options.Proxy,
                 UseDefaultCredentials = options.UseDefaultCredentials,
+                DefaultTransferFormat = options.DefaultTransferFormat,
                 WebSocketConfiguration = options.WebSocketConfiguration,
             };
         }

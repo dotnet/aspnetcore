@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 
 namespace ClientSample
 {
@@ -35,7 +34,13 @@ namespace ClientSample
 
             Console.WriteLine($"Connecting to {baseUrl}...");
 
-            var connection = new HttpConnection(new HttpConnectionOptions() { Url = new Uri(baseUrl) }, TransferFormat.Text, loggerFactory: null);
+            var connectionOptions = new HttpConnectionOptions
+            {
+                Url = new Uri(baseUrl),
+                DefaultTransferFormat = TransferFormat.Text,
+            };
+
+            var connection = new HttpConnection(connectionOptions, loggerFactory: null);
 
             try
             {

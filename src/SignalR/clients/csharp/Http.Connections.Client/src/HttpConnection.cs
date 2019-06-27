@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
-        private readonly TransferFormat _transferFormat;
         private ITransport _transport;
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
@@ -129,17 +128,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="httpConnectionOptions">The connection options to use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
-            : this(httpConnectionOptions, TransferFormat.Binary, loggerFactory)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpConnection"/> class.
-        /// </summary>
-        /// <param name="httpConnectionOptions">The connection options to use.</param>
-        /// <param name="transferFormat">The transfer format the connection should use.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public HttpConnection(HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory)
         {
             if (httpConnectionOptions == null)
             {
@@ -154,8 +142,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
-            _httpConnectionOptions = httpConnectionOptions ?? throw new ArgumentNullException(nameof(httpConnectionOptions));
-            _transferFormat = transferFormat;
+            _httpConnectionOptions = httpConnectionOptions;
 
             if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
             {
@@ -169,8 +156,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         }
 
         // Used by unit tests
-        internal HttpConnection(HttpConnectionOptions httpConnectionOptions, TransferFormat transferFormat, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
-            : this(httpConnectionOptions, transferFormat, loggerFactory)
+        internal HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
+            : this(httpConnectionOptions, loggerFactory)
         {
             // Don't null out the _transportFactory if one isn't provided.
             if (transportFactory != null)
@@ -188,7 +175,30 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task StartAsync(CancellationToken cancellationToken = default)
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
+        }
+
+        /// <summary>
+        /// Starts the connection using the specified transfer format.
+        /// </summary>
+        /// <param name="transferFormat">The transfer format the connection should use.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous start.</returns>
+        /// <remarks>
+        /// A connection cannot be restarted after it has stopped. To restart a connection
+        /// a new instance should be created using the same options.
+        /// </remarks>
+        public async Task StartAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+        {
+            using (_logger.BeginScope(_logScope))
+            {
+                await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
+            }
+        }
+
+        private async Task StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -211,7 +221,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 Log.Starting(_logger);
 
-                await SelectAndStartTransport(_transferFormat, cancellationToken);
+                await SelectAndStartTransport(transferFormat, cancellationToken);
 
                 _started = true;
                 Log.Started(_logger);

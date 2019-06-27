@@ -7,7 +7,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client
 {
@@ -107,6 +109,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Gets or sets a value indicating whether default credentials are used when making HTTP requests.
         /// </summary>
         public bool? UseDefaultCredentials { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="TransferFormat" /> to use if none is passed via <see cref="HttpConnection.StartAsync(TransferFormat, CancellationToken)"/>.
+        /// </summary>
+        public TransferFormat DefaultTransferFormat { get; set; } = TransferFormat.Binary;
 
         /// <summary>
         /// Gets or sets a delegate that will be invoked with the <see cref="ClientWebSocketOptions"/> object used
