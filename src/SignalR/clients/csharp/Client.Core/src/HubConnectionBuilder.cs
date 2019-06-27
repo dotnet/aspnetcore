@@ -46,17 +46,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // The service provider is disposed by the HubConnection
             var serviceProvider = Services.BuildServiceProvider();
 
-            var connectionFactory = serviceProvider.GetService<IConnectionFactory>();
-            if (connectionFactory == null)
-            {
+            var connectionFactory = serviceProvider.GetService<IConnectionFactory>() ??
                 throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(IConnectionFactory)} was not configured.");
-            }
 
-            var endPoint = serviceProvider.GetService<EndPoint>();
-            if (endPoint == null)
-            {
+            var endPoint = serviceProvider.GetService<EndPoint>() ??
                 throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(EndPoint)} was not configured.");
-            }
 
             return serviceProvider.GetService<HubConnection>();
         }
