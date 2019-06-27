@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <SkipArm>true</SkipArm>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\testassets\AzureAD.WebSite\AzureAD.WebSite.csproj" />
-
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
-    <HelixProjectArch Remove="arm64" />
   </ItemGroup>
 
   <ItemGroup>
