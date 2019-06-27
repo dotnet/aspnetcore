@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <SkipArm>true</SkipArm>
+    <SkipHelixArm>true</SkipHelixArm>
    </PropertyGroup>
 
   <ItemGroup>
@@ -42,8 +42,7 @@
       ContinueOnError="true" />
     <Copy
       SourceFiles="@(_PagesFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages"
-      ContinueOnError="true" />
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages"/>
     <Copy
       SourceFiles="@(_wwwrootFiles)"
       DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot"
@@ -53,8 +52,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"
-      ContinueOnError="true" />
+        Encoding="Unicode"/>
   </Target>
 
 </Project>
