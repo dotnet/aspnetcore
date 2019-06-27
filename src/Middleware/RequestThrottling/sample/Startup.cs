@@ -24,8 +24,8 @@ namespace RequestThrottlingSample
         {
             services.AddStackQueue((options) =>
             {
-                options.MaxConcurrentRequests = Math.Max(1, _config.GetValue<int>("maxCores"));
-                options.RequestQueueLimit = Math.Max(5, _config.GetValue<int>("maxQueue"));
+                options.MaxConcurrentRequests = Math.Max(1, _config.GetValue<int>("maxConcurrent"));
+                options.RequestQueueLimit = Math.Max(1, _config.GetValue<int>("maxQueue"));
             });
 
             services.AddLogging();

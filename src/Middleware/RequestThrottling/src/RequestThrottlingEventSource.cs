@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
                 if (_parent.IsEnabled() && _timer != null)
                 {
-                    var duration = _timer.Value.IsActive ? _timer.Value.GetElapsedTime().TotalMilliseconds : 0.0;
+                    var duration = _timer.Value.GetElapsedTime().TotalMilliseconds;
                     _parent._queueDuration.WriteMetric(duration);
                 }
             }
