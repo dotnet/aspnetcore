@@ -36,10 +36,10 @@ namespace Microsoft.AspNetCore.Components.Browser
             {
                 if (fieldInfo.FieldValue is JsonElement attributeValueJsonElement)
                 {
-                    switch (attributeValueJsonElement.Type)
+                    switch (attributeValueJsonElement.ValueKind)
                     {
-                        case JsonValueType.True:
-                        case JsonValueType.False:
+                        case JsonValueKind.True:
+                        case JsonValueKind.False:
                             fieldInfo.FieldValue = attributeValueJsonElement.GetBoolean();
                             break;
                         default:
@@ -97,16 +97,16 @@ namespace Microsoft.AspNetCore.Components.Browser
         {
             var changeArgs = Deserialize<UIChangeEventArgs>(eventArgsJson);
             var jsonElement = (JsonElement)changeArgs.Value;
-            switch (jsonElement.Type)
+            switch (jsonElement.ValueKind)
             {
-                case JsonValueType.Null:
+                case JsonValueKind.Null:
                     changeArgs.Value = null;
                     break;
-                case JsonValueType.String:
+                case JsonValueKind.String:
                     changeArgs.Value = jsonElement.GetString();
                     break;
-                case JsonValueType.True:
-                case JsonValueType.False:
+                case JsonValueKind.True:
+                case JsonValueKind.False:
                     changeArgs.Value = jsonElement.GetBoolean();
                     break;
                 default:

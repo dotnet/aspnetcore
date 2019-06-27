@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         private static string GetValue(JsonElement userData, string propertyName, string subProperty)
         {
             if (userData.TryGetProperty(propertyName, out var value)
-                && value.Type == JsonValueType.Object && value.TryGetProperty(subProperty, out value))
+                && value.ValueKind == JsonValueKind.Object && value.TryGetProperty(subProperty, out value))
             {
                 return value.ToString();
             }
