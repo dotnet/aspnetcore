@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Authorization;
 namespace Microsoft.AspNetCore.SignalR
 {
     /// <summary>
-    /// A context passed to <see cref="IAuthorizationHandler"/>'s for custom Authorization on Hub methods.
+    /// Context for a Hub invocation.
     /// </summary>
     public class HubInvocationContext
     {
         /// <summary>
-        /// Instantiates a new <see cref="HubInvocationContext"/> instance.
+        /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
         /// </summary>
-        /// <param name="context">The context that provides information about the hub connection.</param>
+        /// <param name="context">Context for the active hub connection and caller.</param>
         /// <param name="hubMethodName">The name of the hub method being invoked.</param>
-        /// <param name="hubMethodArguments">The arguments provided by the client to call the hub method.</param>
+        /// <param name="hubMethodArguments">The arguments provided by the client.</param>
         public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
             HubMethodName = hubMethodName;
@@ -25,17 +25,17 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <summary>
-        /// The context that provides information about the hub connection.
+        /// Gets the context for the active hub connection and caller.
         /// </summary>
         public HubCallerContext Context { get; }
 
         /// <summary>
-        /// The name of the hub method being invoked.
+        /// Gets the name of the hub method being invoked.
         /// </summary>
         public string HubMethodName { get; }
 
         /// <summary>
-        /// The arguments provided by the client to call the hub method.
+        /// Gets the arguments provided by the client.
         /// </summary>
         public IReadOnlyList<object> HubMethodArguments { get; }
     }
