@@ -11,6 +11,12 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+    public partial class SocketConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
+    {
+        public SocketConnectionFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
     public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
     {
         public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }

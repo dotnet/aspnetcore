@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
@@ -41,14 +43,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 async Task EchoServer(ConnectionContext connection)
                 {
-                    // For graceful shutdown
-                    var notificationFeature = connection.Features.Get<IConnectionLifetimeNotificationFeature>();
-
                     try
                     {
                         while (true)
                         {
-                            var result = await connection.Transport.Input.ReadAsync(notificationFeature.ConnectionClosedRequested);
+                            var result = await connection.Transport.Input.ReadAsync();
 
                             if (result.IsCompleted)
                             {
@@ -60,10 +59,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                             connection.Transport.Input.AdvanceTo(result.Buffer.End);
                         }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Logger.LogDebug("Graceful shutdown triggered for {connectionId}.", connection.ConnectionId);
                     }
                     finally
                     {
@@ -86,20 +81,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await host.StartAsync();
 
-                    using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+                    var factory = new SocketConnectionFactory(LoggerFactory);
+                    var endPoint = new UnixDomainSocketEndPoint(path);
+                    await using (var connection = await factory.ConnectAsync(endPoint))
                     {
-                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path));
-
                         var data = Encoding.ASCII.GetBytes("Hello World");
-                        await socket.SendAsync(data, SocketFlags.None);
+                        await connection.Transport.Output.WriteAsync(data);
 
-                        var buffer = new byte[data.Length];
-                        var read = 0;
-                        while (read < data.Length)
-                        {
-                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None);
-                        }
-
+                        var buffer = await connection.Transport.Input.ReadAsync(data.Length);
                         Assert.Equal(data, buffer);
                     }
 
