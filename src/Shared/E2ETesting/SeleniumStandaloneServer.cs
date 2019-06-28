@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             output = null;
             logOutput.CompleteAdding();
             var exitCodeString = process.HasExited ? process.ExitCode.ToString() : "Process has not yet exited.";
-            var message = @$"Failed to launch the server.
+            var message = $@"Failed to launch the server.
 ExitCode: {exitCodeString}
 Captured output lines:
 {string.Join(Environment.NewLine, logOutput.GetConsumingEnumerable())}.";
@@ -211,19 +211,20 @@ Captured output lines:
 
         private static void ProcessCleanup(Process process, string pidFilePath)
         {
-            if (process?.HasExited == false)
-            {
-                try
-                {
-                    process?.KillTree(TimeSpan.FromSeconds(10));
-                    process?.Dispose();
-                }
-                catch
-                {
-                }
-            }
             try
             {
+                if (process?.HasExited == false)
+                {
+                    try
+                    {
+                        process?.KillTree(TimeSpan.FromSeconds(10));
+                        process?.Dispose();
+                    }
+                    catch
+                    {
+                        // Ignore errors here since we can't do anything
+                    }
+                }
                 if (pidFilePath != null && File.Exists(pidFilePath))
                 {
                     File.Delete(pidFilePath);
@@ -231,6 +232,7 @@ Captured output lines:
             }
             catch
             {
+                // Ignore errors here since we can't do anything
             }
         }
 
