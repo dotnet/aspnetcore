@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -255,6 +256,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(filePath, item.FilePath);
             Assert.Equal("/", item.BasePath);
             Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
+            Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "This test does not makes sense for case sensitive Operating Systems.")]
+        public void GetItem_MismatchedCase_ReturnsFileFromDisk()
+        {
+            // Arrange
+            var filePath = "/Views/About/About.cshtml";
+            var lowerCaseTestFolder = TestFolder.ToLower();
+            var fileSystem = new DefaultRazorProjectFileSystem(lowerCaseTestFolder);
+
+            // Act
+            var item = fileSystem.GetItem(filePath, fileKind: null);
+
+            // Assert
+            Assert.True(item.Exists);
+            Assert.Equal(filePath, item.FilePath);
+            Assert.Equal("/", item.BasePath);
+            Assert.Equal(Path.Combine(lowerCaseTestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
             Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
         }
 

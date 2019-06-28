@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var absolutePath = NormalizeAndEnsureValidPath(path);
 
             var file = new FileInfo(absolutePath);
-            if (!absolutePath.StartsWith(absoluteBasePath))
+            if (!absolutePath.StartsWith(absoluteBasePath, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"The file '{absolutePath}' is not a descendent of the base path '{absoluteBasePath}'.");
             }
