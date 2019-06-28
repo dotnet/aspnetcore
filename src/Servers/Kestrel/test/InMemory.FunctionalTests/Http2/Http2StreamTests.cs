@@ -2128,9 +2128,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_Received_AbortsStream_FlushedHeadersNotSent()
+        public async Task RST_STREAM_Received_AbortsStream_StreamFlushedDataNotSent()
         {
-            await InitializeConnectionAsync(_waitForAbortFlushingApplication);
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+                var sem = new SemaphoreSlim(0);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamIdFeature.StreamId);
+                    }
+
+                    sem.Release();
+                });
+
+                await sem.WaitAsync().DefaultTimeout();
+
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+
+                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+            });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(1);
@@ -2141,9 +2161,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task RST_STREAM_Received_AbortsStream_FlushedDataNotSent()
+        public async Task RST_STREAM_Received_AbortsStream_PipeWriterFlushedDataNotSent()
         {
-            await InitializeConnectionAsync(_waitForAbortWithDataApplication);
+            await InitializeConnectionAsync(async context =>
+            {
+                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
+                var sem = new SemaphoreSlim(0);
+
+                context.RequestAborted.Register(() =>
+                {
+                    lock (_abortedStreamIdsLock)
+                    {
+                        _abortedStreamIds.Add(streamIdFeature.StreamId);
+                    }
+
+                    sem.Release();
+                });
+
+                await sem.WaitAsync().DefaultTimeout();
+
+                context.Response.BodyWriter.GetMemory();
+                context.Response.BodyWriter.Advance(10);
+                await context.Response.BodyWriter.FlushAsync();
+
+                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+            });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(1);
