@@ -63,7 +63,7 @@
   <String Id="Welcome">欢迎使用 [WixBundleName] 安装程序。</String>
   <String Id="InstallResetIIS">请在安装完成后重启 IIS。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
   <String Id="InstallNoIIS">此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;许可条件&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隐私声明&lt;/a&gt;。</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;许可条件&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隐私声明&lt;/a&gt;。</String>
   <String Id="ModifyResetIIS">请在安装完成后重启 IIS。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
   <String Id="ModifyNoIIS">此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;此处&lt;/a&gt;找到其他信息。</String>
 </WixLocalization>
