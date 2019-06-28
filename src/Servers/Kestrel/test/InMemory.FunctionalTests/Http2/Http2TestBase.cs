@@ -145,7 +145,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _largeHeadersApplication;
         protected readonly RequestDelegate _waitForAbortApplication;
         protected readonly RequestDelegate _waitForAbortFlushingApplication;
-        protected readonly RequestDelegate _waitForAbortWithDataApplication;
         protected readonly RequestDelegate _readRateApplication;
         protected readonly RequestDelegate _echoMethod;
         protected readonly RequestDelegate _echoHost;
@@ -318,28 +317,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await sem.WaitAsync().DefaultTimeout();
 
                 await context.Response.Body.FlushAsync();
-
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-            };
-
-            _waitForAbortWithDataApplication = async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-                var sem = new SemaphoreSlim(0);
-
-                context.RequestAborted.Register(() =>
-                {
-                    lock (_abortedStreamIdsLock)
-                    {
-                        _abortedStreamIds.Add(streamIdFeature.StreamId);
-                    }
-
-                    sem.Release();
-                });
-
-                await sem.WaitAsync().DefaultTimeout();
-
-                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
             };

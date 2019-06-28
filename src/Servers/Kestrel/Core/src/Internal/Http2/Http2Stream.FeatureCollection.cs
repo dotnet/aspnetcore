@@ -56,24 +56,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        async Task IHttpResponseCompletionFeature.CompleteAsync()
+        Task IHttpResponseCompletionFeature.CompleteAsync()
         {
-            // Finalize headers
-            if (!HasResponseStarted)
-            {
-                await FireOnStarting();
-            }
-
-            // Flush headers, body, trailers...
-            if (!HasResponseCompleted)
-            {
-                if (!VerifyResponseContentLength(out var lengthException))
-                {
-                    throw lengthException;
-                }
-
-                await ProduceEnd();
-            }
+            return CompleteAsync();
         }
 
         void IHttpResetFeature.Reset(int errorCode)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,14 +26,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // This should only be accessed via the FrameWriter. The connection-level output flow control is protected by the
         // FrameWriter's connection-level write lock.
         private readonly StreamOutputFlowControl _flowControl;
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly Http2Stream _stream;
         private readonly object _dataWriterLock = new object();
         private readonly Pipe _dataPipe;
         private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
+        private bool _suffixSent;
         private bool _streamEnded;
         private bool _disposed;
+
+        private IMemoryOwner<byte> _fakeMemoryOwner;
 
         public Http2OutputProducer(
             int streamId,
@@ -46,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _streamId = streamId;
             _frameWriter = frameWriter;
             _flowControl = flowControl;
+            _memoryPool = pool;
             _stream = stream;
             _log = log;
 
@@ -65,17 +71,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _disposed = true;
 
-                if (!_completed)
+                Stop();
+
+                if (_fakeMemoryOwner != null)
                 {
-                    _completed = true;
-
-                    // Complete with an exception to prevent an end of stream data frame from being sent without an
-                    // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
-                    // message doesn't matter
-                    _dataPipe.Writer.Complete(new OperationCanceledException());
+                    _fakeMemoryOwner.Dispose();
+                    _fakeMemoryOwner = null;
                 }
-
-                _frameWriter.AbortPendingStreamDataWrites(_flowControl);
             }
         }
 
@@ -84,7 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
-            Dispose();
         }
 
         public Task WriteChunkAsync(ReadOnlySpan<byte> span, CancellationToken cancellationToken)
@@ -101,6 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return default;
@@ -125,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return default;
@@ -177,6 +182,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
                 if (_completed || data.Length == 0)
@@ -197,10 +204,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (_completed)
                 {
-                    return default;
+                    return _dataWriteProcessingTask;
                 }
 
                 _completed = true;
+                _suffixSent = true;
 
                 _dataPipe.Writer.Complete();
                 return _dataWriteProcessingTask;
@@ -212,8 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_dataWriterLock)
             {
                 // Always send the reset even if the response body is _completed. The request body may not have completed yet.
-
-                Dispose();
+                Stop();
 
                 return _frameWriter.WriteRstStreamAsync(_streamId, error);
             }
@@ -223,6 +230,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
+                if (_completed)
+                {
+                    return;
+                }
+
                 _startedWritingDataFrames = true;
 
                 _dataPipe.Writer.Advance(bytes);
@@ -233,6 +247,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
+                if (_completed)
+                {
+                    return GetFakeMemory(sizeHint).Span;
+                }
+
                 return _dataPipe.Writer.GetSpan(sizeHint);
             }
         }
@@ -241,6 +262,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
+                if (_completed)
+                {
+                    return GetFakeMemory(sizeHint);
+                }
+
                 return _dataPipe.Writer.GetMemory(sizeHint);
             }
         }
@@ -249,6 +277,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                if (_completed)
+                {
+                    return;
+                }
+
                 _dataPipe.Writer.CancelPendingFlush();
             }
         }
@@ -262,6 +295,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
                 if (_completed || data.Length == 0)
@@ -296,9 +331,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new NotImplementedException();
         }
 
-        public void Complete()
+        public void Stop()
         {
-            // This will noop for now. See: https://github.com/aspnet/AspNetCore/issues/7370
+            lock (_dataWriterLock)
+            {
+                if (_completed)
+                {
+                    return;
+                }
+
+                _completed = true;
+
+                // Complete with an exception to prevent an end of stream data frame from being sent without an
+                // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
+                // message doesn't matter
+                _dataPipe.Writer.Complete(new OperationCanceledException());
+
+                _frameWriter.AbortPendingStreamDataWrites(_flowControl);
+            }
         }
 
         public void Reset()
@@ -358,6 +408,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _dataPipe.Reader.Complete();
 
             return flushResult;
+        }
+
+        private Memory<byte> GetFakeMemory(int sizeHint)
+        {
+            if (_fakeMemoryOwner == null)
+            {
+                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
+            }
+
+            return _fakeMemoryOwner.Memory;
+        }
+
+        [StackTraceHidden]
+        private void ThrowIfSuffixSent()
+        {
+            if (_suffixSent)
+            {
+                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+            }
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)
