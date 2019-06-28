@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Internal
 {
