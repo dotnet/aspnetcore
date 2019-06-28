@@ -3319,11 +3319,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
-            await ExpectAsync(Http2FrameType.RST_STREAM,
-                withLength: 4,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1);
-
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);

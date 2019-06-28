@@ -114,8 +114,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_suffixSent)
+                if (_suffixSent || !_autoChunk)
                 {
+                    _suffixSent = true;
                     return default;
                 }
 

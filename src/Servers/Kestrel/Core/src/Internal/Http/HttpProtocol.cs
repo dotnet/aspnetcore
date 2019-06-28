@@ -1019,6 +1019,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task ProduceEnd()
         {
+            if (HasResponseCompleted)
+            {
+                return Task.CompletedTask;
+            }
+
             if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
@@ -1052,16 +1057,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteSuffix()
         {
-            if (HasResponseCompleted)
-            {
-                return Task.CompletedTask;
-            }
-
-            // _autoChunk should be checked after we are sure ProduceStart() has been called
-            // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
             {
-                return WriteSuffixAwaited();
+                // For the same reason we call CheckLastWrite() in Content-Length responses.
+                PreventRequestAbortedCancellation();
+            }
+
+            var writeTask = Output.WriteStreamSuffixAsync();
+
+            if (!writeTask.IsCompletedSuccessfully)
+            {
+                return WriteSuffixAwaited(writeTask);
             }
 
             if (_keepAlive)
@@ -1074,23 +1080,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
 
-            if (!HasFlushedHeaders)
+            if (!_autoChunk && _httpVersion != Http.HttpVersion.Http2 && !HasFlushedHeaders)
             {
                 _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
                 return FlushAsyncInternal();
             }
 
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
             return Task.CompletedTask;
         }
 
-        private async Task WriteSuffixAwaited()
+        private async Task WriteSuffixAwaited(ValueTask<FlushResult> writeTask)
         {
-            // For the same reason we call CheckLastWrite() in Content-Length responses.
-            PreventRequestAbortedCancellation();
-
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
 
-            await Output.WriteStreamSuffixAsync();
+            await writeTask;
 
             _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
