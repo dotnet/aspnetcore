@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         Task IHttpResponseCompletionFeature.CompleteAsync()
         {
-            return CompleteAsync(null);
+            return CompleteAsync();
         }
 
         void IHttpResetFeature.Reset(int errorCode)

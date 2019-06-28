@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // and append the end terminator.
 
         private bool _autoChunk;
+        private bool _suffixSent;
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
@@ -66,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
         private bool _startCalled;
-        private bool _suffixSent;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -116,11 +116,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_suffixSent || !_autoChunk)
                 {
                     _suffixSent = true;
-                    return default;
+                    return FlushAsync();
                 }
 
                 _suffixSent = true;
-
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 return WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
             }
@@ -511,9 +510,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
+            _suffixSent = false;
             _currentChunkMemoryUpdated = false;
             _startCalled = false;
-            _suffixSent = false;
         }
 
         private ValueTask<FlushResult> WriteAsync(

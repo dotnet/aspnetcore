@@ -1070,6 +1070,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return WriteSuffixAwaited(writeTask);
             }
 
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
+
             if (_keepAlive)
             {
                 Log.ConnectionKeepAlive(ConnectionId);
@@ -1080,13 +1082,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
 
-            if (!_autoChunk && _httpVersion != Http.HttpVersion.Http2 && !HasFlushedHeaders)
-            {
-                _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
-                return FlushAsyncInternal();
-            }
-
-            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
             return Task.CompletedTask;
         }
 
@@ -1409,11 +1404,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public async Task CompleteAsync(Exception ex)
+        public async Task CompleteAsync(Exception exception = null)
         {
-            if (ex != null)
+            if (exception != null)
             {
-                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", ex);
+                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", exception);
                 ReportApplicationError(wrappedException);
 
                 if (HasResponseStarted)
