@@ -875,6 +875,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task WhenAppWritesLessThanContentLengthCompleteThrowsAndErrorLogged()
+        {
+            InvalidOperationException completeEx = null;
+
+            var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
+                .Callback<string, string, Exception>((connectionId, requestId, ex) =>
+                {
+                    logTcs.SetResult(null);
+                });
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 13;
+                await httpContext.Response.WriteAsync("hello, world");
+
+                completeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.Complete());
+
+            }, new TestServiceContext(LoggerFactory, mockTrace.Object)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    // Don't use ReceiveEnd here, otherwise the FIN might
+                    // abort the request before the server checks the
+                    // response content length, in which case the check
+                    // will be skipped.
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 13",
+                        "",
+                        "hello, world");
+
+                    // Wait for error message to be logged.
+                    await logTcs.Task.DefaultTimeout();
+
+                    // The server should close the connection in this situation.
+                    await connection.WaitForConnectionClose();
+                }
+            }
+
+            mockTrace.Verify(trace =>
+                trace.ApplicationError(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.Is<InvalidOperationException>(ex =>
+                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+
+            Assert.NotNull(completeEx);
+        }
+
+        [Fact]
         public async Task WhenAppWritesLessThanContentLengthButRequestIsAbortedErrorNotLogged()
         {
             var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

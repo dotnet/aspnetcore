@@ -3981,6 +3981,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task PipeWriterComplete_AfterBodyStarted_WithTrailers_TruncatedContentLength_ThrowsAndReset()
+        {
+            var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+
+            await InitializeConnectionAsync(async context =>
+            {
+                try
+                {
+                    context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
+
+                    context.Response.ContentLength = 25;
+                    await context.Response.WriteAsync("Hello World");
+                    Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
+                    Assert.True(context.Response.Headers.IsReadOnly);
+
+                    context.Response.AppendTrailer("CustomName", "Custom Value");
+
+                    var ex = Assert.Throws<InvalidOperationException>(() => context.Response.BodyWriter.Complete());
+                    Assert.Equal(CoreStrings.FormatTooFewBytesWritten(11, 25), ex.Message);
+
+                    Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
+
+                    // Make sure the client gets our results from CompleteAsync instead of from the request delegate exiting.
+                    await clientTcs.Task.DefaultTimeout();
+                    appTcs.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    appTcs.SetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 56,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+            var bodyFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)(Http2HeadersFrameFlags.NONE),
+                withStreamId: 1);
+
+            clientTcs.SetResult(0);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR,
+                expectedErrorMessage: CoreStrings.FormatTooFewBytesWritten(11, 25));
+
+            await appTcs.Task;
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("25", _decodedHeaders[HeaderNames.ContentLength]);
+
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(bodyFrame.Payload.Span));
+        }
+
+        [Fact]
         public async Task AbortAfterCompleteAsync_GETWithResponseBodyAndTrailers_ResetsAfterResponse()
         {
             var startingTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

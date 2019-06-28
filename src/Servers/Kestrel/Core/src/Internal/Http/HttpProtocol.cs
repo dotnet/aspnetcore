@@ -325,8 +325,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _responseStreamInternal = ResponseBody;
         }
 
-        public Task StopBodiesAsync() => _bodyControl.StopAsync();
-
         // For testing
         internal void ResetState()
         {
@@ -666,7 +664,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                await StopBodiesAsync();
+                try
+                {
+                    await _bodyControl.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
+                    // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
+                    // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
+                    ReportApplicationError(ex);
+                }
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
@@ -1404,7 +1412,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public async Task CompleteAsync(Exception exception = null)
+        public Task CompleteAsync(Exception exception = null)
         {
             if (exception != null)
             {
@@ -1420,10 +1428,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Finalize headers
             if (!HasResponseStarted)
             {
-                await FireOnStarting();
+                var onStartingTask = FireOnStarting();
+                if (!onStartingTask.IsCompletedSuccessfully)
+                {
+                    return CompleteAsyncAwaited(onStartingTask);
+                }
             }
 
             // Flush headers, body, trailers...
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    // Try to throw this exception from CompleteAsync() instead of CompleteAsyncAwaited() if possible,
+                    // so it can be observed by BodyWriter.Complete(). If this isn't possible because an
+                    // async OnStarting callback hadn't yet run, it's OK, since the Exception will be observed with
+                    // the call to _bodyControl.StopAsync() in ProcessRequests().
+                    throw lengthException;
+                }
+
+                return ProduceEnd();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task CompleteAsyncAwaited(Task onStartingTask)
+        {
+            await onStartingTask;
+
             if (!HasResponseCompleted)
             {
                 if (!VerifyResponseContentLength(out var lengthException))
