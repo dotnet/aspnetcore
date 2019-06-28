@@ -10,8 +10,8 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <summary>
         /// Sets an absolute expiration time, relative to now.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="relative"></param>
+        /// <param name="options">The options to be operated on.</param>
+        /// <param name="relative">The expiration time, relative to now.</param>
         public static DistributedCacheEntryOptions SetAbsoluteExpiration(
             this DistributedCacheEntryOptions options,
             TimeSpan relative)
@@ -23,8 +23,8 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <summary>
         /// Sets an absolute expiration date for the cache entry.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="absolute"></param>
+        /// <param name="options">The options to be operated on.</param>
+        /// <param name="absolute">The expiration time, in absolute terms.</param>
         public static DistributedCacheEntryOptions SetAbsoluteExpiration(
             this DistributedCacheEntryOptions options,
             DateTimeOffset absolute)
@@ -37,8 +37,8 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// Sets how long the cache entry can be inactive (e.g. not accessed) before it will be removed.
         /// This will not extend the entry lifetime beyond the absolute expiration (if set).
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="offset"></param>
+        /// <param name="options">The options to be operated on.</param>
+        /// <param name="offset">The sliding expiration time.</param>
         public static DistributedCacheEntryOptions SetSlidingExpiration(
             this DistributedCacheEntryOptions options,
             TimeSpan offset)

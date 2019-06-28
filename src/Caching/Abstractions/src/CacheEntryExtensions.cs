@@ -11,8 +11,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets the priority for keeping the cache entry in the cache during a memory pressure tokened cleanup.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="priority"></param>
+        /// <param name="entry">The entry to set the priority for.</param>
+        /// <param name="priority">The <see cref="CacheItemPriority"/> to set on the entry.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetPriority(
             this ICacheEntry entry,
             CacheItemPriority priority)
@@ -26,6 +27,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
         /// <param name="expirationToken">The <see cref="IChangeToken"/> that causes the cache entry to expire.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry AddExpirationToken(
             this ICacheEntry entry,
             IChangeToken expirationToken)
@@ -42,8 +44,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets an absolute expiration time, relative to now.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="relative"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="relative">The <see cref="TimeSpan"/> representing the expiration time relative to now.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetAbsoluteExpiration(
             this ICacheEntry entry,
             TimeSpan relative)
@@ -55,8 +58,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets an absolute expiration date for the cache entry.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="absolute"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="absolute">A <see cref="DateTimeOffset"/> representing the expiration time in absolute terms.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetAbsoluteExpiration(
             this ICacheEntry entry,
             DateTimeOffset absolute)
@@ -69,8 +73,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// Sets how long the cache entry can be inactive (e.g. not accessed) before it will be removed.
         /// This will not extend the entry lifetime beyond the absolute expiration (if set).
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="offset"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="offset">A <see cref="TimeSpan"/> representing a sliding expiration.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetSlidingExpiration(
             this ICacheEntry entry,
             TimeSpan offset)
@@ -82,8 +87,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// The given callback will be fired after the cache entry is evicted from the cache.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="callback"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="callback">The callback to run after the entry is evicted.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry RegisterPostEvictionCallback(
             this ICacheEntry entry,
             PostEvictionDelegate callback)
@@ -99,9 +105,10 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// The given callback will be fired after the cache entry is evicted from the cache.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="callback"></param>
-        /// <param name="state"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="callback">The callback to run after the entry is evicted.</param>
+        /// <param name="state">The state to pass to the post-eviction callback.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry RegisterPostEvictionCallback(
             this ICacheEntry entry,
             PostEvictionDelegate callback,
@@ -123,8 +130,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets the value of the cache entry.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="value"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="value">The value to set on the <paramref name="entry"/>.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetValue(
             this ICacheEntry entry,
             object value)
@@ -136,8 +144,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets the size of the cache entry value.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="size"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="size">The size to set on the <paramref name="entry"/>.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetSize(
             this ICacheEntry entry,
             long size)
@@ -154,8 +163,9 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Applies the values of an existing <see cref="MemoryCacheEntryOptions"/> to the entry.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="options"></param>
+        /// <param name="entry">The <see cref="ICacheEntry"/>.</param>
+        /// <param name="options">Set the values of these options on the <paramref name="entry"/>.</param>
+        /// <returns>The <see cref="ICacheEntry"/> for chaining.</returns>
         public static ICacheEntry SetOptions(this ICacheEntry entry, MemoryCacheEntryOptions options)
         {
             if (options == null)

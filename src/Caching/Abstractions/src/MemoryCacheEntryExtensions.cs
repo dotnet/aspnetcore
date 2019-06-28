@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Sets the size of the cache entry value.
         /// </summary>
-        /// <param name="options">The option to set the size of.</param>
+        /// <param name="options">The options to set the entry size on.</param>
         /// <param name="size">The size to set on the <see cref="MemoryCacheEntryOptions"/>.</param>
         /// <returns>The <see cref="MemoryCacheEntryOptions"/> so that additional calls can be chained.</returns>
         public static MemoryCacheEntryOptions SetSize(
