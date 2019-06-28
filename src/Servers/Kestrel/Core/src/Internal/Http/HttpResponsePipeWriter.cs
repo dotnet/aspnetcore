@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void Complete(Exception exception = null)
         {
             ValidateState();
-            _pipeControl.Complete(exception);
+            _ = _pipeControl.CompleteAsync(exception);
         }
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)

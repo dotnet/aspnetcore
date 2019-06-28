@@ -1405,7 +1405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public void Complete(Exception ex)
+        public async Task CompleteAsync(Exception ex)
         {
             if (ex != null)
             {
@@ -1418,7 +1418,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            Output.Complete();
+            // Finalize headers
+            if (!HasResponseStarted)
+            {
+                await FireOnStarting();
+            }
+
+            // Flush headers, body, trailers...
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    throw lengthException;
+                }
+
+                await ProduceEnd();
+            }
         }
 
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

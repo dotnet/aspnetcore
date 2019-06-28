@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
+        private bool _suffixSent;
         private bool _streamEnded;
         private bool _disposed;
 
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _disposed = true;
 
-                Complete();
+                Stop();
 
                 if (_fakeMemoryOwner != null)
                 {
@@ -84,7 +86,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
-            Complete();
         }
 
         public Task WriteChunkAsync(ReadOnlySpan<byte> span, CancellationToken cancellationToken)
@@ -101,6 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return default;
@@ -125,6 +128,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return default;
@@ -177,6 +182,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
                 if (_completed || data.Length == 0)
@@ -197,10 +204,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (_completed)
                 {
-                    return default;
+                    return _dataWriteProcessingTask;
                 }
 
                 _completed = true;
+                _suffixSent = true;
 
                 _dataPipe.Writer.Complete();
                 return _dataWriteProcessingTask;
@@ -212,8 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_dataWriterLock)
             {
                 // Always send the reset even if the response body is _completed. The request body may not have completed yet.
-
-                Complete();
+                Stop();
 
                 return _frameWriter.WriteRstStreamAsync(_streamId, error);
             }
@@ -223,6 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return;
@@ -238,6 +247,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return GetFakeMemory(sizeHint).Span;
@@ -251,6 +262,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_completed)
                 {
                     return GetFakeMemory(sizeHint);
@@ -282,6 +295,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             lock (_dataWriterLock)
             {
+                ThrowIfSuffixSent();
+
                 // This length check is important because we don't want to set _startedWritingDataFrames unless a data
                 // frame will actually be written causing the headers to be flushed.
                 if (_completed || data.Length == 0)
@@ -316,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new NotImplementedException();
         }
 
-        public void Complete()
+        public void Stop()
         {
             // This needs to be further thought out. See: https://github.com/aspnet/AspNetCore/issues/7370
 
@@ -403,6 +418,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             return _fakeMemoryOwner.Memory;
+        }
+
+        [StackTraceHidden]
+        private void ThrowIfSuffixSent()
+        {
+            if (_suffixSent)
+            {
+                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+            }
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)

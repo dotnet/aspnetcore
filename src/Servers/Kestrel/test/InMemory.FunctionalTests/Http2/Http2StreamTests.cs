@@ -3263,8 +3263,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoNotThrow()
+        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoesThrow()
         {
+            InvalidOperationException writeEx = null;
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -3274,29 +3275,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 context.Response.BodyWriter.Complete();
-                await context.Response.WriteAsync("");
+                writeEx = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.WriteAsync(""));
             });
 
             await StartStreamAsync(1, headers, endStream: true);
 
             // Don't receive content length because we called WriteAsync which caused an invalid response
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 37,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS | (byte)Http2HeadersFrameFlags.END_STREAM,
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
-            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.NotNull(writeEx);
         }
 
         [Fact]
@@ -3320,6 +3317,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.RST_STREAM,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
