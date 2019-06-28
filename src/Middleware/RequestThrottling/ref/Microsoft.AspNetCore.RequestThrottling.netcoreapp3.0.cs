@@ -10,15 +10,9 @@ namespace Microsoft.AspNetCore.Builder
 }
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    public partial interface IQueuePolicy
-    {
-        void OnExit();
-        System.Threading.Tasks.Task<bool> TryEnterAsync();
-    }
     public partial class RequestThrottlingMiddleware
     {
-        public RequestThrottlingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.RequestThrottling.IQueuePolicy queue, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RequestThrottling.RequestThrottlingOptions> options) { }
-        public int QueuedRequestCount { get { throw null; } }
+        public RequestThrottlingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.RequestThrottling.QueuePolicies.IQueuePolicy queue, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.RequestThrottling.RequestThrottlingOptions> options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
@@ -30,6 +24,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
 }
 namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
 {
+    public partial interface IQueuePolicy
+    {
+        void OnExit();
+        System.Threading.Tasks.Task<bool> TryEnterAsync();
+    }
     public partial class QueuePolicyOptions
     {
         public QueuePolicyOptions() { }
