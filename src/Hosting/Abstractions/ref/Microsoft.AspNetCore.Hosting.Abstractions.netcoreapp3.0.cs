@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string ServerUrlsKey;
         public static readonly string ShutdownTimeoutKey;
         public static readonly string StartupAssemblyKey;
+        public static readonly string StaticWebAssetsKey;
         public static readonly string SuppressStatusMessagesKey;
         public static readonly string WebRootKey;
     }

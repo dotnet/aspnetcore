@@ -17,7 +17,12 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 {
     internal class Startup
     {
-        public static string ApplicationAssembly { get; set; }
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -35,7 +40,7 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IConfiguration configuration)
         {
-            var applicationAssemblyFullPath = ResolveApplicationAssemblyFullPath(environment);
+            var applicationAssemblyFullPath = ResolveApplicationAssemblyFullPath();
 
             app.UseDeveloperExceptionPage();
             app.UseResponseCompression();
@@ -54,15 +59,22 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
             });
         }
 
-        private static string ResolveApplicationAssemblyFullPath(IWebHostEnvironment environment)
+        private string ResolveApplicationAssemblyFullPath()
         {
-            var applicationAssemblyFullPath = Path.Combine(environment.ContentRootPath, ApplicationAssembly);
-            if (!File.Exists(applicationAssemblyFullPath))
+            const string applicationPathKey = "applicationpath";
+            var configuredApplicationPath = Configuration.GetValue<string>(applicationPathKey);
+            if (string.IsNullOrEmpty(configuredApplicationPath))
             {
-                throw new InvalidOperationException($"Application assembly not found at {applicationAssemblyFullPath}.");
+                throw new InvalidOperationException($"No value was supplied for the required option '{applicationPathKey}'.");
             }
 
-            return applicationAssemblyFullPath;
+            var resolvedApplicationPath = Path.GetFullPath(configuredApplicationPath);
+            if (!File.Exists(resolvedApplicationPath))
+            {
+                throw new InvalidOperationException($"Application assembly not found at {resolvedApplicationPath}.");
+            }
+
+            return resolvedApplicationPath;
         }
 
         private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)
