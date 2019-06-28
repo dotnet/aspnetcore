@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
         /// </summary>
-        /// <param name="context">Context for the active hub connection and caller.</param>
-        /// <param name="hubMethodName">The name of the hub method being invoked.</param>
+        /// <param name="context">Context for the active Hub connection and caller.</param>
+        /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
         public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
         {
@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         /// <summary>
-        /// Gets the context for the active hub connection and caller.
+        /// Gets the context for the active Hub connection and caller.
         /// </summary>
         public HubCallerContext Context { get; }
 
         /// <summary>
-        /// Gets the name of the hub method being invoked.
+        /// Gets the name of the Hub method being invoked.
         /// </summary>
         public string HubMethodName { get; }
 
