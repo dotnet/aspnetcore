@@ -335,17 +335,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                if (!_completed)
+                if (_completed)
                 {
-                    _completed = true;
-
-                    // Complete with an exception to prevent an end of stream data frame from being sent without an
-                    // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
-                    // message doesn't matter
-                    _dataPipe.Writer.Complete(new OperationCanceledException());
-
-                    _frameWriter.AbortPendingStreamDataWrites(_flowControl);
+                    return;
                 }
+
+                _completed = true;
+
+                // Complete with an exception to prevent an end of stream data frame from being sent without an
+                // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
+                // message doesn't matter
+                _dataPipe.Writer.Complete(new OperationCanceledException());
+
+                _frameWriter.AbortPendingStreamDataWrites(_flowControl);
             }
         }
 
