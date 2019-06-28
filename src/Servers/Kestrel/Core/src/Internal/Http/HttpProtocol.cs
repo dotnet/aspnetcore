@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
-        protected BodyControl bodyControl;
+        protected BodyControl _bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -315,17 +315,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void InitializeBodyControl(MessageBody messageBody)
         {
-            if (bodyControl == null)
+            if (_bodyControl == null)
             {
-                bodyControl = new BodyControl(bodyControl: this, this);
+                _bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = bodyControl.Start(messageBody);
+            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = _bodyControl.Start(messageBody);
             _requestStreamInternal = RequestBody;
             _responseStreamInternal = ResponseBody;
         }
 
-        public void StopBodies() => bodyControl.Stop();
+        public Task StopBodiesAsync() => _bodyControl.StopAsync();
 
         // For testing
         internal void ResetState()
@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            bodyControl?.Abort(abortReason);
+            _bodyControl?.Abort(abortReason);
         }
 
         // Prevents the RequestAborted token from firing for the duration of the request.
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                StopBodies();
+                await StopBodiesAsync();
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
