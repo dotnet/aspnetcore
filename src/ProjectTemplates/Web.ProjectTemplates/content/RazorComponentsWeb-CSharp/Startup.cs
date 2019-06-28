@@ -36,6 +36,9 @@ using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
+#if (IndividualLocalAuth)
+using RazorComponentsWeb_CSharp.Areas.Identity;
+#endif
 using RazorComponentsWeb_CSharp.Data;
 
 namespace RazorComponentsWeb_CSharp
@@ -64,6 +67,8 @@ namespace RazorComponentsWeb_CSharp
 #endif
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));

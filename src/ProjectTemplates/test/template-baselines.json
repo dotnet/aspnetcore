@@ -894,6 +894,7 @@
         "_Imports.razor",
         "Areas/Identity/Pages/Account/LogOut.cshtml",
         "Areas/Identity/Pages/Shared/_LoginPartial.cshtml",
+        "Areas/Identity/RevalidatingAuthenticationStateProvider.cs",
         "Data/ApplicationDbContext.cs",
         "Data/WeatherForecast.cs",
         "Data/WeatherForecastService.cs",
