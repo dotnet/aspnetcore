@@ -10,9 +10,9 @@ namespace Microsoft.Extensions.ObjectPool
     public abstract class ObjectPool<T> where T : class
     {
         /// <summary>
-        /// Returns an object from the pool.
+        /// Gets an object from the pool is one is available, otherwise creates one.
         /// </summary>
-        /// <returns>An object from the pool.</returns>
+        /// <returns>A <typeparamref name="T"/>.</returns>
         public abstract T Get();
 
         /// <summary>
