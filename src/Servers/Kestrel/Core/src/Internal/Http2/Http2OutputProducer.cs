@@ -333,8 +333,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Stop()
         {
-            // This needs to be further thought out. See: https://github.com/aspnet/AspNetCore/issues/7370
-
             lock (_dataWriterLock)
             {
                 if (!_completed)
