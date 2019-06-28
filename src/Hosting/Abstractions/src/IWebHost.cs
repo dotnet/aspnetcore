@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Attempt to gracefully stop the host.
         /// </summary>
-        /// <param name="cancellationToken">Used to indicate when stop should no longer be graceful.</param>
-        /// <returns>A <see cref="Task"/> that completes when the <see cref="IWebHost"/> stops.</returns>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task StopAsync(CancellationToken cancellationToken = default);
     }
 }

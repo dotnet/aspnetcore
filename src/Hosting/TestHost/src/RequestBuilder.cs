@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// Configure any HttpRequestMessage properties.
         /// </summary>
         /// <param name="configure"></param>
-        /// <returns>This <see cref="RequestBuilder"/> for chaining.</returns>
+        /// <returns></returns>
         public RequestBuilder And(Action<HttpRequestMessage> configure)
         {
             if (configure == null)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        /// <returns>This <see cref="RequestBuilder"/> for chaining.</returns>
+        /// <returns></returns>
         public RequestBuilder AddHeader(string name, string value)
         {
             if (!_req.Headers.TryAddWithoutValidation(name, value))
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// Set the request method and start processing the request.
         /// </summary>
         /// <param name="method"></param>
-        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
+        /// <returns></returns>
         public Task<HttpResponseMessage> SendAsync(string method)
         {
             _req.Method = new HttpMethod(method);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// <summary>
         /// Set the request method to GET and start processing the request.
         /// </summary>
-        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
+        /// <returns></returns>
         public Task<HttpResponseMessage> GetAsync()
         {
             _req.Method = HttpMethod.Get;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// <summary>
         /// Set the request method to POST and start processing the request.
         /// </summary>
-        /// <returns>The resulting <see cref="HttpResponseMessage"/>.</returns>
+        /// <returns></returns>
         public Task<HttpResponseMessage> PostAsync()
         {
             _req.Method = HttpMethod.Post;

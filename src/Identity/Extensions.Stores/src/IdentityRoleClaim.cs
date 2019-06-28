@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Constructs a new claim with the type and value.
         /// </summary>
-        /// <returns>The <see cref="Claim"/> that was produced.</returns>
+        /// <returns></returns>
         public virtual Claim ToClaim()
         {
             return new Claim(ClaimType, ClaimValue);

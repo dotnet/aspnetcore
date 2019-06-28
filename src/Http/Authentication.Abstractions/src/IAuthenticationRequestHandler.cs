@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns true if request processing should stop.
         /// </summary>
-        /// <returns><code>true</code> if request processing should stop.</returns>
+        /// <returns></returns>
         Task<bool> HandleRequestAsync();
     }
 

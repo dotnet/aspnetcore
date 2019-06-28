@@ -11,9 +11,6 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AuthenticateResult
     {
-        /// <summary>
-        /// Creates a new <see cref="AuthenticateResult"/> instance.
-        /// </summary>
         protected AuthenticateResult() { }
 
         /// <summary>

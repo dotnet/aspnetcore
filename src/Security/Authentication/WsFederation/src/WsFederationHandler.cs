@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         /// <summary>
         /// Overridden to handle remote signout requests
         /// </summary>
-        /// <returns><code>true</code> if request processing should stop.</returns>
+        /// <returns></returns>
         public override Task<bool> HandleRequestAsync()
         {
             // RemoteSignOutPath and CallbackPath may be the same, fall through if the message doesn't match.
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
               && Request.Body.CanRead)
             {
                 var form = await Request.ReadFormAsync();
-
+    
                 wsFederationMessage = new WsFederationMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
 
                 return HandleRequestResult.Fail("No message.");
             }
-
+            
             try
             {
                 // Retrieve our cached redirect uri
