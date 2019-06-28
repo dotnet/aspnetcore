@@ -3426,12 +3426,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoNotThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoesThrow()
         {
+            InvalidOperationException writeEx = null;
+
             await using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.BodyWriter.Complete();
-                await httpContext.Response.WriteAsync("test");
+                writeEx = await Assert.ThrowsAsync<InvalidOperationException>(() => httpContext.Response.WriteAsync("test"));
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3441,16 +3443,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
+
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "0",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
             }
+
+            Assert.NotNull(writeEx);
         }
 
         [Fact]
@@ -3819,19 +3822,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow()
+        public async Task ResponseCompleteGetMemoryDoesThrow()
         {
-            await using (var server = new TestServer(async httpContext =>
+            InvalidOperationException writeEx = null;
+
+            await using (var server = new TestServer(httpContext =>
             {
-
                 httpContext.Response.BodyWriter.Complete();
-                for (var i = 0; i < 5; i++)
-                {
-                    var memory = httpContext.Response.BodyWriter.GetMemory(); // Shouldn't throw
-                    httpContext.Response.BodyWriter.Advance(memory.Length);
-                }
 
-                await Task.CompletedTask;
+                writeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.GetMemory());
+  
+                return Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3844,13 +3845,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "0",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
             }
+
+            Assert.NotNull(writeEx);
         }
 
         [Fact]
