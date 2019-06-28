@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             process.BeginErrorReadLine();
 
             // The Selenium sever has to be up for the entirety of the tests and is only shutdown when the application (i.e. the test) exits.
-            AppDomain.CurrentDomain.ProcessExit += (sender, args) => ProcessCleanup(process, pidFilePath);
+            // AppDomain.CurrentDomain.ProcessExit += (sender, args) => ProcessCleanup(process, pidFilePath);
 
             // Log
             void LogOutput(object sender, DataReceivedEventArgs e)
