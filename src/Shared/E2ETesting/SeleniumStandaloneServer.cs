@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static IMessageSink _diagnosticsMessageSink;
 
         // 1h 30 min
-        private static int SeleniumProcessTimeout = 5400;
+        private static int SeleniumProcessTimeout = 3600;
 
         public SeleniumStandaloneServer(IMessageSink diagnosticsMessageSink)
         {
@@ -64,13 +64,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public static async Task<SeleniumStandaloneServer> GetInstanceAsync(ITestOutputHelper output)
         {
-            await _semaphore.WaitAsync();
             try
             {
-                if (Instance == null)
-                {
-
-                }
+                await _semaphore.WaitAsync();
                 if (Instance._process == null)
                 {
                     // No process was started, meaning the instance wasn't initialized.
