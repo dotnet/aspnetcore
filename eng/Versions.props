@@ -146,13 +146,13 @@
     <MicrosoftJSInteropPackageVersion>3.0.0-preview7.19328.1</MicrosoftJSInteropPackageVersion>
     <MonoWebAssemblyInteropPackageVersion>3.0.0-preview7.19328.1</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
-    <dotnetefPackageVersion>3.0.0-preview7.19328.5</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview7.19328.5</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>3.0.0-preview7.19328.6</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview7.19328.6</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview7.19328.6</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview7.19328.6</MicrosoftAspNetCoreRazorLanguagePackageVersion>
