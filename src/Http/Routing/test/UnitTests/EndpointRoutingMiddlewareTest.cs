@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var expectedMessage = "Request matched endpoint 'Test endpoint'";
-            bool eventFired = true;
+            bool eventFired = false;
 
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<EndpointRoutingMiddleware>,
