@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
     internal sealed class RequestThrottlingEventSource : EventSource
     {
         public static readonly RequestThrottlingEventSource Log = new RequestThrottlingEventSource();
-        private static QueueFrame CachedNonTimerResult = new QueueFrame(null, Log);
+        private static readonly QueueFrame CachedNonTimerResult = new QueueFrame(null, Log);
 
         private PollingCounter _rejectedRequestsCounter;
         private PollingCounter _queueLengthCounter;
