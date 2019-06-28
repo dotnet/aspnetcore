@@ -36,13 +36,13 @@ namespace Company.WebApplication1
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+#endif
 
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -53,7 +53,21 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc(options => options.EnableEndpointRouting = false);
+
+#if (OrganizationalAuth)
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+#else
+            services.AddControllersWithViews();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+            services.AddRazorPages();
+#endif
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -87,11 +101,14 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-#if (IndividualLocalAuth)
 
+            app.UseRouting();
+
+#if (IndividualLocalAuth)
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

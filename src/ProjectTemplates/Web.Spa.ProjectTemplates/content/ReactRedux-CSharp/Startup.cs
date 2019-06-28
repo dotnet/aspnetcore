@@ -23,7 +23,20 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options => options.EnableEndpointRouting = false);
+#if (OrganizationalAuth)
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+#else
+            services.AddControllersWithViews();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+            services.AddRazorPages();
+#endif
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -54,6 +67,14 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseRouting();
+
+#if (IndividualLocalAuth)
+            app.UseAuthentication();
+            app.UseIdentityServer();
+#endif
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

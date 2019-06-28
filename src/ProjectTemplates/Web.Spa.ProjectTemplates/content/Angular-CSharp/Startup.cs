@@ -53,8 +53,20 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc(options => options.EnableEndpointRouting = false);
-
+#if (OrganizationalAuth)
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+#else
+            services.AddControllersWithViews();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+            services.AddRazorPages();
+#endif
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -87,11 +99,15 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-#if (IndividualLocalAuth)
 
+            app.UseRouting();
+
+#if (IndividualLocalAuth)
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
