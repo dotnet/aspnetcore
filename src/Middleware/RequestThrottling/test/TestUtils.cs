@@ -69,31 +69,31 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         }
     }
 
-    internal class TestPolicy : IQueuePolicy
+    internal class TestQueue : IQueuePolicy
     {
-        private Func<TestPolicy, Task<bool>> _invoke { get; }
+        private Func<TestQueue, Task<bool>> _onTryEnter { get; }
         private Action _onExit { get; }
 
         private int _queuedRequests;
         public int QueuedRequests { get => _queuedRequests; }
 
-        public TestPolicy(Func<TestPolicy, Task<bool>> invoke, Action onExit = null)
+        public TestQueue(Func<TestQueue, Task<bool>> onTryEnter, Action onExit = null)
         {
-            _invoke = invoke;
+            _onTryEnter = onTryEnter;
             _onExit = onExit ?? (() => { });
         }
 
-        public TestPolicy(Func<TestPolicy, bool> invoke, Action onExit = null) :
+        public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null) :
             this(async (state) =>
            {
                await Task.CompletedTask;
-               return invoke(state);
+               return onTryEnter(state);
            }, onExit) { }
  
         public async Task<bool> TryEnterAsync()
         {
             Interlocked.Increment(ref _queuedRequests);
-            var result = await _invoke(this);
+            var result = await _onTryEnter(this);
             Interlocked.Decrement(ref _queuedRequests);
             return result;
         }
@@ -103,14 +103,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             _onExit();
         }
 
-        public static TestPolicy AlwaysReject =
-            new TestPolicy((_) => false);
+        public static TestQueue AlwaysFalse =
+            new TestQueue((_) => false);
 
-        public static TestPolicy AlwaysPass =
-            new TestPolicy((_) => true);
+        public static TestQueue AlwaysTrue =
+            new TestQueue((_) => true);
 
-        public static TestPolicy AlwaysBlock =
-            new TestPolicy(async (_) =>
+        public static TestQueue AlwaysBlock =
+            new TestQueue(async (_) =>
             {
                 await new SemaphoreSlim(0).WaitAsync();
                 return false;
