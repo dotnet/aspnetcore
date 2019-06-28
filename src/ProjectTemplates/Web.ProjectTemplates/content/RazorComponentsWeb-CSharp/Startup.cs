@@ -67,8 +67,6 @@ namespace RazorComponentsWeb_CSharp
 #endif
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
@@ -127,6 +125,9 @@ namespace RazorComponentsWeb_CSharp
 #endif
             services.AddRazorPages();
             services.AddServerSideBlazor();
+#if (IndividualLocalAuth)
+            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+#endif
             services.AddSingleton<WeatherForecastService>();
         }
 

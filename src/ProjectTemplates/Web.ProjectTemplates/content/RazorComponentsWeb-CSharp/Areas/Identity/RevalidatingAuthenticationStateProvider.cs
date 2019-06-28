@@ -64,7 +64,7 @@ namespace RazorComponentsWeb_CSharp.Areas.Identity
                 {
                     // Force sign-out. Also stop the revalidation loop, because the user can
                     // only sign back in by starting a new connection.
-                    var anonymousUser = new ClaimsPrincipal();
+                    var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
                     _currentAuthenticationStateTask = Task.FromResult(new AuthenticationState(anonymousUser));
                     NotifyAuthenticationStateChanged(_currentAuthenticationStateTask);
                     _loopCancellationTokenSource.Cancel();
