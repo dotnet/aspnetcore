@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +14,12 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal sealed class EndpointRoutingMiddleware
     {
+        private const string DiagnosticsRouteMatchedKey = "Microsoft.AspNetCore.Routing.RouteMatched";
+
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
         private readonly EndpointDataSource _endpointDataSource;
+        private readonly DiagnosticListener _diagnosticListener;
         private readonly RequestDelegate _next;
 
         private Task<Matcher> _initializationTask;
@@ -24,6 +28,7 @@ namespace Microsoft.AspNetCore.Routing
             MatcherFactory matcherFactory,
             ILogger<EndpointRoutingMiddleware> logger,
             IEndpointRouteBuilder endpointRouteBuilder,
+            DiagnosticListener diagnosticListener,
             RequestDelegate next)
         {
             if (matcherFactory == null)
@@ -48,6 +53,7 @@ namespace Microsoft.AspNetCore.Routing
 
             _matcherFactory = matcherFactory;
             _logger = logger;
+            _diagnosticListener = diagnosticListener;
             _next = next;
 
             _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
@@ -106,6 +112,13 @@ namespace Microsoft.AspNetCore.Routing
             }
             else
             {
+                // Raise an event if the route matched
+                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(DiagnosticsRouteMatchedKey))
+                {
+                    // We're just going to send the HttpContext since it has all of the relevant information
+                    _diagnosticListener.Write(DiagnosticsRouteMatchedKey, httpContext);
+                }
+
                 Log.MatchSuccess(_logger, endpoint);
             }
 
