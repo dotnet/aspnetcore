@@ -67,11 +67,11 @@ namespace Microsoft.AspNetCore.Routing
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var listener = new DiagnosticListener("TestListener");
 
-            listener.Subscribe(new DelegateObserver(pair =>
+            using var subscription = listener.Subscribe(new DelegateObserver(pair =>
             {
                 eventFired = true;
 
-                Assert.Equal("Microsoft.AspNetCore.Routing.RouteMatched", pair.Key);
+                Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMatched", pair.Key);
                 Assert.IsAssignableFrom<HttpContext>(pair.Value);
             }));
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Routing
             next ??= c => Task.CompletedTask;
             logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
             matcherFactory ??= new TestMatcherFactory(true);
-            listener ??= new DiagnosticListener("Microsoft.AspNet");
+            listener ??= new DiagnosticListener("Microsoft.AspNetCore");
 
             var middleware = new EndpointRoutingMiddleware(
                 matcherFactory,
@@ -194,18 +194,18 @@ namespace Microsoft.AspNetCore.Routing
         {
             private readonly Action<KeyValuePair<string, object>> _onNext;
 
-            public DelegateObserver(Action<KeyValuePair<string,object>> onNext)
+            public DelegateObserver(Action<KeyValuePair<string, object>> onNext)
             {
                 _onNext = onNext;
             }
             public void OnCompleted()
             {
-                
+
             }
 
             public void OnError(Exception error)
             {
-                
+
             }
 
             public void OnNext(KeyValuePair<string, object> value)

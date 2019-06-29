@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal sealed class EndpointRoutingMiddleware
     {
-        private const string DiagnosticsRouteMatchedKey = "Microsoft.AspNetCore.Routing.RouteMatched";
+        private const string DiagnosticsEndpointMatchedKey = "Microsoft.AspNetCore.Routing.EndpointMatched";
 
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
@@ -31,30 +31,15 @@ namespace Microsoft.AspNetCore.Routing
             DiagnosticListener diagnosticListener,
             RequestDelegate next)
         {
-            if (matcherFactory == null)
-            {
-                throw new ArgumentNullException(nameof(matcherFactory));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (endpointRouteBuilder == null)
             {
                 throw new ArgumentNullException(nameof(endpointRouteBuilder));
             }
 
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            _matcherFactory = matcherFactory;
-            _logger = logger;
-            _diagnosticListener = diagnosticListener;
-            _next = next;
+            _matcherFactory = matcherFactory ?? throw new ArgumentNullException(nameof(matcherFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
+            _next = next ?? throw new ArgumentNullException(nameof(next));
 
             _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
         }
@@ -113,10 +98,10 @@ namespace Microsoft.AspNetCore.Routing
             else
             {
                 // Raise an event if the route matched
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(DiagnosticsRouteMatchedKey))
+                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(DiagnosticsEndpointMatchedKey))
                 {
                     // We're just going to send the HttpContext since it has all of the relevant information
-                    _diagnosticListener.Write(DiagnosticsRouteMatchedKey, httpContext);
+                    _diagnosticListener.Write(DiagnosticsEndpointMatchedKey, httpContext);
                 }
 
                 Log.MatchSuccess(_logger, endpoint);
