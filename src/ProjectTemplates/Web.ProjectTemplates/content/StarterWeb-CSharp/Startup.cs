@@ -120,9 +120,8 @@ namespace Company.WebApplication1
 #else
             services.AddControllersWithViews();
 #endif
-
-#if (Auth)
-            services.AddRazorPages();
+#if (OrganizationalAuth || IndividualAuth)
+           services.AddRazorPages();
 #endif
         }
 
@@ -143,11 +142,9 @@ namespace Company.WebApplication1
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
 #else
             }
-
 #endif
             app.UseStaticFiles();
 
@@ -163,8 +160,7 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-#if (Auth)
+#if (OrganizationalAuth || IndividualAuth)
                 endpoints.MapRazorPages();
 #endif
             });
