@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // we want to serialize all the properties on the derived type. This keeps parity with
                 // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
                 var objectType = context.Object?.GetType() ?? context.ObjectType;
-                await JsonSerializer.WriteAsync(writeStream, context.Object, objectType, SerializerOptions);
+                await JsonSerializer.SerializeAsync(writeStream, context.Object, objectType, SerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally

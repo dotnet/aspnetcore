@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.Serialize(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return CreateJsonResponse(HttpStatusCode.OK, new Person
                 {
                     Name = "Abc",
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.Serialize(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }));
 
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             return new HttpResponseMessage(statusCode)
             {
-                Content = new StringContent(JsonSerializer.ToString(content, _jsonSerializerOptions))
+                Content = new StringContent(JsonSerializer.Serialize(content, _jsonSerializerOptions))
             };
         }
 

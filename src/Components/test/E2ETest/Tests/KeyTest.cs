@@ -276,8 +276,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var rootBefore = new Node(null, "root", before);
             var rootAfter = new Node(null, "root", after);
-            var jsonBefore = JsonSerializer.ToString(rootBefore, TestJsonSerializerOptionsProvider.Options);
-            var jsonAfter = JsonSerializer.ToString(rootAfter, TestJsonSerializerOptionsProvider.Options);
+            var jsonBefore = JsonSerializer.Serialize(rootBefore, TestJsonSerializerOptionsProvider.Options);
+            var jsonAfter = JsonSerializer.Serialize(rootAfter, TestJsonSerializerOptionsProvider.Options);
 
             var appElem = MountTestComponent<KeyCasesComponent>();
             var textbox = appElem.FindElement(By.TagName("textarea"));
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var javascript = (IJavaScriptExecutor)Browser;
             javascript.ExecuteScript(
-                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.ToString(value, TestJsonSerializerOptionsProvider.Options)}");
+                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.Serialize(value, TestJsonSerializerOptionsProvider.Options)}");
             textAreaElementWithId.SendKeys(" "); // So it fires the change event
         }
 

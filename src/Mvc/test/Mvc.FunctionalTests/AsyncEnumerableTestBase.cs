@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
 
             // Some sanity tests to verify things serialized correctly.
-            var projects = JsonSerializer.Parse<List<Project>>(content, TestJsonSerializerOptionsProvider.Options);
+            var projects = JsonSerializer.Deserialize<List<Project>>(content, TestJsonSerializerOptionsProvider.Options);
             Assert.Equal(10, projects.Count);
             Assert.Equal("Project0", projects[0].Name);
             Assert.Equal("Project9", projects[9].Name);

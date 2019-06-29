@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_UsesDefaultContentType_IfNoContentTypeSpecified()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_NullEncoding_DoesNotSetCharsetOnContentType()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_UsesEncodingSpecifiedInContentType()
         {
             // Arrange
-            var expected = Encoding.Unicode.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
             context.HttpContext.Response.ContentType = "text/json; charset=utf-8";
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_UsesEncodingSpecifiedInResponseContentType()
         {
             // Arrange
-            var expected = Encoding.Unicode.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.Unicode.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
             context.HttpContext.Response.ContentType = "text/json; charset=utf-16";
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_SetsContentTypeAndEncoding()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_NoResultContentTypeSet_UsesResponseContentType_AndSuppliedEncoding()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
             var expectedContentType = "text/foo; p1=p1-value; charset=us-ascii";
 
             var context = GetActionContext();
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             string expectedContentType)
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { foo = "abcd" }));
 
             var context = GetActionContext();
             context.HttpContext.Response.ContentType = responseContentType;
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_UsesPassedInSerializerSettings()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
                 new { foo = "abcd" },
                 new JsonSerializerOptions { WriteIndented = true }));
 
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_SerializesAsyncEnumerables()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new[] { "Hello", "world" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new[] { "Hello", "world" }));
 
             var context = GetActionContext();
             var result = new JsonResult(TestAsyncEnumerable());
