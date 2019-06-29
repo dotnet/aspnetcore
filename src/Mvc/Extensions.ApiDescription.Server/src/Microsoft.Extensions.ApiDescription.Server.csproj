@@ -14,6 +14,13 @@
     <IsShippingPackage>true</IsShippingPackage>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <DevelopmentDependency>true</DevelopmentDependency>
+
+    <!--
+      Publish the referenced projects when building .NET Core bits. This is not needed for full framework builds
+      because publish output matches what was built.
+    -->
+    <ProjectReferenceBuildTargets
+        Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Build;Publish</ProjectReferenceBuildTargets>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,13 +32,6 @@
     <NuspecProperty Include="artifactsBinDir=$(ArtifactsBinDir)" />
     <NuspecProperty Include="configuration=$(Configuration)" />
   </ItemGroup>
-
-  <Target Name="PublishGetDocument" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="../../dotnet-getdocument/src/dotnet-getdocument.csproj"
-        BuildInParallel="$(BuildInParallel)"
-        RemoveProperties="RuntimeIdentifier;TargetFrameworks;TargetFramework"
-        Targets="Publish" />
-  </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
