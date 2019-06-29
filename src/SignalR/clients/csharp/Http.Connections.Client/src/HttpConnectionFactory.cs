@@ -6,16 +6,15 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.SignalR.Client
+namespace Microsoft.AspNetCore.Http.Connections.Client
 {
     /// <summary>
     /// A factory for creating <see cref="HttpConnection"/> instances.
     /// </summary>
-    internal class HttpConnectionFactory : IConnectionFactory
+    public class HttpConnectionFactory : IConnectionFactory
     {
         private readonly HttpConnectionOptions _httpConnectionOptions;
         private readonly ILoggerFactory _loggerFactory;

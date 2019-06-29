@@ -20,6 +20,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public System.Threading.Tasks.Task StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
+    public partial class HttpConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
+    {
+        public HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
     public partial class HttpConnectionOptions
     {
         public HttpConnectionOptions() { }
