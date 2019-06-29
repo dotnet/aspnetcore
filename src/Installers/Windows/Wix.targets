@@ -21,9 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform)</GuidInputs>
-    <!-- Ensure for non-final builds the GUID will be different for each build -->
-    <GuidInputs Condition="'$(DotNetFinalVersionKind)' != 'release' AND '$(DotNetFinalVersionKind)' != 'prerelease'">$(GuidInputs);(VersionSuffix)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);(VersionSuffix)</GuidInputs>
   </PropertyGroup>
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
