@@ -120,7 +120,10 @@ namespace Company.WebApplication1
 #else
             services.AddControllersWithViews();
 #endif
+
+#if (Auth)
             services.AddRazorPages();
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -160,7 +163,10 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+#if (Auth)
                 endpoints.MapRazorPages();
+#endif
             });
         }
     }
