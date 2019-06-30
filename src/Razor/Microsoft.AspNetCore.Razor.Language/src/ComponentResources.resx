@@ -129,6 +129,9 @@
   <data name="BindTagHelper_Component_Documentation" xml:space="preserve">
     <value>Binds the provided expression to the '{0}' property and a change event delegate to the '{1}' property of the component.</value>
   </data>
+  <data name="BindTagHelper_Element_Culture_Documentation" xml:space="preserve">
+    <value>Specifies the culture to use for conversions.</value>
+  </data>
   <data name="BindTagHelper_Element_Documentation" xml:space="preserve">
     <value>Binds the provided expression to the '{0}' attribute and a change event delegate to the '{1}' attribute.</value>
   </data>

@@ -432,6 +432,28 @@ namespace Test
             Assert.True(parameter.IsStringProperty);
             Assert.False(parameter.IsBooleanProperty);
             Assert.False(parameter.IsEnum);
+
+            parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("culture"));
+
+            // Invariants
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
+
+            Assert.Equal(
+                "Specifies the culture to use for conversions.",
+                parameter.Documentation);
+
+            Assert.Equal("culture", parameter.Name);
+            Assert.Equal("Culture", parameter.GetPropertyName());
+            Assert.Equal(":culture", parameter.DisplayName);
+
+            // Defined from the property type
+            Assert.Equal("System.Globalization.CultureInfo", parameter.TypeName);
+            Assert.False(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
         }
 
         [Fact]
@@ -847,8 +869,29 @@ namespace Test
             Assert.True(parameter.IsStringProperty);
             Assert.False(parameter.IsBooleanProperty);
             Assert.False(parameter.IsEnum);
-        }
 
+            parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("culture"));
+
+            // Invariants
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
+
+            Assert.Equal(
+                "Specifies the culture to use for conversions.",
+                parameter.Documentation);
+
+            Assert.Equal("culture", parameter.Name);
+            Assert.Equal("Culture", parameter.GetPropertyName());
+            Assert.Equal(":culture", parameter.DisplayName);
+
+            // Defined from the property type
+            Assert.Equal("System.Globalization.CultureInfo", parameter.TypeName);
+            Assert.False(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
+        }
 
         private static TagHelperDescriptor[] GetBindTagHelpers(TagHelperDescriptorProviderContext context)
         {

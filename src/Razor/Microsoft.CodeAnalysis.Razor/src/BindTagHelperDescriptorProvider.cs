@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
@@ -176,6 +177,15 @@ namespace Microsoft.CodeAnalysis.Razor
                     parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Fallback_Event_Documentation, attributeName);
 
                     parameter.SetPropertyName("Event");
+                });
+
+                attribute.BindAttributeParameter(parameter =>
+                {
+                    parameter.Name = "culture";
+                    parameter.TypeName = typeof(CultureInfo).FullName;
+                    parameter.Documentation = ComponentResources.BindTagHelper_Element_Culture_Documentation;
+
+                    parameter.SetPropertyName("Culture");
                 });
             });
 
@@ -380,6 +390,15 @@ namespace Microsoft.CodeAnalysis.Razor
                         parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Event_Documentation, attributeName);
 
                         parameter.SetPropertyName(eventName);
+                    });
+
+                    a.BindAttributeParameter(parameter =>
+                    {
+                        parameter.Name = "culture";
+                        parameter.TypeName = typeof(CultureInfo).FullName;
+                        parameter.Documentation = ComponentResources.BindTagHelper_Element_Culture_Documentation;
+
+                        parameter.SetPropertyName("Culture");
                     });
                 });
 
