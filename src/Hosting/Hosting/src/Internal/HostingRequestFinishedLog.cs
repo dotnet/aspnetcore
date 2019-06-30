@@ -13,7 +13,8 @@ namespace Microsoft.AspNetCore.Hosting
     {
         internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestFinishedLog)state).ToString();
 
-        private readonly HttpContext _httpContext;
+        private readonly string _contentType;
+        private readonly int _statusCode;
         private readonly TimeSpan _elapsed;
 
         private string _cachedToString;
@@ -29,9 +30,9 @@ namespace Microsoft.AspNetCore.Hosting
                     case 0:
                         return new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds);
                     case 1:
-                        return new KeyValuePair<string, object>("StatusCode", _httpContext.Response.StatusCode);
+                        return new KeyValuePair<string, object>("StatusCode", _statusCode);
                     case 2:
-                        return new KeyValuePair<string, object>("ContentType", _httpContext.Response.ContentType);
+                        return new KeyValuePair<string, object>("ContentType", _contentType);
                     default:
                         throw new IndexOutOfRangeException(nameof(index));
                 }
@@ -40,7 +41,8 @@ namespace Microsoft.AspNetCore.Hosting
 
         public HostingRequestFinishedLog(HttpContext httpContext, TimeSpan elapsed)
         {
-            _httpContext = httpContext;
+            _contentType = httpContext.Response.ContentType;
+            _statusCode = httpContext.Response.StatusCode;
             _elapsed = elapsed;
         }
 
@@ -52,8 +54,8 @@ namespace Microsoft.AspNetCore.Hosting
                     CultureInfo.InvariantCulture,
                     "Request finished in {0}ms {1} {2}",
                     _elapsed.TotalMilliseconds,
-                    _httpContext.Response.StatusCode,
-                    _httpContext.Response.ContentType);
+                    _statusCode,
+                    _contentType);
             }
 
             return _cachedToString;
