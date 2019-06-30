@@ -329,17 +329,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 };
             }
 
-            if (TryGetFormatNode(
-                parent,
-                node,
-                valueAttributeName,
-                out var formatNode))
-            {
-                // If there is a format- attribute present, add a warning to say that it's unsupported.
-                parent.Children.Remove(formatNode);
-                parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_FormatNode_Unsupported(formatNode.Source));
-            }
-
             var valueExpressionTokens = new List<IntermediateToken>();
             var changeExpressionTokens = new List<IntermediateToken>();
             if (changeAttribute != null && changeAttribute.IsDelegateProperty())
@@ -489,54 +478,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private bool TryParseBindAttribute(
-            BindEntry bindEntry,
-            out string valueAttributeName,
-            out string changeAttributeName)
+        private bool TryParseBindAttribute(BindEntry bindEntry, out string valueAttributeName)
         {
             var attributeName = bindEntry.BindNode.AttributeName;
             valueAttributeName = null;
-            changeAttributeName = null;
-
-            if (!attributeName.StartsWith("bind"))
-            {
-                return false;
-            }
-
-            if (bindEntry.BindEventNode != null)
-            {
-                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
-            }
 
             if (attributeName == "bind")
             {
                 return true;
             }
 
-            var segments = attributeName.Split('-');
-            for (var i = 0; i < segments.Length; i++)
+            if (!attributeName.StartsWith("bind-"))
             {
-                if (string.IsNullOrEmpty(segments[i]))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            switch (segments.Length)
-            {
-                case 2:
-                    valueAttributeName = segments[1];
-                    return true;
-
-                case 3:
-                    valueAttributeName = segments[1];
-                    changeAttributeName = segments[2];
-                    bindEntry.BindNode.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_UnsupportedFormat(bindEntry.BindNode.Source));
-                    return true;
-
-                default:
-                    return false;
-            }
+            valueAttributeName = attributeName.Substring("bind-".Length);
+            return true;
         }
 
         // Attempts to compute the attribute names that should be used for an instance of 'bind'.
@@ -550,16 +508,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             out BoundAttributeDescriptor changeAttribute,
             out BoundAttributeDescriptor expressionAttribute)
         {
+            valueAttributeName = null;
+            changeAttributeName = null;
+            expressionAttributeName = null;
             valueAttribute = null;
             changeAttribute = null;
             expressionAttribute = null;
-            expressionAttributeName = null;
 
             // Even though some of our 'bind' tag helpers specify the attribute names, they
             // should still satisfy one of the valid syntaxes.
-            if (!TryParseBindAttribute(bindEntry, out valueAttributeName, out changeAttributeName))
+            if (!TryParseBindAttribute(bindEntry, out valueAttributeName))
             {
                 return false;
+            }
+
+            if (bindEntry.BindEventNode != null)
+            {
+                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
             }
 
             // The tag helper specifies attribute names, they should win.
@@ -626,29 +591,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             return true;
-        }
-
-        private bool TryGetFormatNode(
-            IntermediateNode node,
-            TagHelperDirectiveAttributeIntermediateNode attributeNode,
-            string valueAttributeName,
-            out TagHelperPropertyIntermediateNode formatNode)
-        {
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var child = node.Children[i] as TagHelperPropertyIntermediateNode;
-                if (child != null &&
-                    child.TagHelper != null &&
-                    child.TagHelper == attributeNode.TagHelper &&
-                    child.AttributeName == "format-" + valueAttributeName)
-                {
-                    formatNode = child;
-                    return true;
-                }
-            }
-
-            formatNode = null;
-            return false;
         }
 
         private void RewriteNodesForDelegateBind(
