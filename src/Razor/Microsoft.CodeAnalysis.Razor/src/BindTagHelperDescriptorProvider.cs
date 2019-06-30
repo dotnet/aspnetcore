@@ -72,6 +72,12 @@ namespace Microsoft.CodeAnalysis.Razor
             //      These mappings are also provided by attributes. Primarily these are used by <input />
             //      and so we have a special case for input elements and their type attributes.
             //
+            //      Additionally, our mappings tell us about cases like <input type="number" ... /> where
+            //      we need to treat the value as an invariant culture value. In general the HTML5 field
+            //      types use invariant culture values when interacting with the DOM, in contrast to
+            //      <input type="text" ... /> which is free-form text and is most likely to be
+            //      culture-sensitive.
+            //
             //  4.  For components, we have a bit of a special case. We can infer a syntax that matches
             //      case #2 based on property names. So if a component provides both 'Value' and 'ValueChanged'
             //      we will turn that into an instance of bind.
@@ -254,6 +260,19 @@ namespace Microsoft.CodeAnalysis.Razor
                             (string)attribute.ConstructorArguments[2].Value,
                             (string)attribute.ConstructorArguments[3].Value));
                     }
+                    else if (attribute.AttributeClass == bindInputElement && attribute.ConstructorArguments.Length == 6)
+                    {
+                        results.Add(new ElementBindData(
+                            type.ContainingAssembly.Name,
+                            type.ToDisplayString(),
+                            "input",
+                            (string)attribute.ConstructorArguments[0].Value,
+                            (string)attribute.ConstructorArguments[1].Value,
+                            (string)attribute.ConstructorArguments[2].Value,
+                            (string)attribute.ConstructorArguments[3].Value,
+                            (bool)attribute.ConstructorArguments[4].Value,
+                            (string)attribute.ConstructorArguments[5].Value));
+                    }
                 }
             }
 
@@ -287,6 +306,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Bind.RuntimeName;
                 builder.Metadata[ComponentMetadata.Bind.ValueAttribute] = entry.ValueAttribute;
                 builder.Metadata[ComponentMetadata.Bind.ChangeAttribute] = entry.ChangeAttribute;
+                builder.Metadata[ComponentMetadata.Bind.IsInvariantCulture] = entry.IsInvariantCulture ? bool.TrueString : bool.FalseString;
+                builder.Metadata[ComponentMetadata.Bind.Format] = entry.Format;
 
                 if (entry.TypeAttribute != null)
                 {
@@ -512,7 +533,9 @@ namespace Microsoft.CodeAnalysis.Razor
                 string typeAttribute,
                 string suffix,
                 string valueAttribute,
-                string changeAttribute)
+                string changeAttribute,
+                bool isInvariantCulture = false,
+                string format = null)
             {
                 Assembly = assembly;
                 TypeName = typeName;
@@ -521,6 +544,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 Suffix = suffix;
                 ValueAttribute = valueAttribute;
                 ChangeAttribute = changeAttribute;
+                IsInvariantCulture = isInvariantCulture;
+                Format = format;
             }
 
             public string Assembly { get; }
@@ -530,6 +555,8 @@ namespace Microsoft.CodeAnalysis.Razor
             public string Suffix { get; }
             public string ValueAttribute { get; }
             public string ChangeAttribute { get; }
+            public bool IsInvariantCulture { get; }
+            public string Format { get; }
         }
 
         private class BindElementDataVisitor : SymbolVisitor

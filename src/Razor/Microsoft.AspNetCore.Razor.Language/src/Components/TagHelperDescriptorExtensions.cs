@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
@@ -112,6 +113,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             tagHelper.Metadata.TryGetValue(ComponentMetadata.Bind.ExpressionAttribute, out var result);
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a value that indicates where the tag helper is a bind tag helper with a default
+        /// culture value of <see cref="CultureInfo.InvariantCulture"/>.
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        /// <returns>
+        /// <c>true</c> if this tag helper is a bind tag helper and defaults in <see cref="CultureInfo.InvariantCulture"/>
+        /// </returns>
+        public static bool IsInvariantCultureBindTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                tagHelper.Metadata.TryGetValue(ComponentMetadata.Bind.IsInvariantCulture, out var text) &&
+                bool.TryParse(text, out var result) &&
+                result;
+        }
+
+        /// <summary>
+        /// Gets the default format value for a bind tag helper.
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        /// <returns>The format, or <c>null</c>.</returns>
+        public static string GetFormat(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            tagHelper.Metadata.TryGetValue(ComponentMetadata.Bind.Format, out var result);
             return result;
         }
 

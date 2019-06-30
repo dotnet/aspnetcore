@@ -649,6 +649,8 @@ namespace Test
             Assert.Equal("checkbox", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
             Assert.True(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
+            Assert.False(bind.IsInvariantCultureBindTagHelper());
+            Assert.Null(bind.GetFormat());
 
             var rule = Assert.Single(bind.TagMatchingRules);
             Assert.Equal("input", rule.TagName);
@@ -679,6 +681,46 @@ namespace Test
             Assert.Equal("format", parameter.Name);
             Assert.Equal("Format_somevalue", parameter.GetPropertyName());
             Assert.Equal(":format", parameter.DisplayName);
+        }
+
+        [Fact]
+        public void Execute_BindOnInputElementWithTypeAttributeAndSuffixAndInvariantCultureAndFormat_CreatesDescriptor()
+        {
+            // Arrange
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""number"", null, ""value"", ""onchange"", isInvariantCulture: true, format: ""0.00"")]
+    public class BindAttributes
+    {
+    }
+}
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new BindTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
+            var bind = Assert.Single(matches);
+
+            Assert.Equal("value", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("onchange", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("number", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
+            Assert.True(bind.IsInputElementBindTagHelper());
+            Assert.False(bind.IsInputElementFallbackBindTagHelper());
+            Assert.True(bind.IsInvariantCultureBindTagHelper());
+            Assert.Equal("0.00", bind.GetFormat());
         }
 
         [Fact]

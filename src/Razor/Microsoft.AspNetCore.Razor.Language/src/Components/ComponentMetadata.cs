@@ -59,6 +59,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public readonly static string ChangeAttribute = "Components.Bind.ChangeAttribute";
 
             public readonly static string ExpressionAttribute = "Components.Bind.ExpressionAttribute";
+
+            public readonly static string IsInvariantCulture = "Components.Bind.IsInvariantCulture";
+
+            public readonly static string Format = "Components.Bind.Format";
         }
 
         public static class ChildContent
