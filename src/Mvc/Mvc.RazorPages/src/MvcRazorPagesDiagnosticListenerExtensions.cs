@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    internal static class MvcRazorPagesDiagnosticSourceExtensions
+    internal static class MvcRazorPagesDiagnosticListenerExtensions
     {
         public static void BeforeHandlerMethod(
             this DiagnosticListener diagnosticListener,
@@ -32,17 +33,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeHandlerMethod"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeHandlerMethod.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeHandlerMethod",
-                    new
-                    {
-                        actionContext = actionContext,
-                        arguments = arguments,
-                        handlerMethodDescriptor = handlerMethodDescriptor,
-                        instance = instance,
-                    });
+                    Diagnostics.BeforeHandlerMethod.EventName,
+                    new BeforeHandlerMethod(
+                        actionContext,
+                        arguments,
+                        handlerMethodDescriptor,
+                        instance
+                    ));
             }
         }
 
@@ -69,18 +69,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterHandlerMethod"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterHandlerMethod.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterHandlerMethod",
-                    new
-                    {
-                        actionContext = actionContext,
-                        arguments = arguments,
-                        handlerMethodDescriptor = handlerMethodDescriptor,
-                        instance = instance,
-                        result = result
-                    });
+                    Diagnostics.AfterHandlerMethod.EventName,
+                    new AfterHandlerMethod(
+                        actionContext,
+                        arguments,
+                        handlerMethodDescriptor,
+                        instance,
+                        result
+                    ));
             }
         }
 
@@ -102,16 +101,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeOnPageHandlerExecutionImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnPageHandlerExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution",
-                    new
-                    {
-                        actionDescriptor = handlerExecutionContext.ActionDescriptor,
-                        handlerExecutionContext = handlerExecutionContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnPageHandlerExecution.EventName,
+                    new BeforeOnPageHandlerExecution(
+                        handlerExecutionContext.ActionDescriptor,
+                        handlerExecutionContext,
+                        filter
+                    ));
             }
         }
 
@@ -133,16 +131,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterOnPageHandlerExecutionImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnPageHandlerExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution",
-                    new
-                    {
-                        actionDescriptor = handlerExecutedContext.ActionDescriptor,
-                        handlerExecutedContext = handlerExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnPageHandlerExecution.EventName,
+                    new AfterOnPageHandlerExecution(
+                        handlerExecutedContext.ActionDescriptor,
+                        handlerExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -164,16 +161,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeOnPageHandlerExecutingImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnPageHandlerExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting",
-                    new
-                    {
-                        actionDescriptor = handlerExecutingContext.ActionDescriptor,
-                        handlerExecutingContext = handlerExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnPageHandlerExecuting.EventName,
+                    new BeforeOnPageHandlerExecuting(
+                        handlerExecutingContext.ActionDescriptor,
+                        handlerExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -195,16 +191,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterOnPageHandlerExecutingImpl(DiagnosticListener diagnosticListener, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnPageHandlerExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting",
-                    new
-                    {
-                        actionDescriptor = handlerExecutingContext.ActionDescriptor,
-                        handlerExecutingContext = handlerExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnPageHandlerExecuting.EventName,
+                    new AfterOnPageHandlerExecuting(
+                        handlerExecutingContext.ActionDescriptor,
+                        handlerExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -226,16 +221,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeOnPageHandlerExecutedImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnPageHandlerExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted",
-                    new
-                    {
-                        actionDescriptor = handlerExecutedContext.ActionDescriptor,
-                        handlerExecutedContext = handlerExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnPageHandlerExecuted.EventName,
+                    new BeforeOnPageHandlerExecuted(
+                        handlerExecutedContext.ActionDescriptor,
+                        handlerExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -257,16 +251,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterOnPageHandlerExecutedImpl(DiagnosticListener diagnosticListener, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnPageHandlerExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted",
-                    new
-                    {
-                        actionDescriptor = handlerExecutedContext.ActionDescriptor,
-                        handlerExecutedContext = handlerExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnPageHandlerExecuted.EventName,
+                    new AfterOnPageHandlerExecuted(
+                        handlerExecutedContext.ActionDescriptor,
+                        handlerExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -288,16 +281,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeOnPageHandlerSelectionImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnPageHandlerSelection.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection",
-                    new
-                    {
-                        actionDescriptor = handlerSelectedContext.ActionDescriptor,
-                        handlerSelectedContext = handlerSelectedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnPageHandlerSelection.EventName,
+                    new BeforeOnPageHandlerSelection(
+                        handlerSelectedContext.ActionDescriptor,
+                        handlerSelectedContext,
+                        filter
+                    ));
             }
         }
 
@@ -319,16 +311,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterOnPageHandlerSelectionImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnPageHandlerSelection.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection",
-                    new
-                    {
-                        actionDescriptor = handlerSelectedContext.ActionDescriptor,
-                        handlerSelectedContext = handlerSelectedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnPageHandlerSelection.EventName,
+                    new AfterOnPageHandlerSelection(
+                        handlerSelectedContext.ActionDescriptor,
+                        handlerSelectedContext,
+                        filter
+                    ));
             }
         }
 
@@ -350,16 +341,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void BeforeOnPageHandlerSelectedImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnPageHandlerSelected.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected",
-                    new
-                    {
-                        actionDescriptor = handlerSelectedContext.ActionDescriptor,
-                        handlerSelectedContext = handlerSelectedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnPageHandlerSelected.EventName,
+                    new BeforeOnPageHandlerSelected(
+                        handlerSelectedContext.ActionDescriptor,
+                        handlerSelectedContext,
+                        filter
+                    ));
             }
         }
 
@@ -381,16 +371,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         private static void AfterOnPageHandlerSelectedImpl(DiagnosticListener diagnosticListener, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnPageHandlerSelected.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected",
-                    new
-                    {
-                        actionDescriptor = handlerSelectedContext.ActionDescriptor,
-                        handlerSelectedContext = handlerSelectedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnPageHandlerSelected.EventName,
+                    new AfterOnPageHandlerSelected(
+                        handlerSelectedContext.ActionDescriptor,
+                        handlerSelectedContext,
+                        filter
+                    ));
             }
         }
     }

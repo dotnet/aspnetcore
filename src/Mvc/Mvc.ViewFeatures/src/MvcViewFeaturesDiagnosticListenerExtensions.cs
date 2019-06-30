@@ -6,10 +6,11 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    internal static class MvcViewFeaturesDiagnosticSourceExtensions
+    internal static class MvcViewFeaturesDiagnosticListenerExtensions
     {
         public static void BeforeViewComponent(
             this DiagnosticListener diagnosticListener,
@@ -25,16 +26,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void BeforeViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, object viewComponent)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeViewComponent"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewComponent.EventName))
             {
                 diagnosticListener.Write(
-                "Microsoft.AspNetCore.Mvc.BeforeViewComponent",
-                new
-                {
-                    actionDescriptor = context.ViewContext.ActionDescriptor,
-                    viewComponentContext = context,
-                    viewComponent = viewComponent
-                });
+                Diagnostics.BeforeViewComponent.EventName,
+                new BeforeViewComponent(
+                    context.ViewContext.ActionDescriptor,
+                    context,
+                    viewComponent
+                ));
             }
         }
 
@@ -53,17 +53,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void AfterViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IViewComponentResult result, object viewComponent)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterViewComponent"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewComponent.EventName))
             {
                 diagnosticListener.Write(
-                "Microsoft.AspNetCore.Mvc.AfterViewComponent",
-                new
-                {
-                    actionDescriptor = context.ViewContext.ActionDescriptor,
-                    viewComponentContext = context,
-                    viewComponentResult = result,
-                    viewComponent = viewComponent
-                });
+                Diagnostics.AfterViewComponent.EventName,
+                new AfterViewComponent(
+                    context.ViewContext.ActionDescriptor,
+                    context,
+                    result,
+                    viewComponent
+                ));
             }
         }
 
@@ -81,16 +80,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewComponentBeforeViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute"))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentBeforeViewExecute.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute",
-                    new
-                    {
-                        actionDescriptor = context.ViewContext.ActionDescriptor,
-                        viewComponentContext = context,
-                        view = view
-                    });
+                    Diagnostics.ViewComponentBeforeViewExecute.EventName,
+                    new ViewComponentBeforeViewExecute(
+                        context.ViewContext.ActionDescriptor,
+                        context,
+                        view
+                    ));
             }
         }
 
@@ -108,16 +106,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewComponentAfterViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute"))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentAfterViewExecute.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute",
-                    new
-                    {
-                        actionDescriptor = context.ViewContext.ActionDescriptor,
-                        viewComponentContext = context,
-                        view = view
-                    });
+                    Diagnostics.ViewComponentAfterViewExecute.EventName,
+                    new ViewComponentAfterViewExecute(
+                        context.ViewContext.ActionDescriptor,
+                        context,
+                        view
+                    ));
             }
         }
 
@@ -135,11 +132,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void BeforeViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeView"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeView.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeView",
-                    new { view = view, viewContext = viewContext, });
+                    Diagnostics.BeforeView.EventName,
+                    new BeforeView(view, viewContext));
             }
         }
 
@@ -157,11 +154,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void AfterViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterView"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterView.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterView",
-                    new { view = view, viewContext = viewContext, });
+                    Diagnostics.AfterView.EventName,
+                    new AfterView(view, viewContext));
             }
         }
 
@@ -169,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             bool isMainPage,
-            PartialViewResult viewResult,
+            ActionResult viewResult,
             string viewName,
             IView view)
         {
@@ -180,20 +177,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
-        private static void ViewFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, PartialViewResult viewResult, string viewName, IView view)
+        private static void ViewFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, ActionResult viewResult, string viewName, IView view)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewFound.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.ViewFound",
-                    new
-                    {
-                        actionContext = actionContext,
-                        isMainPage = isMainPage,
-                        result = viewResult,
-                        viewName = viewName,
-                        view = view,
-                    });
+                    Diagnostics.ViewFound.EventName,
+                    new ViewFound(
+                        actionContext,
+                        isMainPage,
+                        viewResult,
+                        viewName,
+                        view
+                    ));
             }
         }
 
@@ -201,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             bool isMainPage,
-            PartialViewResult viewResult,
+            ActionResult viewResult,
             string viewName,
             IEnumerable<string> searchedLocations)
         {
@@ -212,20 +208,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
-        private static void ViewNotFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, PartialViewResult viewResult, string viewName, IEnumerable<string> searchedLocations)
+        private static void ViewNotFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, ActionResult viewResult, string viewName, IEnumerable<string> searchedLocations)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewNotFound.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.ViewNotFound",
-                    new
-                    {
-                        actionContext = actionContext,
-                        isMainPage = isMainPage,
-                        result = viewResult,
-                        viewName = viewName,
-                        searchedLocations = searchedLocations,
-                    });
+                    Diagnostics.ViewNotFound.EventName,
+                    new ViewNotFound(
+                        actionContext,
+                        isMainPage,
+                        viewResult,
+                        viewName,
+                        searchedLocations
+                    ));
             }
         }
     }

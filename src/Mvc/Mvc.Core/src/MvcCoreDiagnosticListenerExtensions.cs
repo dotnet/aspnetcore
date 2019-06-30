@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     // We're doing a lot of asserts here because these methods are really tedious to test and
     // highly dependent on the details of the invoker's state machine. Basically if we wrote the
     // obvious unit tests that would generate a lot of boilerplate and wouldn't cover the hard parts.
-    internal static class MvcCoreDiagnosticSourceExtensions
+    internal static class MvcCoreDiagnosticListenerExtensions
     {
         public static void BeforeAction(
             this DiagnosticListener diagnosticListener,
@@ -35,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeAction"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeAction.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeAction",
-                    new { actionDescriptor, httpContext = httpContext, routeData = routeData });
+                    Diagnostics.BeforeAction.EventName,
+                    new BeforeAction(actionDescriptor, httpContext, routeData));
             }
         }
 
@@ -63,11 +64,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionImpl(DiagnosticListener diagnosticListener, ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterAction"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterAction.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterAction",
-                    new { actionDescriptor, httpContext = httpContext, routeData = routeData });
+                    Diagnostics.AfterAction.EventName,
+                    new AfterAction(actionDescriptor, httpContext, routeData));
             }
         }
 
@@ -89,16 +90,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnAuthorization.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
-                    new
-                    {
-                        actionDescriptor = authorizationContext.ActionDescriptor,
-                        authorizationContext = authorizationContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnAuthorization.EventName,
+                    new BeforeOnAuthorization(
+                        authorizationContext.ActionDescriptor,
+                        authorizationContext,
+                        filter
+                    ));
             }
         }
 
@@ -120,16 +120,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnAuthorizationAsyncImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnAuthorization.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
-                    new
-                    {
-                        actionDescriptor = authorizationContext.ActionDescriptor,
-                        authorizationContext = authorizationContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnAuthorization.EventName,
+                    new AfterOnAuthorization(
+                        authorizationContext.ActionDescriptor,
+                        authorizationContext,
+                        filter
+                    ));
             }
         }
 
@@ -151,16 +150,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnAuthorization.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
-                    new
-                    {
-                        actionDescriptor = authorizationContext.ActionDescriptor,
-                        authorizationContext = authorizationContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnAuthorization.EventName,
+                    new BeforeOnAuthorization(
+                        authorizationContext.ActionDescriptor,
+                        authorizationContext,
+                        filter
+                    ));
             }
         }
 
@@ -182,16 +180,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnAuthorizationImpl(DiagnosticListener diagnosticListener, AuthorizationFilterContext authorizationContext, IAuthorizationFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnAuthorization.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
-                    new
-                    {
-                        actionDescriptor = authorizationContext.ActionDescriptor,
-                        authorizationContext = authorizationContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnAuthorization.EventName,
+                    new AfterOnAuthorization(
+                        authorizationContext.ActionDescriptor,
+                        authorizationContext,
+                        filter
+                    ));
             }
         }
 
@@ -213,16 +210,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IAsyncResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution",
-                    new
-                    {
-                        actionDescriptor = resourceExecutingContext.ActionDescriptor,
-                        resourceExecutingContext = resourceExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResourceExecution.EventName,
+                    new BeforeOnResourceExecution(
+                        resourceExecutingContext.ActionDescriptor,
+                        resourceExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -244,16 +240,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutionImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IAsyncResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecution",
-                    new
-                    {
-                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
-                        resourceExecutedContext = resourceExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResourceExecution.EventName,
+                    new AfterOnResourceExecution(
+                        resourceExecutedContext.ActionDescriptor,
+                        resourceExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -275,16 +270,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting",
-                    new
-                    {
-                        actionDescriptor = resourceExecutingContext.ActionDescriptor,
-                        resourceExecutingContext = resourceExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResourceExecuting.EventName,
+                    new BeforeOnResourceExecuting(
+                        resourceExecutingContext.ActionDescriptor,
+                        resourceExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -306,16 +300,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutingImpl(DiagnosticListener diagnosticListener, ResourceExecutingContext resourceExecutingContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting",
-                    new
-                    {
-                        actionDescriptor = resourceExecutingContext.ActionDescriptor,
-                        resourceExecutingContext = resourceExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResourceExecuting.EventName,
+                    new AfterOnResourceExecuting(
+                        resourceExecutingContext.ActionDescriptor,
+                        resourceExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -337,16 +330,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResourceExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted",
-                    new
-                    {
-                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
-                        resourceExecutedContext = resourceExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResourceExecuted.EventName,
+                    new BeforeOnResourceExecuted(
+                        resourceExecutedContext.ActionDescriptor,
+                        resourceExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -368,16 +360,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResourceExecutedImpl(DiagnosticListener diagnosticListener, ResourceExecutedContext resourceExecutedContext, IResourceFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResourceExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted",
-                    new
-                    {
-                        actionDescriptor = resourceExecutedContext.ActionDescriptor,
-                        resourceExecutedContext = resourceExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResourceExecuted.EventName,
+                    new AfterOnResourceExecuted(
+                        resourceExecutedContext.ActionDescriptor,
+                        resourceExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -399,16 +390,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnException.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnException",
-                    new
-                    {
-                        actionDescriptor = exceptionContext.ActionDescriptor,
-                        exceptionContext = exceptionContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnException.EventName,
+                    new BeforeOnException(
+                        exceptionContext.ActionDescriptor,
+                        exceptionContext,
+                        filter
+                    ));
             }
         }
 
@@ -430,16 +420,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnExceptionAsyncImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IAsyncExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnException.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnException",
-                    new
-                    {
-                        actionDescriptor = exceptionContext.ActionDescriptor,
-                        exceptionContext = exceptionContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnException.EventName,
+                    new AfterOnException(
+                        exceptionContext.ActionDescriptor,
+                        exceptionContext,
+                        filter
+                    ));
             }
         }
 
@@ -461,16 +450,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnException.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnException",
-                    new
-                    {
-                        actionDescriptor = exceptionContext.ActionDescriptor,
-                        exceptionContext = exceptionContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnException.EventName,
+                    new BeforeOnException(
+                        exceptionContext.ActionDescriptor,
+                        exceptionContext,
+                        filter
+                    ));
             }
         }
 
@@ -492,16 +480,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnExceptionImpl(DiagnosticListener diagnosticListener, ExceptionContext exceptionContext, IExceptionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnException.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnException",
-                    new
-                    {
-                        actionDescriptor = exceptionContext.ActionDescriptor,
-                        exceptionContext = exceptionContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnException.EventName,
+                    new AfterOnException(
+                        exceptionContext.ActionDescriptor,
+                        exceptionContext,
+                        filter
+                    ));
             }
         }
 
@@ -523,16 +510,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IAsyncActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecution",
-                    new
-                    {
-                        actionDescriptor = actionExecutingContext.ActionDescriptor,
-                        actionExecutingContext = actionExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnActionExecution.EventName,
+                    new BeforeOnActionExecution(
+                        actionExecutingContext.ActionDescriptor,
+                        actionExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -554,16 +540,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutionImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IAsyncActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecution",
-                    new
-                    {
-                        actionDescriptor = actionExecutedContext.ActionDescriptor,
-                        actionExecutedContext = actionExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnActionExecution.EventName,
+                    new AfterOnActionExecution(
+                        actionExecutedContext.ActionDescriptor,
+                        actionExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -585,16 +570,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting",
-                    new
-                    {
-                        actionDescriptor = actionExecutingContext.ActionDescriptor,
-                        actionExecutingContext = actionExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnActionExecuting.EventName,
+                    new BeforeOnActionExecuting(
+                        actionExecutingContext.ActionDescriptor,
+                        actionExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -616,16 +600,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutingImpl(DiagnosticListener diagnosticListener, ActionExecutingContext actionExecutingContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecuting",
-                    new
-                    {
-                        actionDescriptor = actionExecutingContext.ActionDescriptor,
-                        actionExecutingContext = actionExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnActionExecuting.EventName,
+                    new AfterOnActionExecuting(
+                        actionExecutingContext.ActionDescriptor,
+                        actionExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -647,16 +630,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnActionExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted",
-                    new
-                    {
-                        actionDescriptor = actionExecutedContext.ActionDescriptor,
-                        actionExecutedContext = actionExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnActionExecuted.EventName,
+                    new BeforeOnActionExecuted(
+                        actionExecutedContext.ActionDescriptor,
+                        actionExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -678,16 +660,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnActionExecutedImpl(DiagnosticListener diagnosticListener, ActionExecutedContext actionExecutedContext, IActionFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnActionExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted",
-                    new
-                    {
-                        actionDescriptor = actionExecutedContext.ActionDescriptor,
-                        actionExecutedContext = actionExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnActionExecuted.EventName,
+                    new AfterOnActionExecuted(
+                        actionExecutedContext.ActionDescriptor,
+                        actionExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -711,16 +692,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionMethod.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeActionMethod",
-                    new
-                    {
-                        actionContext = actionContext,
-                        arguments = actionArguments,
-                        controller = controller
-                    });
+                    Diagnostics.BeforeActionMethod.EventName,
+                    new BeforeActionMethod(
+                        actionContext,
+                        actionArguments,
+                        controller
+                    ));
             }
         }
 
@@ -745,17 +725,16 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionMethod.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterActionMethod",
-                    new
-                    {
-                        actionContext = actionContext,
-                        arguments = actionArguments,
-                        controller = controller,
-                        result = result
-                    });
+                    Diagnostics.AfterActionMethod.EventName,
+                    new AfterActionMethod(
+                        actionContext,
+                        actionArguments,
+                        controller,
+                        result
+                    ));
             }
         }
 
@@ -777,16 +756,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IAsyncResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecution",
-                    new
-                    {
-                        actionDescriptor = resultExecutingContext.ActionDescriptor,
-                        resultExecutingContext = resultExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResultExecution.EventName,
+                    new BeforeOnResultExecution(
+                        resultExecutingContext.ActionDescriptor,
+                        resultExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -808,16 +786,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutionImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IAsyncResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecution"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecution.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecution",
-                    new
-                    {
-                        actionDescriptor = resultExecutedContext.ActionDescriptor,
-                        resultExecutedContext = resultExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResultExecution.EventName,
+                    new AfterOnResultExecution(
+                        resultExecutedContext.ActionDescriptor,
+                        resultExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -839,16 +816,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting",
-                    new
-                    {
-                        actionDescriptor = resultExecutingContext.ActionDescriptor,
-                        resultExecutingContext = resultExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResultExecuting.EventName,
+                    new BeforeOnResultExecuting(
+                        resultExecutingContext.ActionDescriptor,
+                        resultExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -870,16 +846,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutingImpl(DiagnosticListener diagnosticListener, ResultExecutingContext resultExecutingContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuting"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecuting.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecuting",
-                    new
-                    {
-                        actionDescriptor = resultExecutingContext.ActionDescriptor,
-                        resultExecutingContext = resultExecutingContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResultExecuting.EventName,
+                    new AfterOnResultExecuting(
+                        resultExecutingContext.ActionDescriptor,
+                        resultExecutingContext,
+                        filter
+                    ));
             }
         }
 
@@ -901,16 +876,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeOnResultExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted",
-                    new
-                    {
-                        actionDescriptor = resultExecutedContext.ActionDescriptor,
-                        resultExecutedContext = resultExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.BeforeOnResultExecuted.EventName,
+                    new BeforeOnResultExecuted(
+                        resultExecutedContext.ActionDescriptor,
+                        resultExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -932,16 +906,15 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterOnResultExecutedImpl(DiagnosticListener diagnosticListener, ResultExecutedContext resultExecutedContext, IResultFilter filter)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuted"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterOnResultExecuted.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecuted",
-                    new
-                    {
-                        actionDescriptor = resultExecutedContext.ActionDescriptor,
-                        resultExecutedContext = resultExecutedContext,
-                        filter = filter
-                    });
+                    Diagnostics.AfterOnResultExecuted.EventName,
+                    new AfterOnResultExecuted(
+                        resultExecutedContext.ActionDescriptor,
+                        resultExecutedContext,
+                        filter
+                    ));
             }
         }
 
@@ -963,11 +936,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void BeforeActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionResult"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionResult.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.BeforeActionResult",
-                    new { actionContext = actionContext, result = result });
+                    Diagnostics.BeforeActionResult.EventName,
+                    new BeforeActionResult(actionContext, result));
             }
         }
 
@@ -989,11 +962,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AfterActionResultImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IActionResult result)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionResult"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterActionResult.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.AfterActionResult",
-                    new { actionContext = actionContext, result = result });
+                    Diagnostics.AfterActionResult.EventName,
+                    new AfterActionResult(actionContext, result));
             }
         }
     }
