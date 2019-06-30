@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     case HttpProtocols.Http1:
                         // _http1Connection must be initialized before adding the connection to the connection manager
-                        requestProcessor = _http1Connection = new Http1Connection(_context);
+                        requestProcessor = _http1Connection = new Http1Connection<TContext>(_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.Http2:
