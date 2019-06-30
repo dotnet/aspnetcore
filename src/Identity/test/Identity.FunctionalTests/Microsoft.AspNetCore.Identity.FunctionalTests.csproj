@@ -49,7 +49,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode" />
   </Target>
 
 </Project>
