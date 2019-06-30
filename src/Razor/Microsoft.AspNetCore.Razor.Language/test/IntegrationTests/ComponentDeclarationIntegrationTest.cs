@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.CodeAnalysis;
@@ -155,7 +156,7 @@ namespace Test
 
         public class BaseClass : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
             }
 
@@ -163,8 +164,9 @@ namespace Test
             {
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
+                throw new System.NotImplementedException();
             }
         }
 

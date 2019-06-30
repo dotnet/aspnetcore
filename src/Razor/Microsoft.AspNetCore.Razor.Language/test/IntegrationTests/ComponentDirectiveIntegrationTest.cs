@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.CodeAnalysis;
@@ -47,7 +48,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             var layoutAttribute = component.GetType().GetCustomAttribute<LayoutAttribute>();
             Assert.NotNull(layoutAttribute);
-            Assert.Equal(typeof(TestLayout), layoutAttribute.LayoutType);
         }
 
         [Fact]
@@ -127,12 +127,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             [Parameter]
             RenderFragment Body { get; set; }
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
+                throw new NotImplementedException();
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
+                throw new NotImplementedException();
             }
         }
 

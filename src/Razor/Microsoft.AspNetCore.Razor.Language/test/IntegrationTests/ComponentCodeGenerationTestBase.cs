@@ -603,11 +603,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : ComponentBase, IComponent
+    public class MyComponent : ComponentBase
     {
-        void IComponent.SetParameters(ParameterCollection parameters)
-        {
-        }
     }
 }"));
 
@@ -666,11 +663,8 @@ using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : ComponentBase, IComponent
+    public class MyComponent : ComponentBase
     {
-        void IComponent.SetParameters(ParameterCollection parameters)
-        {
-        }
     }
 }"));
 

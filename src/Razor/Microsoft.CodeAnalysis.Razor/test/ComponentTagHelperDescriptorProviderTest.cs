@@ -16,15 +16,19 @@ namespace Microsoft.CodeAnalysis.Razor
             // Arrange
 
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
         private string MyProperty { get; set; }
@@ -132,15 +136,19 @@ namespace Test
             // Arrange
 
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent<T> : IComponent
     {
-        public void Init(RenderHandle renderHandle) { }
+        public void Configure(RenderHandle renderHandle) { }
 
-        public void SetParameters(ParameterCollection parameters) { }
+        public Task SetParametersAsync(ParameterCollection parameters)
+        {
+            return Task.CompletedTask;
+        }
 
         [Parameter]
         private string MyProperty { get; set; }
