@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         internal override bool UseTwoPhaseCompilation => true;
 
         protected ComponentCodeGenerationTestBase()
-            : base(generateBaselines: null)
+            : base(generateBaselines: false)
         {
         }
 
@@ -1152,6 +1152,64 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <input @bind-value=""@CurrentDate"" @bind-value:event=""oninput"" @bind-value:format=""MM/dd"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultFormat()
+        { 
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: false, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" />
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultFormat_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: false, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");

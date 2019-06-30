@@ -290,12 +290,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return new[] { node };
             }
 
-            // Look for a matching format node. If we find one then we need to pass the format into the
+            // Look for a format. If we find one then we need to pass the format into the
             // two nodes we generate.
             IntermediateToken format = null;
             if (bindEntry.BindFormatNode != null)
             {
                 format = GetAttributeContent(bindEntry.BindFormatNode);
+            }
+            else if (node.TagHelper?.GetFormat() != null)
+            {
+                // We may have a default format if one is associated with the field type.
+                format = new IntermediateToken()
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = "\"" + node.TagHelper.GetFormat() + "\"",
+                };
             }
 
             if (TryGetFormatNode(
