@@ -48,7 +48,7 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)"  />
+      DestinationFolder="$(PublishDir)" />
     <Copy
       SourceFiles="@(_claimsWwwrootFiles)"
       DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot" />
@@ -76,7 +76,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode" />
   </Target>
 
 </Project>
