@@ -14,7 +14,6 @@
     
     <!-- x64 queues -->
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'x64'">
-                                     
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
