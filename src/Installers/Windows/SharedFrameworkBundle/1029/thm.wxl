@@ -60,5 +60,5 @@
   <String Id="FilesInUseCancelButton">&amp;Zrušit</String>
 
   <String Id="Welcome">Vítá vás instalační program produktu [WixBundle]</String>
-  <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
+  <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
 </WixLocalization>

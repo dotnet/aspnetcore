@@ -1,8 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
+  <PropertyGroup Condition=" '$(OpenApiGenerateDocuments)' == '' ">
+    <OpenApiGenerateDocuments
+        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' ">false</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' ">true</OpenApiGenerateDocuments>
+  </PropertyGroup>
   <PropertyGroup>
     <_OpenApiDocumentsCache>$(BaseIntermediateOutputPath)$(MSBuildProjectName).OpenApiFiles.cache</_OpenApiDocumentsCache>
+    <OpenApiGenerateDocumentsOnBuild
+        Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == '' ">$(OpenApiGenerateDocuments)</OpenApiGenerateDocumentsOnBuild>
   </PropertyGroup>
+
   <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
     <ProjectCapability Include="OpenApiGenerateDocuments" />
   </ItemGroup>
@@ -13,7 +21,10 @@
     </ReadLinesFromFile>
   </Target>
 
-  <Target Name="GenerateOpenApiDocuments" Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+  <Target Name="GenerateOpenApiDocuments"
+      Condition=" '$(OpenApiGenerateDocuments)' == 'true' "
+      Inputs="$(TargetPath)"
+      Outputs="$(_OpenApiDocumentsCache)">
     <PropertyGroup>
       <_Command>dotnet "$(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_Command>
       <_Command>$(_Command) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_Command>

@@ -13,6 +13,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
     <IsShippingPackage>true</IsShippingPackage>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>

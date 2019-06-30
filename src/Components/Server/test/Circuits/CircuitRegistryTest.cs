@@ -317,39 +317,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2689", FlakyOn.All)]
-        public void CircuitRegistryUsesConfiguredMaxRetainedDisconnectedCircuitsValue()
-        {
-            // Arrange
-            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
-            var maxCircuits = 3;
-            var circuitOptions = new CircuitOptions
-            {
-                MaxRetainedDisconnectedCircuits = maxCircuits,
-            };
-            var registry = new TestCircuitRegistry(circuitIdFactory, circuitOptions);
-            var hosts = Enumerable.Range(0, maxCircuits + 2)
-                .Select(_ => TestCircuitHost.Create())
-                .ToArray();
-
-            // Act
-            for (var i = 0; i < hosts.Length; i++)
-            {
-                registry.RegisterDisconnectedCircuit(hosts[i]);
-            }
-
-            // Assert
-            for (var i = 0; i < maxCircuits; i++)
-            {
-                Assert.True(registry.DisconnectedCircuits.TryGetValue(hosts[i].CircuitId, out var _));
-            }
-
-            // Additional circuits do not get registered.
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(hosts[maxCircuits].CircuitId, out var _));
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(hosts[maxCircuits + 1].CircuitId, out var _));
-        }
-
-        [Fact]
         public async Task DisconnectedCircuitIsRemovedAfterConfiguredTimeout()
         {
             // Arrange

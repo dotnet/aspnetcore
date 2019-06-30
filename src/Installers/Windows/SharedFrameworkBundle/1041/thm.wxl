@@ -61,5 +61,5 @@
   <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
 
   <String Id="Welcome">[WixBundle] のセットアップへようこそ。</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;ライセンス条項&lt;/a&gt;および&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;プライバシーに関する声明&lt;/a&gt;。</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;ライセンス条項&lt;/a&gt;および&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;プライバシーに関する声明&lt;/a&gt;。</String>
 </WixLocalization>

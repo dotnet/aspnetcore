@@ -1,13 +1,4 @@
-var ids = {
-    login: 'login',
-    logout: 'logout',
-    callApi: 'call-api',
-    loginResult: 'login-result',
-    apiResults: 'api-result'
-};
-
-let mgr = undefined;
-
+﻿
 function invokeLogin() {
     // Redirects to the Authorization Server for sign in.
     return mgr.signinRedirect();
@@ -52,13 +43,18 @@ async function callApi() {
 
 // Code to update the UI
 
-if (window.location.hash || window.location.search) {
-    initializeApplication()
-        .then(() => {
-            handleAuthorizationServerCallback();
-            window.location.hash = '';
-        });
+if (window.location.hash) {
+    handleAuthorizationServerCallback();
+    window.location.hash = '';
 }
+
+let ids = {
+    login: 'login',
+    logout: 'logout',
+    callApi: 'call-api',
+    loginResult: 'login-result',
+    apiResults: 'api-result'
+};
 
 document.onreadystatechange = function () {
     if (document.readyState === 'complete') {
@@ -71,20 +67,6 @@ document.onreadystatechange = function () {
         callApi.addEventListener('click', invokeCallApi);
     }
 };
-
-async function initializeApplication() {
-    const response = await fetch('_configuration/ApiAuthSampleSPA');
-    const configuration = await response.json();
-    mgr = new Oidc.UserManager(configuration);
-
-    enableLoginButton();
-
-    function enableLoginButton() {
-        const login = document.querySelector('#login');
-        login.disabled = false;
-    }
-}
-
 
 function updateUserUI(user, error) {
     let loginResults = document.getElementById(ids.loginResult);

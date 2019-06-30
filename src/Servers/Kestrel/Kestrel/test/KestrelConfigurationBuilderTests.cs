@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -24,10 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         private KestrelServerOptions CreateServerOptions()
         {
             var serverOptions = new KestrelServerOptions();
-            var env = new HostingEnvironment { ApplicationName = "TestApplication" };
+            var env = new MockHostingEnvironment { ApplicationName = "TestApplication" };
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
-                .AddSingleton<IWebHostEnvironment>(env)
                 .AddSingleton<IHostEnvironment>(env)
                 .BuildServiceProvider();
             return serverOptions;
@@ -461,6 +460,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
             basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
             return Path.Combine(basePath, $"TestApplication.pfx");
+        }
+
+        private class MockHostingEnvironment : IHostEnvironment
+        {
+            public string ApplicationName { get; set; }
+            public string EnvironmentName { get; set; }
+            public string ContentRootPath { get; set; }
+            public IFileProvider ContentRootFileProvider { get; set; }
         }
     }
 }

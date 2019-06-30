@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 
                 return context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
-            new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = 1},
+            new TestServiceContext(LoggerFactory),
             listenOptions =>
             {
                 listenOptions.Protocols = HttpProtocols.Http2;

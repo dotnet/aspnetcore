@@ -7,23 +7,23 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        Mouseover: <input id="mouseover_input" type="text" @onmouseover="@OnMouseOver" @onmouseout="@OnMouseOut" />
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" />
     </p>
     <p>
-        <span id="mousemove_input" @onmousemove="@OnMouseMove">Mousemove city!</span>
+        <span id="mousemove_input" @onmousemove="OnMouseMove">Mousemove city!</span>
     </p>
     <p>
-        Mousedown: <input id="mousedown_input" @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" />
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseDown" @onmouseup="OnMouseUp" />
     </p>
     <p>
-        Pointerdown: <input id="pointerdown_input" @onpointerdown="@OnPointerDown" />
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerDown" />
     </p>
     <p>
-        <div id="drag_input" draggable="true" @ondragstart="@OnDragStart">Drag Me</div>
-        <div id="drop" @ondrop="@OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
     </p>
     <p>
-        <button @onclick="@Clear">Clear</button>
+        <button @onclick="Clear">Clear</button>
     </p>
 
     <p>
@@ -93,7 +93,7 @@
 
     void DumpEvent(UIMouseEventArgs e)
     {
-        Console.WriteLine(JsonSerializer.ToString(e));
+        Console.WriteLine(JsonSerializer.Serialize(e));
     }
 
     void Clear()

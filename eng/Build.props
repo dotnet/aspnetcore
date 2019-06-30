@@ -90,12 +90,6 @@
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
       </ItemGroup>
 
-      <ItemGroup Condition=" '$(BuildSiteExtensions)' == 'true' ">
-        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
-        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
-        <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
-      </ItemGroup>
-
       <ItemGroup>
         <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
                         Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)">

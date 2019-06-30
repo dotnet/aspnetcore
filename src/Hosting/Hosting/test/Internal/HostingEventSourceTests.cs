@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
@@ -13,7 +12,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     public class HostingEventSourceTests
     {
@@ -185,7 +184,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public async Task VerifyCountersFireWithCorrectValues()
         {
             // Arrange
-            var eventListener = new CounterListener(new[] {
+            var eventListener = new TestCounterListener(new[] {
                 "requests-per-second",
                 "total-requests",
                 "current-requests",
@@ -207,6 +206,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     { "EventCounterIntervalSec", "1" }
                 });
 
+            // Act & Assert
             hostingEventSource.RequestStart("GET", "/");
 
             Assert.Equal(1, await totalRequestValues.FirstOrDefault(v => v == 1));
@@ -240,37 +240,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private static HostingEventSource GetHostingEventSource()
         {
             return new HostingEventSource(Guid.NewGuid().ToString());
-        }
-
-        private class CounterListener : EventListener
-        {
-            private readonly Dictionary<string, Channel<double>> _counters = new Dictionary<string, Channel<double>>();
-
-            public CounterListener(string[] counterNames)
-            {
-                foreach (var item in counterNames)
-                {
-                    _counters[item] = Channel.CreateUnbounded<double>();
-                }
-            }
-
-            public IAsyncEnumerable<double> GetCounterValues(string counterName, CancellationToken cancellationToken = default)
-            {
-                return _counters[counterName].Reader.ReadAllAsync(cancellationToken);
-            }
-
-            protected override void OnEventWritten(EventWrittenEventArgs eventData)
-            {
-                if (eventData.EventName == "EventCounters")
-                {
-                    var payload = (IDictionary<string, object>)eventData.Payload[0];
-                    var counter = (string)payload["Name"];
-                    payload.TryGetValue("Increment", out var increment);
-                    payload.TryGetValue("Mean", out var mean);
-                    var writer = _counters[counter].Writer;
-                    writer.TryWrite((double)(increment ?? mean));
-                }
-            }
         }
     }
 }

@@ -10,12 +10,13 @@ namespace Company.WebApplication1.Pages
 {
     public class PrivacyModel : PageModel
     {
-        private readonly ILogger<PrivacyModel> logger;
+        private readonly ILogger<PrivacyModel> _logger;
 
-        public PrivacyModel(ILogger<PrivacyModel> _logger)
+        public PrivacyModel(ILogger<PrivacyModel> logger)
         {
-            logger = _logger;
+            _logger = logger;
         }
+
         public void OnGet()
         {
         }

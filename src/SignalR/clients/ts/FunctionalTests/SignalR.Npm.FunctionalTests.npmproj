@@ -3,17 +3,16 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <IsTestProject>false</IsTestProject>
+    <IsTestProject>true</IsTestProject>
     <BrowserTestHostName Condition="'$(ContinuousIntegrationBuild)' == 'true'">sauce.local</BrowserTestHostName>
     <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
-    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:local --no-color --configuration $(Configuration)</NpmTestArgs>
+    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:inner --no-color --configuration $(Configuration)</NpmTestArgs>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" Condition="'$(BuildManaged)' == 'true'" />
-    <ProjectReference Include="..\signalr\signalr.npmproj" />
-    <ProjectReference Include="..\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
+    <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" />
+    <ProjectReference Include="..\client-ts.npmproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

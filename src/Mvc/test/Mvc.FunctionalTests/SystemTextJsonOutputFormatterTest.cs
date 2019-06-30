@@ -4,6 +4,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11459")]
         public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 
         [Fact]
@@ -29,13 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("\"Hello Mr. \\ud83e\\udd8a\"", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
+        [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact(Skip = "Dictionary serialization does not correctly work.")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11522")]
         public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36166")]
+        [Fact]
         public override Task Formatting_PolymorphicModel() => base.Formatting_PolymorphicModel();
     }
 }

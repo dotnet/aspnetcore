@@ -11,4 +11,8 @@
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
+  </ItemGroup>
 </Project>

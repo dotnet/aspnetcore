@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     {
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
+        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
             var connectionClosed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     appCompleted.TrySetException(ex);
                 }
-            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count }, listenOptions))
+            }, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ThrowsOnWriteWithRequestAbortedTokenAfterRequestIsAborted(ListenOptions listenOptions)
         {
             // This should match _maxBytesPreCompleted in SocketOutput
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
 
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
-            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count }, listenOptions))
+            }, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task WritingToConnectionAfterUnobservedCloseTriggersRequestAbortedToken(ListenOptions listenOptions)
         {
             const int connectionPausedEventId = 4;
@@ -273,7 +273,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
-                ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count,
                 ServerOptions =
                 {
                     Limits =
@@ -341,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1972", FlakyOn.All)]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
             const int connectionResetEventId = 19;
@@ -368,7 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 await requestAborted.Task.DefaultTimeout();
                 appCompletedTcs.SetResult(null);
-            }, new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count }, listenOptions))
+            }, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -414,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
         {
             // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.
@@ -422,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             // There's not guarantee that the app even gets invoked in this test. The connection reset can be observed
             // as early as accept.
-            var testServiceContext = new TestServiceContext(LoggerFactory) { ExpectedConnectionMiddlewareCount = listenOptions._middleware.Count };
+            var testServiceContext = new TestServiceContext(LoggerFactory);
             using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
             {
                 for (var i = 0; i < numConnections; i++)
@@ -582,8 +581,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
                     }
-                },
-                ExpectedConnectionMiddlewareCount = 1
+                }
             };
 
             testContext.InitializeHeartbeat();

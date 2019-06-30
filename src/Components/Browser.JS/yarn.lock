@@ -144,6 +144,10 @@
   resolved "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview6.19280.1.tgz#4c991132f33157de93bc3b6db93cffc9e964b241"
   integrity sha1-TJkRMvMxV96TvDttuTz/yelkskE=
 
+"@microsoft/signalr@link:../../SignalR/clients/ts/signalr":
+  version "0.0.0"
+  uid ""
+
 "@types/emscripten@0.0.31":
   version "0.0.31"
   resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-0.0.31.tgz#160817d1324e8b7049604d39ac47d85eeeedd597"

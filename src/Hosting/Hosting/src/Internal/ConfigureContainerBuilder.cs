@@ -4,9 +4,9 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConfigureContainerBuilder
+    internal class ConfigureContainerBuilder
     {
         public ConfigureContainerBuilder(MethodInfo configureContainerMethod)
         {

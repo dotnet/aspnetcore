@@ -11,7 +11,7 @@ export interface WeatherForecastsState {
 }
 
 export interface WeatherForecast {
-    dateFormatted: string;
+    date: string;
     temperatureC: number;
     temperatureF: number;
     summary: string;
@@ -45,7 +45,7 @@ export const actionCreators = {
         // Only load data if it's something we don't already have (and are not already loading)
         const appState = getState();
         if (appState && appState.weatherForecasts && startDateIndex !== appState.weatherForecasts.startDateIndex) {
-            fetch(`api/SampleData/WeatherForecasts?startDateIndex=${startDateIndex}`)
+            fetch(`weatherforecast`)
                 .then(response => response.json() as Promise<WeatherForecast[]>)
                 .then(data => {
                     dispatch({ type: 'RECEIVE_WEATHER_FORECASTS', startDateIndex: startDateIndex, forecasts: data });

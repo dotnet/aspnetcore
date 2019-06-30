@@ -104,6 +104,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         [FieldOffset(24)] public readonly object AttributeValue;
 
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
+        /// and the attribute represents an event handler, gets the name of another attribute whose value
+        /// can be updated to represent the UI state prior to executing the event handler. This is
+        /// primarily used in two-way bindings.
+        /// </summary>
+        [FieldOffset(32)] public readonly string AttributeEventUpdatesAttributeName;
+
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Component
         // --------------------------------------------------------------------------------
@@ -259,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         // Attribute constructor
-        private RenderTreeFrame(int sequence, string attributeName, object attributeValue, int attributeEventHandlerId)
+        private RenderTreeFrame(int sequence, string attributeName, object attributeValue, int attributeEventHandlerId, string attributeEventUpdatesAttributeName)
             : this()
         {
             FrameType = RenderTreeFrameType.Attribute;
@@ -267,6 +275,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             AttributeName = attributeName;
             AttributeValue = attributeValue;
             AttributeEventHandlerId = attributeEventHandlerId;
+            AttributeEventUpdatesAttributeName = attributeEventUpdatesAttributeName;
         }
 
         // Element reference capture constructor
@@ -299,7 +308,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, isMarkup: true, textOrMarkup: markupContent);
 
         internal static RenderTreeFrame Attribute(int sequence, string name, object value)
-            => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0);
+            => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0, attributeEventUpdatesAttributeName: null);
 
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
             => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
@@ -323,13 +332,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
-            => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId);
+            => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
 
         internal RenderTreeFrame WithComponent(ComponentState componentState)
             => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
 
         internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
-            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId);
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId, AttributeEventUpdatesAttributeName);
+
+        internal RenderTreeFrame WithAttributeValue(object attributeValue)
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, attributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
+
+        internal RenderTreeFrame WithAttributeEventUpdatesAttributeName(string attributeUpdatesAttributeName)
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, attributeUpdatesAttributeName);
 
         internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
             => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);

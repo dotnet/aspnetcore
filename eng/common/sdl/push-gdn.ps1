@@ -2,7 +2,7 @@ Param(
   [string] $Repository,
   [string] $BranchName="master",
   [string] $GdnFolder,
-  [string] $DncEngAccessToken,
+  [string] $AzureDevOpsAccessToken,
   [string] $PushReason
 )
 
@@ -16,8 +16,8 @@ if (Test-Path $sdlDir) {
   Remove-Item -Force -Recurse $sdlDir
 }
 
-Write-Host "git clone https://dnceng:`$DncEngAccessToken@dev.azure.com/dnceng/internal/_git/sdl-tool-cfg $sdlDir"
-git clone https://dnceng:$DncEngAccessToken@dev.azure.com/dnceng/internal/_git/sdl-tool-cfg $sdlDir
+Write-Host "git clone https://dnceng:`$AzureDevOpsAccessToken@dev.azure.com/dnceng/internal/_git/sdl-tool-cfg $sdlDir"
+git clone https://dnceng:$AzureDevOpsAccessToken@dev.azure.com/dnceng/internal/_git/sdl-tool-cfg $sdlDir
 if ($LASTEXITCODE -ne 0) {
   Write-Error "Git clone failed with exit code $LASTEXITCODE."
 }

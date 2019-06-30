@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task OnDataAsync(Http2Frame dataFrame, ReadOnlySequence<byte> payload)
+        public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
         {
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)
@@ -469,9 +469,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void AbortCore(Exception abortReason)
         {
-            // Call _http2Output.Dispose() prior to poisoning the request body stream or pipe to
+            // Call _http2Output.Stop() prior to poisoning the request body stream or pipe to
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http2Output.Dispose();
+            _http2Output.Stop();
 
             AbortRequest();
 

@@ -29,6 +29,23 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task CreateBinder_IfConverterThrows_ConvertsEmptyStringToDefault()
+        {
+            // Arrange
+            var value = 17;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = string.Empty, });
+
+            Assert.Equal(0, value); // Calls setter to apply default value for this type
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
         public async Task CreateBinder_ThrowsSetterException()
         {
             // Arrange

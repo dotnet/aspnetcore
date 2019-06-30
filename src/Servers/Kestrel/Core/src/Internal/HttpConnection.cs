@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO.Pipelines;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -39,80 +37,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _timeoutControl = new TimeoutControl(this);
         }
 
-        public string ConnectionId => _context.ConnectionId;
-        public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
-        public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
-
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
             try
             {
-                // This feature should never be null in Kestrel
-                var connectionHeartbeatFeature = _context.ConnectionFeatures.Get<IConnectionHeartbeatFeature>();
+                // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
+                _timeoutControl.Initialize(_systemClock.UtcNowTicks);
 
-                Debug.Assert(connectionHeartbeatFeature != null, nameof(IConnectionHeartbeatFeature) + " is missing!");
+                IRequestProcessor requestProcessor = null;
 
-                connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
-
-                var connectionLifetimeNotificationFeature = _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>();
-
-                Debug.Assert(connectionLifetimeNotificationFeature != null, nameof(IConnectionLifetimeNotificationFeature) + " is missing!");
-
-                using (connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this))
+                var httpConnectionContext = new HttpConnectionContext
                 {
-                    // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
-                    _timeoutControl.Initialize(_systemClock.UtcNowTicks);
+                    ConnectionId = _context.ConnectionId,
+                    ConnectionFeatures = _context.ConnectionFeatures,
+                    MemoryPool = _context.MemoryPool,
+                    LocalEndPoint = _context.LocalEndPoint,
+                    RemoteEndPoint = _context.RemoteEndPoint,
+                    ServiceContext = _context.ServiceContext,
+                    ConnectionContext = _context.ConnectionContext,
+                    TimeoutControl = _timeoutControl,
+                    Transport = _context.Transport
+                };
 
-                    _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(_timeoutControl);
+                switch (SelectProtocol())
+                {
+                    case HttpProtocols.Http1:
+                        // _http1Connection must be initialized before adding the connection to the connection manager
+                        requestProcessor = _http1Connection = new Http1Connection(httpConnectionContext);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
+                    case HttpProtocols.Http2:
+                        // _http2Connection must be initialized before yielding control to the transport thread,
+                        // to prevent a race condition where _http2Connection.Abort() is called just as
+                        // _http2Connection is about to be initialized.
+                        requestProcessor = new Http2Connection(httpConnectionContext);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
+                    case HttpProtocols.None:
+                        // An error was already logged in SelectProtocol(), but we should close the connection.
+                        Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
+                        break;
+                    default:
+                        // SelectProtocol() only returns Http1, Http2 or None.
+                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
+                }
 
-                    IRequestProcessor requestProcessor = null;
+                _requestProcessor = requestProcessor;
 
-                    lock (_protocolSelectionLock)
-                    {
-                        // Ensure that the connection hasn't already been stopped.
-                        if (_protocolSelectionState == ProtocolSelectionState.Initializing)
-                        {
-                            var derivedContext = CreateDerivedContext(_context.Transport);
+                if (requestProcessor != null)
+                {
+                    var connectionHeartbeatFeature = _context.ConnectionFeatures.Get<IConnectionHeartbeatFeature>();
+                    var connectionLifetimeNotificationFeature = _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>();
 
-                            switch (SelectProtocol())
-                            {
-                                case HttpProtocols.Http1:
-                                    // _http1Connection must be initialized before adding the connection to the connection manager
-                                    requestProcessor = _http1Connection = new Http1Connection(derivedContext);
-                                    _protocolSelectionState = ProtocolSelectionState.Selected;
-                                    break;
-                                case HttpProtocols.Http2:
-                                    // _http2Connection must be initialized before yielding control to the transport thread,
-                                    // to prevent a race condition where _http2Connection.Abort() is called just as
-                                    // _http2Connection is about to be initialized.
-                                    requestProcessor = new Http2Connection(derivedContext);
-                                    _protocolSelectionState = ProtocolSelectionState.Selected;
-                                    break;
-                                case HttpProtocols.None:
-                                    // An error was already logged in SelectProtocol(), but we should close the connection.
-                                    Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
-                                    break;
-                                default:
-                                    // SelectProtocol() only returns Http1, Http2 or None.
-                                    throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
-                            }
+                    // These features should never be null in Kestrel itself, if this middleware is ever refactored to run outside of kestrel,
+                    // we'll need to handle these missing.
+                    Debug.Assert(connectionHeartbeatFeature != null, nameof(IConnectionHeartbeatFeature) + " is missing!");
+                    Debug.Assert(connectionLifetimeNotificationFeature != null, nameof(IConnectionLifetimeNotificationFeature) + " is missing!");
 
-                            _requestProcessor = requestProcessor;
-                        }
-                    }
+                    // Register the various callbacks once we're going to start processing requests
 
-                    var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnInputOrOutputCompleted(), this);
+                    // The heart beat for various timeouts
+                    connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
-                    // We don't care about callbacks once all requests are processed
-                    using (closedRegistration)
-                    {
-                        if (requestProcessor != null)
-                        {
-                            await requestProcessor.ProcessRequestsAsync(httpApplication);
-                        }
-                    }
+                    // Register for graceful shutdown of the server
+                    using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this);
+
+                    // Register for connection close
+                    using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnConnectionClosed(), this);
+
+                    await requestProcessor.ProcessRequestsAsync(httpApplication);
                 }
             }
             catch (Exception ex)
@@ -134,22 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _requestProcessor = requestProcessor;
             _http1Connection = requestProcessor as Http1Connection;
             _protocolSelectionState = ProtocolSelectionState.Selected;
-        }
-
-        private HttpConnectionContext CreateDerivedContext(IDuplexPipe transport)
-        {
-            return new HttpConnectionContext
-            {
-                ConnectionId = _context.ConnectionId,
-                ConnectionFeatures = _context.ConnectionFeatures,
-                MemoryPool = _context.MemoryPool,
-                LocalEndPoint = _context.LocalEndPoint,
-                RemoteEndPoint = _context.RemoteEndPoint,
-                ServiceContext = _context.ServiceContext,
-                ConnectionContext = _context.ConnectionContext,
-                TimeoutControl = _timeoutControl,
-                Transport = transport
-            };
         }
 
         private void StopProcessingNextRequest()
@@ -183,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private void OnInputOrOutputCompleted()
+        private void OnConnectionClosed()
         {
             ProtocolSelectionState previousState;
             lock (_protocolSelectionLock)
@@ -287,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
             var now = _systemClock.UtcNowUnsynchronized;
             _timeoutControl.Tick(now);
-            _requestProcessor?.Tick(now);
+            _requestProcessor.Tick(now);
         }
 
         public void OnTimeout(TimeoutReason reason)

@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             {
                 case ApplicationProfiles.IdentityServerSPA:
                 case ApplicationProfiles.SPA:
+                    responseType = "id_token token";
+                    break;
                 case ApplicationProfiles.NativeApp:
                     responseType = "code";
                     break;

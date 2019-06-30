@@ -3,11 +3,11 @@ MsgPack support for SignalR for ASP.NET Core
 ## Installation
 
 ```bash
-npm install @aspnet/signalr-protocol-msgpack
+npm install @microsoft/signalr-protocol-msgpack
 ```
 or
 ```bash
-yarn add @aspnet/signalr-protocol-msgpack
+yarn add @microsoft/signalr-protocol-msgpack
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ To use the client in a browser, copy `*.js` files from the `dist/browser` folder
 
 ### NodeJS
 
-To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@aspnet/signalr-protocol-msgpack')` to load the module. The object returned by `require('@aspnet/signalr-protocol-msgpack')` has the same members as the global `signalR.protocols.msgpack` object (when used in a browser).
+To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@microsoft/signalr-protocol-msgpack')` to load the module. The object returned by `require('@microsoft/signalr-protocol-msgpack')` has the same members as the global `signalR.protocols.msgpack` object (when used in a browser).
 
 ### Example (Browser)
 
@@ -41,8 +41,8 @@ connection.start()
 ### Example (NodeJS)
 
 ```JavaScript
-const signalR = require("@aspnet/signalr");
-const signalRMsgPack = require("@aspnet/signalr-protocol-msgpack");
+const signalR = require("@microsoft/signalr");
+const signalRMsgPack = require("@microsoft/signalr-protocol-msgpack");
 
 let connection = new signalR.HubConnectionBuilder()
     .withUrl("/chat")

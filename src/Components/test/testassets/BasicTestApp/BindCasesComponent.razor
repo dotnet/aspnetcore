@@ -144,17 +144,31 @@
 
 <h2>Select</h2>
 <p>
-    <select id="select-box" @bind="@selectValue">
-        <option value=@SelectableValue.First>First choice</option>
-        <option value=@SelectableValue.Second>Second choice</option>
-        <option value=@SelectableValue.Third>Third choice</option>
-        @if (includeFourthOption)
-        {
-            <option value=@SelectableValue.Fourth>Fourth choice</option>
-        }
+    <select id="select-box" @bind="selectValue">
+        <optgroup label="Some choices"> <!-- Show it also works with optgroup -->
+            <option value=@SelectableValue.First>First choice</option>
+            <option value=@SelectableValue.Second>Second choice</option>
+            <option value=@SelectableValue.Third>Third choice</option>
+            @if (includeFourthOption)
+            {
+                <option value=@SelectableValue.Fourth>Fourth choice</option>
+            }
+        </optgroup>
     </select>
     <span id="select-box-value">@selectValue</span>
-    <button id="select-box-add-option" @onclick="@AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
+</p>
+
+<h2>Select (markup block)</h2>
+<p>
+    <select id="select-markup-box" @bind="selectMarkupValue">
+        <optgroup label="Some choices">
+            <option value="First">First choice</option>
+            <option value="Second">Second choice</option>
+            <option value="Third">Third choice</option>
+        </optgroup>
+    </select>
+    <span id="select-markup-box-value">@selectMarkupValue</span>
 </p>
 
 @code {
@@ -187,6 +201,7 @@ Guid textboxGenericGuidValue = Guid.Empty;
 bool includeFourthOption = false;
 enum SelectableValue { First, Second, Third, Fourth }
 SelectableValue selectValue = SelectableValue.Second;
+SelectableValue selectMarkupValue = SelectableValue.Second;
 
 void AddAndSelectNewSelectOption()
 {

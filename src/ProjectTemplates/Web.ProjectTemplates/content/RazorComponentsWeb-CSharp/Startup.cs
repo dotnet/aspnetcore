@@ -36,6 +36,9 @@ using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
+#if (IndividualLocalAuth)
+using RazorComponentsWeb_CSharp.Areas.Identity;
+#endif
 using RazorComponentsWeb_CSharp.Data;
 
 namespace RazorComponentsWeb_CSharp
@@ -122,6 +125,9 @@ namespace RazorComponentsWeb_CSharp
 #endif
             services.AddRazorPages();
             services.AddServerSideBlazor();
+#if (IndividualLocalAuth)
+            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+#endif
             services.AddSingleton<WeatherForecastService>();
         }
 

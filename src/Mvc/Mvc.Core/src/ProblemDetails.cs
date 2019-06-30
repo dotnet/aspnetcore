@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// The round-tripping behavior for <see cref="Extensions"/> is determined by the implementation of the Input \ Output formatters.
         /// In particular, complex types or collection types may not round-trip to the original type when using the built-in JSON or XML formatters.
         /// </remarks>
+        [JsonExtensionData]
         public IDictionary<string, object> Extensions { get; } = new Dictionary<string, object>(StringComparer.Ordinal);
     }
 }

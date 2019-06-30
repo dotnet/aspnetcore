@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -209,8 +210,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_FallsBackOnFormattersInOptions()
         {
             // Arrange
-            var options = Options.Create(new MvcOptions());
-            options.Value.OutputFormatters.Add(new TestJsonOutputFormatter());
+            var options = new MvcOptions();
+            options.OutputFormatters.Add(new TestJsonOutputFormatter());
 
             var executor = CreateExecutor(options: options);
 
@@ -300,8 +301,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             string expectedContentType)
         {
             // Arrange
-            var options = Options.Create(new MvcOptions());
-            options.Value.RespectBrowserAcceptHeader = false;
+            var options = new MvcOptions();
+            options.RespectBrowserAcceptHeader = false;
 
             var executor = CreateExecutor(options: options);
 
@@ -337,8 +338,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             string expectedContentType)
         {
             // Arrange
-            var options = Options.Create(new MvcOptions());
-            options.Value.RespectBrowserAcceptHeader = true;
+            var options = new MvcOptions();
+            options.RespectBrowserAcceptHeader = true;
 
             var executor = CreateExecutor(options: options);
 
@@ -360,6 +361,106 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             MediaTypeAssert.Equal(expectedContentType, responseContentType);
         }
 
+        [Fact]
+        public async Task ObjectResult_ReadsAsyncEnumerables()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+            var result = new ObjectResult(AsyncEnumerable());
+            var formatter = new TestJsonOutputFormatter();
+            result.Formatters.Add(formatter);
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = GetHttpContext(),
+            };
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            var formatterContext = formatter.LastOutputFormatterContext;
+            Assert.Equal(typeof(List<string>), formatterContext.ObjectType);
+            var value = Assert.IsType<List<string>>(formatterContext.Object);
+            Assert.Equal(new[] { "Hello 0", "Hello 1", "Hello 2", "Hello 3", }, value);
+        }
+
+        [Fact]
+        public async Task ObjectResult_Throws_IfEnumerableThrows()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+            var result = new ObjectResult(AsyncEnumerable(throwError: true));
+            var formatter = new TestJsonOutputFormatter();
+            result.Formatters.Add(formatter);
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = GetHttpContext(),
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => executor.ExecuteAsync(actionContext, result));
+        }
+
+        [Fact]
+        public async Task ObjectResult_AsyncEnumeration_AtLimit()
+        {
+            // Arrange
+            var count = 24;
+            var executor = CreateExecutor(options: new MvcOptions { MaxIAsyncEnumerableBufferLimit = count });
+            var result = new ObjectResult(AsyncEnumerable(count: count));
+            var formatter = new TestJsonOutputFormatter();
+            result.Formatters.Add(formatter);
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = GetHttpContext(),
+            };
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            var formatterContext = formatter.LastOutputFormatterContext;
+            var value = Assert.IsType<List<string>>(formatterContext.Object);
+            Assert.Equal(24, value.Count);
+        }
+
+        [Theory]
+        [InlineData(25)]
+        [InlineData(1024)]
+        public async Task ObjectResult_Throws_IfEnumerationExceedsLimit(int count)
+        {
+            // Arrange
+            var executor = CreateExecutor(options: new MvcOptions { MaxIAsyncEnumerableBufferLimit = 24 });
+            var result = new ObjectResult(AsyncEnumerable(count: count));
+            var formatter = new TestJsonOutputFormatter();
+            result.Formatters.Add(formatter);
+
+            var actionContext = new ActionContext()
+            {
+                HttpContext = GetHttpContext(),
+            };
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => executor.ExecuteAsync(actionContext, result));
+        }
+
+        private static async IAsyncEnumerable<string> AsyncEnumerable(int count = 4, bool throwError = false)
+        {
+            await Task.Yield();
+            for (var i = 0; i < count; i++)
+            {
+                yield return $"Hello {i}";
+            }
+
+            if (throwError)
+            {
+                throw new TimeZoneNotFoundException();
+            }
+        }
+
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
@@ -379,10 +480,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return httpContext;
         }
 
-        private static ObjectResultExecutor CreateExecutor(IOptions<MvcOptions> options = null)
+        private static ObjectResultExecutor CreateExecutor(MvcOptions options = null)
         {
-            var selector = new DefaultOutputFormatterSelector(options ?? Options.Create<MvcOptions>(new MvcOptions()), NullLoggerFactory.Instance);
-            return new ObjectResultExecutor(selector, new TestHttpResponseStreamWriterFactory(), NullLoggerFactory.Instance);
+            options ??= new MvcOptions();
+            var optionsAccessor = Options.Create(options);
+            var selector = new DefaultOutputFormatterSelector(optionsAccessor, NullLoggerFactory.Instance);
+            return new ObjectResultExecutor(selector, new TestHttpResponseStreamWriterFactory(), NullLoggerFactory.Instance, optionsAccessor);
         }
 
         private class CannotWriteFormatter : IOutputFormatter
@@ -409,8 +512,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
+            public OutputFormatterWriteContext LastOutputFormatterContext { get; private set; }
+
             public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
+                LastOutputFormatterContext = context;
                 return Task.FromResult(0);
             }
         }

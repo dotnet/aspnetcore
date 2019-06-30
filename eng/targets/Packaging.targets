@@ -14,6 +14,7 @@
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
         <PackageId>$(PackageId)</PackageId>
         <PackageVersion>$(PackageVersion)</PackageVersion>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
         <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
       </_ProjectPathWithVersion>
     </ItemGroup>

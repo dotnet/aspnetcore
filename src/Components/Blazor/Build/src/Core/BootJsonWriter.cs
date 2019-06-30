@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 assemblyReferences,
                 embeddedContent,
                 linkerEnabled);
-            return JsonSerializer.ToString(data, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Serialize(data, JsonSerializerOptionsProvider.Options);
         }
 
         private static string GetAssemblyEntryPoint(string assemblyPath)

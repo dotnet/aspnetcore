@@ -6,9 +6,9 @@ using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public sealed class HostingEventSource : EventSource
+    internal sealed class HostingEventSource : EventSource
     {
         public static readonly HostingEventSource Log = new HostingEventSource();
 
