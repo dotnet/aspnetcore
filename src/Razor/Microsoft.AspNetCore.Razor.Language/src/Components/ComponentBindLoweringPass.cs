@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Skip anything we can't understand. It's important that we don't crash, that will bring down
                 // the build.
                 node.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_InvalidSyntax(
-                    node.Source, 
+                    node.Source,
                     node.AttributeName));
                 return new[] { node };
             }
@@ -331,15 +331,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             var valueExpressionTokens = new List<IntermediateToken>();
             var changeExpressionTokens = new List<IntermediateToken>();
+
+            // DOM-based event handlers use EventCallback, so if we see a delegate here it's a component.
             if (changeAttribute != null && changeAttribute.IsDelegateProperty())
             {
-                RewriteNodesForDelegateBind(
+                RewriteNodesForComponentDelegateBind(
                     original,
-                    format,
-                    culture,
-                    valueAttribute,
-                    changeAttribute,
-                    valueExpressionTokens, 
+                    valueExpressionTokens,
                     changeExpressionTokens);
             }
             else
@@ -401,7 +399,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     changeNode.Children[0].Children.Add(changeExpressionTokens[i]);
                 }
 
-                return  new[] { valueNode, changeNode };
+                return new[] { valueNode, changeNode };
             }
             else
             {
@@ -593,111 +591,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return true;
         }
 
-        private void RewriteNodesForDelegateBind(
+        private void RewriteNodesForComponentDelegateBind(
             IntermediateToken original,
-            IntermediateToken format,
-            IntermediateToken culture,
-            BoundAttributeDescriptor valueAttribute,
-            BoundAttributeDescriptor changeAttribute,
-            List<IntermediateToken> valueExpressionTokens, 
+            List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
             // Now rewrite the content of the value node to look like:
             //
-            // BindMethods.GetValue(<code>) OR
-            // BindMethods.GetValue(<code>, <format>)
+            // BindMethods.GetValue(<code>)
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = $"{ComponentsApi.BindMethods.GetValue}(",
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
-
-            if (!string.IsNullOrEmpty(format?.Content))
-            {
-                valueExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ", format: ",
-                    Kind = TokenKind.CSharp,
-                });
-                valueExpressionTokens.Add(format);
-            }
-
-            if (!string.IsNullOrEmpty(culture?.Content))
-            {
-                valueExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ", culture: ",
-                    Kind = TokenKind.CSharp,
-                });
-                valueExpressionTokens.Add(culture);
-            }
-
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
                 Kind = TokenKind.CSharp,
             });
 
-            // Now rewrite the content of the change-handler node. There are two cases we care about
-            // here. If it's a component attribute, then don't use the 'BindMethods' wrapper. We expect
-            // component attributes to always 'match' on type.
+            // Now rewrite the content of the change-handler node. Since it's a component attribute,
+            // we don't use the 'BindMethods' wrapper. We expect component attributes to always 'match' on type.
             //
             // __value => <code> = __value
-            //
-            // For general DOM attributes, we need to be able to create a delegate that accepts UIEventArgs
-            // so we use BindMethods.SetValueHandler
-            //
-            // BindMethods.SetValueHandler(__value => <code> = __value, <code>) OR
-            // BindMethods.SetValueHandler(__value => <code> = __value, <code>, <format>)
-            //
-            // Note that the linemappings here are applied to the value attribute, not the change attribute.
-            if (changeAttribute == null)
+            changeExpressionTokens.Add(new IntermediateToken()
             {
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value",
-                    Kind = TokenKind.CSharp
-                });
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = original.Content,
-                    Kind = TokenKind.CSharp
-                });
-
-                if (format != null)
-                {
-                    changeExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = $", format: {format.Content}",
-                        Kind = TokenKind.CSharp
-                    });
-                }
-
-                if (culture != null)
-                {
-                    changeExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = $", culture: {culture.Content}",
-                        Kind = TokenKind.CSharp
-                    });
-                }
-
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ")",
-                    Kind = TokenKind.CSharp
-                });
-            }
-            else
-            {
-                // Component
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = $"__value => {original.Content} = __value",
-                    Kind = TokenKind.CSharp
-                });
-            }
+                Content = $"__value => {original.Content} = __value",
+                Kind = TokenKind.CSharp,
+            });
         }
 
         private void RewriteNodesForEventCallbackBind(
@@ -711,8 +633,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             // Now rewrite the content of the value node to look like:
             //
-            // BindMethods.GetValue(<code>) OR
-            // BindMethods.GetValue(<code>, <format>)
+            // BindMethods.GetValue(<code>, format: <format>, culture: <culture>)
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = $"{ComponentsApi.BindMethods.GetValue}(",
@@ -760,8 +681,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // For general DOM attributes, we need to be able to create a delegate that accepts UIEventArgs
             // so we use 'CreateBinder'
             //
-            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>) OR
-            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, <format>)
+            // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, format: <format>, culture: <culture>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
             if (changeAttribute == null)
