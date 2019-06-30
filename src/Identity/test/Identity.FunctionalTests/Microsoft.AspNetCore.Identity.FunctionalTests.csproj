@@ -40,7 +40,7 @@
       DestinationFolder="$(PublishDir)" />
     <Copy
       SourceFiles="@(_PagesFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages"/>
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
     <Copy
       SourceFiles="@(_wwwrootFiles)"
       DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
