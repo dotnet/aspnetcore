@@ -22,7 +22,9 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (12:0,12 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, 
+                            IntermediateToken -  - CSharp - ParentValue
+                            IntermediateToken -  - CSharp - )
                 HtmlContent - (28:0,28 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (28:0,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (37:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -33,7 +33,9 @@ Document -
                                 IntermediateToken -  - CSharp - )
                         HtmlAttribute - (41:1,34 [5] x:\dir\subdir\Test\TestComponent.cshtml) - oninput=" - "
                             CSharpExpressionAttributeValue -  - 
-                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text)
+                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, 
+                                IntermediateToken -  - CSharp - text
+                                IntermediateToken -  - CSharp - )
                     HtmlContent - (104:1,97 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (104:1,97 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (112:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -15,11 +15,14 @@ Document -
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (27:0,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
-                            IntermediateToken -  - CSharp - , 
+                            IntermediateToken -  - CSharp - , format: 
                             IntermediateToken - (55:0,55 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Format
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (26:0,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, 
+                            IntermediateToken -  - CSharp - CurrentDate
+                            IntermediateToken -  - CSharp - , format: Format
+                            IntermediateToken -  - CSharp - )
             CSharpCode - (73:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (73:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n

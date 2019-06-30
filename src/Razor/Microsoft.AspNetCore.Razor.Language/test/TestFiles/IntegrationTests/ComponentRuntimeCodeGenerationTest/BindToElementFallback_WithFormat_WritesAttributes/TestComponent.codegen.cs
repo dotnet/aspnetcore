@@ -23,8 +23,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , "MM/dd"));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd"));
+            , format: "MM/dd"));
+            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: "MM/dd"));
             builder.SetUpdatesAttributeName("value");
             builder.CloseElement();
         }

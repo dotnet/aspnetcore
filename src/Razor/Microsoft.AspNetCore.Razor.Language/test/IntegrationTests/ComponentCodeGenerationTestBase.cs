@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         internal override bool UseTwoPhaseCompilation => true;
 
         protected ComponentCodeGenerationTestBase()
-            : base(generateBaselines: false)
+            : base(generateBaselines: null)
         {
         }
 
@@ -1109,6 +1109,113 @@ namespace Test
         }
 
         [Fact]
+        public void BindToElementFallback_WithCulture()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<div @bind-value=""@ParentValue"" @bind-value:event=""onchange"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToElementWithCulture()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindElement(""div"", ""value"", ""myvalue"", ""myevent"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<div @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.InvariantCulture"" />
+@code {
+    public string ParentValue { get; set; } = ""hi"";
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToInputElementWithDefaultCulture()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: null)]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" />
+@code {
+    public int ParentValue { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BindToInputElementWithDefaultCulture_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: null)]
+    public static class BindAttributes
+    {
+    }
+}"));
+            // Act
+            var generated = CompileToCSharp(@"
+@using System.Globalization
+<input type=""custom"" @bind-value=""@ParentValue"" @bind-value:event=""anotherevent"" @bind-value:culture=""CultureInfo.CurrentCulture"" />
+@code {
+    public int ParentValue { get; set; }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+
+        [Fact]
         public void BuiltIn_BindToInputText_CanOverrideEvent()
         {
             // Arrange
@@ -1202,6 +1309,35 @@ using Microsoft.AspNetCore.Components;
 namespace Test
 {
     [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: false, format: ""MM/dd"")]
+    public static class BindAttributes
+    {
+    }
+}"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input type=""custom"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
+@code {
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void BuiltIn_BindToInputWithDefaultCultureAndDefaultFormat_Override()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    [BindInputElement(""custom"", null, ""value"", ""onchange"", isInvariantCulture: true, format: ""MM/dd"")]
     public static class BindAttributes
     {
     }

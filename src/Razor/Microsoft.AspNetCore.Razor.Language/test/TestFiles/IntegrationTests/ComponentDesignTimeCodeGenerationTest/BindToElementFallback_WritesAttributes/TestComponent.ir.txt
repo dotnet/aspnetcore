@@ -25,7 +25,9 @@ Document -
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (32:0,32 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, 
+                            IntermediateToken -  - CSharp - ParentValue
+                            IntermediateToken -  - CSharp - )
                 HtmlContent - (77:0,77 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (77:0,77 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (86:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -19,12 +19,15 @@ Document -
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (21:0,21 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
-                            IntermediateToken -  - CSharp - , 
+                            IntermediateToken -  - CSharp - , format: 
                             IntermediateToken -  - CSharp - "MM/dd"
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (20:0,20 [12] x:\dir\subdir\Test\TestComponent.cshtml) - oninput=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd")
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, 
+                            IntermediateToken -  - CSharp - CurrentDate
+                            IntermediateToken -  - CSharp - , format: "MM/dd"
+                            IntermediateToken -  - CSharp - )
                 HtmlContent - (91:0,91 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (91:0,91 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (100:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)

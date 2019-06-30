@@ -15,7 +15,9 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, 
+                            IntermediateToken -  - CSharp - UserName
+                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
@@ -23,6 +25,8 @@ Document -
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, 
+                            IntermediateToken -  - CSharp - UserIsActive
+                            IntermediateToken -  - CSharp - )
             CSharpCode - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

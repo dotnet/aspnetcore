@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -100,6 +101,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     else if (node.BoundAttributeParameter.Name == "format")
                     {
                         entry.BindFormatNode = node;
+                    }
+                    else if (node.BoundAttributeParameter.Name == "culture")
+                    {
+                        entry.BindCultureNode = node;
                     }
                     else
                     {
@@ -307,6 +312,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 };
             }
 
+            // Look for a culture. If we find one then we need to pass the culture into the
+            // two nodes we generate.
+            IntermediateToken culture = null;
+            if (bindEntry.BindCultureNode != null)
+            {
+                culture = GetAttributeContent(bindEntry.BindCultureNode);
+            }
+            else if (node.TagHelper?.IsInvariantCultureBindTagHelper() == true)
+            {
+                // We may have a default invariant culture if one is associated with the field type.
+                culture = new IntermediateToken()
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = $"global::{typeof(CultureInfo).FullName}.{nameof(CultureInfo.InvariantCulture)}",
+                };
+            }
+
             if (TryGetFormatNode(
                 parent,
                 node,
@@ -325,6 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 RewriteNodesForDelegateBind(
                     original,
                     format,
+                    culture,
                     valueAttribute,
                     changeAttribute,
                     valueExpressionTokens, 
@@ -335,6 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 RewriteNodesForEventCallbackBind(
                     original,
                     format,
+                    culture,
                     valueAttribute,
                     changeAttribute,
                     valueExpressionTokens,
@@ -630,6 +654,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private void RewriteNodesForDelegateBind(
             IntermediateToken original,
             IntermediateToken format,
+            IntermediateToken culture,
             BoundAttributeDescriptor valueAttribute,
             BoundAttributeDescriptor changeAttribute,
             List<IntermediateToken> valueExpressionTokens, 
@@ -645,15 +670,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
+
             if (!string.IsNullOrEmpty(format?.Content))
             {
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = ", ",
+                    Content = ", format: ",
                     Kind = TokenKind.CSharp,
                 });
                 valueExpressionTokens.Add(format);
             }
+
+            if (!string.IsNullOrEmpty(culture?.Content))
+            {
+                valueExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ", culture: ",
+                    Kind = TokenKind.CSharp,
+                });
+                valueExpressionTokens.Add(culture);
+            }
+
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
@@ -673,33 +710,58 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // BindMethods.SetValueHandler(__value => <code> = __value, <code>, <format>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
+            if (changeAttribute == null)
+            {
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value",
+                    Kind = TokenKind.CSharp
+                });
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = original.Content,
+                    Kind = TokenKind.CSharp
+                });
 
-            string changeExpressionContent;
-            if (changeAttribute == null && format == null)
-            {
-                // DOM
-                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
-            }
-            else if (changeAttribute == null && format != null)
-            {
-                // DOM + format
-                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
+                if (format != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", format: {format.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                if (culture != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", culture: {culture.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ")",
+                    Kind = TokenKind.CSharp
+                });
             }
             else
             {
                 // Component
-                changeExpressionContent = $"__value => {original.Content} = __value";
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"__value => {original.Content} = __value",
+                    Kind = TokenKind.CSharp
+                });
             }
-            changeExpressionTokens.Add(new IntermediateToken()
-            {
-                Content = changeExpressionContent,
-                Kind = TokenKind.CSharp
-            });              
         }
 
         private void RewriteNodesForEventCallbackBind(
             IntermediateToken original,
             IntermediateToken format,
+            IntermediateToken culture,
             BoundAttributeDescriptor valueAttribute,
             BoundAttributeDescriptor changeAttribute,
             List<IntermediateToken> valueExpressionTokens,
@@ -715,15 +777,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
+
             if (!string.IsNullOrEmpty(format?.Content))
             {
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = ", ",
+                    Content = ", format: ",
                     Kind = TokenKind.CSharp,
                 });
                 valueExpressionTokens.Add(format);
             }
+
+            if (!string.IsNullOrEmpty(culture?.Content))
+            {
+                valueExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ", culture: ",
+                    Kind = TokenKind.CSharp,
+                });
+                valueExpressionTokens.Add(culture);
+            }
+
             valueExpressionTokens.Add(new IntermediateToken()
             {
                 Content = ")",
@@ -748,28 +822,53 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, <format>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
+            if (changeAttribute == null)
+            {
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, ",
+                    Kind = TokenKind.CSharp
+                });
 
-            string changeExpressionContent;
-            if (changeAttribute == null && format == null)
-            {
-                // DOM
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, {original.Content})";
-            }
-            else if (changeAttribute == null && format != null)
-            {
-                // DOM + format
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, {original.Content}, {format.Content})";
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = original.Content,
+                    Kind = TokenKind.CSharp
+                });
+
+                if (format != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", format: {format.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                if (culture != null)
+                {
+                    changeExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = $", culture: {culture.Content}",
+                        Kind = TokenKind.CSharp
+                    });
+                }
+
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ")",
+                    Kind = TokenKind.CSharp,
+                });
             }
             else
             {
                 // Component
-                changeExpressionContent = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateInferredMethod}(this, __value => {original.Content} = __value, {original.Content})";
+                changeExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateInferredMethod}(this, __value => {original.Content} = __value, {original.Content})",
+                    Kind = TokenKind.CSharp
+                });
             }
-            changeExpressionTokens.Add(new IntermediateToken()
-            {
-                Content = changeExpressionContent,
-                Kind = TokenKind.CSharp
-            });
         }
 
         private static IntermediateToken GetAttributeContent(IntermediateNode node)
@@ -832,6 +931,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public TagHelperDirectiveAttributeParameterIntermediateNode BindEventNode { get; set; }
 
             public TagHelperDirectiveAttributeParameterIntermediateNode BindFormatNode { get; set; }
+
+            public TagHelperDirectiveAttributeParameterIntermediateNode BindCultureNode { get; set; }
         }
     }
 }

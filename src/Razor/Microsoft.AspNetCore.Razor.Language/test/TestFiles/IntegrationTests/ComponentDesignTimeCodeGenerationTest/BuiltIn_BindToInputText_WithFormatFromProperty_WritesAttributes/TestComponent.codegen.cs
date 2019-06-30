@@ -28,7 +28,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 
+            , format: 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                        Format
@@ -37,7 +37,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format);
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: Format);
         }
         #pragma warning restore 1998
 #nullable restore

@@ -23,7 +23,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 
+            , format: 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                        Format
@@ -32,7 +32,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format));
+            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: Format));
             builder.SetUpdatesAttributeName("value");
             builder.CloseElement();
         }
