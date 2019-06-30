@@ -40,7 +40,8 @@
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
-  <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build">
+  <!-- Source build doesn't build this package -->
+  <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <Message Text="Building razor views assemblies" Importance="High" />
     <MSbuild Projects="$(MSBuildThisFile)"
              Targets="BuildForUI"
@@ -128,7 +129,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews">
+  <!-- Source build doesn't build this package -->
+  <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <ItemGroup>
       <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
       <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />

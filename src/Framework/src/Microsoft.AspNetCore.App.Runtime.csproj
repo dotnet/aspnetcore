@@ -8,6 +8,8 @@
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- Do not exclude this project from source build -->
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
@@ -362,10 +364,16 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   #########################################
   -->
   <Target Name="_DownloadAndExtractDotNetRuntime">
-   <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
+    <!-- Download dotnet runtime from web when not building from source -->
+    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)') and '$(DotNetRuntimeArchiveSource)' == ''"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"
       DestinationFileName="$(DotNetRuntimeArchiveFileName)" />
+
+    <!-- Copy from corefx build output when building from source -->
+    <Copy Condition="! Exists('$(DotNetRuntimeArchive)') and '$(DotNetRuntimeArchiveSource)' != ''"
+          SourceFiles="$(DotNetRuntimeArchiveSource)"
+          DestinationFiles="$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)" />
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
@@ -412,7 +420,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
-  <Target Name="_InstallFrameworkIntoLocalDotNet"
+  <!-- This workaround is not needed in source build -->
+  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Name="_InstallFrameworkIntoLocalDotNet"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
 

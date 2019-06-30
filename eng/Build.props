@@ -121,6 +121,12 @@
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
         -->
+
+        <!-- Tool projects except FirstRunCertGenerator are not neede in source build -->
+        <ProjectToExclude Condition="'$(DotNetBuildFromSource)' == 'true'"
+                          Include="$(RepoRoot)src\Tools\**\*.*proj"
+                          Exclude="$(RepoRoot)src\Tools\FirstRunCertGenerator\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"/>
+
         <DotNetProjects Include="
                           $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
                           $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
@@ -148,8 +154,8 @@
                           $(RepoRoot)src\Analyzers\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
-                          "
-                        Exclude="
+                          " />
+        <DotNetProjects Remove="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
                           $(RepoRoot)**\node_modules\**\*;
