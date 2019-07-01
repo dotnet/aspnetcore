@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Blazor.DevServer.Commands
 {

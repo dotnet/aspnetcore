@@ -13,12 +13,12 @@
 
 This target is meant to be used when invoking helix tests on one project at a time.
 
-Usage: dotnet build /t:Helix src/MyTestProject.csproj
+Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
 
 -->
   <Target Name="Helix">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
-             Properties="Projects=$(MSBuildProjectFullPath)" />
+             Properties="ProjectToBuild=$(MSBuildProjectFullPath)" />
   </Target>
 
   <!-- Build the actual helix work items to send to helix queues -->
@@ -49,8 +49,8 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
 
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
     </PropertyGroup>
-
   </Target>
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
@@ -78,8 +78,8 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(_HelixFriendlyNameTargetQueue)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

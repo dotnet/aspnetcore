@@ -32,10 +32,8 @@ namespace HealthChecksSample
             //
             // The health check added by AddDbContextCheck will create instances of MyContext from the service provider,
             // and so will reuse the configuration provided here.
-            services.AddDbContext<MyContext>(options =>
-            {
-                options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
-            });
+            services.AddDbContext<MyContext>(
+                options => options.UseSqlite(Configuration["ConnectionStrings:DefaultConnection"]));
         }
 
         public void Configure(IApplicationBuilder app)

@@ -4,10 +4,10 @@
 
   <PropertyGroup>
     <Name>AspNetCoreSharedFrameworkLib$(Platform)</Name>
+    <OutputName>$(Name)</OutputName>
     <!-- Use the internal installer name because .wixlib files are only produced so we can hand them off to the dotnet/cli repo. -->
-    <OutputName>$(InternalInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
-    <!-- This is still marked as a 'product' because is needs to copied to artifact outputs. -->
-    <IsProductInstaller>true</IsProductInstaller>
+    <!-- This is still marked as 'shipping' because is needs to copied to artifact outputs. -->
+    <IsShipping>true</IsShipping>
     <OutputType>Library</OutputType>
     <LibBindFiles>true</LibBindFiles>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
@@ -36,4 +36,8 @@
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>$(InternalInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
 </Project>

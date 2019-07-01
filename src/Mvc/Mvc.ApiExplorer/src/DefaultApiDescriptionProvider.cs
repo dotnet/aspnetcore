@@ -569,9 +569,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     newContainerName = GetName(containerName, bindingContext);
                 }
 
-                for (var i = 0; i < modelMetadata.Properties.Count; i++)
+                var metadataProperties = modelMetadata.Properties;
+                var metadataPropertiesCount = metadataProperties.Count;
+                for (var i = 0; i < metadataPropertiesCount; i++)
                 {
-                    var propertyMetadata = modelMetadata.Properties[i];
+                    var propertyMetadata = metadataProperties[i];
                     var key = new PropertyKey(propertyMetadata, source);
                     var bindingInfo = BindingInfo.GetBindingInfo(Enumerable.Empty<object>(), propertyMetadata);
 
@@ -583,6 +585,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     if (Visited.Add(key))
                     {
                         Visit(propertyContext, source ?? ambientSource, newContainerName);
+                        Visited.Remove(key);
                     }
                     else
                     {

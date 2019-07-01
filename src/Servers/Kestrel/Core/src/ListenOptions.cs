@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -41,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
-        public EndPoint EndPoint { get; internal set; }
+        internal EndPoint EndPoint { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
@@ -63,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public ulong FileHandle => (EndPoint as FileHandleEndPoint)?.FileHandle ?? 0;
 
         /// <summary>
-        /// Enables an <see cref="IConnectionAdapter"/> to resolve and use services registered by the application during startup.
+        /// Enables connection middleware to resolve and use services registered by the application during startup.
         /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
         /// </summary>
         public KestrelServerOptions KestrelServerOptions { get; internal set; }
@@ -74,38 +72,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
         public HttpProtocols Protocols { get; set; } = HttpProtocols.Http1AndHttp2;
 
-        /// <summary>
-        /// Gets the <see cref="List{IConnectionAdapter}"/> that allows each connection <see cref="System.IO.Stream"/>
-        /// to be intercepted and transformed.
-        /// Configured by the <c>UseHttps()</c> and <see cref="Hosting.ListenOptionsConnectionLoggingExtensions.UseConnectionLogging(ListenOptions)"/>
-        /// extension methods.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to empty.
-        /// </remarks>
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
-#pragma warning restore PUB0001 // Pubternal type in public API
-
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
+
+        internal string Scheme
+        {
+            get
+            {
+                if (IsHttp)
+                {
+                    return IsTls ? "https" : "http";
+                }
+                return "tcp";
+            }
+        }
+
+        internal bool IsHttp { get; set; } = true;
+
+        internal bool IsTls { get; set; }
 
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
         /// </summary>
         internal virtual string GetDisplayName()
         {
-            var scheme = ConnectionAdapters.Any(f => f.IsHttps)
-                ? "https"
-                : "http";
-
             switch (EndPoint)
             {
                 case IPEndPoint _:
-                    return $"{scheme}://{IPEndPoint}";
+                    return $"{Scheme}://{IPEndPoint}";
                 case UnixDomainSocketEndPoint _:
-                    return $"{scheme}://unix:{EndPoint}";
+                    return $"{Scheme}://unix:{EndPoint}";
                 case FileHandleEndPoint _:
-                    return $"{scheme}://<file handle>";
+                    return $"{Scheme}://<file handle>";
                 default:
                     throw new InvalidOperationException();
             }
@@ -113,6 +110,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public override string ToString() => GetDisplayName();
 
+        /// <summary>
+        /// Adds a middleware delegate to the connection pipeline.
+        /// Configured by the <c>UseHttps()</c> and <see cref="Hosting.ListenOptionsConnectionLoggingExtensions.UseConnectionLogging(ListenOptions)"/>
+        /// extension methods.
+        /// </summary>
+        /// <param name="middleware">The middleware delegate.</param>
+        /// <returns>The <see cref="IConnectionBuilder"/>.</returns>
         public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
         {
             _middleware.Add(middleware);

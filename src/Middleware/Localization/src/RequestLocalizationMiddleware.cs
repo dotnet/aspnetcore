@@ -8,9 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -26,15 +26,17 @@ namespace Microsoft.AspNetCore.Localization
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
         /// </summary>
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
+        [ActivatorUtilitiesConstructor]
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -42,7 +44,20 @@ namespace Microsoft.AspNetCore.Localization
             }
 
             _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(loggerFactory));
             _options = options.Value;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
+        /// <see cref="RequestLocalizationMiddleware"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
+               : this(next, options, NullLoggerFactory.Instance)
+        {
         }
 
         /// <summary>
@@ -84,8 +99,7 @@ namespace Microsoft.AspNetCore.Localization
 
                         if (cultureInfo == null)
                         {
-                            EnsureLogger(context);
-                            _logger?.UnsupportedCultures(provider.GetType().Name, cultures);
+                            _logger.UnsupportedCultures(provider.GetType().Name, cultures);
                         }
                     }
 
@@ -98,8 +112,7 @@ namespace Microsoft.AspNetCore.Localization
 
                         if (uiCultureInfo == null)
                         {
-                            EnsureLogger(context);
-                           _logger?.UnsupportedUICultures(provider.GetType().Name, uiCultures);
+                            _logger.UnsupportedUICultures(provider.GetType().Name, uiCultures);
                         }
                     }
 
@@ -134,11 +147,6 @@ namespace Microsoft.AspNetCore.Localization
             SetCurrentThreadCulture(requestCulture);
 
             await _next(context);
-        }
-
-        private void EnsureLogger(HttpContext context)
-        {
-            _logger = _logger ?? context.RequestServices.GetService<ILogger<RequestLocalizationMiddleware>>();
         }
 
         private static void SetCurrentThreadCulture(RequestCulture requestCulture)

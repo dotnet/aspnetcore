@@ -113,8 +113,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // We do this check first for consistency with how 405 is implemented for the graph version
                 // of this code. We still want to know if any endpoints in this set require an HTTP method
-                // even if those endpoints are already invalid.
-                var metadata = candidates[i].Endpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+                // even if those endpoints are already invalid - hence the null-check.
+                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IHttpMethodMetadata>();
                 if (metadata == null || metadata.HttpMethods.Count == 0)
                 {
                     // Can match any method.

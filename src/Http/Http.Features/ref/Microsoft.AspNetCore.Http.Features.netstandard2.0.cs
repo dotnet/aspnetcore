@@ -200,6 +200,14 @@ namespace Microsoft.AspNetCore.Http.Features
         bool Available { get; }
         Microsoft.AspNetCore.Http.IHeaderDictionary Trailers { get; }
     }
+    public partial interface IHttpResetFeature
+    {
+        void Reset(int errorCode);
+    }
+    public partial interface IHttpResponseCompletionFeature
+    {
+        System.Threading.Tasks.Task CompleteAsync();
+    }
     public partial interface IHttpResponseFeature
     {
         System.IO.Stream Body { get; set; }
@@ -259,6 +267,10 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IResponseCookiesFeature
     {
         Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
+    }
+    public partial interface IServerVariablesFeature
+    {
+        string this[string variableName] { get; set; }
     }
     public partial interface IServiceProvidersFeature
     {

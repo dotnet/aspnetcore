@@ -35,19 +35,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="principal">The claims principal containing the user claims.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
         public SignInResult(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
-        {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-
-            AuthenticationScheme = authenticationScheme;
-            Principal = principal;
+        {      
+            AuthenticationScheme = authenticationScheme ?? throw new ArgumentNullException(nameof(authenticationScheme)); 
+            Principal = principal ?? throw new ArgumentNullException(nameof(principal));
             Properties = properties;
         }
 

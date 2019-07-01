@@ -3,24 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
-    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine
-
-    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
-      GoogleProtobufPackageVersion=$(GoogleProtobufPackageVersion);
-      GrpcAspNetCoreServerPackageVersion=$(GrpcAspNetCoreServerPackageVersion);
-      GrpcToolsPackageVersion=$(GrpcToolsPackageVersion);
+      GrpcAspNetCorePackageVersion=$(GrpcAspNetCorePackageVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion);
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

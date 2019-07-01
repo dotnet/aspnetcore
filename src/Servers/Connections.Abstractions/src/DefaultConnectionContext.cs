@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http.Features;
 namespace Microsoft.AspNetCore.Connections
 {
     public class DefaultConnectionContext : ConnectionContext,
-                                            IDisposable,
                                             IConnectionIdFeature,
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
@@ -74,11 +73,6 @@ namespace Microsoft.AspNetCore.Connections
         public override void Abort(ConnectionAbortedException abortReason)
         {
             ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
-        }
-
-        public void Dispose()
-        {
-            _connectionClosedTokenSource.Dispose();
         }
 
         public override ValueTask DisposeAsync()

@@ -6,12 +6,10 @@
     <TestGroupName>MusicStore.E2ETests</TestGroupName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-    <!-- Temporarily suppress warnings about Microsoft.AspNetCore.Server.IntegrationTesting -->
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
+    <!-- Tests are disabled due to https://github.com/aspnet/AspNetCore-Internal/issues/1967 -->
+    <SkipTests>true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/8343 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <IsTestProject>false</IsTestProject>
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
@@ -22,10 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
-    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />

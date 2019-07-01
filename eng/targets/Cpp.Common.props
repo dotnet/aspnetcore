@@ -5,8 +5,7 @@
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
     <IsPackable>false</IsPackable>
 
-    <!-- These are defined in Directory.Build.props. This maps the common MSBuild property name to equivalent C++ project properties.  -->
-    <OutDir>$(OutputPath)</OutDir>
+    <!-- This maps the common MSBuild property name to equivalent C++ project properties.  -->
     <IntDir>$(IntermediateOutputPath)</IntDir>
   </PropertyGroup>
 

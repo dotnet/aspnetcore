@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
-    public readonly struct HeaderSegment : IEquatable<HeaderSegment>
+    internal readonly struct HeaderSegment : IEquatable<HeaderSegment>
     {
         private readonly StringSegment _formatting;
         private readonly StringSegment _data;

@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
                     .CreateClient();
 
-            ServerFactory.EnsureDatabaseCreated();
-
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
 
@@ -50,8 +48,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
             var client = server.CreateClient();
             var client2 = server.CreateClient();
-
-            ServerFactory.EnsureDatabaseCreated();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
@@ -85,8 +81,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client = server.CreateClient();
             var client2 = server.CreateClient();
 
-            ServerFactory.EnsureDatabaseCreated();
-
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
 
@@ -108,8 +102,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                     .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
                     .CreateClient();
 
-            ServerFactory.EnsureDatabaseCreated();
-
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";
 
@@ -129,14 +121,58 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
                 .CreateClient();
 
-            ServerFactory.EnsureDatabaseCreated();
-
             var guid = Guid.NewGuid();
             var userName = $"{guid}";
             var email = $"{guid}@example.com";
 
             // Act & Assert
             await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        }
+
+        [Fact]
+        public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmation()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services)
+            {
+                services.Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true)
+                        .SetupTestThirdPartyLogin();
+            }
+
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                .CreateClient();
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email);
+        }
+
+        [Fact]
+        public async Task CanRegisterWithASocialLoginProviderFromLoginWithConfirmationAndRealEmailSender()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services)
+            {
+                services.AddSingleton<IEmailSender, FakeEmailSender>();
+                services
+                        .Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true)
+                        .SetupTestThirdPartyLogin();
+            }
+
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                .CreateClient();
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginWithConfirmationAsync(client, userName, email, hasRealEmailSender: true);
         }
 
         [Fact]
@@ -150,8 +186,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client = ServerFactory
                 .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
                 .CreateClient();
-
-            ServerFactory.EnsureDatabaseCreated();
 
             var guid = Guid.NewGuid();
             var userName = $"{guid}";
@@ -173,8 +207,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var client = ServerFactory
                 .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
                 .CreateClient();
-
-            ServerFactory.EnsureDatabaseCreated();
 
             var guid = Guid.NewGuid();
             var userName = $"{guid}";

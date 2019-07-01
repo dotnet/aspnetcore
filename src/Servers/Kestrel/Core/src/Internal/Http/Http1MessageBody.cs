@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal abstract class Http1MessageBody : MessageBody
     {
         protected readonly Http1Connection _context;
+        protected bool _completed;
 
         protected Http1MessageBody(Http1Connection context)
             : base(context)
@@ -34,11 +36,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        public abstract bool TryReadInternal(out ReadResult readResult);
+
+        public abstract ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default);
+
         protected override Task OnConsumeAsync()
         {
             try
             {
-                if (TryRead(out var readResult))
+                while (TryReadInternal(out var readResult))
                 {
                     AdvanceTo(readResult.Buffer.End);
 
@@ -79,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ReadResult result;
                 do
                 {
-                    result = await ReadAsync();
+                    result = await ReadAsyncInternal();
                     AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
@@ -176,6 +182,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             context.OnTrailersComplete(); // No trailers for these.
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
+        }
+
+        protected void ThrowIfCompleted()
+        {
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
         }
     }
 }

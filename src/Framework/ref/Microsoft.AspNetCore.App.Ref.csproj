@@ -7,7 +7,7 @@
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
     <PackageId>$(TargetingPackName)</PackageId>
-    <PackageVersion>$(TargetingPackVersion)</PackageVersion>
+    <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 
@@ -17,14 +17,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PackageType>DotnetPlatform</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
-
-    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
-    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
-
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'">aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
-    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'">aspnetcore-targeting-pack-$(PackageVersion).tar.gz</ArchiveOutputFileName>
-    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
 
     <!-- There are no symbols for reference assemblies. -->
     <IncludeSymbols>false</IncludeSymbols>
@@ -41,10 +33,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
-    <ManifestsPackagePath>data/</ManifestsPackagePath>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <!-- Platform manifest data -->
+    <FrameworkListFileName>FrameworkList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,11 +56,22 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
+
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion)</ArchiveOutputFileName>
+    <ZipArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).zip</ZipArchiveOutputPath>
+    <TarArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName).tar.gz</TarArchiveOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- If this project won't produce a package, don't bother building anything. -->
-    <BuildDependsOn Condition="'$(IsPackable)' != 'false'">
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' != 'false'">
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
+      IncludeFrameworkListFile;
       _BatchCopyToLayoutTargetDir;
       _InstallTargetingPackIntoLocalDotNet;
       _CreateTargetingPackArchive;
@@ -112,8 +118,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
       <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
-
-      <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>
 
@@ -160,17 +164,32 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ArchiveOutputPath)">
+          Outputs="$(ZipArchiveOutputPath);$(TarArchiveOutputPath)"
+          Condition="'$(IsPackable)' == 'true'">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
-      DestinationFile="$(ArchiveOutputPath)"
-      Overwrite="true"
-      Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'" />
+      DestinationFile="$(ZipArchiveOutputPath)"
+      Overwrite="true" />
+    <!-- Requires Windows 10 version 1803 or newer -->
     <Exec
-      Command="tar -czf $(ArchiveOutputPath) ."
-      WorkingDirectory="$(TargetingPackLayoutRoot)"
-      Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'" />
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
+      Command="tar -czf $(TarArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TarArchiveOutputPath)" />
+  </Target>
+
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(PackageTargetRuntime)' == '' AND '$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(RefPackContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <RefPackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RefPackContent)" />
+    </ItemGroup>
   </Target>
 
 </Project>

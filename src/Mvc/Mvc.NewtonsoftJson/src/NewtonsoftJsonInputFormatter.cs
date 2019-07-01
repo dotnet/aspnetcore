@@ -134,10 +134,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
                 var memoryThreshold = DefaultMemoryThreshold;
-                if (request.ContentLength.HasValue && request.ContentLength.Value > 0 && request.ContentLength.Value < memoryThreshold)
+                var contentLength = request.ContentLength.GetValueOrDefault();
+                if (contentLength > 0 && contentLength < memoryThreshold)
                 {
                     // If the Content-Length is known and is smaller than the default buffer size, use it.
-                    memoryThreshold = (int)request.ContentLength.Value;
+                    memoryThreshold = (int)contentLength;
                 }
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                     if (readStream is FileBufferingReadStream fileBufferingReadStream)
                     {
-                        fileBufferingReadStream.Dispose();
+                        await fileBufferingReadStream.DisposeAsync();
                     }
                 }
             }
@@ -225,7 +226,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         }
                         else
                         {
-                            addMember = !path.EndsWith("." + member, StringComparison.Ordinal);
+                            addMember = !path.EndsWith("." + member, StringComparison.Ordinal)
+                                && !path.EndsWith("['" + member + "']", StringComparison.Ordinal)
+                                && !path.EndsWith("[" + member + "]", StringComparison.Ordinal);
                         }
                     }
                 }

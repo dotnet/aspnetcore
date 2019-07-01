@@ -7,7 +7,6 @@
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
-    <PackageVersion>$(SharedFxVersion)</PackageVersion>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
@@ -19,15 +18,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- There is a ref directory next to this project but it's not auto generated, disable the guardrails -->
     <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
-    <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
-    <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
-    <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
-
-    <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
-    <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
-    <BundleArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</BundleArchiveOutputFileName>
-    <RedistArchiveOutputPath>$(InstallersOutputPath)$(BundleArchiveOutputFileName)</RedistArchiveOutputPath>
 
     <!-- This file is used by the dotnet/core-sdk repo to determine if the version of AspNetCore.App is coherent with Microsoft.NETCore.App. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
@@ -35,11 +25,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- NuGet appends target framework to this value. Example: runtimes/win-x64/lib/netcoreapp3.0/ -->
     <BuildOutputTargetFolder>runtimes/$(RuntimeIdentifier)/lib/</BuildOutputTargetFolder>
+    <!-- We still need the native path to these assets though for the RuntimeList.xml manifest -->
+    <ManagedAssetsPackagePath>$(BuildOutputTargetFolder)$(DefaultNetCoreTargetFramework)</ManagedAssetsPackagePath>
     <!-- Target framework is not append to this because native assets to not have a target framework. -->
     <NativeAssetsPackagePath>runtimes/$(RuntimeIdentifier)/native/</NativeAssetsPackagePath>
 
-    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
@@ -106,10 +98,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
-    <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'runtime.$(RuntimeIdentifier).microsoft.netcore.app', '$(MicrosoftNETCoreAppPackageVersion)'))</RuntimePackageRoot>
+    <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'microsoft.netcore.app.runtime.$(RuntimeIdentifier)', '$(MicrosoftNETCoreAppRuntimeVersion)'))</RuntimePackageRoot>
     <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
     <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
+
+    <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
+    <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -118,7 +113,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <Reference Include="runtime.$(RuntimeIdentifier).microsoft.netcore.app" ExcludeAssets="All" PrivateAssets="All" />
+    <Reference Include="microsoft.netcore.app.runtime.$(RuntimeIdentifier)" ExcludeAssets="All" PrivateAssets="All" />
 
     <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
@@ -138,6 +133,18 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <PropertyGroup>
+    <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
+    <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
+    <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
+
+    <InternalArchiveOutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</InternalArchiveOutputFileName>
+    <InternalArchiveOutputPath>$(InstallersOutputPath)$(InternalArchiveOutputFileName)</InternalArchiveOutputPath>
+    <RedistArchiveOutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</RedistArchiveOutputFileName>
+    <RedistArchiveOutputPath>$(InstallersOutputPath)$(RedistArchiveOutputFileName)</RedistArchiveOutputPath>
+  </PropertyGroup>
+
   <!-- Target chain -->
   <PropertyGroup>
     <ResolveReferencesDependsOn>
@@ -152,6 +159,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GenerateSharedFxVersionsFiles;
       Crossgen;
       _ResolveSharedFrameworkContent;
+      IncludeFrameworkListFile;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
@@ -182,9 +190,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <ItemGroup>
     <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
   </ItemGroup>
-
-  <!-- Override target from internal.aspnetcore.sdk which asserts DebugType == portable if IncludeSymbols = true, which is not right for this project. -->
-  <Target Name="_EnsureDebugTypeIsPortable" />
 
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
@@ -232,7 +237,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="GenerateSharedFxVersionsFiles" DependsOnTargets="InitializeSourceControlInformation">
     <WriteLinesToFile
       File="$(BaseRuntimeVersionFileOutputPath)"
-      Lines="$(MicrosoftNETCoreAppPackageVersion)"
+      Lines="$(MicrosoftNETCoreAppRuntimeVersion)"
       Overwrite="true" />
 
     <!-- Generates the .version file in the shared framework -->
@@ -266,8 +271,16 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles;GenerateNuspec"
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <!-- Native files are included in _PackageFile instead because they belong in a separate package folder.r -->
+      <!-- Native files are included in _PackageFile instead because they belong in a separate package folder. -->
       <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' == 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb' " />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveRuntimePackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="GenerateSharedFxDepsFile">
+    <ItemGroup>
+      <RuntimePackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
     </ItemGroup>
   </Target>
 
@@ -437,6 +450,23 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Command="tar -czf $(RedistArchiveOutputPath) ."
       WorkingDirectory="$(RedistSharedFrameworkLayoutRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
+  </Target>
+
+  <Target Name="IncludeFrameworkListFile"
+          DependsOnTargets="_ResolveSharedFrameworkContent"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'$(ManifestsPackagePath)' != ''">
+    <RepoTasks.CreateFrameworkListFile
+      Files="@(SharedFxContent)"
+      TargetFile="$(FrameworkListOutputPath)"
+      ManagedRoot="$(ManagedAssetsPackagePath)"
+      NativeRoot="$(NativeAssetsPackagePath)"
+      RootAttributes="@(FrameworkListRootAttributes)" />
+
+    <ItemGroup>
+      <RuntimePackContent Include="$(FrameworkListOutputPath)" PackagePath="$(ManifestsPackagePath)" />
+      <_PackageFiles Include="@(RuntimePackContent)" />
+    </ItemGroup>
   </Target>
 
 </Project>

@@ -143,8 +143,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         internal ListenOptions() { }
         public System.IServiceProvider ApplicationServices { get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Net.EndPoint EndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public ulong FileHandle { get { throw null; } }
         public System.Net.IPEndPoint IPEndPoint { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions KestrelServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -159,24 +157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public MinDataRate(double bytesPerSecond, System.TimeSpan gracePeriod) { }
         public double BytesPerSecond { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.TimeSpan GracePeriod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
-{
-    public partial class ConnectionAdapterContext
-    {
-        internal ConnectionAdapterContext() { }
-        public System.IO.Stream ConnectionStream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
-    }
-    public partial interface IAdaptedConnection : System.IDisposable
-    {
-        System.IO.Stream ConnectionStream { get; }
-    }
-    public partial interface IConnectionAdapter
-    {
-        bool IsHttps { get; }
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext context);
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
@@ -228,9 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         public HttpParser() { }
         public HttpParser(bool showErrorDetails) { }
-        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
         bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
-        public bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
+        public bool ParseHeaders(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader) { throw null; }
         public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
     }
     public enum HttpScheme
@@ -253,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public partial interface IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
     {
-        bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes);
+        bool ParseHeaders(TRequestHandler handler, ref System.Buffers.SequenceReader<byte> reader);
         bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined);
     }
     public partial interface IHttpRequestLineHandler
@@ -261,31 +240,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
-{
-    public static partial class HttpUtilities
-    {
-        public const string Http10Version = "HTTP/1.0";
-        public const string Http11Version = "HTTP/1.1";
-        public const string Http2Version = "HTTP/2";
-        public const string HttpsUriScheme = "https://";
-        public const string HttpUriScheme = "http://";
-        public static string GetAsciiOrUTF8StringNonNullCharacters(this System.Span<byte> span) { throw null; }
-        public static string GetAsciiStringEscaped(this System.Span<byte> span, int maxChars) { throw null; }
-        public static string GetAsciiStringNonNullCharacters(this System.Span<byte> span) { throw null; }
-        public static string GetHeaderName(this System.Span<byte> span) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownHttpScheme(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme knownScheme) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownMethod(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, out int length) { throw null; }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod GetKnownMethod(string value) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion knownVersion, out byte length) { throw null; }
-        public static bool IsHostHeaderValid(string hostText) { throw null; }
-        public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { throw null; }
-        public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme scheme) { throw null; }
-        public static string VersionToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion) { throw null; }
-    }
-}
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
+    public static partial class CertificateLoader
+    {
+        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
+    }
     public enum ClientCertificateMode
     {
         NoCertificate = 0,
@@ -303,12 +263,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public System.Security.Cryptography.X509Certificates.X509Certificate2 ServerCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, string, System.Security.Cryptography.X509Certificates.X509Certificate2> ServerCertificateSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Authentication.SslProtocols SslProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
-{
-    public static partial class CertificateLoader
-    {
-        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
+        public void AllowAnyClientCertificate() { }
     }
 }

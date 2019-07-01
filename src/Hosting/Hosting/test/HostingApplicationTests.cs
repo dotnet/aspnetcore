@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void CreateContextWithEnabledLoggerCreatesActivityAndSetsActivityIdInScope()
+        public void CreateContextWithEnabledLoggerCreatesActivityAndSetsActivityInScope()
         {
             // Arrange
             var logger = new LoggerWithScopes(isEnabled: true);
@@ -53,7 +52,36 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             Assert.Single(logger.Scopes);
             var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
-            Assert.Equal(Activity.Current.Id, pairs["ActivityId"].ToString());
+            Assert.Equal(Activity.Current.Id, pairs["SpanId"].ToString());
+            Assert.Equal(Activity.Current.RootId, pairs["TraceId"].ToString());
+            Assert.Equal(string.Empty, pairs["ParentId"]?.ToString());
+        }
+
+        [Fact]
+        public void CreateContextWithEnabledLoggerAndRequestIdCreatesActivityAndSetsActivityInScope()
+        {
+            // Arrange
+
+            // Generate an id we can use for the request id header (in the correct format)
+            var activity = new Activity("IncomingRequest");
+            activity.Start();
+            var id = activity.Id;
+            activity.Stop();
+
+            var logger = new LoggerWithScopes(isEnabled: true);
+            var hostingApplication = CreateApplication(out var features, logger: logger, configure: context =>
+            {
+                context.Request.Headers["Request-Id"] = id;
+            });
+
+            // Act
+            var context = hostingApplication.CreateContext(features);
+
+            Assert.Single(logger.Scopes);
+            var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
+            Assert.Equal(Activity.Current.Id, pairs["SpanId"].ToString());
+            Assert.Equal(Activity.Current.RootId, pairs["TraceId"].ToString());
+            Assert.Equal(id, pairs["ParentId"].ToString());
         }
 
         [Fact]
@@ -89,10 +117,6 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             // Act
             var context = hostingApplication.CreateContext(features);
-
-            Assert.Single(logger.Scopes);
-            var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
-            Assert.Equal(Activity.Current.Id, pairs["ActivityId"].ToString());
 
             hostingApplication.DisposeContext(context, exception: null);
 
@@ -398,13 +422,15 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         private static HostingApplication CreateApplication(out FeatureCollection features,
-            DiagnosticListener diagnosticSource = null, ILogger logger = null)
+            DiagnosticListener diagnosticSource = null, ILogger logger = null, Action<DefaultHttpContext> configure = null)
         {
             var httpContextFactory = new Mock<IHttpContextFactory>();
 
             features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
-            httpContextFactory.Setup(s => s.Create(It.IsAny<IFeatureCollection>())).Returns(new DefaultHttpContext(features));
+            var context = new DefaultHttpContext(features);
+            configure?.Invoke(context);
+            httpContextFactory.Setup(s => s.Create(It.IsAny<IFeatureCollection>())).Returns(context);
             httpContextFactory.Setup(s => s.Dispose(It.IsAny<HttpContext>()));
 
             var hostingApplication = new HostingApplication(
@@ -453,7 +479,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
-                
+
             }
 
             private class Scope : IDisposable

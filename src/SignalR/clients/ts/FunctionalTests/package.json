@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@aspnet/signalr": "link:../signalr",
-    "@aspnet/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
+    "@microsoft/signalr": "link:../signalr",
+    "@microsoft/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
     "msgpack5": "^4.0.2"
   },
   "devDependencies": {
@@ -39,12 +39,13 @@
     "preclean": "cd .. && yarn run build",
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
     "prebuild": "yarn run clean && yarn install --mutex network",
-    "build": "yarn run build:lint && yarn run build:webpack",
+    "build": "yarn run build:inner",
+    "build:inner": "yarn run build:lint && yarn run build:webpack",
     "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
-    "pretest": "yarn run build && dotnet build SignalR.Client.FunctionalTests.csproj",
+    "pretest": "yarn run build && dotnet build SignalR.Client.FunctionalTestApp.csproj",
     "test": "tsc --noEmit && yarn run test:local",
-    "test:inner": "yarn run build && dotnet build SignalR.Client.FunctionalTests.csproj && yarn run test:local",
+    "test:inner": "yarn run build:inner && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
     "test:local": "yarn run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
     "test:all": "yarn run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
     "test:sauce": "yarn run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",

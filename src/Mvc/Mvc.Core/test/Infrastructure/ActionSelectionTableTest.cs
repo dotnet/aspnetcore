@@ -300,36 +300,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Assert.Single(matches);
         }
 
-        [Fact]
-        public void Select_Endpoint_NoMatch_ExcludesMatchingSuppressedAction()
-        {
-            var actions = new ActionDescriptor[]
-            {
-                new ActionDescriptor()
-                {
-                    DisplayName = "A1",
-                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "controller", "Home" },
-                        { "action", "Index" }
-                    },
-                    EndpointMetadata = new List<object>()
-                    {
-                        new SuppressMatchingMetadata(),
-                    },
-                },
-            };
-
-            var table = CreateTableWithEndpoints(actions);
-            var values = new RouteValueDictionary(new { controller = "Home", action = "Index", });
-
-            // Act
-            var matches = table.Select(values);
-
-            // Assert
-            Assert.Empty(matches);
-        }
-
         // In this context `CaseSensitiveMatch` means that the input route values exactly match one of the action
         // descriptor's route values in terms of casing. This is important because we optimize for this case
         // in the implementation.
@@ -584,20 +554,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return ActionSelectionTable<ActionDescriptor>.Create(new ActionDescriptorCollection(actions, 0));
         }
 
-        private static ActionSelectionTable<RouteEndpoint> CreateTableWithEndpoints(IReadOnlyList<ActionDescriptor> actions)
+        private static ActionSelectionTable<Endpoint> CreateTableWithEndpoints(IReadOnlyList<ActionDescriptor> actions)
         {
-
-
             var endpoints = actions.Select(a =>
             {
                 var metadata = new List<object>(a.EndpointMetadata ?? Array.Empty<object>());
                 metadata.Add(a);
-                return new RouteEndpoint(
+                return new Endpoint(
                     requestDelegate: context => Task.CompletedTask, 
-                    routePattern: RoutePatternFactory.Parse("/", defaults: a.RouteValues, parameterPolicies: null, requiredValues: a.RouteValues),
-                    order: 0,
                     metadata: new EndpointMetadataCollection(metadata),
-                    a.DisplayName);
+                    displayName: a.DisplayName);
             });
 
             return ActionSelectionTable<ActionDescriptor>.Create(endpoints);

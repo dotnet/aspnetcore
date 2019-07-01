@@ -24,6 +24,9 @@ Suppress re-compile projects. (Implies -NoRestore)
 .PARAMETER NoBuildDeps
 Do not build project-to-project references and only build the specified project.
 
+.PARAMETER NoBuildRepoTasks
+Skip building eng/tools/RepoTasks/
+
 .PARAMETER Pack
 Produce packages.
 
@@ -32,6 +35,9 @@ Run tests.
 
 .PARAMETER Sign
 Run code signing.
+
+.PARAMETER Configuration
+Debug or Release
 
 .PARAMETER Architecture
 The CPU architecture to build for (x64, x86, arm). Default=x64
@@ -62,6 +68,12 @@ You can also use -NoBuildJava to suppress this project type.
 Build Windows Installers. Required .NET 3.5 to be installed (WiX toolset requirement).
 You can also use -NoBuildInstallers to suppress this project type.
 
+.PARAMETER BinaryLog
+Enable the binary logger
+
+.PARAMETER Verbosity
+MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -73,7 +85,7 @@ Building both native and managed projects.
 .EXAMPLE
 Building a subfolder of code.
 
-    build.ps1 "$(pwd)/src/SomeFolder/**/*.csproj"
+    build.ps1 -projects "$(pwd)/src/SomeFolder/**/*.csproj"
 
 .EXAMPLE
 Running tests.
@@ -95,6 +107,10 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
+
+    [Alias('c')]
+    [ValidateSet('Debug', 'Release')]
+    $Configuration,
 
     [ValidateSet('x64', 'x86', 'arm')]
     $Architecture = 'x64',
@@ -119,10 +135,19 @@ param(
     [switch]$NoBuildJava,
     [switch]$NoBuildInstallers,
 
+    [switch]$NoBuildRepoTasks,
+
     # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
     # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
     # MSBuild for .NET Core
     [switch]$ForceCoreMsbuild,
+
+    # Diagnostics
+    [Alias('bl')]
+    [switch]$BinaryLog,
+    [Alias('v')]
+    [string]$Verbosity = 'minimal',
+    [switch]$DumpProcesses, # Capture all running processes and dump them to a file.
 
     # Other lifecycle targets
     [switch]$Help, # Show help
@@ -135,115 +160,15 @@ param(
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-#
-# Functions
-#
-
-function Get-KoreBuild {
-
-    if (!(Test-Path $LockFile)) {
-        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $LockFile
-    }
-
-    $version = Get-Content $LockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
-    if (!$version) {
-        Write-Error "Failed to parse version from $LockFile. Expected a line that begins with 'version:'"
-    }
-    $version = $version.TrimStart('version:').Trim()
-    $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
-
-    if (!(Test-Path $korebuildPath)) {
-        Write-Host -ForegroundColor Magenta "Downloading KoreBuild $version"
-        New-Item -ItemType Directory -Path $korebuildPath | Out-Null
-        $remotePath = "$ToolsSource/korebuild/artifacts/$version/korebuild.$version.zip"
-
-        try {
-            $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
-            Get-RemoteFile $remotePath $tmpfile
-            if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
-                # Use built-in commands where possible as they are cross-plat compatible
-                Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
-            }
-            else {
-                # Fallback to old approach for old installations of PowerShell
-                Add-Type -AssemblyName System.IO.Compression.FileSystem
-                [System.IO.Compression.ZipFile]::ExtractToDirectory($tmpfile, $korebuildPath)
-            }
-        }
-        catch {
-            Remove-Item -Recurse -Force $korebuildPath -ErrorAction Ignore
-            throw
-        }
-        finally {
-            Remove-Item $tmpfile -ErrorAction Ignore
-        }
-    }
-
-    return $korebuildPath
-}
-
-function Join-Paths([string]$path, [string[]]$childPaths) {
-    $childPaths | ForEach-Object { $path = Join-Path $path $_ }
-    return $path
-}
-
-function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
-    if ($RemotePath -notlike 'http*') {
-        Copy-Item $RemotePath $LocalPath
-        return
-    }
-
-    $retries = 10
-    while ($retries -gt 0) {
-        $retries -= 1
-        try {
-            $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
-            return
-        }
-        catch {
-            Write-Verbose "Request failed. $retries retries remaining"
-        }
-    }
-
-    Write-Error "Download failed: '$RemotePath'."
-}
-
-#
-# Main
-#
-
-# Load configuration or set defaults
-
 if ($Help) {
     Get-Help $PSCommandPath
     exit 1
 }
 
-$Channel = 'master'
-$ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools'
-$ConfigFile = Join-Path $PSScriptRoot 'korebuild.json'
-$LockFile = Join-Path $PSScriptRoot 'korebuild-lock.txt'
-
-if (Test-Path $ConfigFile) {
-    try {
-        $config = Get-Content -Raw -Encoding UTF8 -Path $ConfigFile | ConvertFrom-Json
-        if ($config) {
-            if (Get-Member -Name 'channel' -InputObject $config) { [string] $Channel = $config.channel }
-            if (Get-Member -Name 'toolsSource' -InputObject $config) { [string] $ToolsSource = $config.toolsSource}
-        }
-    } catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
-    }
+if ($DumpProcesses -or $CI) {
+    # Dump running processes
+    Start-Job -Name DumpProcesses -FilePath $PSScriptRoot\eng\scripts\dump_process.ps1 -ArgumentList $PSScriptRoot
 }
-
-$DotNetHome = Join-Path $PSScriptRoot '.dotnet'
-$env:DOTNET_HOME = $DotNetHome
-
-# Execute
-
-$korebuildPath = Get-KoreBuild
 
 # Project selection
 if ($All) {
@@ -254,7 +179,7 @@ elseif ($Projects) {
     {
         $Projects = Join-Path (Get-Location) $Projects
     }
-    $MSBuildArguments += "/p:Projects=$Projects"
+    $MSBuildArguments += "/p:ProjectToBuild=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
 elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
@@ -290,81 +215,176 @@ $RunRestore = if ($NoRestore) { $false }
     else { $true }
 
 # Target selection
-if ($RunRestore) {
-    $MSBuildArguments += "/restore"
+$MSBuildArguments += "/p:Restore=$RunRestore"
+$MSBuildArguments += "/p:Build=$RunBuild"
+if (-not $RunBuild) {
+    $MSBuildArguments += "/p:NoBuild=true"
 }
-
-$MSBuildArguments += "/p:_RunBuild=$RunBuild"
-$MSBuildArguments += "/p:_RunPack=$Pack"
-$MSBuildArguments += "/p:_RunTests=$Test"
-$MSBuildArguments += "/p:_RunSign=$Sign"
+$MSBuildArguments += "/p:Pack=$Pack"
+$MSBuildArguments += "/p:Test=$Test"
+$MSBuildArguments += "/p:Sign=$Sign"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
-if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    $foundJdk = $false
-    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-    $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
-    if (Test-Path "$localJdkPath\bin\javac.exe") {
-        $foundJdk = $true
-        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
-        $env:JAVA_HOME = $localJdkPath
-    }
-    elseif ($env:JAVA_HOME) {
-        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
-            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
-        }
-        else {
-            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
-            $foundJdk = $true
-        }
-    }
-    elseif ($javac) {
-        $foundJdk = $true
-        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
-        $env:JAVA_HOME = $javaHome
-        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+if (-not $Configuration) {
+    $Configuration = if ($CI) { 'Release' } else { 'Debug' }
+}
+$MSBuildArguments += "/p:Configuration=$Configuration"
+
+$foundJdk = $false
+$javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+$localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+if (Test-Path "$localJdkPath\bin\javac.exe") {
+    $foundJdk = $true
+    Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+    $env:JAVA_HOME = $localJdkPath
+}
+elseif ($env:JAVA_HOME) {
+    if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+        Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
     }
     else {
-        try {
-            $jdkRegistryKeys = @(
-                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
-                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
-            )
-            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
-            if ($jdkRegistryKey) {
-                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
-                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-                if (Test-Path "${javaHome}\bin\javac.exe") {
-                    $env:JAVA_HOME = $javaHome
-                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
-                    $foundJdk = $true
-                }
+        Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+        $foundJdk = $true
+    }
+}
+elseif ($javac) {
+    $foundJdk = $true
+    $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+    $env:JAVA_HOME = $javaHome
+    Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+}
+else {
+    try {
+        $jdkRegistryKeys = @(
+            "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+            "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+        )
+        $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($jdkRegistryKey) {
+            $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+            $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+            if (Test-Path "${javaHome}\bin\javac.exe") {
+                $env:JAVA_HOME = $javaHome
+                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                $foundJdk = $true
             }
         }
-        catch {
-            Write-Verbose "Failed to detect Java: $_"
-        }
     }
-
-    if (-not $foundJdk) {
-        Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+    catch {
+        Write-Verbose "Failed to detect Java: $_"
     }
 }
 
-Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
+if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+    $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+}
 
+if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+    Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+}
+
+# Initialize global variables need to be set before the import of Arcade is imported
+$restore = $RunRestore
+
+# Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
+$nodeReuse = $false
+$env:MSBUILDDISABLENODEREUSE=1
+
+# Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
+# conditions in building C++
+# Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
+$warnAsError = $false
+
+if ($ForceCoreMsbuild) {
+    $msbuildEngine = 'dotnet'
+}
+
+# Workaround Arcade check which asserts BinaryLog is true on CI.
+# We always use binlogs on CI, but we customize the name of the log file
+$tmpBinaryLog = $BinaryLog
+if ($CI) {
+    $BinaryLog = $true
+}
+
+# tools.ps1 corrupts global state, so reset these values in case they carried over from a previous build
+rm variable:global:_BuildTool -ea Ignore
+rm variable:global:_DotNetInstallDir -ea Ignore
+rm variable:global:_ToolsetBuildProj -ea Ignore
+rm variable:global:_MSBuildExe -ea Ignore
+
+# Import Arcade
+. "$PSScriptRoot/eng/common/tools.ps1"
+
+if ($tmpBinaryLog) {
+    $MSBuildArguments += "/bl:$LogDir/Build.binlog"
+}
+
+# Capture MSBuild crash logs
+$env:MSBUILDDEBUGPATH = $LogDir
+
+$local:exit_code = $null
 try {
-    $env:KOREBUILD_KEEPGLOBALJSON = 1
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
-    if ($ForceCoreMsbuild) {
-        $global:KoreBuildSettings.MSBuildType = 'core'
+    # Import custom tools configuration, if present in the repo.
+    # Note: Import in global scope so that the script set top-level variables without qualification.
+    $configureToolsetScript = Join-Path $EngRoot "configure-toolset.ps1"
+    if (Test-Path $configureToolsetScript) {
+      . $configureToolsetScript
     }
-    Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
+
+    # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
+    # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing
+    # the toolset is a better default behavior.
+    $tmpRestore = $restore
+    $restore = $true
+
+    $toolsetBuildProj = InitializeToolset
+
+    $restore = $tmpRestore
+
+    if ($ci) {
+        $global:VerbosePreference = 'Continue'
+    }
+
+    if (-not $NoBuildRepoTasks) {
+        MSBuild $toolsetBuildProj `
+            /p:RepoRoot=$RepoRoot `
+            /p:Projects=$EngRoot\tools\RepoTasks\RepoTasks.csproj `
+            /p:Configuration=Release `
+            /p:Restore=$RunRestore `
+            /p:Build=true `
+            /clp:NoSummary
+    }
+
+    MSBuild $toolsetBuildProj `
+        /p:RepoRoot=$RepoRoot `
+        @MSBuildArguments
+}
+catch {
+    Write-Host $_.ScriptStackTrace
+    Write-PipelineTaskError -Message $_
+    $exit_code = 1
 }
 finally {
-    Remove-Module 'KoreBuild' -ErrorAction Ignore
-    Remove-Item env:DOTNET_HOME
-    Remove-Item env:KOREBUILD_KEEPGLOBALJSON
+    if (! $exit_code) {
+        $exit_code = $LASTEXITCODE
+    }
+
+    # tools.ps1 corrupts global state, so reset these values so they don't carry between invocations of build.ps1
+    rm variable:global:_BuildTool -ea Ignore
+    rm variable:global:_DotNetInstallDir -ea Ignore
+    rm variable:global:_ToolsetBuildProj -ea Ignore
+    rm variable:global:_MSBuildExe -ea Ignore
+
+    if ($DumpProcesses -or $ci) {
+        Stop-Job -Name DumpProcesses
+        Remove-Job -Name DumpProcesses
+    }
+
+    if ($ci) {
+        & "$PSScriptRoot/eng/scripts/KillProcesses.ps1"
+    }
 }
+
+ExitWithExitCode $exit_code

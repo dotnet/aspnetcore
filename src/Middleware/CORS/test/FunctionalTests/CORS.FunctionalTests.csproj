@@ -15,8 +15,6 @@
 
   <ItemGroup>
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
-    <ProjectReference Include="..\..\samples\SampleOrigin\SampleOrigin.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\samples\SampleDestination\SampleDestination.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 

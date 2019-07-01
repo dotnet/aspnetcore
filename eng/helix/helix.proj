@@ -1,7 +1,15 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
 
-  <Import Project="$(MSBuildThisFileDirectory)..\targets\Helix.Common.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\build\repo.props" />
+  <PropertyGroup>
+    <!--
+      When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
+      This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
+    -->
+    <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+  </PropertyGroup>
+
+  <Import Project="..\targets\Helix.Common.props" />
+  <Import Project="..\Build.props" />
 
   <ItemGroup>
     <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
@@ -16,20 +24,20 @@
     <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(CI)' == 'true' ">
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <Creator>aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(CI)' != 'true' ">
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
     <HelixType>dev</HelixType>
     <Creator>$(USERNAME)</Creator>
     <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
-    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMdd HH:mm'))</HelixBuild>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
   </PropertyGroup>
 
   <Target Name="Gather" BeforeTargets="Build">

@@ -179,27 +179,29 @@ namespace Templates.Test.Helpers
             return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
         }
 
-        internal AspNetProcess StartBuiltProjectAsync()
+        internal AspNetProcess StartBuiltProjectAsync(bool hasListeningUri = true)
         {
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
             };
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
-            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment);
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
-        internal AspNetProcess StartPublishedProjectAsync()
+        internal AspNetProcess StartPublishedProjectAsync(bool hasListeningUri = true)
         {
             var environment = new Dictionary<string, string>
             {
                 ["ASPNETCORE_URLS"] = _urls,
+                ["ASPNETCORE_Kestrel__EndpointDefaults__Protocols"] = "Http1"
             };
 
             var projectDll = $"{ProjectName}.dll";
-            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment);
+            return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment, hasListeningUri: hasListeningUri);
         }
 
         internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)

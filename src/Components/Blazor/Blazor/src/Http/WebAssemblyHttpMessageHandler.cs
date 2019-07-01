@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Services;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
                 "Blazor._internal.http.sendAsync",
                 id,
                 request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
-                JsonSerializer.ToString(options, JsonSerializerOptionsProvider.Options));
+                JsonSerializer.Serialize(options, JsonSerializerOptionsProvider.Options));
 
             return await tcs.Task;
         }
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             }
             else
             {
-                var responseDescriptor = JsonSerializer.Parse<ResponseDescriptor>(responseDescriptorJson, JsonSerializerOptionsProvider.Options);
+                var responseDescriptor = JsonSerializer.Deserialize<ResponseDescriptor>(responseDescriptorJson, JsonSerializerOptionsProvider.Options);
                 var responseContent = responseBodyData == null ? null : new ByteArrayContent(responseBodyData);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);

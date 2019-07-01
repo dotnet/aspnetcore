@@ -29,47 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
         public System.Func<System.IO.TextWriter, System.Threading.Tasks.Task<StackExchange.Redis.IConnectionMultiplexer>> ConnectionFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
-{
-    public enum GroupAction : byte
-    {
-        Add = (byte)1,
-        Remove = (byte)2,
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct RedisGroupCommand
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public RedisGroupCommand(int id, string serverName, Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.GroupAction action, string groupName, string connectionId) { throw null; }
-        public Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.GroupAction Action { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ServerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct RedisInvocation
-    {
-        private readonly object _dummy;
-        public RedisInvocation(Microsoft.AspNetCore.SignalR.SerializedHubMessage message, System.Collections.Generic.IReadOnlyList<string> excludedConnectionIds) { throw null; }
-        public System.Collections.Generic.IReadOnlyList<string> ExcludedConnectionIds { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.SignalR.SerializedHubMessage Message { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.RedisInvocation Create(string target, object[] arguments, System.Collections.Generic.IReadOnlyList<string> excludedConnectionIds = null) { throw null; }
-    }
-    public partial class RedisProtocol
-    {
-        public RedisProtocol(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> protocols) { }
-        public int ReadAck(System.ReadOnlyMemory<byte> data) { throw null; }
-        public Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.RedisGroupCommand ReadGroupCommand(System.ReadOnlyMemory<byte> data) { throw null; }
-        public Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.RedisInvocation ReadInvocation(System.ReadOnlyMemory<byte> data) { throw null; }
-        public static Microsoft.AspNetCore.SignalR.SerializedHubMessage ReadSerializedHubMessage(ref System.ReadOnlyMemory<byte> data) { throw null; }
-        public byte[] WriteAck(int messageId) { throw null; }
-        public byte[] WriteGroupCommand(Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal.RedisGroupCommand command) { throw null; }
-        public byte[] WriteInvocation(string methodName, object[] args) { throw null; }
-        public byte[] WriteInvocation(string methodName, object[] args, System.Collections.Generic.IReadOnlyList<string> excludedConnectionIds) { throw null; }
-    }
-}
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class StackExchangeRedisDependencyInjectionExtensions

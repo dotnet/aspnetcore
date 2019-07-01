@@ -22,7 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IKestrelTrace _log;
 
         private readonly object _flushLock = new object();
-        private Task<FlushResult> _lastFlushTask = null;
+
+        // This field should only be get or set under the _flushLock. This is a ValueTask that was either:
+        // 1. The default value where "IsCompleted" is true
+        // 2. Created by an async method
+        // 3. Constructed explicitely from a completed result
+        // This means it should be safe to await a single _lastFlushTask instance multiple times.
+        private ValueTask<FlushResult> _lastFlushTask;
 
         public TimingPipeFlusher(
             PipeWriter writer,
@@ -51,35 +57,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
-            var flushValueTask = _writer.FlushAsync(cancellationToken);
+            // https://github.com/dotnet/corefxlab/issues/1334
+            // Pipelines don't support multiple awaiters on flush.
+            lock (_flushLock)
+            {
+                if (_lastFlushTask.IsCompleted)
+                {
+                    _lastFlushTask = TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
+                }
+                else
+                {
+                    _lastFlushTask = AwaitLastFlushAndTimeFlushAsync(_lastFlushTask, minRate, count, outputAborter, cancellationToken);
+                }
+
+                return _lastFlushTask;
+            }
+        }
+
+        private ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
             if (minRate != null)
             {
                 _timeoutControl.BytesWrittenToBuffer(minRate, count);
             }
 
-            if (flushValueTask.IsCompletedSuccessfully)
+            if (pipeFlushTask.IsCompletedSuccessfully)
             {
-                return new ValueTask<FlushResult>(flushValueTask.Result);
+                return new ValueTask<FlushResult>(pipeFlushTask.Result);
             }
 
-            // https://github.com/dotnet/corefxlab/issues/1334
-            // Pipelines don't support multiple awaiters on flush.
-            // While it's acceptable to call PipeWriter.FlushAsync again before the last FlushAsync completes,
-            // it is not acceptable to attach a new continuation (via await, AsTask(), etc..). In this case,
-            // we find previous flush Task which still accounts for any newly committed bytes and await that.
-            lock (_flushLock)
-            {
-                if (_lastFlushTask == null || _lastFlushTask.IsCompleted)
-                {
-                    _lastFlushTask = flushValueTask.AsTask();
-                }
-
-                return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
-            }
+            return TimeFlushAsyncAwaited(pipeFlushTask, minRate, count, outputAborter, cancellationToken);
         }
 
-        private async ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             if (minRate != null)
             {
@@ -88,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             try
             {
-                return await _lastFlushTask;
+                return await pipeFlushTask;
             }
             catch (OperationCanceledException ex) when (outputAborter != null)
             {
@@ -110,6 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             return default;
+        }
+
+        private async ValueTask<FlushResult> AwaitLastFlushAndTimeFlushAsync(ValueTask<FlushResult> lastFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            await lastFlushTask;
+            return await TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
         }
     }
 }

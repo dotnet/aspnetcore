@@ -9,14 +9,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class HostingApplicationDiagnostics
     {
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
-        private const string ActivityStartKey = "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start";
+        private const string ActivityStartKey = ActivityName + ".Start";
+        private const string ActivityStopKey = ActivityName + ".Stop";
 
         private const string DeprecatedDiagnosticsBeginRequestKey = "Microsoft.AspNetCore.Hosting.BeginRequest";
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext, context.Activity.Id);
+                context.Scope = _logger.RequestScope(httpContext, context.Activity);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -136,10 +137,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }
 
-            if (context.EventLogEnabled && exception != null)
+            if (context.EventLogEnabled)
             {
-                // Non-inline
-                HostingEventSource.Log.UnhandledException();
+                if (exception != null)
+                {
+                    // Non-inline
+                    HostingEventSource.Log.UnhandledException();
+                }
+
+                // Count 500 as failed requests
+                if (httpContext.Response.StatusCode >= 500)
+                {
+                    HostingEventSource.Log.RequestFailed();
+                }
             }
 
             // Logging Scope is finshed with
@@ -269,7 +279,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
                 hasDiagnosticListener = true;
-                _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
+                StartActivity(activity, httpContext);
             }
             else
             {
@@ -284,12 +294,32 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             if (hasDiagnosticListener)
             {
-                _diagnosticListener.StopActivity(activity, new { HttpContext = httpContext });
+                StopActivity(activity, httpContext);
             }
             else
             {
                 activity.Stop();
             }
+        }
+
+        // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
+        private Activity StartActivity(Activity activity, HttpContext httpContext)
+        {
+            activity.Start();
+            _diagnosticListener.Write(ActivityStartKey, httpContext);
+            return activity;
+        }
+
+        private void StopActivity(Activity activity, HttpContext httpContext)
+        {
+            // Stop sets the end time if it was unset, but we want it set before we issue the write
+            // so we do it now.   
+            if (activity.Duration == TimeSpan.Zero)
+            {
+                activity.SetEndTime(DateTime.UtcNow);
+            }
+            _diagnosticListener.Write(ActivityStopKey, httpContext);
+            activity.Stop();    // Resets Activity.Current (we want this after the Write)
         }
     }
 }

@@ -344,14 +344,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         [Theory]
         [MemberData(nameof(ConvertibleTypeData))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2626", FlakyOn.AzP.Linux)]
         public async Task BindModel_ReturnsModel_IfAttemptedValueIsValid_FrenchThirtyTwoThousandPointOne(Type destinationType)
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
             bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("fr-FR"))
             {
-                { "theModelName", "32 000,1" }
+                { "theModelName", "32000,1" }
             };
             var binder = GetBinder();
 

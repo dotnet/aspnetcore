@@ -398,7 +398,8 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/WeatherController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "IndividualB2C"
@@ -411,7 +412,8 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/WeatherController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "SingleOrg"
@@ -424,7 +426,8 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/WeatherController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -437,7 +440,8 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/WeatherController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
@@ -450,7 +454,8 @@
         "appsettings.json",
         "Program.fs",
         "Startup.fs",
-        "Controllers/WeatherController.fs",
+        "WeatherForecast.fs",
+        "Controllers/WeatherForecastController.fs",
         "Properties/launchSettings.json"
       ]
     }
@@ -889,6 +894,7 @@
         "_Imports.razor",
         "Areas/Identity/Pages/Account/LogOut.cshtml",
         "Areas/Identity/Pages/Shared/_LoginPartial.cshtml",
+        "Areas/Identity/RevalidatingAuthenticationStateProvider.cs",
         "Data/ApplicationDbContext.cs",
         "Data/WeatherForecast.cs",
         "Data/WeatherForecastService.cs",
@@ -1157,7 +1163,8 @@
         "ClientApp/README.md",
         "ClientApp/tsconfig.json",
         "ClientApp/tslint.json",
-        "Controllers/SampleDataController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/Error.cshtml",
         "Pages/Error.cshtml.cs",
@@ -1194,7 +1201,8 @@
         "ClientApp/package-lock.json",
         "ClientApp/package.json",
         "ClientApp/README.md",
-        "Controllers/SampleDataController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/Error.cshtml",
         "Pages/Error.cshtml.cs",
@@ -1236,7 +1244,8 @@
         "ClientApp/package.json",
         "ClientApp/README.md",
         "ClientApp/tsconfig.json",
-        "Controllers/SampleDataController.cs",
+        "WeatherForecast.cs",
+        "Controllers/WeatherForecastController.cs",
         "Pages/_ViewImports.cshtml",
         "Pages/Error.cshtml",
         "Pages/Error.cshtml.cs",

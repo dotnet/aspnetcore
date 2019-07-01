@@ -9,7 +9,6 @@ using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -172,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            var memoryPool = MemoryPoolFactory.Create();
+            var memoryPool = SlabMemoryPoolFactory.Create();
             var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
 
@@ -197,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
             var context = new DefaultHttpContext(http1Connection);
-            _response = new DefaultHttpResponse(context);
+            _response = context.Response;
 
             switch (Type)
             {

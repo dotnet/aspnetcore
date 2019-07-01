@@ -1,5 +1,5 @@
 @using System.Collections.Generic
-@using System.Text.Json.Serialization
+@using System.Text.Json
 
 <div>
     <h2>Mouse position</h2>
@@ -7,16 +7,23 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        Mouseover: <input id="mouseover_input" type="text" @onmouseover="@OnMouseOver" @onmouseout="@OnMouseOut" />
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="OnMouseOver" @onmouseout="OnMouseOut" />
     </p>
     <p>
-        <span id="mousemove_input" @onmousemove="@OnMouseMove">Mousemove city!</span>
+        <span id="mousemove_input" @onmousemove="OnMouseMove">Mousemove city!</span>
     </p>
     <p>
-        Mousedown: <input id="mousedown_input" @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" />
+        Mousedown: <input id="mousedown_input" @onmousedown="OnMouseDown" @onmouseup="OnMouseUp" />
     </p>
     <p>
-        <button @onclick="@Clear">Clear</button>
+        Pointerdown: <input id="pointerdown_input" @onpointerdown="OnPointerDown" />
+    </p>
+    <p>
+        <div id="drag_input" draggable="true" @ondragstart="OnDragStart">Drag Me</div>
+        <div id="drop" @ondrop="OnDrop" ondragover="event.preventDefault()" style="width: 100px; height: 100px; border: dotted">Drop Target</div>
+    </p>
+    <p>
+        <button @onclick="Clear">Clear</button>
     </p>
 
     <p>
@@ -63,9 +70,30 @@
         StateHasChanged();
     }
 
+    void OnPointerDown(UIPointerEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onpointerdown";
+        StateHasChanged();
+    }
+
+    void OnDragStart(UIDragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondragstart,";
+        StateHasChanged();
+    }
+
+    void OnDrop(UIDragEventArgs e)
+    {
+        DumpEvent(e);
+        message += "ondrop,";
+        StateHasChanged();
+    }
+
     void DumpEvent(UIMouseEventArgs e)
     {
-        Console.WriteLine(JsonSerializer.ToString(e));
+        Console.WriteLine(JsonSerializer.Serialize(e));
     }
 
     void Clear()

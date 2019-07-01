@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +23,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
         // This is the only one that doesn't pass through
         public IWebHost Build()
         {
+            _hostBuilder.ConfigureServices((context, services) => services.AddHostedService<GenericWebHostService>());
             return new GenericWebHost(_hostBuilder.Build());
         }
 

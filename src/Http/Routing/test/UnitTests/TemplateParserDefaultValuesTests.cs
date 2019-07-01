@@ -95,8 +95,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal(message, ex.Message);
 
             Assert.NotNull(ex.InnerException);
-            message = "An optional parameter cannot have default value." + Environment.NewLine +
-                "Parameter name: routeTemplate";
+            message = "An optional parameter cannot have default value. (Parameter 'routeTemplate')";
             Assert.Equal(message, ex.InnerException.Message);
         }
 
@@ -122,8 +121,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal(message, ex.Message);
 
             Assert.NotNull(ex.InnerException);
-            message = "An optional parameter cannot have default value." + Environment.NewLine +
-                "Parameter name: routeTemplate";
+            message = "An optional parameter cannot have default value. (Parameter 'routeTemplate')";
             Assert.Equal(message, ex.InnerException.Message);
         }
 

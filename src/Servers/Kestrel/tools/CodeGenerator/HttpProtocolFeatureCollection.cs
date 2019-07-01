@@ -35,6 +35,7 @@ namespace CodeGenerator
             {
                 "IHttpUpgradeFeature",
                 "IHttp2StreamIdFeature",
+                "IHttpResponseCompletionFeature",
                 "IHttpResponseTrailersFeature",
                 "IResponseCookiesFeature",
                 "IItemsFeature",
@@ -45,7 +46,8 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature"
+                "IHttpResponseStartFeature",
+                "IHttpResetFeature"
             };
 
             var rareFeatures = new[]

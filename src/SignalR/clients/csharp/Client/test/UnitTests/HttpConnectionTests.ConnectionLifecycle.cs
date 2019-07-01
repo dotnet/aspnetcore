@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
@@ -29,8 +30,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await WithConnectionAsync(CreateConnection(loggerFactory: LoggerFactory), async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                     });
                 }
             }
@@ -44,9 +45,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: LoggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
                         async (connection) =>
                         {
-                            var firstStart = connection.StartAsync(TransferFormat.Text);
+                            var firstStart = connection.StartAsync();
                             await syncPoint.WaitForSyncPoint().OrTimeout();
-                            var secondStart = connection.StartAsync(TransferFormat.Text);
+                            var secondStart = connection.StartAsync();
                             syncPoint.Continue();
 
                             await firstStart.OrTimeout();
@@ -64,11 +65,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                             await connection.DisposeAsync().OrTimeout();
                             var exception =
                                 await Assert.ThrowsAsync<ObjectDisposedException>(
-                                    async () => await connection.StartAsync(TransferFormat.Text)).OrTimeout();
+                                    async () => await connection.StartAsync()).OrTimeout();
 
                             Assert.Equal(nameof(HttpConnection), exception.ObjectName);
                         });
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection) =>
                     {
                         Assert.Equal(0, startCounter);
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                         Assert.Equal(passThreshold, startCounter);
                     });
                 }
@@ -155,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
                         {
-                            var ex = await Assert.ThrowsAsync<AggregateException>(() => connection.StartAsync(TransferFormat.Text)).OrTimeout();
+                            var ex = await Assert.ThrowsAsync<AggregateException>(() => connection.StartAsync()).OrTimeout();
                             Assert.Equal("Unable to connect to the server with any of the available transports. " +
                                 "(WebSockets failed: Transport failed to start) (ServerSentEvents failed: Transport failed to start) (LongPolling failed: Transport failed to start)",
                                 ex.Message);
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection) =>
                         {
                             // Start the connection and wait for the transport to start up.
-                            var startTask = connection.StartAsync(TransferFormat.Text);
+                            var startTask = connection.StartAsync();
                             await transportStart.WaitForSyncPoint().OrTimeout();
 
                             // While the transport is starting, dispose the connection
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection) =>
                     {
                         // Start the connection
-                        await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
 
                         // Dispose the connection
                         var stopTask = connection.DisposeAsync();
@@ -267,7 +268,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection) =>
                         {
                             // Start the transport
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                             Assert.NotNull(testTransport.Receiving);
                             Assert.False(testTransport.Receiving.IsCompleted);
 
@@ -312,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(httpHandler, LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                             await connection.Transport.Output.WriteAsync(new byte[] { 0x42 }).OrTimeout();
 
                             // We should get the exception in the transport input completion.
@@ -346,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection) =>
                         {
                             await Assert.ThrowsAsync<AggregateException>(
-                                () => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                                () => connection.StartAsync().OrTimeout());
                         });
                 }
             }
@@ -371,7 +372,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
                         async (connection) =>
                         {
-                            var startTask = connection.StartAsync(TransferFormat.Text);
+                            var startTask = connection.StartAsync();
                             Assert.False(connectResponseTcs.Task.IsCompleted);
                             Assert.False(startTask.IsCompleted);
                             connectResponseTcs.TrySetResult(null);
@@ -380,10 +381,56 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
             }
 
+            [Fact]
+            public async Task CanCancelStartingConnectionAfterNegotiate()
+            {
+                using (StartVerifiableLog())
+                {
+                    // Set up a SyncPoint within Negotiate, so we can verify
+                    // that the call has gotten that far
+                    var negotiateSyncPoint = new SyncPoint();
+                    var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                    testHttpHandler.OnNegotiate(async (request, cancellationToken) =>
+                    {
+                        // Wait here for the test code to cancel the "outer" token
+                        await negotiateSyncPoint.WaitToContinue().OrTimeout();
+
+                        // Cancel
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                    });
+
+                    await WithConnectionAsync(
+                        CreateConnection(testHttpHandler),
+                        async (connection) =>
+                        {
+                            // Kick off StartAsync, but don't wait for it
+                            var cts = new CancellationTokenSource();
+                            var startTask = connection.StartAsync(cts.Token);
+
+                            // Wait for the connection to get to the "WaitToContinue" call above,
+                            // which means it has gotten to Negotiate
+                            await negotiateSyncPoint.WaitForSyncPoint().OrTimeout();
+
+                            // Assert that StartAsync has not yet been canceled
+                            Assert.False(startTask.IsCanceled);
+
+                            // Cancel StartAsync, then "release" the SyncPoint
+                            // so the negotiate handler can keep going
+                            cts.Cancel();
+                            negotiateSyncPoint.Continue();
+
+                            // Assert that StartAsync was canceled
+                            await Assert.ThrowsAsync<OperationCanceledException>(() => startTask).OrTimeout();
+                        });
+                }
+            }
+
             private static async Task AssertDisposedAsync(HttpConnection connection)
             {
                 var exception =
-                    await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync(TransferFormat.Text));
+                    await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.StartAsync());
                 Assert.Equal(nameof(HttpConnection), exception.ObjectName);
             }
         }

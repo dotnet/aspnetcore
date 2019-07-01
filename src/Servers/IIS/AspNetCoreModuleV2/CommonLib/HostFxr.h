@@ -28,16 +28,6 @@ typedef int(*hostfxr_set_runtime_property_value_fn)(void* host_context_handle, P
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
 typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
 
-struct ErrorContext
-{
-    // TODO consider adding HRESULT here
-    std::string detailedErrorContent;
-    USHORT statusCode;
-    USHORT subStatusCode;
-    std::string generalErrorType;
-    std::string errorReason;
-};
-
 class HostFxrErrorRedirector: NonCopyable
 {
 public:

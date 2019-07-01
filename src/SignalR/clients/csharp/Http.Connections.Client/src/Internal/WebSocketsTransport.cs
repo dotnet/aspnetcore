@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class WebSocketsTransport : ITransport
+    internal partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
         private readonly Func<Task<string>> _accessTokenProvider;
@@ -204,7 +204,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
+                    // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -220,17 +221,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#else
+#elif NETSTANDARD2_0
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+#else
+#error TFMs need to be updated
 #endif
-                    // Need to check again for netcoreapp3.0 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netstandard2.1 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         Log.WebSocketClosed(_logger, _webSocket.CloseStatus);

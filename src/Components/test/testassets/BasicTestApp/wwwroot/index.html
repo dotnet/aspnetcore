@@ -5,33 +5,39 @@
     <title>Basic test app</title>
     <base href="/subdir/" />
     <link href="style.css" rel="stylesheet" />
+
+    <!-- Used by ExternalContentPackage -->
+    <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
 </head>
 <body>
-  <root>Loading...</root>
+    <root>Loading...</root>
 
-  <!-- Used for testing interop scenarios between JS and .NET -->
-  <script src="js/jsinteroptests.js"></script>
+    <!-- Used for testing interop scenarios between JS and .NET -->
+    <script src="js/jsinteroptests.js"></script>
 
-  <script>
-    // Used by ElementRefComponent
-    function setElementValue(element, newValue) {
-      element.value = newValue;
-      return element.value;
-    }
+    <script>
+        // Used by ElementRefComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
 
-    function uriHelperNavigate() {
-      Blazor.navigateTo('/subdir/some-path');
-    }
+        function uriHelperNavigate() {
+            Blazor.navigateTo('/subdir/some-path');
+        }
 
-    (function () {
-      // Load either blazor.webassembly.js or blazor.server.js depending
-      // on the hash part of the URL. This is just to give a way for the
-      // test runner to make the selection.
-      var src = location.hash === '#server'
-        ? 'blazor.server.js'
-        : 'blazor.webassembly.js';
-      document.write('<script src="_framework/' + src + '"><' + '/script>');
-    })();
-  </script>
+        (function () {
+            // Load either blazor.webassembly.js or blazor.server.js depending
+            // on the hash part of the URL. This is just to give a way for the
+            // test runner to make the selection.
+            var src = location.hash === '#server'
+                ? 'blazor.server.js'
+                : 'blazor.webassembly.js';
+            document.write('<script src="_framework/' + src + '"><' + '/script>');
+        })();
+    </script>
+
+    <!-- Used by ExternalContentPackage -->
+    <script src="_content/TestContentPackage/prompt.js"></script>
 </body>
 </html>

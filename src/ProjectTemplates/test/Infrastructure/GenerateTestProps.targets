@@ -7,7 +7,8 @@
     <PropertyGroup>
       <PropsProperties>
         RestoreSources=$([MSBuild]::Escape("$(RestoreSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
-        MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
         MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
         MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
@@ -15,7 +16,7 @@
       </PropsProperties>
     </PropertyGroup>
 
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)\TemplateTests.props.in"
       Properties="$(PropsProperties)"
       OutputPath="$(TestTemplateTestsProps)" />

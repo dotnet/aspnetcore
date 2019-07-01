@@ -483,15 +483,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""function(){console.log('hello');};"" />");
+<button onclick=""function(){console.log('hello');};"" />");
 
             // Act
             var frames = GetRenderTree(component);
 
             // Assert
             Assert.Collection(frames,
-                frame => AssertFrame.Element(frame, "button", 2, 0),
-                frame => AssertFrame.Attribute(frame, "onclick", "function(){console.log('hello');};", 1));
+                frame => AssertFrame.Markup(frame, "<button onclick=\"function(){console.log('hello');};\"></button>", 0));
         }
 
         [Fact]
@@ -499,7 +498,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""@(x => Clicked = true)"" />
+<button @onclick=""x => Clicked = true"" />
 @code {
     public bool Clicked { get; set; }
 }");
@@ -531,7 +530,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button @onclick=""@OnClick"" />
+<button @onclick=""OnClick"" />
 @code {
     public void OnClick(UIMouseEventArgs e) { Clicked = true; }
     public bool Clicked { get; set; }

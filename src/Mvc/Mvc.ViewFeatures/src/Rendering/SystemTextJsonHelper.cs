@@ -2,7 +2,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // JsonSerializer always encodes non-ASCII chars, so we do not need
             // to do anything special with the SerializerOptions
-            var json = JsonSerializer.ToString(value, _options.JsonSerializerOptions);
+            var json = JsonSerializer.Serialize(value, _options.JsonSerializerOptions);
             return new HtmlString(json);
         }
     }

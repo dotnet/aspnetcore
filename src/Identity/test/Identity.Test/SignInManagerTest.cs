@@ -322,6 +322,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.True(result.Succeeded);
             manager.Verify();
+
+            AppContext.SetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", false);
         }
 
         [Theory]

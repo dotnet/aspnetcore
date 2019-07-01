@@ -139,7 +139,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
 
             return services.BuildServiceProvider();
         }

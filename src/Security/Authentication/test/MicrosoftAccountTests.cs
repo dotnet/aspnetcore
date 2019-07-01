@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
@@ -119,6 +120,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             Assert.Contains("redirect_uri=", location);
             Assert.Contains("scope=", location);
             Assert.Contains("state=", location);
+            Assert.Contains("code_challenge=", location);
+            Assert.Contains("code_challenge_method=S256", location);
         }
 
         [Fact]
@@ -241,6 +244,104 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
         }
 
+        [Fact]
+        public async Task ChallengeWillUseAuthenticationPropertiesParametersAsQueryArguments()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider(NullLoggerFactory.Instance).CreateProtector("MicrosoftTest"));
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = stateFormat;
+            });
+            var transaction = await server.SendAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+
+            // verify query arguments
+            var query = QueryHelpers.ParseQuery(transaction.Response.Headers.Location.Query);
+            Assert.Equal("https://graph.microsoft.com/user.read", query["scope"]);
+            Assert.Equal("consumers", query["domain_hint"]);
+            Assert.Equal("username", query["login_hint"]);
+            Assert.Equal("select_account", query["prompt"]);
+            Assert.Equal("query", query["response_mode"]);
+
+            // verify that the passed items were not serialized
+            var stateProperties = stateFormat.Unprotect(query["state"]);
+            Assert.DoesNotContain("scope", stateProperties.Items.Keys);
+            Assert.DoesNotContain("domain_hint", stateProperties.Items.Keys);
+            Assert.DoesNotContain("login_hint", stateProperties.Items.Keys);
+            Assert.DoesNotContain("prompt", stateProperties.Items.Keys);
+            Assert.DoesNotContain("response_mode", stateProperties.Items.Keys);
+        }
+
+        [Fact]
+        public async Task PkceSentToTokenEndpoint()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Client Id";
+                o.ClientSecret = "Test Client Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = req =>
+                    {
+                        if (req.RequestUri.AbsoluteUri == "https://login.microsoftonline.com/common/oauth2/v2.0/token")
+                        {
+                            var body = req.Content.ReadAsStringAsync().Result;
+                            var form = new FormReader(body);
+                            var entries = form.ReadForm();
+                            Assert.Equal("Test Client Id", entries["client_id"]);
+                            Assert.Equal("https://example.com/signin-microsoft", entries["redirect_uri"]);
+                            Assert.Equal("Test Client Secret", entries["client_secret"]);
+                            Assert.Equal("TestCode", entries["code"]);
+                            Assert.Equal("authorization_code", entries["grant_type"]);
+                            Assert.False(string.IsNullOrEmpty(entries["code_verifier"]));
+
+                            return ReturnJsonResponse(new
+                            {
+                                access_token = "Test Access Token",
+                                expire_in = 3600,
+                                token_type = "Bearer",
+                            });
+                        }
+                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.microsoft.com/v1.0/me")
+                        {
+                            return ReturnJsonResponse(new
+                            {
+                                id = "Test User ID",
+                                displayName = "Test Name",
+                                givenName = "Test Given Name",
+                                surname = "Test Family Name",
+                                mail = "Test email"
+                            });
+                        }
+
+                        return null;
+                    }
+                };
+            });
+            var transaction = await server.SendAsync("https://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            var locationUri = transaction.Response.Headers.Location;
+            Assert.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/authorize", locationUri.AbsoluteUri);
+
+            var queryParams = QueryHelpers.ParseQuery(locationUri.Query);
+            Assert.False(string.IsNullOrEmpty(queryParams["code_challenge"]));
+            Assert.Equal("S256", queryParams["code_challenge_method"]);
+
+            var nonceCookie = transaction.SetCookie.Single();
+            nonceCookie = nonceCookie.Substring(0, nonceCookie.IndexOf(';'));
+
+            transaction = await server.SendAsync(
+                "https://example.com/signin-microsoft?code=TestCode&state=" + queryParams["state"],
+                nonceCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.StartsWith(".AspNetCore.Correlation.Microsoft.", transaction.SetCookie[0]);
+            Assert.StartsWith(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+        }
+
         private static TestServer CreateServer(Action<MicrosoftAccountOptions> configureOptions)
         {
             var builder = new WebHostBuilder()
@@ -253,7 +354,14 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                         var res = context.Response;
                         if (req.Path == new PathString("/challenge"))
                         {
-                            await context.ChallengeAsync("Microsoft");
+                            await context.ChallengeAsync("Microsoft", new MicrosoftChallengeProperties
+                            {
+                                Prompt = "select_account",
+                                LoginHint = "username",
+                                DomainHint = "consumers",
+                                ResponseMode = "query",
+                                RedirectUri = "/me"
+                            });
                         }
                         else if (req.Path == new PathString("/challengeWithOtherScope"))
                         {

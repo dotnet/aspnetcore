@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Mono.Cecil;
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 assemblyReferences,
                 embeddedContent,
                 linkerEnabled);
-            return JsonSerializer.ToString(data, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Serialize(data, JsonSerializerOptionsProvider.Options);
         }
 
         private static string GetAssemblyEntryPoint(string assemblyPath)

@@ -1,22 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Internal
-{
-    public static partial class AwaitableThreadPool
-    {
-        public static Microsoft.AspNetCore.Internal.AwaitableThreadPool.Awaitable Yield() { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential, Size=1)]
-        public readonly partial struct Awaitable : System.Runtime.CompilerServices.ICriticalNotifyCompletion, System.Runtime.CompilerServices.INotifyCompletion
-        {
-            public bool IsCompleted { get { throw null; } }
-            public Microsoft.AspNetCore.Internal.AwaitableThreadPool.Awaitable GetAwaiter() { throw null; }
-            public void GetResult() { }
-            public void OnCompleted(System.Action continuation) { }
-            public void UnsafeOnCompleted(System.Action continuation) { }
-        }
-    }
-}
 namespace Microsoft.AspNetCore.SignalR.Client
 {
     public partial class HubConnection

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Builder.Internal
+namespace Microsoft.AspNetCore.Builder
 {
     public partial class ApplicationBuilder : Microsoft.AspNetCore.Builder.IApplicationBuilder
     {
@@ -17,6 +17,20 @@ namespace Microsoft.AspNetCore.Builder.Internal
 }
 namespace Microsoft.AspNetCore.Http
 {
+    public partial class BindingAddress
+    {
+        public BindingAddress() { }
+        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsUnixPipe { get { throw null; } }
+        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string UnixPipePath { get { throw null; } }
+        public override bool Equals(object obj) { throw null; }
+        public override int GetHashCode() { throw null; }
+        public static Microsoft.AspNetCore.Http.BindingAddress Parse(string address) { throw null; }
+        public override string ToString() { throw null; }
+    }
     public sealed partial class DefaultHttpContext : Microsoft.AspNetCore.Http.HttpContext
     {
         public DefaultHttpContext() { }
@@ -24,6 +38,8 @@ namespace Microsoft.AspNetCore.Http
         public override Microsoft.AspNetCore.Http.ConnectionInfo Connection { get { throw null; } }
         public override Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
         public Microsoft.AspNetCore.Http.Features.FormOptions FormOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
         public override System.Threading.CancellationToken RequestAborted { get { throw null; } set { } }
@@ -68,6 +84,27 @@ namespace Microsoft.AspNetCore.Http
             public bool MoveNext() { throw null; }
             void System.Collections.IEnumerator.Reset() { }
         }
+    }
+    public partial class FormFile : Microsoft.AspNetCore.Http.IFormFile
+    {
+        public FormFile(System.IO.Stream baseStream, long baseStreamOffset, long length, string name, string fileName) { }
+        public string ContentDisposition { get { throw null; } set { } }
+        public string ContentType { get { throw null; } set { } }
+        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public void CopyTo(System.IO.Stream target) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task CopyToAsync(System.IO.Stream target, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public System.IO.Stream OpenReadStream() { throw null; }
+    }
+    public partial class FormFileCollection : System.Collections.Generic.List<Microsoft.AspNetCore.Http.IFormFile>, Microsoft.AspNetCore.Http.IFormFileCollection, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.IEnumerable
+    {
+        public FormFileCollection() { }
+        public Microsoft.AspNetCore.Http.IFormFile this[string name] { get { throw null; } }
+        public Microsoft.AspNetCore.Http.IFormFile GetFile(string name) { throw null; }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile> GetFiles(string name) { throw null; }
     }
     public partial class HeaderDictionary : Microsoft.AspNetCore.Http.IHeaderDictionary, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
     {
@@ -136,6 +173,33 @@ namespace Microsoft.AspNetCore.Http
         public MiddlewareFactory(System.IServiceProvider serviceProvider) { }
         public Microsoft.AspNetCore.Http.IMiddleware Create(System.Type middlewareType) { throw null; }
         public void Release(Microsoft.AspNetCore.Http.IMiddleware middleware) { }
+    }
+    public partial class QueryCollection : Microsoft.AspNetCore.Http.IQueryCollection, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
+    {
+        public static readonly Microsoft.AspNetCore.Http.QueryCollection Empty;
+        public QueryCollection() { }
+        public QueryCollection(Microsoft.AspNetCore.Http.QueryCollection store) { }
+        public QueryCollection(System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> store) { }
+        public QueryCollection(int capacity) { }
+        public int Count { get { throw null; } }
+        public Microsoft.Extensions.Primitives.StringValues this[string key] { get { throw null; } }
+        public System.Collections.Generic.ICollection<string> Keys { get { throw null; } }
+        public bool ContainsKey(string key) { throw null; }
+        public Microsoft.AspNetCore.Http.QueryCollection.Enumerator GetEnumerator() { throw null; }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,Microsoft.Extensions.Primitives.StringValues>>.GetEnumerator() { throw null; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+        public bool TryGetValue(string key, out Microsoft.Extensions.Primitives.StringValues value) { throw null; }
+        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerator, System.IDisposable
+        {
+            private object _dummy;
+            private int _dummyPrimitive;
+            public System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> Current { get { throw null; } }
+            object System.Collections.IEnumerator.Current { get { throw null; } }
+            public void Dispose() { }
+            public bool MoveNext() { throw null; }
+            void System.Collections.IEnumerator.Reset() { }
+        }
     }
     public static partial class RequestFormReaderExtensions
     {
@@ -285,204 +349,6 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
     {
         public HttpAuthenticationFeature() { }
         public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-}
-namespace Microsoft.AspNetCore.Http.Internal
-{
-    public partial class BindingAddress
-    {
-        public BindingAddress() { }
-        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsUnixPipe { get { throw null; } }
-        public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Port { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string UnixPipePath { get { throw null; } }
-        public override bool Equals(object obj) { throw null; }
-        public override int GetHashCode() { throw null; }
-        public static Microsoft.AspNetCore.Http.Internal.BindingAddress Parse(string address) { throw null; }
-        public override string ToString() { throw null; }
-    }
-    public static partial class BufferingHelper
-    {
-        public static Microsoft.AspNetCore.Http.HttpRequest EnableRewind(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
-        public static Microsoft.AspNetCore.WebUtilities.MultipartSection EnableRewind(this Microsoft.AspNetCore.WebUtilities.MultipartSection section, System.Action<System.IDisposable> registerForDispose, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
-    }
-    public sealed partial class DefaultConnectionInfo : Microsoft.AspNetCore.Http.ConnectionInfo
-    {
-        public DefaultConnectionInfo(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
-        public override System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { get { throw null; } set { } }
-        public override string Id { get { throw null; } set { } }
-        public override System.Net.IPAddress LocalIpAddress { get { throw null; } set { } }
-        public override int LocalPort { get { throw null; } set { } }
-        public override System.Net.IPAddress RemoteIpAddress { get { throw null; } set { } }
-        public override int RemotePort { get { throw null; } set { } }
-        public override System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public void Initialize(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
-        public void Initialize(Microsoft.AspNetCore.Http.Features.IFeatureCollection features, int revision) { }
-        public void Uninitialize() { }
-    }
-    public sealed partial class DefaultHttpRequest : Microsoft.AspNetCore.Http.HttpRequest
-    {
-        public DefaultHttpRequest(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
-        public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeReader BodyReader { get { throw null; } }
-        public override long? ContentLength { get { throw null; } set { } }
-        public override string ContentType { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.IFormCollection Form { get { throw null; } set { } }
-        public override bool HasFormContentType { get { throw null; } }
-        public override Microsoft.AspNetCore.Http.IHeaderDictionary Headers { get { throw null; } }
-        public override Microsoft.AspNetCore.Http.HostString Host { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
-        public override bool IsHttps { get { throw null; } set { } }
-        public override string Method { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.PathString Path { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.PathString PathBase { get { throw null; } set { } }
-        public override string Protocol { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.IQueryCollection Query { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.QueryString QueryString { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get { throw null; } set { } }
-        public override string Scheme { get { throw null; } set { } }
-        public void Initialize() { }
-        public void Initialize(int revision) { }
-        public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection> ReadFormAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
-        public void Uninitialize() { }
-    }
-    public sealed partial class DefaultHttpResponse : Microsoft.AspNetCore.Http.HttpResponse
-    {
-        public DefaultHttpResponse(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
-        public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } }
-        public override long? ContentLength { get { throw null; } set { } }
-        public override string ContentType { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Http.IResponseCookies Cookies { get { throw null; } }
-        public override bool HasStarted { get { throw null; } }
-        public override Microsoft.AspNetCore.Http.IHeaderDictionary Headers { get { throw null; } }
-        public override Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
-        public override int StatusCode { get { throw null; } set { } }
-        public void Initialize() { }
-        public void Initialize(int revision) { }
-        public override void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
-        public override void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
-        public override void Redirect(string location, bool permanent) { }
-        public override System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public void Uninitialize() { }
-    }
-    public sealed partial class DefaultWebSocketManager : Microsoft.AspNetCore.Http.WebSocketManager
-    {
-        public DefaultWebSocketManager(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
-        public override bool IsWebSocketRequest { get { throw null; } }
-        public override System.Collections.Generic.IList<string> WebSocketRequestedProtocols { get { throw null; } }
-        public override System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync(string subProtocol) { throw null; }
-        public void Initialize(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
-        public void Initialize(Microsoft.AspNetCore.Http.Features.IFeatureCollection features, int revision) { }
-        public void Uninitialize() { }
-    }
-    public partial class FormFile : Microsoft.AspNetCore.Http.IFormFile
-    {
-        public FormFile(System.IO.Stream baseStream, long baseStreamOffset, long length, string name, string fileName) { }
-        public string ContentDisposition { get { throw null; } set { } }
-        public string ContentType { get { throw null; } set { } }
-        public string FileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.IHeaderDictionary Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public void CopyTo(System.IO.Stream target) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task CopyToAsync(System.IO.Stream target, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public System.IO.Stream OpenReadStream() { throw null; }
-    }
-    public partial class FormFileCollection : System.Collections.Generic.List<Microsoft.AspNetCore.Http.IFormFile>, Microsoft.AspNetCore.Http.IFormFileCollection, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.IEnumerable
-    {
-        public FormFileCollection() { }
-        public Microsoft.AspNetCore.Http.IFormFile this[string name] { get { throw null; } }
-        public Microsoft.AspNetCore.Http.IFormFile GetFile(string name) { throw null; }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile> GetFiles(string name) { throw null; }
-    }
-    public partial class ItemsDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<object, object>>, System.Collections.Generic.IDictionary<object, object>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<object, object>>, System.Collections.IEnumerable
-    {
-        public ItemsDictionary() { }
-        public ItemsDictionary(System.Collections.Generic.IDictionary<object, object> items) { }
-        public System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } }
-        int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Count { get { throw null; } }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.IsReadOnly { get { throw null; } }
-        object System.Collections.Generic.IDictionary<System.Object,System.Object>.this[object key] { get { throw null; } set { } }
-        System.Collections.Generic.ICollection<object> System.Collections.Generic.IDictionary<System.Object,System.Object>.Keys { get { throw null; } }
-        System.Collections.Generic.ICollection<object> System.Collections.Generic.IDictionary<System.Object,System.Object>.Values { get { throw null; } }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Add(System.Collections.Generic.KeyValuePair<object, object> item) { }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Clear() { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Contains(System.Collections.Generic.KeyValuePair<object, object> item) { throw null; }
-        void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.CopyTo(System.Collections.Generic.KeyValuePair<object, object>[] array, int arrayIndex) { }
-        bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Remove(System.Collections.Generic.KeyValuePair<object, object> item) { throw null; }
-        void System.Collections.Generic.IDictionary<System.Object,System.Object>.Add(object key, object value) { }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.ContainsKey(object key) { throw null; }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.Remove(object key) { throw null; }
-        bool System.Collections.Generic.IDictionary<System.Object,System.Object>.TryGetValue(object key, out object value) { throw null; }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<object, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-    }
-    public partial class QueryCollection : Microsoft.AspNetCore.Http.IQueryCollection, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
-    {
-        public static readonly Microsoft.AspNetCore.Http.Internal.QueryCollection Empty;
-        public QueryCollection() { }
-        public QueryCollection(Microsoft.AspNetCore.Http.Internal.QueryCollection store) { }
-        public QueryCollection(System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> store) { }
-        public QueryCollection(int capacity) { }
-        public int Count { get { throw null; } }
-        public Microsoft.Extensions.Primitives.StringValues this[string key] { get { throw null; } }
-        public System.Collections.Generic.ICollection<string> Keys { get { throw null; } }
-        public bool ContainsKey(string key) { throw null; }
-        public Microsoft.AspNetCore.Http.Internal.QueryCollection.Enumerator GetEnumerator() { throw null; }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,Microsoft.Extensions.Primitives.StringValues>>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        public bool TryGetValue(string key, out Microsoft.Extensions.Primitives.StringValues value) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues> Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            void System.Collections.IEnumerator.Reset() { }
-        }
-    }
-    public partial class RequestCookieCollection : Microsoft.AspNetCore.Http.IRequestCookieCollection, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>, System.Collections.IEnumerable
-    {
-        public static readonly Microsoft.AspNetCore.Http.Internal.RequestCookieCollection Empty;
-        public RequestCookieCollection() { }
-        public RequestCookieCollection(System.Collections.Generic.Dictionary<string, string> store) { }
-        public RequestCookieCollection(int capacity) { }
-        public int Count { get { throw null; } }
-        public string this[string key] { get { throw null; } }
-        public System.Collections.Generic.ICollection<string> Keys { get { throw null; } }
-        public bool ContainsKey(string key) { throw null; }
-        public Microsoft.AspNetCore.Http.Internal.RequestCookieCollection.Enumerator GetEnumerator() { throw null; }
-        public static Microsoft.AspNetCore.Http.Internal.RequestCookieCollection Parse(System.Collections.Generic.IList<string> values) { throw null; }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.String>>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        public bool TryGetValue(string key, out string value) { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public System.Collections.Generic.KeyValuePair<string, string> Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
-    }
-    public partial class ResponseCookies : Microsoft.AspNetCore.Http.IResponseCookies
-    {
-        public ResponseCookies(Microsoft.AspNetCore.Http.IHeaderDictionary headers, Microsoft.Extensions.ObjectPool.ObjectPool<System.Text.StringBuilder> builderPool) { }
-        public void Append(string key, string value) { }
-        public void Append(string key, string value, Microsoft.AspNetCore.Http.CookieOptions options) { }
-        public void Delete(string key) { }
-        public void Delete(string key, Microsoft.AspNetCore.Http.CookieOptions options) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

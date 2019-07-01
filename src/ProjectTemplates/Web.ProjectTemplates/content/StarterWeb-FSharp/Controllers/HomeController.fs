@@ -5,8 +5,9 @@ open System.Collections.Generic
 open System.Linq
 open System.Threading.Tasks
 open Microsoft.AspNetCore.Mvc
+open Microsoft.Extensions.Logging
 
-type HomeController () =
+type HomeController (logger : ILogger<HomeController>) =
     inherit Controller()
 
     member this.Index () =

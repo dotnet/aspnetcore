@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.IISIntegration;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,25 +13,15 @@ namespace ServerComparison.TestSites
 {
     public class StartupNtlmAuthentication
     {
-        public IConfiguration Configuration { get; }
-        public bool IsKestrel => string.Equals(Configuration["server"], "Microsoft.AspNetCore.Server.Kestrel");
-
-        public StartupNtlmAuthentication(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
         public void ConfigureServices(IServiceCollection services)
         {
-            if (IsKestrel)
-            {
-                services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-                    .AddNegotiate();
-            }
-            else
-            {
-                services.AddAuthentication(IISDefaults.AuthenticationScheme);
-            }
+            services.AddHttpContextAccessor();
+            // https://github.com/aspnet/AspNetCore/issues/11462
+            // services.AddSingleton<IClaimsTransformation, OneTransformPerRequest>();
+
+            // This will deffer to the server implementations when available.
+            services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                .AddNegotiate();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)

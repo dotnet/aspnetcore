@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection.Test
     public class HostingTests
     {
         [Fact]
-        public async Task LoadsKeyRingBeforeServerStarts()
+        public async Task WebhostLoadsKeyRingBeforeServerStarts()
         {
             var tcs = new TaskCompletionSource<object>();
             var mockKeyRing = new Mock<IKeyRingProvider>();
@@ -36,6 +37,33 @@ namespace Microsoft.AspNetCore.DataProtection.Test
                     .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
                     .AddSingleton<IServer>(
                         new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
+
+            using (var host = builder.Build())
+            {
+                await host.StartAsync();
+            }
+
+            await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            mockKeyRing.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GenericHostLoadsKeyRingBeforeServerStarts()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var mockKeyRing = new Mock<IKeyRingProvider>();
+            mockKeyRing.Setup(m => m.GetCurrentKeyRing())
+                .Returns(Mock.Of<IKeyRing>())
+                .Callback(() => tcs.TrySetResult(null));
+
+            var builder = new HostBuilder()
+                .ConfigureServices(s =>
+                    s.AddDataProtection()
+                    .Services
+                    .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
+                    .AddSingleton<IServer>(
+                        new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))))
+                .ConfigureWebHost(b => b.UseStartup<TestStartup>());
 
             using (var host = builder.Build())
             {

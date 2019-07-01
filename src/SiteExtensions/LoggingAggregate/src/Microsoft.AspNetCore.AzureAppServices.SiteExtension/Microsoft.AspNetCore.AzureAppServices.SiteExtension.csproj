@@ -11,7 +11,6 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
@@ -19,6 +18,7 @@
       $(RestoreSources);
       $(ArtifactsNonShippingPackagesDir)
     </RestoreSources>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>

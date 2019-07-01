@@ -10,8 +10,10 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
@@ -76,7 +78,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
         }
 
+        // I think this test is flaky due to freb file not being created quickly enough.
+        // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2570", FlakyOn.Helix.All)]
+        [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFrebDisconnect()
         {
@@ -120,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             var frebEvent = GetFrebLogItems(result);
             foreach (var expectedEvent in expectedFrebEvents)
             {
+                result.Logger.LogInformation($"Checking if {expectedEvent.ToString()} exists.");
                 Assert.Contains(expectedEvent, frebEvent);
             }
         }
@@ -127,9 +134,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
             var folderPath = Helpers.GetFrebFolder(_logFolderPath, result);
-            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml"));
+            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).ToList();
             var frebEvents = new List<FrebLogItem>();
 
+            result.Logger.LogInformation($"Number of freb files available {xmlFiles.Count}.");
             foreach (var xmlFile in xmlFiles)
             {
                 var xDocument = XDocument.Load(xmlFile).Root;
@@ -173,6 +181,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             public override int GetHashCode()
             {
                 return HashCode.Combine(_opCode, _requestStatus);
+            }
+
+            public override string ToString()
+            {
+                return $"FrebLogItem: opCode: {_opCode}, requestStatus: {_requestStatus}";
             }
         }
     }

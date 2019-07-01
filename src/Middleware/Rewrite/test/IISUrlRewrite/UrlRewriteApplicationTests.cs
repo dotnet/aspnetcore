@@ -4,7 +4,7 @@
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite

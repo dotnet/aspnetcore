@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
             var transcodingStream = new TranscodingReadStream(stream, sourceEncoding);
 
-            var model = await JsonSerializer.ReadAsync(transcodingStream, typeof(TestModel));
+            var model = await JsonSerializer.DeserializeAsync(transcodingStream, typeof(TestModel));
             var testModel = Assert.IsType<TestModel>(model);
 
             Assert.Equal(message, testModel.Message);

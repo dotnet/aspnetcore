@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
@@ -13,30 +12,18 @@
   <PropertyGroup>
     <!-- Producing this package requires building with NodeJS enabled. -->
     <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);Publish</GenerateNuspecDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
-    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
-    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
   </PropertyGroup>
 
-  <!-- Executes /t:Publish for all target frameworks before packing-->
-  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
-    <PropertyGroup>
-      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-      <NuspecProperties>
-      configuration=$(Configuration);
-      version=$(PackageVersion);
-      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
-      componentsversion=$(ComponentsPackageVersion);
-      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
-      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
-      repositorycommit=$(SourceRevisionId);</NuspecProperties>
-    </PropertyGroup>
-    <ItemGroup>
-      <_TargetFramework Include="$(TargetFramework)" />
-    </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
-  </Target>
+  <ItemGroup>
+    <NuspecProperty Include="configuration=$(Configuration)" />
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="componentsversion=$(ComponentsPackageVersion)" />
+    <NuspecProperty Include="razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
+    <NuspecProperty Include="blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepoRoot)src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />

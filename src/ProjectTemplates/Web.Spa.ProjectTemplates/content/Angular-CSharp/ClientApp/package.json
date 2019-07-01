@@ -27,9 +27,12 @@
     "zone.js": "~0.9.1",
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^4.3.1",
+    "core-js": "^2.6.5",
     "jquery": "3.3.1",
-    "oidc-client": "^1.6.1",
-    "popper.js": "^1.14.3"
+    "oidc-client": "^1.8.0",
+    "popper.js": "^1.14.3",
+    "rxjs": "^6.4.0",
+    "zone.js": "^0.8.29"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.800.0",

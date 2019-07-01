@@ -1,13 +1,17 @@
 ﻿using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Company.WebApplication1.Controllers
 {
     public class OidcConfigurationController : Controller
     {
-        public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider)
+        private readonly ILogger<OidcConfigurationController> _logger;
+
+        public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider, ILogger<OidcConfigurationController> logger)
         {
             ClientRequestParametersProvider = clientRequestParametersProvider;
+            _logger = logger;
         }
 
         public IClientRequestParametersProvider ClientRequestParametersProvider { get; }

@@ -13,7 +13,7 @@ import * as _debug from "debug";
 const debug = _debug("signalr-functional-tests:run");
 
 const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "artifacts");
-const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "log");
 
 const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;
 
@@ -232,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTests", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTests.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
@@ -242,7 +242,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
             desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
-
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
                 ...process.env,

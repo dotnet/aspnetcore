@@ -4,7 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
 
         const string TestUri = "http://example.com/some/uri";
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.Serialize(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return CreateJsonResponse(HttpStatusCode.OK, new Person
                 {
                     Name = "Abc",
@@ -88,6 +89,50 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             Assert.Equal("Abc", result.Name);
             Assert.Equal(123, result.Age);
+        }
+
+        [Fact]
+        public async Task ReadAsJsonAsync_ReadsCamelCasedJson()
+        {
+            var input = "{\"name\": \"TestPerson\", \"age\": 23 }";
+
+            // Arrange
+            var httpClient = new HttpClient(new TestHttpMessageHandler(req =>
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(input)
+                });
+            }));
+
+            // Act
+            var result = await httpClient.GetJsonAsync<Person>(TestUri);
+
+            // Assert
+            Assert.Equal("TestPerson", result.Name);
+            Assert.Equal(23, result.Age);
+        }
+
+        [Fact]
+        public async Task ReadAsJsonAsync_ReadsPascalCasedJson()
+        {
+            var input = "{\"Name\": \"TestPerson\", \"Age\": 23 }";
+
+            // Arrange
+            var httpClient = new HttpClient(new TestHttpMessageHandler(req =>
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(input)
+                });
+            }));
+
+            // Act
+            var result = await httpClient.GetJsonAsync<Person>(TestUri);
+
+            // Assert
+            Assert.Equal("TestPerson", result.Name);
+            Assert.Equal(23, result.Age);
         }
 
         [Theory]
@@ -106,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.Serialize(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }));
 
@@ -120,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             return new HttpResponseMessage(statusCode)
             {
-                Content = new StringContent(JsonSerializer.ToString(content, _jsonSerializerOptions))
+                Content = new StringContent(JsonSerializer.Serialize(content, _jsonSerializerOptions))
             };
         }
 

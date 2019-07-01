@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
-        public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
+        public async ValueTask<ConnectionContext> StartAsync()
         {
             _started.TrySetResult(null);
 

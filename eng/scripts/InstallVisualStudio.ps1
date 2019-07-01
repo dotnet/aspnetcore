@@ -9,6 +9,10 @@
         Community
         Professional
         Enterprise (the default)
+.PARAMETER Channel
+    Selects which channel of Visual Studio to install. Must be one of these values:
+        Release (the default)
+        Preview
 .PARAMETER InstallPath
     The location on disk where Visual Studio should be installed or updated. Default path is location of latest
     existing installation of the specified edition, if any. If that VS edition is not currently installed, default
@@ -28,6 +32,8 @@
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Enterprise',
+    [ValidateSet('Release', 'Preview')]
+    [string]$Channel = 'Release',
     [string]$InstallPath,
     [switch]$Passive,
     [switch]$Quiet
@@ -52,14 +58,23 @@ mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
 $bootstrapper = "$intermedateDir\vsinstaller.exe"
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
 
-$responseFile = "$PSScriptRoot\vs.json"
+$channelUri = "https://aka.ms/vs/16/release"
+$responseFileName = "vs"
 if ("$Edition" -eq "BuildTools") {
-    $responseFile = "$PSScriptRoot\vs.buildtools.json"
+    $responseFileName += ".buildtools"
+}
+if ("$Channel" -eq "Preview") {
+    $responseFileName += ".preview"
+    $channelUri = "https://aka.ms/vs/16/pre"
 }
 
+$responseFile = "$PSScriptRoot\$responseFileName.json"
 $channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
+
+$bootstrapperUri = "$channelUri/vs_$($Edition.ToLowerInvariant()).exe"
+Write-Host "Downloading Visual Studio 2019 $Edition ($Channel) bootstrapper from $bootstrapperUri"
+Invoke-WebRequest -Uri $bootstrapperUri -OutFile $bootstrapper
 
 $productId = "Microsoft.VisualStudio.Product.$Edition"
 if (-not $InstallPath) {
@@ -78,7 +93,11 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\$Edition"
+    if ("$Channel" -eq "Preview") {
+        $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\${Edition}_Pre"
+    } else {
+        $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\$Edition"
+    }
 }
 
 # no backslashes - this breaks the installer
@@ -103,7 +122,7 @@ if ($Quiet) {
 }
 
 Write-Host
-Write-Host "Installing Visual Studio 2019 $Edition" -f Magenta
+Write-Host "Installing Visual Studio 2019 $Edition ($Channel)" -f Magenta
 Write-Host
 Write-Host "Running '$bootstrapper $arguments'"
 

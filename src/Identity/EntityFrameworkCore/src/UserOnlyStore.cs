@@ -312,8 +312,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
 
-            // TODO: Fix once EF query works Issue #10668
-            return (await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).ToListAsync(cancellationToken)).Select(c => c.ToClaim()).ToList();
+            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => c.ToClaim()).ToListAsync(cancellationToken);
         }
 
         /// <summary>
@@ -504,8 +503,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            // TODO: Fix once EF query works Issue #10668
-            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).ToList().SingleOrDefault());
+
+            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
         }
 
         /// <summary>

@@ -11,6 +11,12 @@
     </GenerateOpenApiCodeDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)OpenApiItemsSchema.xaml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
   <!-- OpenApiProjectReference support. -->
 
   <ItemGroup Condition=" '$(OpenApiBuildReferencedProjects)' == 'true' ">
@@ -19,8 +25,9 @@
       @(OpenApiProjectReference) items.
     -->
     <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)">
-      <NoWarn>NU1702</NoWarn>
+      <GlobalPropertiesToRemove>TargetFramework</GlobalPropertiesToRemove>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Update="@(OpenApiProjectReference)">
       <OpenApiReference>true</OpenApiReference>

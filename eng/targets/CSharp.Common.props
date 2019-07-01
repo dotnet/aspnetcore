@@ -2,28 +2,16 @@
 
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\AspNetCore.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-
-     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
-    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
 
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
-
-    <!-- Disables targets in Internal.AspNetCore.Sdk which are obsolete. -->
-    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
-    <GenerateRepositoryCommitUrlInDescription>false</GenerateRepositoryCommitUrlInDescription>
-    <GenerateCommitHashAttribute>false</GenerateCommitHashAttribute>
-    <GenerateInternalAspNetCoreAttributes>false</GenerateInternalAspNetCoreAttributes>
-    <DisableDeterministicSourceRoot>true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" AllowExplicitReference="true" />
     <!-- Required to exist in the NuGet package cache to enable code-signing. -->
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
-    <PackageReference Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" AllowExplicitReference="true" />
+
+    <PackageReference Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
@@ -31,25 +19,12 @@
       Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
       several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
     -->
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
-    <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
-    <Reference Include="xunit" />
-    <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
-    <Reference Include="xunit.runner.console" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' " />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">

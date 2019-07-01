@@ -58,4 +58,7 @@
   <String Id="FilesInUseDontCloseRadioButton">애플리케이션을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
   <String Id="FilesInUseOkButton">확인(&amp;O)</String>
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
+
+  <String Id="Welcome">[WixBundle] 설치를 시작합니다.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
 </WixLocalization>

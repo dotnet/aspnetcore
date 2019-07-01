@@ -195,6 +195,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
+        ErrorContext errorContext; // unused 
+
         if (s_fMainCallback == nullptr)
         {
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
@@ -202,6 +204,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
+                errorContext,
                 hostFxrResolutionResult
                 ));
 
