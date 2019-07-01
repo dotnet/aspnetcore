@@ -500,8 +500,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
             else if (message.HasResult)
             {
-                using var token = GetParsedObject(message.Result, message.Result?.GetType());
-                token.RootElement.WriteProperty(ResultPropertyNameBytes.EncodedUtf8Bytes, writer);
+                writer.WritePropertyName(ResultPropertyNameBytes);
+                JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
             }
         }
 
@@ -514,8 +514,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             WriteInvocationId(message, writer);
 
-            using var token = GetParsedObject(message.Item, message.Item?.GetType());
-            token.RootElement.WriteProperty(ItemPropertyNameBytes.EncodedUtf8Bytes, writer);
+            writer.WritePropertyName(ItemPropertyNameBytes);
+            JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -562,18 +562,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 else
                 {
-                    using var token = GetParsedObject(argument, type);
-                    token.RootElement.WriteValue(writer);
+                    JsonSerializer.Serialize(writer, argument, type, _payloadSerializerOptions);
                 }
             }
             writer.WriteEndArray();
-        }
-
-        private JsonDocument GetParsedObject(object obj, Type type)
-        {
-            var bytes = JsonSerializer.ToUtf8Bytes(obj, type, _payloadSerializerOptions);
-            var token = JsonDocument.Parse(bytes);
-            return token;
         }
 
         private void WriteStreamIds(string[] streamIds, Utf8JsonWriter writer)
@@ -686,7 +678,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private object BindType(ref Utf8JsonReader reader, Type type)
         {
-            return JsonSerializer.ReadValue(ref reader, type, _payloadSerializerOptions);
+            return JsonSerializer.Deserialize(ref reader, type, _payloadSerializerOptions);
         }
 
         private object[] BindTypes(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes)

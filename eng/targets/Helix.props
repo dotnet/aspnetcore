@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion)" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(TargetArchitecture)" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">

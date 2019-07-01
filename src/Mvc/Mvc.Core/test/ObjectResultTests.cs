@@ -97,10 +97,12 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            var options = Options.Create(new MvcOptions());
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                new DefaultOutputFormatterSelector(Options.Create(new MvcOptions()), NullLoggerFactory.Instance),
+                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider();

@@ -28,7 +28,7 @@
   <PropertyGroup>
     <RunCommand>dotnet</RunCommand>
     <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../DevServer/src/bin/$(Configuration)/netcoreapp3.0/blazor-devserver.dll</_BlazorCliLocation>
-    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve &quot;$(MSBuildProjectDirectory)/$(OutputPath)$(TargetFileName)&quot; $(AdditionalRunArguments)</RunArguments>
+    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve --applicationpath &quot;$(MSBuildProjectDirectory)/$(OutputPath)$(TargetFileName)&quot; $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>

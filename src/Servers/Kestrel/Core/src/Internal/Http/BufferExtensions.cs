@@ -17,7 +17,7 @@ namespace System.Buffers
         private static byte[] _numericBytesScratch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> ToSpan(this ReadOnlySequence<byte> buffer)
+        public static ReadOnlySpan<byte> ToSpan(in this ReadOnlySequence<byte> buffer)
         {
             if (buffer.IsSingleSegment)
             {

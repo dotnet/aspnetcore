@@ -19,7 +19,7 @@ namespace ServerComparison.FunctionalTests
                 var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.sln"));
                 if (solutionFileInfo.Exists)
                 {
-                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets", "ServerComparison.TestSites"));
+                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "..", "..","testassets", "ServerComparison.TestSites"));
                 }
 
                 directoryInfo = directoryInfo.Parent;

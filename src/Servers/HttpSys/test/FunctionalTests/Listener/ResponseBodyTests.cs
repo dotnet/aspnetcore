@@ -239,10 +239,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address, cts.Token);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-                // First write sends headers
+
+                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
+                // Make sure the client is aborted
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                await disconnectCts.Task.WithTimeout();
+
                 Assert.Throws<IOException>(() =>
                 {
                     // It can take several tries before Write notices the disconnect.
@@ -270,11 +275,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
+                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
+                await disconnectCts.Task.WithTimeout();
 
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Write notices the disconnect.
@@ -301,10 +309,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-                // First write sends headers
+
+                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                await disconnectCts.Task.WithTimeout();
+
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
@@ -324,10 +336,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address, cts.Token);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-                // First write sends headers
+
+                var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                await disconnectCts.Task.WithTimeout();
+
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
@@ -350,6 +366,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+
+                    var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                     // First write sends headers
                     context.AllowSynchronousIO = true;
                     context.Response.Body.Write(new byte[10], 0, 10);
@@ -357,9 +377,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
+                    await disconnectCts.Task.WithTimeout();
                 }
 
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 Assert.Throws<IOException>(() =>
                 {
                     // It can take several tries before Write notices the disconnect.
@@ -385,15 +405,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+
+                    var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
+                    await disconnectCts.Task.WithTimeout();
                 }
 
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Write notices the disconnect.
@@ -419,15 +443,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+
+                    var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
+                    await disconnectCts.Task.WithTimeout();
                 }
 
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
@@ -449,15 +477,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+
+                    var disconnectCts = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    context.DisconnectToken.Register(() => disconnectCts.SetResult(0));
+
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
+                    await disconnectCts.Task.WithTimeout();
                 }
 
-                Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {

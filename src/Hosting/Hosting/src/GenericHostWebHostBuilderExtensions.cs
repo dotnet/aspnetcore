@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Hosting
 {
@@ -9,6 +10,7 @@ namespace Microsoft.Extensions.Hosting
         {
             var webhostBuilder = new GenericWebHostBuilder(builder);
             configure(webhostBuilder);
+            builder.ConfigureServices((context, services) => services.AddHostedService<GenericWebHostService>());
             return builder;
         }
     }

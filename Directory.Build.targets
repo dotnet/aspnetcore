@@ -25,7 +25,12 @@
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
     <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
+    <SiteExtensionSuffix>$(VersionSuffix.Replace('.','-'))</SiteExtensionSuffix>
+    <SiteExtensionPackageVersion>$(VersionPrefix)-$(SiteExtensionSuffix)</SiteExtensionPackageVersion>
+
+    <OriginalPackageVersion>$(Version)</OriginalPackageVersion>
     <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(Version)</PackageVersion>
+    <PackageVersion Condition=" '$(NoSemVer20)' == 'true' ">$(SiteExtensionPackageVersion)</PackageVersion>
     <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
 
     <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
@@ -92,6 +97,10 @@
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
+    <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
+  </ItemGroup>
 
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">

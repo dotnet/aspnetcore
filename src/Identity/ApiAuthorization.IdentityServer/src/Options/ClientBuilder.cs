@@ -28,9 +28,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var client = CreateClient(clientId);
             return new ClientBuilder(client)
                 .WithApplicationProfile(ApplicationProfiles.IdentityServerSPA)
-                .WithAllowedGrants(GrantTypes.Code)
-                .WithoutClientSecrets()
-                .WithPkce()
+                .WithAllowedGrants(GrantTypes.Implicit)
                 .WithAllowedOrigins(Array.Empty<string>())
                 .AllowAccessTokensViaBrowser();
         }
@@ -45,9 +43,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             var client = CreateClient(clientId);
             return new ClientBuilder(client)
                 .WithApplicationProfile(ApplicationProfiles.SPA)
-                .WithAllowedGrants(GrantTypes.Code)
-                .WithoutClientSecrets()
-                .WithPkce()
+                .WithAllowedGrants(GrantTypes.Implicit)
                 .AllowAccessTokensViaBrowser();
         }
 

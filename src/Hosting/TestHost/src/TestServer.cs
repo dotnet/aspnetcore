@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -19,19 +20,22 @@ namespace Microsoft.AspNetCore.TestHost
         private ApplicationWrapper _application;
 
         /// <summary>
-        /// For use with IHostBuilder or IWebHostBuilder.
+        /// For use with IHostBuilder.
         /// </summary>
-        public TestServer()
-            : this(new FeatureCollection())
+        /// <param name="services"></param>
+        public TestServer(IServiceProvider services)
+            : this(services, new FeatureCollection())
         {
         }
 
         /// <summary>
-        /// For use with IHostBuilder or IWebHostBuilder.
+        /// For use with IHostBuilder.
         /// </summary>
+        /// <param name="services"></param>
         /// <param name="featureCollection"></param>
-        public TestServer(IFeatureCollection featureCollection)
+        public TestServer(IServiceProvider services, IFeatureCollection featureCollection)
         {
+            Services = services ?? throw new ArgumentNullException(nameof(services));
             Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
         }
 
@@ -50,16 +54,19 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="builder"></param>
         /// <param name="featureCollection"></param>
         public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
-            : this(featureCollection)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
+
             var host = builder.UseServer(this).Build();
             host.StartAsync().GetAwaiter().GetResult();
             _hostInstance = host;
+
+            Services = host.Services;
         }
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
@@ -72,6 +79,8 @@ namespace Microsoft.AspNetCore.TestHost
                     ?? throw new InvalidOperationException("The TestServer constructor was not called with a IWebHostBuilder so IWebHost is not available.");
             }
         }
+
+        public IServiceProvider Services { get; }
 
         public IFeatureCollection Features { get; }
 

@@ -12,7 +12,7 @@
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>MSBuild;Swagger;Open API;code generation;Web API</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
-    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 

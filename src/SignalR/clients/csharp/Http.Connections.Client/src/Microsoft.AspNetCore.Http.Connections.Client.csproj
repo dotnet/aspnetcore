@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core Connection Handlers</Description>
@@ -17,6 +17,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>

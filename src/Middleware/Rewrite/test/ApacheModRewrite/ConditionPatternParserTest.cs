@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
@@ -10,16 +10,16 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
     public class ConditionPatternParserTest
     {
         [Theory]
-        [InlineData(">hey", OperationType.Greater, "hey", ConditionType.StringComp)]
-        [InlineData("<hey", OperationType.Less, "hey", ConditionType.StringComp)]
-        [InlineData(">=hey", OperationType.GreaterEqual, "hey", ConditionType.StringComp)]
-        [InlineData("<=hey", OperationType.LessEqual, "hey", ConditionType.StringComp)]
-        [InlineData("=hey", OperationType.Equal, "hey", ConditionType.StringComp)]
-        public void ConditionPatternParser_CheckStringComp(string condition, OperationType operation, string variable, ConditionType conditionType)
+        [InlineData(">hey", (int)OperationType.Greater, "hey", (int)ConditionType.StringComp)]
+        [InlineData("<hey", (int)OperationType.Less, "hey", (int)ConditionType.StringComp)]
+        [InlineData(">=hey", (int)OperationType.GreaterEqual, "hey", (int)ConditionType.StringComp)]
+        [InlineData("<=hey", (int)OperationType.LessEqual, "hey", (int)ConditionType.StringComp)]
+        [InlineData("=hey", (int)OperationType.Equal, "hey", (int)ConditionType.StringComp)]
+        public void ConditionPatternParser_CheckStringComp(string condition, int operation, string variable, int conditionType)
         {
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteInput { OperationType = operation, ConditionType = conditionType, Operand = variable, Invert = false };
+            var expected = new ParsedModRewriteInput { OperationType = (OperationType)operation, ConditionType = (ConditionType)conditionType, Operand = variable, Invert = false };
             Assert.True(CompareConditions(expected, results));
         }
 
@@ -34,53 +34,53 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         }
 
         [Theory]
-        [InlineData("-d", OperationType.Directory, ConditionType.PropertyTest)]
-        [InlineData("-f", OperationType.RegularFile, ConditionType.PropertyTest)]
-        [InlineData("-F", OperationType.ExistingFile, ConditionType.PropertyTest)]
-        [InlineData("-h", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("-L", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("-l", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("-s", OperationType.Size, ConditionType.PropertyTest)]
-        [InlineData("-U", OperationType.ExistingUrl, ConditionType.PropertyTest)]
-        [InlineData("-x", OperationType.Executable, ConditionType.PropertyTest)]
-        public void ConditionPatternParser_CheckFileOperations(string condition, OperationType operation, ConditionType cond)
+        [InlineData("-d", (int)OperationType.Directory, (int)ConditionType.PropertyTest)]
+        [InlineData("-f", (int)OperationType.RegularFile, (int)ConditionType.PropertyTest)]
+        [InlineData("-F", (int)OperationType.ExistingFile, (int)ConditionType.PropertyTest)]
+        [InlineData("-h", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("-L", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("-l", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("-s", (int)OperationType.Size, (int)ConditionType.PropertyTest)]
+        [InlineData("-U", (int)OperationType.ExistingUrl, (int)ConditionType.PropertyTest)]
+        [InlineData("-x", (int)OperationType.Executable, (int)ConditionType.PropertyTest)]
+        public void ConditionPatternParser_CheckFileOperations(string condition, int operation, int cond)
         {
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false };
+            var expected = new ParsedModRewriteInput { ConditionType = (ConditionType)cond, OperationType = (OperationType)operation, Invert = false };
             Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]
-        [InlineData("!-d", OperationType.Directory, ConditionType.PropertyTest)]
-        [InlineData("!-f", OperationType.RegularFile, ConditionType.PropertyTest)]
-        [InlineData("!-F", OperationType.ExistingFile, ConditionType.PropertyTest)]
-        [InlineData("!-h", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("!-L", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("!-l", OperationType.SymbolicLink, ConditionType.PropertyTest)]
-        [InlineData("!-s", OperationType.Size, ConditionType.PropertyTest)]
-        [InlineData("!-U", OperationType.ExistingUrl, ConditionType.PropertyTest)]
-        [InlineData("!-x", OperationType.Executable, ConditionType.PropertyTest)]
-        public void ConditionPatternParser_CheckFileOperationsInverted(string condition, OperationType operation, ConditionType cond)
+        [InlineData("!-d", (int)OperationType.Directory, (int)ConditionType.PropertyTest)]
+        [InlineData("!-f", (int)OperationType.RegularFile, (int)ConditionType.PropertyTest)]
+        [InlineData("!-F", (int)OperationType.ExistingFile, (int)ConditionType.PropertyTest)]
+        [InlineData("!-h", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("!-L", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("!-l", (int)OperationType.SymbolicLink, (int)ConditionType.PropertyTest)]
+        [InlineData("!-s", (int)OperationType.Size, (int)ConditionType.PropertyTest)]
+        [InlineData("!-U", (int)OperationType.ExistingUrl, (int)ConditionType.PropertyTest)]
+        [InlineData("!-x", (int)OperationType.Executable, (int)ConditionType.PropertyTest)]
+        public void ConditionPatternParser_CheckFileOperationsInverted(string condition, int operation, int cond)
         {
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = true };
+            var expected = new ParsedModRewriteInput { ConditionType = (ConditionType)cond, OperationType = (OperationType)operation, Invert = true };
             Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]
-        [InlineData("-gt1", OperationType.Greater, "1", ConditionType.IntComp)]
-        [InlineData("-lt1", OperationType.Less, "1", ConditionType.IntComp)]
-        [InlineData("-ge1", OperationType.GreaterEqual, "1", ConditionType.IntComp)]
-        [InlineData("-le1", OperationType.LessEqual, "1", ConditionType.IntComp)]
-        [InlineData("-eq1", OperationType.Equal, "1", ConditionType.IntComp)]
-        [InlineData("-ne1", OperationType.NotEqual, "1", ConditionType.IntComp)]
-        public void ConditionPatternParser_CheckIntComp(string condition, OperationType operation, string variable, ConditionType cond)
+        [InlineData("-gt1", (int)OperationType.Greater, "1", (int)ConditionType.IntComp)]
+        [InlineData("-lt1", (int)OperationType.Less, "1", (int)ConditionType.IntComp)]
+        [InlineData("-ge1", (int)OperationType.GreaterEqual, "1", (int)ConditionType.IntComp)]
+        [InlineData("-le1", (int)OperationType.LessEqual, "1", (int)ConditionType.IntComp)]
+        [InlineData("-eq1", (int)OperationType.Equal, "1", (int)ConditionType.IntComp)]
+        [InlineData("-ne1", (int)OperationType.NotEqual, "1", (int)ConditionType.IntComp)]
+        public void ConditionPatternParser_CheckIntComp(string condition, int operation, string variable, int cond)
         {
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
-            var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false, Operand = variable };
+            var expected = new ParsedModRewriteInput { ConditionType = (ConditionType)cond, OperationType = (OperationType)operation, Invert = false, Operand = variable };
             Assert.True(CompareConditions(expected, results));
         }
 

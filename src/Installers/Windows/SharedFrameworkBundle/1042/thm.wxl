@@ -60,5 +60,5 @@
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
 
   <String Id="Welcome">[WixBundle] 설치를 시작합니다.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
 </WixLocalization>

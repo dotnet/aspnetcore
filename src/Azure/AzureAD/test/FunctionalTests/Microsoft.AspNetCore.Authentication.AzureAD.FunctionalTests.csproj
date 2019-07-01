@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>

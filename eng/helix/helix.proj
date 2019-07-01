@@ -27,7 +27,7 @@
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <Creator>aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>

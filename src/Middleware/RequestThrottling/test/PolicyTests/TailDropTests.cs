@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.RequestThrottling.Tests
+namespace Microsoft.AspNetCore.RequestThrottling.Tests.PolicyTests
 {
     public class TailDropTests
     {

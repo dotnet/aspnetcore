@@ -3641,6 +3641,63 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        /// <summary>
+        /// Hub methods might be written by users in a way that accepts an interface or base class as a parameter
+        /// and deserialization could supply a derived class.
+        /// This test ensures implementation and subclass arguments are correctly bound for dispatch.
+        /// </summary>
+        [Theory]
+        [InlineData(nameof(StreamingHub.DerivedParameterInterfaceAsyncEnumerable))]
+        [InlineData(nameof(StreamingHub.DerivedParameterBaseClassAsyncEnumerable))]
+        [InlineData(nameof(StreamingHub.DerivedParameterInterfaceAsyncEnumerableWithCancellation))]
+        [InlineData(nameof(StreamingHub.DerivedParameterBaseClassAsyncEnumerableWithCancellation))]
+        public async Task CanPassDerivedParameterToStreamHubMethod(string method)
+        {
+            using (StartVerifiableLog())
+            {
+                var argument = new StreamingHub.DerivedParameterTestObject { Value = "test" };
+                var protocolOptions = new NewtonsoftJsonHubProtocolOptions
+                {
+                    PayloadSerializerSettings = new JsonSerializerSettings()
+                    {
+                        // The usage of TypeNameHandling.All is a security risk.
+                        // If you're implementing this in your own application instead use your own 'type' field and a custom JsonConverter
+                        // or ensure you're restricting to only known types with a custom SerializationBinder like we are here.
+                        // See https://github.com/aspnet/AspNetCore/issues/11495#issuecomment-505047422
+                        TypeNameHandling = TypeNameHandling.All,
+                        SerializationBinder = StreamingHub.DerivedParameterKnownTypesBinder.Instance
+                    }
+                };
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                    services => services.AddSignalR()
+                        .AddNewtonsoftJsonProtocol(o => o.PayloadSerializerSettings = protocolOptions.PayloadSerializerSettings),
+                    LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+                var invocationBinder = new Mock<IInvocationBinder>();
+                invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+
+                using (var client = new TestClient(
+                    protocol: new NewtonsoftJsonHubProtocol(Options.Create(protocolOptions)),
+                    invocationBinder: invocationBinder.Object))
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Wait for a connection, or for the endpoint to fail.
+                    await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                    var messages = await client.StreamAsync(method, argument).OrTimeout();
+
+                    Assert.Equal(2, messages.Count);
+                    HubConnectionHandlerTestUtils.AssertHubMessage(new StreamItemMessage(string.Empty, argument.Value), messages[0]);
+                    HubConnectionHandlerTestUtils.AssertHubMessage(CompletionMessage.Empty(string.Empty), messages[1]);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;

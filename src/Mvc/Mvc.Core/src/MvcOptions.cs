@@ -359,6 +359,19 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        /// <summary>
+        /// Gets or sets the most number of entries of an <see cref="IAsyncEnumerable{T}"/> that
+        /// that <see cref="ObjectResultExecutor"/> will buffer.
+        /// <para>
+        /// When <see cref="ObjectResult.Value" /> is an instance of <see cref="IAsyncEnumerable{T}"/>,
+        /// <see cref="ObjectResultExecutor"/> will eagerly read the enumeration and add to a synchronous collection
+        /// prior to invoking the selected formatter.
+        /// This property determines the most number of entries that the executor is allowed to buffer.
+        /// </para>
+        /// </summary>
+        /// <value>Defaults to <c>8192</c>.</value>
+        public int MaxIAsyncEnumerableBufferLimit { get; set; } = 8192;
+
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();

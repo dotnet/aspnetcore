@@ -7,7 +7,7 @@ import * as msgpack5 from "msgpack5";
 import {
     CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
     LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat,
-} from "@aspnet/signalr";
+} from "@microsoft/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 import { isArrayBuffer } from "./Utils";

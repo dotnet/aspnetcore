@@ -240,31 +240,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
-{
-    public static partial class HttpUtilities
-    {
-        public const string Http10Version = "HTTP/1.0";
-        public const string Http11Version = "HTTP/1.1";
-        public const string Http2Version = "HTTP/2";
-        public const string HttpsUriScheme = "https://";
-        public const string HttpUriScheme = "http://";
-        public static string GetAsciiOrUTF8StringNonNullCharacters(this System.Span<byte> span) { throw null; }
-        public static string GetAsciiStringEscaped(this System.Span<byte> span, int maxChars) { throw null; }
-        public static string GetAsciiStringNonNullCharacters(this System.Span<byte> span) { throw null; }
-        public static string GetHeaderName(this System.Span<byte> span) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownHttpScheme(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme knownScheme) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownMethod(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, out int length) { throw null; }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod GetKnownMethod(string value) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion knownVersion, out byte length) { throw null; }
-        public static bool IsHostHeaderValid(string hostText) { throw null; }
-        public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { throw null; }
-        public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme scheme) { throw null; }
-        public static string VersionToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion) { throw null; }
-    }
-}
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
+    public static partial class CertificateLoader
+    {
+        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
+    }
     public enum ClientCertificateMode
     {
         NoCertificate = 0,
@@ -283,12 +264,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, string, System.Security.Cryptography.X509Certificates.X509Certificate2> ServerCertificateSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Authentication.SslProtocols SslProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void AllowAnyClientCertificate() { }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
-{
-    public static partial class CertificateLoader
-    {
-        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
     }
 }

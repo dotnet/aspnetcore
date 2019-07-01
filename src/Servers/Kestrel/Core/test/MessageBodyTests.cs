@@ -1236,6 +1236,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task CompleteForContentLengthAllowsConsumeToWork()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("a");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+
+                input.Add("asdf");
+
+                reader.AdvanceTo(readResult.Buffer.End);
+                reader.Complete();
+
+                await body.ConsumeAsync();
+            }
+        }
+
+        [Fact]
         public async Task CompleteForContentLengthDoesNotCompleteConnectionPipeMakesReadReturnThrow()
         {
             using (var input = new TestInput())
@@ -1258,6 +1282,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
 
                 await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForChunkedAllowsConsumeToWork()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("5\r\nHello\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("1\r\nH\r\n0\r\n\r\n");
+
+                reader.Complete();
+
+                await body.ConsumeAsync();
             }
         }
 
@@ -1312,7 +1360,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await body.StopAsync();
             }
         }
-
 
         [Fact]
         public async Task CompleteForZeroByteBodyDoesNotCompleteConnectionPipeNoopsReads()

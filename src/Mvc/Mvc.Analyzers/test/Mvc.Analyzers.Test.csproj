@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
-    <ProjectReference Include="..\..\Mvc\ref\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\..\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>

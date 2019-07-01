@@ -1195,8 +1195,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             binder.SetPropertyPublic(bindingContext, "foo", propertyMetadata, result);
 
             // Assert
-            Assert.Equal("Date of death can't be before date of birth." + Environment.NewLine
-                       + "Parameter name: value",
+            Assert.Equal("Date of death can't be before date of birth. (Parameter 'value')",
                          bindingContext.ModelState["foo"].Errors[0].Exception.Message);
         }
 
@@ -1219,8 +1218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Single(bindingContext.ModelState["foo.NameNoAttribute"].Errors);
-            Assert.Equal("This is a different exception." + Environment.NewLine
-                       + "Parameter name: value",
+            Assert.Equal("This is a different exception. (Parameter 'value')",
                          bindingContext.ModelState["foo.NameNoAttribute"].Errors[0].Exception.Message);
         }
 

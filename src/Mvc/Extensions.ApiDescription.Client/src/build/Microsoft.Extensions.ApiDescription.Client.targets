@@ -25,8 +25,9 @@
       @(OpenApiProjectReference) items.
     -->
     <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)">
-      <NoWarn>NU1702</NoWarn>
+      <GlobalPropertiesToRemove>TargetFramework</GlobalPropertiesToRemove>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
     <ProjectReference Update="@(OpenApiProjectReference)">
       <OpenApiReference>true</OpenApiReference>

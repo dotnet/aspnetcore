@@ -80,6 +80,19 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await externalLogin.SendEmailAsync(email);
         }
 
+        internal static async Task<RegisterConfirmation> RegisterNewUserWithSocialLoginWithConfirmationAsync(HttpClient client, string userName, string email, bool hasRealEmailSender = false)
+        {
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailWithConfirmationAsync(email, hasRealEmailSender);
+        }
+
         internal static async Task<Index> RegisterNewUserWithSocialLoginAsyncViaRegisterPage(HttpClient client, string userName, string email)
         {
             var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RequestThrottling.QueuePolicies;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private readonly RequestDelegate _next;
         private readonly RequestDelegate _onRejected;
         private readonly ILogger _logger;
-
-        private int _queuedRequests;
 
         /// <summary>
         /// Creates a new <see cref="RequestThrottlingMiddleware"/>.
@@ -49,19 +47,21 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            Interlocked.Increment(ref _queuedRequests);
+            var waitInQueueTask = _queuePolicy.TryEnterAsync();
 
-            var success = false;
-            try
+            if (waitInQueueTask.IsCompleted)
             {
-                success = await _queuePolicy.TryEnterAsync();
+                RequestThrottlingEventSource.Log.QueueSkipped();
             }
-            finally
+            else
             {
-                Interlocked.Decrement(ref _queuedRequests);
+                using (RequestThrottlingEventSource.Log.QueueTimer())
+                {
+                    await waitInQueueTask;
+                }
             }
 
-            if (success)
+            if (waitInQueueTask.Result)
             {
                 try
                 {
@@ -74,18 +74,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
             }
             else
             {
+                RequestThrottlingEventSource.Log.RequestRejected();
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 await _onRejected(context);
             }
-        }
-
-        /// <summary>
-        /// The total number of requests waiting within the middleware
-        /// </summary>
-        public int QueuedRequestCount
-        {
-            get => _queuedRequests;
         }
 
         private static class RequestThrottlingLog
