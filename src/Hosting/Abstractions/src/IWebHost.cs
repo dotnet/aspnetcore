@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Starts listening on the configured addresses.
         /// </summary>
-        /// <param name="cancellationToken">used to abort program start.</param>
+        /// <param name="cancellationToken">Used to abort program start.</param>
         /// <returns>A <see cref="Task"/> that completes when the <see cref="IWebHost"/> starts.</returns>
         Task StartAsync(CancellationToken cancellationToken = default);
 

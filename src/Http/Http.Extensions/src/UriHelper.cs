@@ -171,13 +171,13 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// and other HTTP operations.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
-        /// <returns>The encoded string version of the url from <paramref name="request"/>.</returns>
+        /// <returns>The encoded string version of the URL from <paramref name="request"/>.</returns>
         public static string GetEncodedUrl(this HttpRequest request)
         {
             return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
         }
         /// <summary>
-        /// Returns the relative url
+        /// Returns the relative URI.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
         /// <returns>The path and query off of <paramref name="request"/>.</returns>
