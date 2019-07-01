@@ -6,6 +6,7 @@ Document -
         UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            FieldDeclaration -  - private - Test.MyComponent - myInstance
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - ParamBefore - AttributeStructure.DoubleQuotes
@@ -15,5 +16,3 @@ Document -
                     ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
                         HtmlContent - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (84:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (84:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

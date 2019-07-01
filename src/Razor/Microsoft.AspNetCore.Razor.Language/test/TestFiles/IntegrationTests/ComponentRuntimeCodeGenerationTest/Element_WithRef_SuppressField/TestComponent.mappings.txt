@@ -1,0 +1,16 @@
+Source Location: (12:0,12 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|myElem|
+Generated Location: (698:19,12 [6] )
+|myElem|
+
+Source Location: (60:1,7 [72] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    ElementRef myElem;
+    void DoStuff() { GC.KeepAlive(myElem); }
+|
+Generated Location: (1006:32,7 [72] )
+|
+    ElementRef myElem;
+    void DoStuff() { GC.KeepAlive(myElem); }
+|
+

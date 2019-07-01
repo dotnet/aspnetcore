@@ -1,0 +1,13 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                Component - (0:0,0 [52] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ReferenceCapture - (19:0,19 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
+            CSharpCode - (61:1,7 [81] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (61:1,7 [81] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    MyComponent myInstance;\n    void DoStuff() { GC.KeepAlive(myInstance); }\n

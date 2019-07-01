@@ -6,6 +6,7 @@ Document -
         UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            FieldDeclaration -  - private - global::Microsoft.AspNetCore.Components.ElementRef - _element
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [61] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
@@ -15,5 +16,5 @@ Document -
                         CSharpExpressionAttributeValue - (36:0,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
                     ReferenceCapture - (49:0,49 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _element
-            CSharpCode - (72:2,7 [161] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (72:2,7 [161] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private ElementRef _element;\n\n        [Parameter] protected int Min { get; set; }\n        public void Foo() { System.GC.KeepAlive(_element); }\n    
+            CSharpCode - (72:2,7 [59] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (72:2,7 [59] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        [Parameter] protected int Min { get; set; }\n    

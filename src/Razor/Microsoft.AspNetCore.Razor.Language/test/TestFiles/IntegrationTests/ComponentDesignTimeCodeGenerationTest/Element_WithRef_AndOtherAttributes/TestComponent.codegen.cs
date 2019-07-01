@@ -10,6 +10,11 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
+        #pragma warning disable 0414
+        #pragma warning disable 0169
+        private global::Microsoft.AspNetCore.Components.ElementRef _element;
+        #pragma warning restore 0169
+        #pragma warning restore 0414
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         }
@@ -41,10 +46,7 @@ namespace Test
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-        private ElementRef _element;
-
         [Parameter] protected int Min { get; set; }
-        public void Foo() { System.GC.KeepAlive(_element); }
     
 
 #line default

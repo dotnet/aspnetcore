@@ -423,5 +423,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             return RazorDiagnostic.Create(DuplicateComponentParameterDirective, source ?? SourceSpan.Undefined, attributeName, directiveAttributeName);
         }
+
+        public static readonly RazorDiagnosticDescriptor RefSuppressFieldNotMinimized =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10011",
+                () =>
+                    "The directive attribute '@ref:suppressField' must be used as a minimized attribute. Providing an attribute value like '@ref:suppressField=\"false\"' " +
+                    "is not supported.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_RefSuppressFieldNotMinimized(SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(RefSuppressFieldNotMinimized, source ?? SourceSpan.Undefined);
+        }
+
+        public static readonly RazorDiagnosticDescriptor RefSuppressFieldRequiredForGeneric =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10012",
+                () =>
+                    "Using '@ref' on a generic-typed component requires manually defining a field to hold the component reference. Use '@ref:suppressField' to " +
+                    "suppress field generation, and manually define a field inside '@code {{ }}' to contain the reference.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_RefSuppressFieldRequiredForGeneric(SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(RefSuppressFieldRequiredForGeneric, source ?? SourceSpan.Undefined);
+        }
     }
 }

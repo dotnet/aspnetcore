@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
             {
-                Context.CodeWriter.WriteField(node.Modifiers, node.FieldType, node.FieldName);
+                Context.CodeWriter.WriteField(node.SuppressWarnings, node.Modifiers, node.FieldType, node.FieldName);
             }
 
             public override void VisitPropertyDeclaration(PropertyDeclarationIntermediateNode node)

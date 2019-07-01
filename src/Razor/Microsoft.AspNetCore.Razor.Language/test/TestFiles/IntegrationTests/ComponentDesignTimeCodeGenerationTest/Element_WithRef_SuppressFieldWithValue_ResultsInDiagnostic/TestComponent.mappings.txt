@@ -1,0 +1,5 @@
+Source Location: (12:0,12 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|myElem|
+Generated Location: (1083:29,12 [6] )
+|myElem|
+

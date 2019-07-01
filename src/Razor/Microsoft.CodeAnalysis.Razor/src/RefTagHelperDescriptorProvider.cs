@@ -61,16 +61,24 @@ namespace Microsoft.CodeAnalysis.Razor
                 });
             });
 
-            builder.BindAttribute(attribute =>
+            builder.BindAttribute(@ref =>
             {
-                attribute.Documentation = ComponentResources.RefTagHelper_Documentation;
-                attribute.Name = "@ref";
+                @ref.Documentation = ComponentResources.RefTagHelper_Documentation;
+                @ref.Name = "@ref";
 
                 // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                 // a C# property will crash trying to create the tooltips.
-                attribute.SetPropertyName("Ref");
-                attribute.TypeName = typeof(object).FullName;
-                attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+                @ref.SetPropertyName("Ref");
+                @ref.TypeName = typeof(object).FullName;
+                @ref.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
+
+                @ref.BindAttributeParameter(suppressField =>
+                {
+                    suppressField.Name = "suppressField";
+                    suppressField.Documentation = ComponentResources.RefTagHelper_SuppressField_Documentation;
+                    suppressField.TypeName = typeof(bool).FullName;
+                    suppressField.SetPropertyName("SuppressField");
+                });
             });
 
             return builder.Build();

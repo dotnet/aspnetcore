@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CodeWriter();
 
             // Act
-            writer.WriteField(new[] { "private" }, "global::System.String", "_myString");
+            writer.WriteField(Array.Empty<string>(), new[] { "private" }, "global::System.String", "_myString");
 
             // Assert
             var output = writer.GenerateCode();
@@ -301,11 +301,35 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CodeWriter();
 
             // Act
-            writer.WriteField(new[] { "private", "readonly", "static" }, "global::System.String", "_myString");
+            writer.WriteField(Array.Empty<string>(), new[] { "private", "readonly", "static" }, "global::System.String", "_myString");
 
             // Assert
             var output = writer.GenerateCode();
             Assert.Equal("private readonly static global::System.String _myString;" + Environment.NewLine, output);
+        }
+
+        [Fact]
+        public void WriteField_WithModifiersAndSupressions_WritesFieldDeclaration()
+        {
+            // Arrange
+            var writer = new CodeWriter();
+
+            // Act
+            writer.WriteField(
+                new[] { "0001", "0002", },
+                new[] { "private", "readonly", "static" },
+                "global::System.String",
+                "_myString");
+
+            // Assert
+            var output = writer.GenerateCode();
+            Assert.Equal(
+                "#pragma warning disable 0001" + Environment.NewLine +
+                "#pragma warning disable 0002" + Environment.NewLine +
+                "private readonly static global::System.String _myString;" + Environment.NewLine +
+                "#pragma warning restore 0002" + Environment.NewLine +
+                "#pragma warning restore 0001" + Environment.NewLine,
+                output);
         }
 
         [Fact]

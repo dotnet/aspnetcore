@@ -193,7 +193,10 @@
     <value>route template</value>
   </data>
   <data name="RefTagHelper_Documentation" xml:space="preserve">
-    <value>Populates the specified field or property with a reference to the element or component.</value>
+    <value>Generates the specified field, and populates it during rendering with a reference to the element or component.</value>
+  </data>
+  <data name="RefTagHelper_SuppressField_Documentation" xml:space="preserve">
+    <value>Suppresses the generation of a field by '@ref'. Specify '@ref:suppressField' to define your own property or field.</value>
   </data>
   <data name="SplatTagHelper_Documentation" xml:space="preserve">
     <value>Merges a collection of attributes into the current element or component.</value>

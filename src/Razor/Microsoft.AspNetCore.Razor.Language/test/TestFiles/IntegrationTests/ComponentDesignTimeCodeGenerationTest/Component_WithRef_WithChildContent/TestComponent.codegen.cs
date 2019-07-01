@@ -10,6 +10,11 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
+        #pragma warning disable 0414
+        #pragma warning disable 0169
+        private Test.MyComponent myInstance;
+        #pragma warning restore 0169
+        #pragma warning restore 0414
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         }
@@ -40,15 +45,6 @@ __o = typeof(MyComponent);
 #nullable disable
         }
         #pragma warning restore 1998
-#nullable restore
-#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
-       
-    private Test.MyComponent myInstance;
-    public void Foo() { System.GC.KeepAlive(myInstance); }
-
-#line default
-#line hidden
-#nullable disable
     }
 }
 #pragma warning restore 1591

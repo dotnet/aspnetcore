@@ -58,10 +58,10 @@ __o = typeof(MyComponent<>);
         }
         #pragma warning restore 1998
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    private MyComponent<int> _my;
-    public void Foo() { System.GC.KeepAlive(_my); }
+    MyComponent<int> _my;
+    void DoStuff() { GC.KeepAlive(_my); }
 
 #line default
 #line hidden

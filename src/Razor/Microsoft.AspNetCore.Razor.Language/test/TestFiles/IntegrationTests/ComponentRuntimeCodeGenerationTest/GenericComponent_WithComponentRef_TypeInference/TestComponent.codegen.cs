@@ -10,6 +10,11 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
+        #pragma warning disable 0414
+        #pragma warning disable 0169
+        private Test.MyComponent<TItem> _my;
+        #pragma warning restore 0169
+        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {

@@ -62,6 +62,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             _inner.AddRange(items);
         }
 
+        public void AddRange(IEnumerable<RazorDiagnostic> items)
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            _inner.AddRange(items);
+        }
+
         public void Clear()
         {
             _inner.Clear();

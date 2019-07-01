@@ -8,12 +8,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal sealed class DefaultTagHelperTargetExtension : IDefaultTagHelperTargetExtension
     {
+        private static readonly string[] FieldUnintializedModifiers = { "0649", };
+
+        private static readonly string[] FieldUnusedModifiers = { "0169", };
+
         private static readonly string[] PrivateModifiers = new string[] { "private" };
 
         public string RunnerVariableName { get; set; } = "__tagHelperRunner";
@@ -476,9 +479,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteTagHelperRuntime(CodeRenderingContext context, DefaultTagHelperRuntimeIntermediateNode node)
         {
             context.CodeWriter.WriteLine("#line hidden");
-            context.CodeWriter.WriteLine("#pragma warning disable 0649");
-            context.CodeWriter.WriteField(PrivateModifiers, ExecutionContextTypeName, ExecutionContextVariableName);
-            context.CodeWriter.WriteLine("#pragma warning restore 0649");
+            context.CodeWriter.WriteField(FieldUnintializedModifiers, PrivateModifiers, ExecutionContextTypeName, ExecutionContextVariableName);
 
             context.CodeWriter
                 .Write("private ")
@@ -491,12 +492,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             if (!context.Options.DesignTime)
             {
-                // Need to disable the warning "X is never used." for the value buffer since
-                // whether it's used depends on how a TagHelper is used.
-                context.CodeWriter.WriteLine("#pragma warning disable 0169");
-                context.CodeWriter.WriteField(PrivateModifiers, "string", StringValueBufferVariableName);
-                context.CodeWriter.WriteLine("#pragma warning restore 0169");
-
+                context.CodeWriter.WriteField(FieldUnusedModifiers, PrivateModifiers, "string", StringValueBufferVariableName);
+             
                 var backedScopeManageVariableName = "__backed" + ScopeManagerVariableName;
                 context.CodeWriter
                     .Write("private ")

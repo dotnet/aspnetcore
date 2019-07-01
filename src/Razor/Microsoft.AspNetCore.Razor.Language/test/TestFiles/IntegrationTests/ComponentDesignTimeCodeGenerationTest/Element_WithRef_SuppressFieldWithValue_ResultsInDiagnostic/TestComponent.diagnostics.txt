@@ -1,0 +1,1 @@
+x:\dir\subdir\Test\TestComponent.cshtml(1,41): Error RZ10011: The directive attribute '@ref:suppressField' must be used as a minimized attribute. Providing an attribute value like '@ref:suppressField="false" is not supported.

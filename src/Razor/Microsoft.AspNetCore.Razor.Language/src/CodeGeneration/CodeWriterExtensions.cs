@@ -263,8 +263,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }
 
-        public static CodeWriter WriteField(this CodeWriter writer, IList<string> modifiers, string typeName, string fieldName)
+        public static CodeWriter WriteField(this CodeWriter writer, IList<string> suppressWarnings, IList<string> modifiers, string typeName, string fieldName)
         {
+            if (suppressWarnings == null)
+            {
+                throw new ArgumentNullException(nameof(suppressWarnings));
+            }
+
             if (modifiers == null)
             {
                 throw new ArgumentNullException(nameof(modifiers));
@@ -280,6 +285,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(fieldName));
             }
 
+            for (var i = 0; i < suppressWarnings.Count; i++)
+            {
+                writer.Write("#pragma warning disable ");
+                writer.WriteLine(suppressWarnings[i]);
+            }
+
             for (var i = 0; i < modifiers.Count; i++)
             {
                 writer.Write(modifiers[i]);
@@ -291,6 +302,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.Write(fieldName);
             writer.Write(";");
             writer.WriteLine();
+
+            for (var i = suppressWarnings.Count - 1; i >= 0; i--)
+            {
+                writer.Write("#pragma warning restore ");
+                writer.WriteLine(suppressWarnings[i]);
+            }
 
             return writer;
         }

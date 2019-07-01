@@ -1744,14 +1744,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                             out var parameterMatch,
                             out var associatedAttributeParameterDescriptor))
                         {
-                            var expectsBooleanValue = associatedAttributeDescriptor.ExpectsBooleanValue(attributeName);
-
-                            if (!expectsBooleanValue)
-                            {
-                                // We do not allow minimized non-boolean bound attributes.
-                                return;
-                            }
-
                             // Directive attributes should start with '@' unless the descriptors are misconfigured.
                             // In that case, we would have already logged an error.
                             var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
@@ -1760,6 +1752,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                             if (parameterMatch &&
                                 TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
                             {
+                                var expectsBooleanValue = associatedAttributeParameterDescriptor.IsBooleanProperty;
+                                if (!expectsBooleanValue)
+                                {
+                                    // We do not allow minimized non-boolean bound attributes.
+                                    return;
+                                }
+
                                 attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,
@@ -1775,6 +1774,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                             }
                             else
                             {
+                                var expectsBooleanValue = associatedAttributeDescriptor.ExpectsBooleanValue(attributeName);
+                                if (!expectsBooleanValue)
+                                {
+                                    // We do not allow minimized non-boolean bound attributes.
+                                    return;
+                                }
+
                                 attributeNode = new TagHelperDirectiveAttributeIntermediateNode()
                                 {
                                     AttributeName = actualAttributeName,

@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IList<string> Modifiers { get; } = new List<string>();
 
+        public IList<string> SuppressWarnings { get; } = new List<string>();
+
         public string FieldName { get; set; }
 
         public string FieldType { get; set; }
