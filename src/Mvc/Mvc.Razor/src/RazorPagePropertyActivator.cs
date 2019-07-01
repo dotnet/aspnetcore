@@ -112,6 +112,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 valueAccessor = valueAccessors.DiagnosticListenerAccessor;
             }
+            else if (property.PropertyType == typeof(DiagnosticSource))
+            {
+                valueAccessor = valueAccessors.DiagnosticSourceAccessor;
+            }
             else if (property.PropertyType == typeof(HtmlEncoder))
             {
                 valueAccessor = valueAccessors.HtmlEncoderAccessor;
@@ -142,6 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public Func<ViewContext, object> JsonHelperAccessor { get; set; }
 
             public Func<ViewContext, object> DiagnosticListenerAccessor { get; set; }
+
+            public Func<ViewContext, object> DiagnosticSourceAccessor { get; set; }
 
             public Func<ViewContext, object> HtmlEncoderAccessor { get; set; }
 
