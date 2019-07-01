@@ -449,7 +449,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             lock (_stateLock)
             {
                 // Need to sync cts access with DisposeAsync as that will dispose the cts
-                cts = Status == HttpConnectionStatus.Disposed ? null : Cancellation;
+                if (Status == HttpConnectionStatus.Disposed)
+                {
+                    cts = null;
+                }
+                else
+                {
+                    cts = Cancellation;
+                    Cancellation = null;
+                }
             }
 
             using (cts)
