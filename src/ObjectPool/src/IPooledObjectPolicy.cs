@@ -16,10 +16,10 @@ namespace Microsoft.Extensions.ObjectPool
         T Create();
 
         /// <summary>
-        /// Put an object in the pool.
+        /// Return an object to the pool.
         /// </summary>
-        /// <param name="obj">The object to put in the pool.</param>
-        /// <returns><code>true</code> if put in the pool.</returns>
+        /// <param name="obj">The object to return to the pool.</param>
+        /// <returns><code>true</code> if returned to the pool.</returns>
         bool Return(T obj);
     }
 }
