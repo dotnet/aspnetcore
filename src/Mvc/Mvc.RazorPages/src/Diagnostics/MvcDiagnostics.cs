@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public HandlerMethodDescriptor HandlerMethodDescriptor { get; }
         public object Instance { get; }
 
-        public override int Count => 4;
+        protected override int Count => 4;
 
         public BeforeHandlerMethod(ActionContext actionContext, IDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Instance = instance;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public object Instance { get; }
         public IActionResult Result { get; }
 
-        public override int Count => 5;
+        protected override int Count => 5;
 
         public AfterHandlerMethod(ActionContext actionContext, IDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
         {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Result = result;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutingContext HandlerExecutionContext { get; }
         public IAsyncPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
         {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutionContext), HandlerExecutionContext),
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutedContext HandlerExecutedContext { get; }
         public IAsyncPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
         {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutedContext), HandlerExecutedContext),
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutingContext HandlerExecutingContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutingContext), HandlerExecutingContext),
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutingContext HandlerExecutingContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutingContext), HandlerExecutingContext),
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutedContext HandlerExecutedContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutedContext), HandlerExecutedContext),
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerExecutedContext HandlerExecutedContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerExecutedContext), HandlerExecutedContext),
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerSelectedContext HandlerSelectedContext { get; }
         public IAsyncPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerSelectedContext), HandlerSelectedContext),
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerSelectedContext HandlerSelectedContext { get; }
         public IAsyncPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerSelectedContext), HandlerSelectedContext),
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerSelectedContext HandlerSelectedContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerSelectedContext), HandlerSelectedContext),
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public PageHandlerSelectedContext HandlerSelectedContext { get; }
         public IPageFilter Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HandlerSelectedContext), HandlerSelectedContext),

@@ -10,19 +10,25 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         protected const string EventNamespace = "Microsoft.AspNetCore.Mvc.";
 
-        public abstract int Count { get; }
-        public abstract KeyValuePair<string, object> this[int index] { get; }
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        protected abstract int Count { get; }
+        protected abstract KeyValuePair<string, object> this[int index] { get; }
+
+        int IReadOnlyCollection<KeyValuePair<string, object>>.Count => Count;
+        KeyValuePair<string, object> IReadOnlyList<KeyValuePair<string, object>>.this[int index] => this[index];
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+            => GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+
+        private IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             var count = Count;
             for (var i = 0; i < count; i++)
             {
                 yield return this[i];
             }
-        }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

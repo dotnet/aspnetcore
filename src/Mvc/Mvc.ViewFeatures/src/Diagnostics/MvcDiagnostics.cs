@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ViewComponentContext ViewComponentContext { get; }
         public object ViewComponent { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, object viewComponent)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewComponent = viewComponent;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ViewComponentContext), ViewComponentContext),
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public IViewComponentResult ViewComponentResult { get; }
         public object ViewComponent { get; }
 
-        public override int Count => 4;
+        protected override int Count => 4;
 
         public AfterViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IViewComponentResult viewComponentResult, object viewComponent)
         {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewComponent = viewComponent;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ViewComponentContext), ViewComponentContext),
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ViewComponentContext ViewComponentContext { get; }
         public IView View { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public ViewComponentBeforeViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             View = view;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ViewComponentContext), ViewComponentContext),
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ViewComponentContext ViewComponentContext { get; }
         public IView View { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public ViewComponentAfterViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             View = view;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ViewComponentContext), ViewComponentContext),
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public IView View { get; }
         public ViewContext ViewContext { get; }
 
-        public override int Count => 2;
+        protected override int Count => 2;
 
         public BeforeView(IView view, ViewContext viewContext)
         {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewContext = viewContext;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(View), View),
             1 => new KeyValuePair<string, object>(nameof(ViewContext), ViewContext),
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public IView View { get; }
         public ViewContext ViewContext { get; }
 
-        public override int Count => 2;
+        protected override int Count => 2;
 
         public AfterView(IView view, ViewContext viewContext)
         {
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewContext = viewContext;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(View), View),
             1 => new KeyValuePair<string, object>(nameof(ViewContext), ViewContext),
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public string ViewName { get; }
         public IView View { get; }
 
-        public override int Count => 5;
+        protected override int Count => 5;
 
         public ViewFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IView view)
         {
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             View = view;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage),
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public string ViewName { get; }
         public IEnumerable<string> SearchedLocations { get; }
 
-        public override int Count => 5;
+        protected override int Count => 5;
 
         public ViewNotFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IEnumerable<string> searchedLocations)
         {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             SearchedLocations = searchedLocations;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(IsMainPage), IsMainPage),

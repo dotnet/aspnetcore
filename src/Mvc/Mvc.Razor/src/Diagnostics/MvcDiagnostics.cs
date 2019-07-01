@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionDescriptor ActionDescriptor { get; }
         public HttpContext HttpContext { get; }
 
-        public override int Count => 4;
+        protected override int Count => 4;
 
         public BeforeViewPage(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             HttpContext = httpContext;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(Page), Page),
             1 => new KeyValuePair<string, object>(nameof(ViewContext), ViewContext),
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionDescriptor ActionDescriptor { get; }
         public HttpContext HttpContext { get; }
 
-        public override int Count => 4;
+        protected override int Count => 4;
 
         public AfterViewPage(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             HttpContext = httpContext;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(Page), Page),
             1 => new KeyValuePair<string, object>(nameof(ViewContext), ViewContext),
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public int Length { get; }
         public bool IsLiteral { get; }
 
-        public override int Count => 5;
+        protected override int Count => 5;
 
         public BeginInstrumentationContext(
             HttpContext httpContext,
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             IsLiteral = isLiteral;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
             1 => new KeyValuePair<string, object>(nameof(Path), Path),
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public HttpContext HttpContext { get; }
         public string Path { get; }
 
-        public override int Count => 2;
+        protected override int Count => 2;
 
         public EndInstrumentationContext(
             HttpContext httpContext,
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Path = path;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
             1 => new KeyValuePair<string, object>(nameof(Path), Path),

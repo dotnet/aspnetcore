@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public HttpContext HttpContext { get; }
         public RouteData RouteData { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             RouteData = routeData;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public HttpContext HttpContext { get; }
         public RouteData RouteData { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             RouteData = routeData;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public AuthorizationFilterContext AuthorizationContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(AuthorizationContext), AuthorizationContext),
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public AuthorizationFilterContext AuthorizationContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(AuthorizationContext), AuthorizationContext),
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutingContext ResourceExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutedContext ResourceExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutingContext ResourceExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutingContext ResourceExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutingContext), ResourceExecutingContext),
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutedContext ResourceExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResourceExecutedContext ResourceExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResourceExecutedContext), ResourceExecutedContext),
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ExceptionContext ExceptionContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ExceptionContext), ExceptionContext),
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ExceptionContext ExceptionContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ExceptionContext), ExceptionContext),
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutingContext ActionExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutedContext ActionExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutingContext ActionExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutingContext ActionExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutingContext), ActionExecutingContext),
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutedContext ActionExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionExecutedContext ActionExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ActionExecutedContext), ActionExecutedContext),
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public IDictionary<string, object> Arguments { get; }
         public object Controller { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeActionMethod(ActionContext actionContext, IDictionary<string, object> arguments, object controller)
         {
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Controller = controller;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public object Controller { get; }
         public IActionResult Result { get; }
 
-        public override int Count => 4;
+        protected override int Count => 4;
 
         public AfterActionMethod(ActionContext actionContext, IDictionary<string, object> arguments, object controller, IActionResult result)
         {
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Result = result;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Controller), Controller),
@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutingContext ResultExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutedContext ResultExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutingContext ResultExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutingContext ResultExecutingContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -604,7 +604,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutingContext), ResultExecutingContext),
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutedContext ResultExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public BeforeOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
@@ -645,7 +645,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ResultExecutedContext ResultExecutedContext { get; }
         public IFilterMetadata Filter { get; }
 
-        public override int Count => 3;
+        protected override int Count => 3;
 
         public AfterOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
             1 => new KeyValuePair<string, object>(nameof(ResultExecutedContext), ResultExecutedContext),
@@ -669,7 +669,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionContext ActionContext { get; }
         public IActionResult Result { get; }
 
-        public override int Count => 2;
+        protected override int Count => 2;
 
         public BeforeActionResult(ActionContext actionContext, IActionResult result)
         {
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Result = result;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Result), Result),
@@ -691,7 +691,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public ActionContext ActionContext { get; }
         public IActionResult Result { get; }
 
-        public override int Count => 2;
+        protected override int Count => 2;
 
         public AfterActionResult(ActionContext actionContext, IActionResult result)
         {
@@ -699,7 +699,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Result = result;
         }
 
-        public override KeyValuePair<string, object> this[int index] => index switch
+        protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
             1 => new KeyValuePair<string, object>(nameof(Result), Result),
