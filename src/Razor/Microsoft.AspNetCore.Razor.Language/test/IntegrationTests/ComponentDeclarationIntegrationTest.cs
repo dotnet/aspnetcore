@@ -71,6 +71,21 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         [Fact]
+        public void DeclarationConfiguration_IncludesRef()
+        {
+            // Arrange & Act
+            var component = CompileToComponent(@"
+@using System.Text
+<div @ref=""myDiv"" />
+");
+
+            // Assert
+            var field = component.GetType().GetField("myDiv", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(field);
+            Assert.Same(typeof(ElementRef), field.FieldType);
+        }
+
+        [Fact]
         public void DeclarationConfiguration_IncludesInherits()
         {
             // Arrange & Act
