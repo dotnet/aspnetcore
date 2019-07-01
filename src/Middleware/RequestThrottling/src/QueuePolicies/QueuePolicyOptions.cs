@@ -5,7 +5,7 @@ using System.Text;
 namespace Microsoft.AspNetCore.RequestThrottling
 {
     /// <summary>
-    /// Specifies options for the 
+    /// Specifies options for the <see cref="IQueuePolicy"/>
     /// </summary>
     public class QueuePolicyOptions
     {
