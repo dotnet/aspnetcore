@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
