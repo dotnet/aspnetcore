@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.AfterViewPage";
         public AfterViewPage(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
         public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override int Count { get { throw null; } }
+        protected override int Count { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage";
         public BeforeViewPage(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext) { }
         public Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override int Count { get { throw null; } }
+        protected override int Count { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
         public BeginInstrumentationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string path, int position, int length, bool isLiteral) { }
-        public override int Count { get { throw null; } }
+        protected override int Count { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool IsLiteral { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public int Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int Position { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
         public EndInstrumentationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string path) { }
-        public override int Count { get { throw null; } }
+        protected override int Count { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }

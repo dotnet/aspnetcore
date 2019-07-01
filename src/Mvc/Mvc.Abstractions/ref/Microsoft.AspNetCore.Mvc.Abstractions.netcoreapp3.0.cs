@@ -215,9 +215,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         protected const string EventNamespace = "Microsoft.AspNetCore.Mvc.";
         protected MvcDiagnostic() { }
-        public abstract int Count { get; }
-        public abstract System.Collections.Generic.KeyValuePair<string, object> this[int index] { get; }
-        public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> GetEnumerator() { throw null; }
+        protected abstract int Count { get; }
+        protected abstract System.Collections.Generic.KeyValuePair<string, object> this[int index] { get; }
+        int System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Count { get { throw null; } }
+        System.Collections.Generic.KeyValuePair<string, object> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.this[int index] { get { throw null; } }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
 }
