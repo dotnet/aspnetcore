@@ -18,9 +18,10 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private bool _isActive;
         private string _hrefAbsolute;
+        private string _class;
 
         /// <summary>
-        /// Gets or sets the CSS class name applied to the NavLink when the 
+        /// Gets or sets the CSS class name applied to the NavLink when the
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Inject] private IUriHelper UriHelper { get; set; }
 
         /// <inheritdoc />
-        protected override void OnInit()
+        protected override void OnInitialized()
         {
             // We'll consider re-rendering on each location change
             UriHelper.OnLocationChanged += OnLocationChanged;
@@ -72,13 +73,13 @@ namespace Microsoft.AspNetCore.Components.Routing
             _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = ShouldMatch(UriHelper.GetAbsoluteUri());
 
-            var @class = (string)null;
+            _class = (string)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
-                @class = Convert.ToString(obj);
+                _class = Convert.ToString(obj);
             }
 
-            CssClass = _isActive ? CombineWithSpace(@class, ActiveClass ?? DefaultActiveClass) : @class;
+            UpdateCssClass();
         }
 
         /// <inheritdoc />
@@ -86,6 +87,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
             UriHelper.OnLocationChanged -= OnLocationChanged;
+        }
+
+        private void UpdateCssClass()
+        {
+            CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
@@ -96,6 +102,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
+                UpdateCssClass();
                 StateHasChanged();
             }
         }
