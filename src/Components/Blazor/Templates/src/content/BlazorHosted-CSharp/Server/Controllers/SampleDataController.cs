@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace BlazorHosted_CSharp.Server.Controllers
 {
     [Route("[controller]")]
-    public class SampleDataController : Controller
+    public class WeatherForecastController : Controller
     {
         private static string[] Summaries = new[]
         {
