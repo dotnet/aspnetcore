@@ -77,14 +77,6 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
         public bool PreferHostingUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
-{
-    public partial class StaticWebAssetsLoader
-    {
-        public StaticWebAssetsLoader() { }
-        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment, Microsoft.Extensions.Configuration.IConfiguration configuration) { }
-    }
-}
 namespace Microsoft.Extensions.Hosting
 {
     public static partial class GenericHostWebHostBuilderExtensions

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
     /// <summary>
     /// Loader for static web assets
     /// </summary>
-    public class StaticWebAssetsLoader
+    internal class StaticWebAssetsLoader
     {
         internal const string StaticWebAssetsManifestName = "Microsoft.AspNetCore.StaticWebAssets.xml";
 
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         /// </summary>
         /// <param name="environment">The application <see cref="IWebHostEnvironment"/>.</param>
         /// <param name="configuration">The host <see cref="IConfiguration"/>.</param>
-        public static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
+        internal static void UseStaticWebAssets(IWebHostEnvironment environment, IConfiguration configuration)
         {
             using (var manifest = ResolveManifest(environment, configuration))
             {
