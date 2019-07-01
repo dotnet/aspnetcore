@@ -7,10 +7,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
-using Microsoft.AspNetCore.Routing.Tree;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Internal.Routing
+namespace Microsoft.AspNetCore.Routing.Tree
 {
     public class LinkGenerationDecisionTreeTest
     {

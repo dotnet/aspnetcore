@@ -4,9 +4,8 @@
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing
 {
-#pragma warning disable CS0618 // Type or member is obsolete
     public class UriBuildingContextTest
     {
         [Fact]
@@ -98,5 +97,4 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expected, uriBuilldingContext.ToPathString().Value);
         }
     }
-#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -4,10 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Microsoft.AspNetCore.Routing.Tree;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing

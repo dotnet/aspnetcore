@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,11 +8,10 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing
 {
-    [Obsolete("This type will be marked as internal in a future release.")]
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public class UriBuildingContext
+    internal class UriBuildingContext
     {
         // Holds the 'accepted' parts of the path.
         private readonly StringBuilder _path;
