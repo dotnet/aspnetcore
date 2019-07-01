@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         {
             if (!ModelState.IsValid)
             {
-                return Page();
+                return await OnGetAsync();
             }
 
             var user = await _userManager.GetUserAsync(User);
