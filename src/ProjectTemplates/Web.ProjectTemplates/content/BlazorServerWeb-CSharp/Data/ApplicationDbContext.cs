@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace RazorComponentsWeb_CSharp.Data
+namespace BlazorServerWeb_CSharp.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {

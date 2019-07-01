@@ -1,6 +1,6 @@
 using System;
 
-namespace RazorComponentsWeb_CSharp.Data
+namespace BlazorServerWeb_CSharp.Data
 {
     public class WeatherForecast
     {

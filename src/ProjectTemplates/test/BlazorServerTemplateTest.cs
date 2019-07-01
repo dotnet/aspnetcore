@@ -14,9 +14,9 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class RazorComponentsTemplateTest : BrowserTestBase
+    public class BlazorServerTemplateTest : BrowserTestBase
     {
-        public RazorComponentsTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
+        public BlazorServerTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
         {
             ProjectFactory = projectFactory;
         }
@@ -27,7 +27,7 @@ namespace Templates.Test
 
         [Fact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
-        public async Task RazorComponentsTemplateWorks_NoAuth()
+        public async Task BlazorServerTemplateWorks_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
 
@@ -77,7 +77,7 @@ namespace Templates.Test
         [InlineData(true)]
         [InlineData(false)]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
-        public async Task RazorComponentsTemplateWorks_IndividualAuth(bool useLocalDB)
+        public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
 

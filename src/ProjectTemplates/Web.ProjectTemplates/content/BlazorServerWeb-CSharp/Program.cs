@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace RazorComponentsWeb_CSharp
+namespace BlazorServerWeb_CSharp
 {
     public class Program
     {

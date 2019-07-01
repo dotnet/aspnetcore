@@ -36,9 +36,9 @@ using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
-using RazorComponentsWeb_CSharp.Data;
+using BlazorServerWeb_CSharp.Data;
 
-namespace RazorComponentsWeb_CSharp
+namespace BlazorServerWeb_CSharp
 {
     public class Startup
     {
