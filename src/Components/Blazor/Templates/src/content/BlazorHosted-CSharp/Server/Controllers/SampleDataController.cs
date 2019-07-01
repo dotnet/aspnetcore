@@ -18,7 +18,7 @@ namespace BlazorHosted_CSharp.Server.Controllers
         {
             this.logger = logger;
         }
-        [HttpGet("[action]")]
+        [HttpGet]
         public IEnumerable<WeatherForecast> WeatherForecasts()
         {
             var rng = new Random();
