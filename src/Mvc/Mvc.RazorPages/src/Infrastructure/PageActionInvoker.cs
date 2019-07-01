@@ -138,12 +138,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             if (HasPageModel)
             {
-                _logger.ExecutingModelFactory(_pageContext);
+                _logger.ExecutingPageModelFactory(_pageContext);
 
                 // Since this is a PageModel, we need to activate it, and then run a handler method on the model.
                 _pageModel = CacheEntry.ModelFactory(_pageContext);
 
-                _logger.ExecutedModelFactory(_pageContext);
+                _logger.ExecutedPageModelFactory(_pageContext);
 
                 _pageContext.ViewData.Model = _pageModel;
 
