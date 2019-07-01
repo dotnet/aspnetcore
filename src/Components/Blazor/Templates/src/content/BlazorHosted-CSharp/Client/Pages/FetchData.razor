@@ -43,7 +43,7 @@ else
     protected override async Task OnInitAsync()
     {
         @*#if (Hosted)
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("api/SampleData/WeatherForecasts");
+        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
         #else
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
         #endif*@
