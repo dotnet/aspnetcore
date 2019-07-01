@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -311,6 +312,9 @@ namespace Microsoft.AspNetCore.Builder
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
+            var listener = new DiagnosticListener("Microsoft.AspNetCore");
+            services.AddSingleton(listener);
+            services.AddSingleton<DiagnosticSource>(listener);
 
             var serviceProvder = services.BuildServiceProvider();
 
