@@ -53,17 +53,7 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-#if (OrganizationalAuth)
-            services.AddControllersWithViews(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
-            });
-#else
             services.AddControllersWithViews();
-#endif
 #if (OrganizationalAuth || IndividualAuth)
             services.AddRazorPages();
 #endif
@@ -106,8 +96,9 @@ namespace Company.WebApplication1
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
+#if (!NoAuth)
             app.UseAuthorization();
-
+#endif
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
