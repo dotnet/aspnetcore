@@ -24,7 +24,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "RazorComponentsWeb-CSharp": {
+    "BlazorServerWeb-CSharp": {
       "commandName": "Project",
       "launchBrowser": true,
       //#if(RequiresHttps)

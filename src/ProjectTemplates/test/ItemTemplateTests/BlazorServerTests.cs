@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace Templates.Items.Test
 {
-    public class RazorComponentsTest
+    public class BlazorServerTest
     {
-        public RazorComponentsTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public BlazorServerTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
             ProjectFactory = projectFactory;
             Output = output;
@@ -22,7 +22,7 @@ namespace Templates.Items.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        public async Task RazorComponentsItemTemplate()
+        public async Task BlazorServerItemTemplate()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorcomponentitem", Output);
 

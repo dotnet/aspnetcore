@@ -880,7 +880,7 @@
       ]
     }
   },
-  "razorcomponents": {
+  "blazorserver": {
     "Individual": {
       "Template": "blazorserver",
       "Arguments": "new blazorserver -au Individual",

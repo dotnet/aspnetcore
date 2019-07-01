@@ -17,7 +17,7 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "RazorComponentsWeb-CSharp",
+  "sourceName": "BlazorServerWeb-CSharp",
   "preferNameDirectory": true,
   "guids": [
     "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
@@ -233,8 +233,8 @@
     "UserSecretsId": {
       "type": "parameter",
       "datatype": "string",
-      "replaces": "aspnet-RazorComponentsWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
-      "defaultValue": "aspnet-RazorComponentsWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "replaces": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorServerWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
       "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
     },
     "ExcludeLaunchSettings": {
@@ -361,7 +361,7 @@
   },
   "primaryOutputs": [
     {
-      "path": "RazorComponentsWeb-CSharp.csproj"
+      "path": "BlazorServerWeb-CSharp.csproj"
     }
   ],
   "defaultName": "WebApplication1",
