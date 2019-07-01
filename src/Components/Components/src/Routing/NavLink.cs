@@ -60,11 +60,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public override Task SetParametersAsync(ParameterCollection parameters)
+        protected override void OnParametersSet()
         {
-            // Run the default parameter setting logic to populate our properties.
-            base.SetParametersAsync(parameters);
-
             // Update computed state
             var href = (string)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
@@ -75,17 +72,13 @@ namespace Microsoft.AspNetCore.Components.Routing
             _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = ShouldMatch(UriHelper.GetAbsoluteUri());
 
-            ActiveClass ??= DefaultActiveClass;
-
             var @class = (string)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
             {
                 @class = Convert.ToString(obj);
             }
 
-            CssClass = _isActive ? CombineWithSpace(@class, ActiveClass) : @class;
-
-            return Task.CompletedTask;
+            CssClass = _isActive ? CombineWithSpace(@class, ActiveClass ?? DefaultActiveClass) : @class;
         }
 
         /// <inheritdoc />

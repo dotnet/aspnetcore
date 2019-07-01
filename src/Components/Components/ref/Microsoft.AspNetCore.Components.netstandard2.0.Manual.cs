@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string ActiveClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public RenderFragment ChildContent { get; set; }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
