@@ -18,11 +18,7 @@ jobs:
     - task: PowerShell@2
       displayName: Add Build to Channel
       inputs:
-        targetType: inline
-        script: |
-          $headers = @{
-            "Accept" = "application/json"
-            "Authorization" = "Bearer $(MaestroAccessToken)"
-          }
-          Invoke-RestMethod -Method Post -Headers $headers -Uri https://maestro-prod.westus2.cloudapp.azure.com/api/channels/$(ChannelId)/builds/$(BARBuildId)?api-version=2019-01-16
-      enabled: false
+        filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
+        arguments: -BuildId $(BARBuildId) 
+          -ChannelId $(ChannelId) 
+          -BarToken $(MaestroAccessToken)

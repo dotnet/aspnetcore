@@ -2,6 +2,7 @@ parameters:
   enableSourceLinkValidation: true
   enableSigningValidation: true
   enableSymbolValidation: true
+  enableNugetValidation: true
   SDLValidationParameters:
     enable: false
     params: ''
@@ -11,6 +12,25 @@ stages:
   dependsOn: build
   displayName: Validate
   jobs:
+  - ${{ if eq(parameters.enableNugetValidation, 'true') }}:
+    - job:
+      displayName: NuGet Validation
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: current
+            artifactName: PackageArtifacts
+
+        - task: PowerShell@2
+          displayName: Validate
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+
   - ${{ if eq(parameters.enableSigningValidation, 'true') }}:
     - job:
       displayName: Signing Validation
@@ -65,3 +85,7 @@ stages:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
 
 - template: \eng\common\templates\post-build\channels\public-validation-release.yml
+
+- template: \eng\common\templates\post-build\channels\public-release.yml
+
+- template: \eng\common\templates\post-build\channels\internal-servicing.yml

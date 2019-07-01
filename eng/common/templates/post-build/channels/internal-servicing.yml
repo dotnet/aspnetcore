@@ -1,13 +1,42 @@
+parameters:
+  enableSymbolValidation: true
+
 stages:
-- stage: PVR_Publish
+- stage: IS_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Validation Channel
+  displayName: Internal Servicing
   jobs:
   - template: ../setup-maestro-vars.yml
 
   - job:
+    displayName: Symbol Publishing
+    dependsOn: setupMaestroVars
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.InternalServicing_30_Channel_Id)
+    variables:
+      - group: DotNet-Symbol-Server-Pats
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Artifacts
+        inputs:
+          downloadType: specific files
+          matchingPattern: "*Artifacts*"
+
+      - task: PowerShell@2
+        displayName: Publish
+        inputs:
+          filePath: eng\common\sdk-task.ps1
+          arguments: -task PublishToSymbolServers -restore -msbuildEngine dotnet
+            /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) 
+            /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
+            /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:Configuration=Release
+
+  - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
@@ -18,7 +47,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicValidationRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.InternalServicing_30_Channel_Id)
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -47,7 +76,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ChannelId=$(PublicValidationRelease_30_Channel_Id)
+            /p:ChannelId=$(InternalServicing_30_Channel_Id)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -82,22 +111,43 @@ stages:
             -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
         enabled: false
 
-
-- stage: PVR_PublishValidation
+      - template: ../trigger-subscription.yml
+        parameters:
+          ChannelId: ${{ variables.InternalServicing_30_Channel_Id }}
+        
+- stage: IS_PublishValidation
   displayName: Publish Validation
   variables:
-    - template: ../common-variables.yml
+    - template: ../common-variables.yml  
   jobs:
   - template: ../setup-maestro-vars.yml
+
+  - ${{ if eq(parameters.enableSymbolValidation, 'true') }}:
+    - job:
+      displayName: Symbol Availability
+      dependsOn: setupMaestroVars
+      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.InternalServicing_30_Channel_Id)
+      pool:
+        vmImage: 'windows-2019'
+      steps:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Package Artifacts
+          inputs:
+            buildType: current
+            artifactName: PackageArtifacts
+
+        - task: PowerShell@2
+          displayName: Check Symbol Availability
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/post-build/symbols-validation.ps1
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ -ExtractPath $(Agent.BuildDirectory)/Temp/ -DotnetSymbolVersion $(SymbolToolVersion)
 
   - job:
     displayName: Gather Drop
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicValidationRelease_30_Channel_Id)
     variables:
-      - name: BARBuildId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-      - group: Publish-Build-Assets
+      BARBuildId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.InternalServicing_30_Channel_Id)
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -112,8 +162,9 @@ stages:
         inputs:
           targetType: inline
           script: |
-            darc gather-drop --non-shipping --continue-on-error --id $(BARBuildId) --output-dir $(Agent.BuildDirectory)/Temp/Drop/ --bar-uri https://maestro-prod.westus2.cloudapp.azure.com --password $(MaestroAccessToken) --latest-location
+            darc gather-drop --non-shipping --continue-on-error --id $(BARBuildId) --output-dir $(Agent.BuildDirectory)/Temp/Drop/ --bar-uri https://maestro-prod.westus2.cloudapp.azure.com/ --password $(MaestroAccessToken) --latest-location
+        enabled: false
 
-  - template: ../promote-build.yml	
-    parameters:	
-      ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}
+  - template: ../promote-build.yml
+    parameters:
+      ChannelId: ${{ variables.InternalServicing_30_Channel_Id }}
