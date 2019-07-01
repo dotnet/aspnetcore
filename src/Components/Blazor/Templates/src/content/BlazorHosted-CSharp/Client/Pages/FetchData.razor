@@ -1,5 +1,7 @@
 ﻿@page "/fetchdata"
+@*#if  (Hosted)
 @using BlazorHosted_CSharp.Shared
+#endif*@
 @inject HttpClient Http
 
 <h1>Weather forecast</h1>
@@ -40,6 +42,23 @@ else
 
     protected override async Task OnInitAsync()
     {
+        @*#if (Hosted)
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("api/SampleData/WeatherForecasts");
+        #else
+        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        #endif*@
     }
+
+    @*#if (!Hosted)
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+     #endif*@
 }

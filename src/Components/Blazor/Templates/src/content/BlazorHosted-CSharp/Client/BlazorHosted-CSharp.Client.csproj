@@ -11,9 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
   </ItemGroup>
-
+  <!--#if Hosted -->
   <ItemGroup>
-    <ProjectReference Include="..\BlazorHosted-CSharp.Shared\BlazorHosted-CSharp.Shared.csproj" />
+    <ProjectReference Include="..\Shared\BlazorHosted-CSharp.Shared.csproj" />
   </ItemGroup>
-
+   <!--#endif -->
 </Project>
