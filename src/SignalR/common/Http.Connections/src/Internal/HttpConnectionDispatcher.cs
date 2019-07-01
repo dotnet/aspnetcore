@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 Log.EstablishedConnection(_logger);
 
-                // Allow the reads to be cancelled
+                // Allow the reads to be canceled
                 connection.Cancellation = new CancellationTokenSource();
 
                 var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
@@ -189,27 +189,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     return;
                 }
 
+                if (!await connection.CancelPreviousPoll(context))
+                {
+                    // Connection closed. It's already set the response status code.
+                    return;
+                }
+
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
                 var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                using (connection.Cancellation)
-                {
-                    // Cancel the previous request
-                    connection.Cancellation?.Cancel();
-
-                    try
-                    {
-                        // Wait for the previous request to drain
-                        await connection.PreviousPollTask;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Previous poll canceled due to connection closing, close this poll too
-                        context.Response.ContentType = "text/plain";
-                        context.Response.StatusCode = StatusCodes.Status204NoContent;
-                        return;
-                    }
-                }
 
                 if (!connection.TryActivateLongPollingConnection(
                         connectionDelegate, context, options.LongPolling.PollTimeout,
