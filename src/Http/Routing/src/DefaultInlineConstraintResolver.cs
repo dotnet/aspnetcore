@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
