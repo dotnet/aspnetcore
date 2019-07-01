@@ -4,8 +4,6 @@
 <input @ref="myInput" value="Value set during render" />
 
 @code {
-    ElementRef myInput;
-
     protected override void OnAfterRender()
     {
         JSRuntime.InvokeAsync<object>("setElementValue", myInput, "Value set after render");
