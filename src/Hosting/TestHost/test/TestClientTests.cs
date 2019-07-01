@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.TestHost
             var client = server.CreateClient();
             var cts = new CancellationTokenSource();
             cts.CancelAfter(500);
-            var response = await client.GetAsync("http://localhost:12345", cts.Token);
+            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
 
             // Assert
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
