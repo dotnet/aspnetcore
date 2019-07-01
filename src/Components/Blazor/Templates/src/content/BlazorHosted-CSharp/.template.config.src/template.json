@@ -100,7 +100,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to use ASP.NET Core Hosted Backend."
+      "description": "If specified, includes an ASP.NET Core host for the Blazor app."
     }
   },
   "tags": {
