@@ -11,7 +11,7 @@ export interface WeatherForecastsState {
 }
 
 export interface WeatherForecast {
-    dateFormatted: string;
+    date: string;
     temperatureC: number;
     temperatureF: number;
     summary: string;

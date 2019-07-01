@@ -118,7 +118,7 @@ namespace PlatformBenchmarks
 
             // Content-Length header
             writer.Write(_headerContentLength);
-            var jsonPayload = JsonSerializer.ToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions);
+            var jsonPayload = JsonSerializer.SerializeToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions);
             writer.WriteNumeric((uint)jsonPayload.Length);
 
             // End of headers

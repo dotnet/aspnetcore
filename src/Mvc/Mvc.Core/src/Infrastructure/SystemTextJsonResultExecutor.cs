@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
 
                 var type = value?.GetType() ?? typeof(object);
-                await JsonSerializer.WriteAsync(writeStream, value, type, jsonSerializerOptions);
+                await JsonSerializer.SerializeAsync(writeStream, value, type, jsonSerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally

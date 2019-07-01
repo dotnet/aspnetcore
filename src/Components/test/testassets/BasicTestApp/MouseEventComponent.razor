@@ -93,7 +93,7 @@
 
     void DumpEvent(UIMouseEventArgs e)
     {
-        Console.WriteLine(JsonSerializer.ToString(e));
+        Console.WriteLine(JsonSerializer.Serialize(e));
     }
 
     void Clear()

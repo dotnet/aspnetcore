@@ -8,9 +8,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly System.TimeSpan DefaultHandshakeTimeout;
         public static readonly System.TimeSpan DefaultKeepAliveInterval;
         public static readonly System.TimeSpan DefaultServerTimeout;
-        public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy reconnectPolicy) { }
+        public HubConnection(Microsoft.AspNetCore.Connections.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.Net.EndPoint endPoint, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public HubConnection(Microsoft.AspNetCore.Connections.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.Net.EndPoint endPoint, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy reconnectPolicy) { }
         public string ConnectionId { get { throw null; } }
         public System.TimeSpan HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -144,11 +143,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         Connected = 1,
         Connecting = 2,
         Reconnecting = 3,
-    }
-    public partial interface IConnectionFactory
-    {
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        System.Threading.Tasks.Task DisposeAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection);
     }
     public partial interface IHubConnectionBuilder : Microsoft.AspNetCore.SignalR.ISignalRBuilder
     {

@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
     public partial class StaticWebAssetsLoader
     {
         public StaticWebAssetsLoader() { }
-        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment) { }
+        public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment, Microsoft.Extensions.Configuration.IConfiguration configuration) { }
     }
 }
 namespace Microsoft.Extensions.Hosting

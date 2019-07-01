@@ -20,7 +20,7 @@ module.exports = {
     testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     moduleNameMapper: {
         "^ts-jest$": "<rootDir>/common/node_modules/ts-jest",
-        "^@aspnet/signalr$": "<rootDir>/signalr/dist/cjs/index.js"
+        "^@microsoft/signalr$": "<rootDir>/signalr/dist/cjs/index.js"
     },
     moduleFileExtensions: [
         "ts",

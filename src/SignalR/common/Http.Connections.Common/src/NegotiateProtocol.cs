@@ -60,8 +60,10 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                 if (response.AvailableTransports != null)
                 {
-                    foreach (var availableTransport in response.AvailableTransports)
+                    var transportCount = response.AvailableTransports.Count;
+                    for (var i = 0; i < transportCount; ++i)
                     {
+                        var availableTransport = response.AvailableTransports[i];
                         writer.WriteStartObject();
                         if (availableTransport.Transport != null)
                         {
@@ -76,9 +78,10 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                         if (availableTransport.TransferFormats != null)
                         {
-                            foreach (var transferFormat in availableTransport.TransferFormats)
+                            var formatCount = availableTransport.TransferFormats.Count;
+                            for (var j = 0; j < formatCount; ++j)
                             {
-                                writer.WriteStringValue(transferFormat);
+                                writer.WriteStringValue(availableTransport.TransferFormats[j]);
                             }
                         }
 

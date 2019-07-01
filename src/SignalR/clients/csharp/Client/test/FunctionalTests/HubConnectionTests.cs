@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var hubConnectionBuilder = new HubConnectionBuilder();
 
-            if (protocol != null)
-            {
-                hubConnectionBuilder.Services.AddSingleton(protocol);
-            }
+            hubConnectionBuilder.WithUrl(url + path);
+
+            protocol ??= new JsonHubProtocol();
+            hubConnectionBuilder.Services.AddSingleton(protocol);
 
             if (loggerFactory != null)
             {
@@ -57,20 +57,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 hubConnectionBuilder.WithAutomaticReconnect();
             }
 
+            transportType ??= HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents;
+
             var delegateConnectionFactory = new DelegateConnectionFactory(
-                GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
-                connection => ((HttpConnection)connection).DisposeAsync().AsTask());
+                GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             return hubConnectionBuilder.Build();
         }
 
-        private Func<TransferFormat, Task<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
+        private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType, TransferFormat transferFormat)
         {
-            return async format =>
+            return async endPoint =>
             {
-                var connection = new HttpConnection(new Uri(url + path), transportType, loggerFactory);
-                await connection.StartAsync(format);
+                var httpEndpoint = (UriEndPoint)endPoint;
+                var options = new HttpConnectionOptions { Url = httpEndpoint.Uri, Transports = transportType, DefaultTransferFormat = transferFormat };
+                var connection = new HttpConnection(options, loggerFactory);
+
+                await connection.StartAsync();
+
                 return connection;
             };
         }

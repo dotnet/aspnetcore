@@ -129,6 +129,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
+            if (httpConnectionOptions == null)
+            {
+                throw new ArgumentNullException(nameof(httpConnectionOptions));
+            }
+
             if (httpConnectionOptions.Url == null)
             {
                 throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
@@ -168,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            return StartAsync(TransferFormat.Binary, cancellationToken);
+            return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
         }
 
         /// <summary>

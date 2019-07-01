@@ -18,6 +18,7 @@
       $(RestoreSources);
       $(ArtifactsNonShippingPackagesDir)
     </RestoreSources>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>

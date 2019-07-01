@@ -242,6 +242,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
+    public static partial class CertificateLoader
+    {
+        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
+    }
     public enum ClientCertificateMode
     {
         NoCertificate = 0,
@@ -260,12 +264,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, string, System.Security.Cryptography.X509Certificates.X509Certificate2> ServerCertificateSelector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Authentication.SslProtocols SslProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void AllowAnyClientCertificate() { }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
-{
-    public static partial class CertificateLoader
-    {
-        public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
     }
 }

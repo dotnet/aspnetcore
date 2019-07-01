@@ -93,13 +93,13 @@ namespace Ignitor
                 EventHandlerId = clickEventDescriptor.EventId,
                 EventArgsType = "mouse",
             };
-            var serializedJson = JsonSerializer.ToString(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var serializedJson = JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             var argsObject = new object[] { browserDescriptor, serializedJson };
             var callId = "0";
             var assemblyName = "Microsoft.AspNetCore.Components.Browser";
             var methodIdentifier = "DispatchEvent";
             var dotNetObjectId = 0;
-            var clickArgs = JsonSerializer.ToString(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs);
         }
     }

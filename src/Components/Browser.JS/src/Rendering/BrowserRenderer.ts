@@ -238,6 +238,17 @@ export class BrowserRenderer {
         break;
       }
     }
+
+    // We handle setting 'value' on a <select> in two different ways:
+    // [1] When inserting a corresponding <option>, in case you're dynamically adding options
+    // [2] After we finish inserting the <select>, in case the descendant options are being
+    //     added as an opaque markup block rather than individually
+    // Right here we implement [2]
+    if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+      const selectValue = newDomElementRaw[selectValuePropname];
+      newDomElementRaw.value = selectValue;
+      delete newDomElementRaw[selectValuePropname];
+    }
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -317,7 +328,8 @@ export class BrowserRenderer {
           // <select> is special, in that anything we write to .value will be lost if there
           // isn't yet a matching <option>. To maintain the expected behavior no matter the
           // element insertion/update order, preserve the desired value separately so
-          // we can recover it when inserting any matching <option>.
+          // we can recover it when inserting any matching <option> or after inserting an
+          // entire markup block of descendants.
           element[selectValuePropname] = value;
         }
         return true;
@@ -330,10 +342,11 @@ export class BrowserRenderer {
           element.removeAttribute('value');
         }
         // See above for why we have this special handling for <select>/<option>
-        const parentElement = element.parentElement;
-        if (parentElement && (selectValuePropname in parentElement) && parentElement[selectValuePropname] === value) {
-          this.tryApplyValueProperty(batch, parentElement, attributeFrame);
-          delete parentElement[selectValuePropname];
+        // Note that this is only one of the two cases where we set the value on a <select>
+        const selectElem = this.findClosestAncestorSelectElement(element);
+        if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === value) {
+          this.tryApplyValueProperty(batch, selectElem, attributeFrame);
+          delete selectElem[selectValuePropname];
         }
         return true;
       }
@@ -351,6 +364,18 @@ export class BrowserRenderer {
     } else {
       return false;
     }
+  }
+
+  private findClosestAncestorSelectElement(element: Element | null) {
+    while (element) {
+      if (element instanceof HTMLSelectElement) {
+        return element;
+      } else {
+        element = element.parentElement;
+      }
+    }
+
+    return null;
   }
 
   private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {

@@ -14,7 +14,7 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 
 1. Run `git submodule update --init --recursive` if you haven't already.
 1. Run `git submodule update` to update submodules.
-1. Run `build.cmd -all -pack` in the repository root to build all of the dependencies.
+1. Run `build.cmd -all -pack -configuration Release` in the repository root to build all of the dependencies.
 1. Run `build.cmd -pack -NoRestore -NoBuilddeps` in this directory will produce NuGet packages for each class of template in the artifacts directory.
 1. Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the previous step, it is NOT advised that you install templates created on your local machine via `dotnet new -i [nupkgPath]`. Instead, use the `Run-[Template]-Locally.ps1` scripts in the script folder. These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
 1. The ASP.NET localhost development certificate must also be installed and trusted or else you'll get a test error "Certificate error: Navigation blocked".

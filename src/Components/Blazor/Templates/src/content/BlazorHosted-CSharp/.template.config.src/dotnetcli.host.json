@@ -5,6 +5,9 @@
       "longName": "no-restore",
       "shortName": ""
     },
+      "Hosted": {
+        "longName": "hosted"
+      },
     "Framework": {
       "longName": "framework"
     }

@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             builder.ConfigureAppConfiguration((context, configBuilder) =>
             {
-                StaticWebAssetsLoader.UseStaticWebAssets(context.HostingEnvironment);
+                StaticWebAssetsLoader.UseStaticWebAssets(context.HostingEnvironment, context.Configuration);
             });
 
             return builder;

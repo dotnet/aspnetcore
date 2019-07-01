@@ -52,8 +52,8 @@ class FetchData extends React.PureComponent<WeatherForecastProps> {
                 </thead>
                 <tbody>
                 {this.props.forecasts.map((forecast: WeatherForecastsStore.WeatherForecast) =>
-                    <tr key={forecast.dateFormatted}>
-                        <td>{forecast.dateFormatted}</td>
+                    <tr key={forecast.date}>
+                        <td>{forecast.date}</td>
                         <td>{forecast.temperatureC}</td>
                         <td>{forecast.temperatureF}</td>
                         <td>{forecast.summary}</td>

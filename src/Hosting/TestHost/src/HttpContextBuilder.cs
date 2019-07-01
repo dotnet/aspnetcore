@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,8 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly HttpContext _httpContext;
         
         private readonly TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly ResponseStream _responseStream;
+        private readonly ResponseBodyReaderStream _responseReaderStream;
+        private readonly ResponseBodyPipeWriter _responsePipeWriter;
         private readonly ResponseFeature _responseFeature;
         private readonly RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
@@ -37,14 +39,19 @@ namespace Microsoft.AspNetCore.TestHost
             request.Protocol = "HTTP/1.1";
             request.Method = HttpMethods.Get;
 
+            var pipe = new Pipe();
+            _responseReaderStream = new ResponseBodyReaderStream(pipe, AbortRequest, () => _responseReadCompleteCallback?.Invoke(_httpContext));
+            _responsePipeWriter = new ResponseBodyPipeWriter(pipe, ReturnResponseMessageAsync);
+            _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
+            _responseFeature.BodySnapshot = _responseFeature.Body;
+            _responseFeature.BodyWriter = _responsePipeWriter;
+
             _httpContext.Features.Set<IHttpBodyControlFeature>(this);
             _httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpResponseStartFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
-
-            _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest, () => AllowSynchronousIO, () => _responseReadCompleteCallback?.Invoke(_httpContext));
-            _responseFeature.Body = _responseStream;
+            _httpContext.Features.Set<IResponseBodyPipeFeature>(_responseFeature);
         }
 
         public bool AllowSynchronousIO { get; set; }
@@ -119,14 +126,14 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 _requestLifetimeFeature.Abort();
             }
-            _responseStream.CompleteWrites();
+            _responsePipeWriter.Complete();
         }
 
         internal async Task CompleteResponseAsync()
         {
             _pipelineFinished = true;
             await ReturnResponseMessageAsync();
-            _responseStream.CompleteWrites();
+            _responsePipeWriter.Complete();
             await _responseFeature.FireOnResponseCompletedAsync();
         }
 
@@ -155,6 +162,16 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     newFeatures[pair.Key] = pair.Value;
                 }
+                var serverResponseFeature = _httpContext.Features.Get<IHttpResponseFeature>();
+                // The client gets a deep copy of this so they can interact with the body stream independently of the server.
+                var clientResponseFeature = new HttpResponseFeature()
+                {
+                    StatusCode = serverResponseFeature.StatusCode,
+                    ReasonPhrase = serverResponseFeature.ReasonPhrase,
+                    Headers = serverResponseFeature.Headers,
+                    Body = _responseReaderStream
+                };
+                newFeatures.Set<IHttpResponseFeature>(clientResponseFeature);
                 _responseTcs.TrySetResult(new DefaultHttpContext(newFeatures));
             }
         }
@@ -162,7 +179,8 @@ namespace Microsoft.AspNetCore.TestHost
         internal void Abort(Exception exception)
         {
             _pipelineFinished = true;
-            _responseStream.Abort(exception);
+            _responsePipeWriter.Abort(exception);
+            _responseReaderStream.Abort(exception);
             _responseTcs.TrySetException(exception);
         }
     }
