@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
+        /// Gets or sets a <see cref="System.Diagnostics.DiagnosticListener"/> instance used to instrument the page execution.
         /// </summary>
         [RazorInject]
-        public DiagnosticSource DiagnosticSource { get; set; }
+        public DiagnosticListener DiagnosticListener { get; set; }
 
         /// <summary>
         /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>

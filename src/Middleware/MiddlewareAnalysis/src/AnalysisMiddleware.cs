@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
     {
         private readonly Guid _instanceId = Guid.NewGuid();
         private readonly RequestDelegate _next;
-        private readonly DiagnosticSource _diagnostics;
+        private readonly DiagnosticListener _diagnostics;
         private readonly string _middlewareName;
 
-        public AnalysisMiddleware(RequestDelegate next, DiagnosticSource diagnosticSource, string middlewareName)
+        public AnalysisMiddleware(RequestDelegate next, DiagnosticListener diagnosticListener, string middlewareName)
         {
             _next = next;
-            _diagnostics = diagnosticSource;
+            _diagnostics = diagnosticListener;
             if (string.IsNullOrEmpty(middlewareName))
             {
                 middlewareName = next.Target.GetType().FullName;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         public async Task Invoke(HttpContext httpContext)
         {
             var startTimestamp = Stopwatch.GetTimestamp();
-            if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting"))
+            if (_diagnostics.IsEnabled() && _diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting"))
             {
                 _diagnostics.Write(
                     "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting",
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             {
                 await _next(httpContext);
 
-                if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished"))
+                if (_diagnostics.IsEnabled() && _diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished"))
                 {
                     var currentTimestamp = Stopwatch.GetTimestamp();
                     _diagnostics.Write(
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             }
             catch (Exception ex)
             {
-                if (_diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException"))
+                if (_diagnostics.IsEnabled() && _diagnostics.IsEnabled("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException"))
                 {
                     var currentTimestamp = Stopwatch.GetTimestamp();
                     _diagnostics.Write(

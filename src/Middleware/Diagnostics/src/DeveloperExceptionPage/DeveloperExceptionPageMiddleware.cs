@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DeveloperExceptionPageOptions _options;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly DiagnosticSource _diagnosticSource;
+        private readonly DiagnosticListener _diagnosticListerner;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
         private readonly Func<ErrorContext, Task> _exceptionHandler;
         private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="hostingEnvironment"></param>
-        /// <param name="diagnosticSource"></param>
+        /// <param name="diagnosticListener"></param>
         /// <param name="filters"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IWebHostEnvironment hostingEnvironment,
-            DiagnosticSource diagnosticSource,
+            DiagnosticListener diagnosticListener,
             IEnumerable<IDeveloperPageExceptionFilter> filters)
         {
             if (next == null)
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
-            _diagnosticSource = diagnosticSource;
+            _diagnosticListerner = diagnosticListener;
             _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
             _exceptionHandler = DisplayException;
 
@@ -110,9 +110,9 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                     await _exceptionHandler(new ErrorContext(context, ex));
 
-                    if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
+                    if (_diagnosticListerner.IsEnabled() && _diagnosticListerner.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                     {
-                        _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
+                        _diagnosticListerner.Write("Microsoft.AspNetCore.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
                     }
 
                     return;

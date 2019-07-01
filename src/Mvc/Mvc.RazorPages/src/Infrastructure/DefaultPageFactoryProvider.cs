@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
                 JsonHelperAccessor = context => jsonHelper,
-                DiagnosticSourceAccessor = context => diagnosticListener,
+                DiagnosticListenerAccessor = context => diagnosticListener,
                 HtmlEncoderAccessor = context => htmlEncoder,
                 ModelExpressionProviderAccessor = context => modelExpressionProvider,
             };

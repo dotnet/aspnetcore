@@ -112,9 +112,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
 
-            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
+            if ((DiagnosticListener?.IsEnabled() ?? false) && DiagnosticListener?.IsEnabled(BeginContextEvent) == true)
             {
-                DiagnosticSource.Write(
+                DiagnosticListener.Write(
                     BeginContextEvent,
                     new
                     {
@@ -132,9 +132,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
 
-            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
+            if ((DiagnosticListener?.IsEnabled() ?? false) && DiagnosticListener?.IsEnabled(EndContextEvent) == true)
             {
-                DiagnosticSource.Write(
+                DiagnosticListener.Write(
                     EndContextEvent,
                     new
                     {

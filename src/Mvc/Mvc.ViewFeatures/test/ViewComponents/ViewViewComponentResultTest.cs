@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Execute_ResolvesView_AndWritesDiagnosticSource()
+        public void Execute_ResolvesView_AndWritesDiagnosticListener()
         {
             // Arrange
             var view = new Mock<IView>(MockBehavior.Strict);

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
     }
     public partial class AnalysisMiddleware
     {
-        public AnalysisMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, System.Diagnostics.DiagnosticSource diagnosticSource, string middlewareName) { }
+        public AnalysisMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, System.Diagnostics.DiagnosticListener diagnosticListener, string middlewareName) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
     }

@@ -949,7 +949,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource()
+        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticListener()
         {
             // Arrange
             var path = "path-to-page";
@@ -965,7 +965,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
+            page.DiagnosticListener = diagnosticListener;
 
             // Act
             await page.ExecuteAsync();
@@ -1039,7 +1039,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public async Task WriteAttribute_WithBoolValue_WritesBeginAndEndEvents_ToDiagnosticSource()
+        public async Task WriteAttribute_WithBoolValue_WritesBeginAndEndEvents_ToDiagnosticListener()
         {
             // Arrange
             var path = "some-path";
@@ -1054,7 +1054,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
+            page.DiagnosticListener = diagnosticListener;
 
             // Act
             await page.ExecuteAsync();
@@ -1104,7 +1104,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
-        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource_OnPrefixAndSuffixValues()
+        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticListener_OnPrefixAndSuffixValues()
         {
             // Arrange
             var path = "some-path";
@@ -1117,7 +1117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
-            page.DiagnosticSource = diagnosticListener;
+            page.DiagnosticListener = diagnosticListener;
 
             // Act
             await page.ExecuteAsync();

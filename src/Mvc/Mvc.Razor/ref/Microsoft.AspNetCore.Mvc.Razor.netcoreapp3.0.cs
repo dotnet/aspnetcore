@@ -45,6 +45,27 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Razor.IRazorPage Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public sealed partial class BeginInstrumentationContext : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
+        public BeginInstrumentationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string path, int position, int length, bool isLiteral) { }
+        public override int Count { get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsLiteral { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public int Length { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Position { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class EndInstrumentationContext : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    {
+        public const string EventName = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
+        public EndInstrumentationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string path) { }
+        public override int Count { get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
 }
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -128,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     }
     public partial class RazorPageActivator : Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator
     {
-        public RazorPageActivator(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper jsonHelper, System.Diagnostics.DiagnosticSource diagnosticSource, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider modelExpressionProvider) { }
+        public RazorPageActivator(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper jsonHelper, System.Diagnostics.DiagnosticListener diagnosticListener, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider modelExpressionProvider) { }
         public void Activate(Microsoft.AspNetCore.Mvc.Razor.IRazorPage page, Microsoft.AspNetCore.Mvc.Rendering.ViewContext context) { }
     }
     public abstract partial class RazorPageBase : Microsoft.AspNetCore.Mvc.Razor.IRazorPage
@@ -136,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         protected RazorPageBase() { }
         public Microsoft.AspNetCore.Html.IHtmlContent BodyContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public System.Diagnostics.DiagnosticSource DiagnosticSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Diagnostics.DiagnosticListener DiagnosticListener { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public System.Text.Encodings.Web.HtmlEncoder HtmlEncoder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool IsLayoutBeingRendered { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

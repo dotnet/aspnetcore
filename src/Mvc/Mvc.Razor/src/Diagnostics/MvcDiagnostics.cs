@@ -71,4 +71,70 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
     }
+
+    public sealed class BeginInstrumentationContext : MvcDiagnostic
+    {
+        public const string EventName = EventNamespace +
+            "Razor." +
+            nameof(BeginInstrumentationContext);
+
+        public HttpContext HttpContext { get; }
+        public string Path { get; }
+        public int Position { get; }
+        public int Length { get; }
+        public bool IsLiteral { get; }
+
+        public override int Count => 5;
+
+        public BeginInstrumentationContext(
+            HttpContext httpContext,
+            string path,
+            int position,
+            int length,
+            bool isLiteral)
+        {
+            HttpContext = httpContext;
+            Path = path;
+            Position = position;
+            Length = length;
+            IsLiteral = isLiteral;
+        }
+
+        public override KeyValuePair<string, object> this[int index] => index switch
+        {
+            0 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
+            1 => new KeyValuePair<string, object>(nameof(Path), Path),
+            2 => new KeyValuePair<string, object>(nameof(Position), Position),
+            3 => new KeyValuePair<string, object>(nameof(Length), Length),
+            4 => new KeyValuePair<string, object>(nameof(IsLiteral), IsLiteral),
+            _ => throw new IndexOutOfRangeException(nameof(index))
+        };
+    }
+
+    public sealed class EndInstrumentationContext : MvcDiagnostic
+    {
+        public const string EventName = EventNamespace +
+            "Razor." +
+            nameof(EndInstrumentationContext);
+
+        public HttpContext HttpContext { get; }
+        public string Path { get; }
+
+        public override int Count => 2;
+
+        public EndInstrumentationContext(
+            HttpContext httpContext,
+            string path)
+        {
+            HttpContext = httpContext;
+            Path = path;
+        }
+
+        public override KeyValuePair<string, object> this[int index] => index switch
+        {
+            0 => new KeyValuePair<string, object>(nameof(HttpContext), HttpContext),
+            1 => new KeyValuePair<string, object>(nameof(Path), Path),
+            _ => throw new IndexOutOfRangeException(nameof(index))
+        };
+    }
 }

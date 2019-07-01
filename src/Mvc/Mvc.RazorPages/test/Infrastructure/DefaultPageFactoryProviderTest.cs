@@ -279,8 +279,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Assert
             var testPage = Assert.IsType<PropertiesWithoutRazorInject>(instance);
-            Assert.Null(testPage.DiagnosticSourceWithoutInject);
-            Assert.NotNull(testPage.DiagnosticSourceWithInject);
+            Assert.Null(testPage.DiagnosticListenerWithoutInject);
+            Assert.NotNull(testPage.DiagnosticListenerWithInject);
 
             Assert.Null(testPage.LoggerWithoutInject);
             Assert.NotNull(testPage.LoggerWithInject);
@@ -375,10 +375,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             [RazorInject]
             public IModelExpressionProvider ModelExpressionProviderWithInject { get; set; }
 
-            public DiagnosticSource DiagnosticSourceWithoutInject { get; set; }
+            public DiagnosticListener DiagnosticListenerWithoutInject { get; set; }
 
             [RazorInject]
-            public DiagnosticSource DiagnosticSourceWithInject { get; set; }
+            public DiagnosticListener DiagnosticListenerWithInject { get; set; }
 
             public ILogger LoggerWithoutInject { get; set; }
 
