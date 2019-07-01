@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -2541,6 +2542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2408", FlakyOn.AzP.All)]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -3891,7 +3893,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 httpContext.Response.BodyWriter.Complete();
 
                 writeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.GetMemory());
-  
+
                 return Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
