@@ -171,6 +171,9 @@ const configFile = sauce ?
     path.resolve(__dirname, "karma.local.conf.js");
 debug(`Loading Karma config file: ${configFile}`);
 
+// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
+exec("node ../node_modules/wd/scripts/build-browser-scripts.js");
+
 // Gross but it works
 process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS = allBrowsers ? "true" : null;
 const config = (karma as any).config.parseConfig(configFile);
