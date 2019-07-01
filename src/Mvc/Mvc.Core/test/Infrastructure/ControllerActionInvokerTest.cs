@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1452,6 +1453,39 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         #endregion
+
+        [Fact]
+        public async Task LogsControllerFactory()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
+                FilterDescriptors = new List<FilterDescriptor>(),
+                Parameters = new List<ParameterDescriptor>(),
+                BoundProperties = new List<ParameterDescriptor>(),
+                MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod)),
+            };
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[0],
+                actionDescriptor,
+                new TestController(),
+                logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} (Microsoft.AspNetCore.Mvc.Core.Test)";
+            Assert.Contains($"Executing controller factory for controller {controllerName}", messages);
+            Assert.Contains($"Executed controller factory for controller {controllerName}", messages);
+        }
 
         protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
