@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                 var callbackUrl = Url.Page(
                     "/Account/ResetPassword",
                     pageHandler: null,
-                    values: new { code },
+                    values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
                 await _emailSender.SendEmailAsync(

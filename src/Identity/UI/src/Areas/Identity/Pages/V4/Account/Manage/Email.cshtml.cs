@@ -171,6 +171,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            while (code.Contains('+'))
+            {
+                code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            }
+
             var callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
                 pageHandler: null,
