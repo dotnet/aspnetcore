@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BlazorHosted_CSharp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class SampleDataController : Controller
     {
         private static string[] Summaries = new[]
