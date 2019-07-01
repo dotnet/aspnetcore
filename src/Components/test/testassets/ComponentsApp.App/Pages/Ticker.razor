@@ -9,7 +9,7 @@
     int tick;
     private bool _isDisposed;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         Task.Run(() => InvokeAsync(async () =>
         {

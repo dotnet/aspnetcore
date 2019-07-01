@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 
         /// <inheritdoc />
-        protected override void OnInit()
+        protected override void OnInitialized()
         {
             if (CurrentEditContext == null)
             {

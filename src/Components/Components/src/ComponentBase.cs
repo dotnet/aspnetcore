@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
         /// Method invoked when the component is ready to start, having received its
         /// initial parameters from its parent in the render tree.
         /// </summary>
-        protected virtual void OnInit()
+        protected virtual void OnInitialized()
         {
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components
         /// want the component to refresh when that operation is completed.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
-        protected virtual Task OnInitAsync()
+        protected virtual Task OnInitializedAsync()
             => Task.CompletedTask;
 
         /// <summary>
@@ -192,8 +192,8 @@ namespace Microsoft.AspNetCore.Components
 
         private async Task RunInitAndSetParametersAsync()
         {
-            OnInit();
-            var task = OnInitAsync();
+           OnInitialized();
+            var task = OnInitializedAsync();
 
             if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
             {
