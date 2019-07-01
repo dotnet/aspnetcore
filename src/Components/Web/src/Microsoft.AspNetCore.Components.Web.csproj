@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Components\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
   </ItemGroup>
 
 </Project>
