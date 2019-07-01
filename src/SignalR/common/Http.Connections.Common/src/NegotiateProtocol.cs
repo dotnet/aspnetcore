@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 if (response.AvailableTransports != null)
                 {
                     var transportCount = response.AvailableTransports.Count;
-                    for(var i = 0; i < transportCount; ++i)
+                    for (var i = 0; i < transportCount; ++i)
                     {
                         var availableTransport = response.AvailableTransports[i];
                         writer.WriteStartObject();
