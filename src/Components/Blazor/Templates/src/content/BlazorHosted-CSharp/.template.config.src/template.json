@@ -14,7 +14,7 @@
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98"
   ],
   "identity": "Microsoft.Web.Blazor.Wasm.CSharp",
-  "name": "Blazor",
+  "name": "Blazor WebAssembly App",
   "preferNameDirectory": true,
   "primaryOutputs": [
 
