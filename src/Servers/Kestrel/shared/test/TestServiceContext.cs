@@ -76,8 +76,6 @@ namespace Microsoft.AspNetCore.Testing
 
         public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
 
-        public int ExpectedConnectionMiddlewareCount { get; set; }
-
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }
 }

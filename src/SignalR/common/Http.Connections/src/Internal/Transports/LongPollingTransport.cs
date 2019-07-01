@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public class LongPollingTransport : IHttpTransport
+    internal class LongPollingTransport : IHttpTransport
     {
         private readonly PipeReader _application;
         private readonly ILogger _logger;

@@ -1,0 +1,37 @@
+jobs:
+- job: setupMaestroVars
+  displayName: Setup Maestro Vars
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Release Configs
+      inputs:
+        buildType: current
+        artifactName: ReleaseConfigs
+
+    - task: PowerShell@2
+      name: setReleaseVars
+      displayName: Set Release Configs Vars
+      inputs:
+        targetType: inline
+        script: |
+          # This is needed to make Write-PipelineSetVariable works in this context
+          $ci = $true
+
+          . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+
+          $Content = Get-Content "$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt"
+
+          $BarId = $Content | Select -Index 0
+
+          $Channels = ""            
+          $Content | Select -Index 1 | ForEach-Object { $Channels += "$_ ," }
+            
+          $IsInternalBuild = $Content | Select -Index 2
+          $IsStableBuild = $Content | Select -Index 3
+
+          Write-PipelineSetVariable -Name 'BARBuildId' -Value $BarId
+          Write-PipelineSetVariable -Name 'InitialChannels' -Value "$Channels"
+          Write-PipelineSetVariable -Name 'IsInternalBuild' -Value $IsInternalBuild
+          Write-PipelineSetVariable -Name 'IsStableBuild' -Value $IsStableBuild

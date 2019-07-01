@@ -7,9 +7,9 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
-    public class ConventionBasedStartup : IStartup
+    internal class ConventionBasedStartup : IStartup
     {
         private readonly StartupMethods _methods;
 

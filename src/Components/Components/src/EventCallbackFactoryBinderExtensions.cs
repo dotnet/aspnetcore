@@ -687,12 +687,25 @@ namespace Microsoft.AspNetCore.Components
                 {
                 }
 
-                // We only invoke the setter if the conversion didn't throw. This is valuable because it allows us to attempt
-                // to process invalid input but avoid dirtying the state of the component if can't be converted. Imagine if
-                // we assigned default(T) on failure - this would result in trouncing the user's typed in value.
+                // We only invoke the setter if the conversion didn't throw, or if the newly-entered value is empty.
+                // If the user entered some non-empty value we couldn't parse, we leave the state of the .NET field
+                // unchanged, which for a two-way binding results in the UI reverting to its previous valid state
+                // because the diff will see the current .NET output no longer matches the render tree since we
+                // patched it to reflect the state of the UI.
+                //
+                // This reversion behavior is valuable because alternatives are problematic:
+                // - If we assigned default(T) on failure, the user would lose whatever data they were editing,
+                //   for example if they accidentally pressed an alphabetical key while editing a number with
+                //   @bind:event="oninput"
+                // - If the diff mechanism didn't revert to the previous good value, the user wouldn't necessarily
+                //   know that the data they are submitting is different from what they think they've typed
                 if (converted)
                 {
                     setter(value);
+                }
+                else if (string.Empty.Equals(e.Value))
+                {
+                    setter(default);
                 }
             };
             return factory.Create<UIChangeEventArgs>(receiver, callback);

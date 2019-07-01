@@ -20,6 +20,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public System.Threading.Tasks.Task StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
+    public partial class HttpConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
+    {
+        public HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
     public partial class HttpConnectionOptions
     {
         public HttpConnectionOptions() { }
@@ -28,6 +34,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public System.TimeSpan CloseTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.CookieContainer Cookies { get { throw null; } set { } }
         public System.Net.ICredentials Credentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Connections.TransferFormat DefaultTransferFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IDictionary<string, string> Headers { get { throw null; } set { } }
         public System.Func<System.Net.Http.HttpMessageHandler, System.Net.Http.HttpMessageHandler> HttpMessageHandlerFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.IWebProxy Proxy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -45,49 +52,5 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
     {
         public TransportFailedException(string transportType, string message, System.Exception innerException = null) { }
         public string TransportType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-}
-namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
-{
-    public partial interface ITransport : System.IO.Pipelines.IDuplexPipe
-    {
-        System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        System.Threading.Tasks.Task StopAsync();
-    }
-    public partial interface ITransportFactory
-    {
-        Microsoft.AspNetCore.Http.Connections.Client.Internal.ITransport CreateTransport(Microsoft.AspNetCore.Http.Connections.HttpTransportType availableServerTransports);
-    }
-    public partial class LongPollingTransport : Microsoft.AspNetCore.Http.Connections.Client.Internal.ITransport, System.IO.Pipelines.IDuplexPipe
-    {
-        public LongPollingTransport(System.Net.Http.HttpClient httpClient) { }
-        public LongPollingTransport(System.Net.Http.HttpClient httpClient, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public System.IO.Pipelines.PipeReader Input { get { throw null; } }
-        public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StopAsync() { throw null; }
-    }
-    public partial class ServerSentEventsTransport : Microsoft.AspNetCore.Http.Connections.Client.Internal.ITransport, System.IO.Pipelines.IDuplexPipe
-    {
-        public ServerSentEventsTransport(System.Net.Http.HttpClient httpClient) { }
-        public ServerSentEventsTransport(System.Net.Http.HttpClient httpClient, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public System.IO.Pipelines.PipeReader Input { get { throw null; } }
-        public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StopAsync() { throw null; }
-    }
-    public partial class WebSocketsTransport : Microsoft.AspNetCore.Http.Connections.Client.Internal.ITransport, System.IO.Pipelines.IDuplexPipe
-    {
-        public WebSocketsTransport(Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions httpConnectionOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Func<System.Threading.Tasks.Task<string>> accessTokenProvider) { }
-        public System.IO.Pipelines.PipeReader Input { get { throw null; } }
-        public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StopAsync() { throw null; }
     }
 }

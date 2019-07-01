@@ -37,4 +37,9 @@
     <SuppressBaselineReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.Tests" />
+  </ItemGroup>
+
 </Project>

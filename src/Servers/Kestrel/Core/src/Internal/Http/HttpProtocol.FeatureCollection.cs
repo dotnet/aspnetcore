@@ -279,6 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseCompletionFeature = this;
             _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpResetFeature = this;
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
@@ -318,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             await FlushAsync();
 
-            return bodyControl.Upgrade();
+            return _bodyControl.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()

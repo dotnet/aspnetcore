@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <para>BackchannelTimeout: 1 minute.</para>
         /// <para>ProtocolValidator: new <see cref="OpenIdConnectProtocolValidator"/>.</para>
         /// <para>RefreshOnIssuerKeyNotFound: true</para>
-        /// <para>ResponseType: <see cref="OpenIdConnectResponseType.CodeIdToken"/></para>
+        /// <para>ResponseType: <see cref="OpenIdConnectResponseType.IdToken"/></para>
         /// <para>Scope: <see cref="OpenIdConnectScope.OpenIdProfile"/>.</para>
         /// <para>TokenValidationParameters: new <see cref="TokenValidationParameters"/> with AuthenticationScheme = authenticationScheme.</para>
         /// <para>UseTokenLifetime: false.</para>

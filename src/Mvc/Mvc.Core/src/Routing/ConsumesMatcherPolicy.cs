@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 // We do this check first for consistency with how 415 is implemented for the graph version
                 // of this code. We still want to know if any endpoints in this set require an a ContentType
-                // even if those endpoints are already invalid.
-                var metadata = candidates[i].Endpoint.Metadata.GetMetadata<IConsumesMetadata>();
+                // even if those endpoints are already invalid - hence the null check.
+                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IConsumesMetadata>();
                 if (metadata == null || metadata.ContentTypes.Count == 0)
                 {
                     // Can match any content type.

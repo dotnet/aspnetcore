@@ -74,23 +74,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 });
         }
 
-        public static ActionSelectionTable<RouteEndpoint> Create(IEnumerable<Endpoint> endpoints)
+        public static ActionSelectionTable<Endpoint> Create(IEnumerable<Endpoint> endpoints)
         {
-            return CreateCore<RouteEndpoint>(
+            return CreateCore<Endpoint>(
                 
                 // we don't use version for endpoints
                 version: 0, 
 
-                // Only include RouteEndpoints and only those that aren't suppressed. 
-                items: endpoints.OfType<RouteEndpoint>().Where(e =>
+                // Exclude RouteEndpoints - we only process inert endpoints here. 
+                items: endpoints.Where(e =>
                 {
-                    return e.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true;
+                    return e.GetType() == typeof(Endpoint);
                 }),
 
-                getRouteKeys: e => e.RoutePattern.RequiredValues.Keys,
+                getRouteKeys: e => e.Metadata.GetMetadata<ActionDescriptor>().RouteValues.Keys,
                 getRouteValue: (e, key) =>
                 {
-                    e.RoutePattern.RequiredValues.TryGetValue(key, out var value);
+                    e.Metadata.GetMetadata<ActionDescriptor>().RouteValues.TryGetValue(key, out var value);
                     return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
                 });
         }

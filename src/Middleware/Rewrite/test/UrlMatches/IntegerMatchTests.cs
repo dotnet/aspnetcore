@@ -4,9 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlMatches
@@ -21,19 +20,19 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlMatches
         }
 
         [Theory]
-        [InlineData(1,IntegerOperationType.Equal,"1",true)]
-        [InlineData(1, IntegerOperationType.NotEqual, "2", true)]
-        [InlineData(2, IntegerOperationType.Less, "1", true)]
-        [InlineData(1, IntegerOperationType.LessEqual, "2", false)]
-        [InlineData(1, IntegerOperationType.Greater, "2", true)]
-        [InlineData(2, IntegerOperationType.GreaterEqual, "1", false)]
-        [InlineData(1, IntegerOperationType.Equal, "Not an int", false)]
-        [InlineData(1, IntegerOperationType.Equal, "", false)]
-        [InlineData(1, IntegerOperationType.Equal, "2147483648", false)]
-        public void IntegerMatch_Evaluation_Cases_Tests(int value,IntegerOperationType operation, string input,bool expectedResult)
+        [InlineData(1, (int)IntegerOperationType.Equal,"1",true)]
+        [InlineData(1, (int)IntegerOperationType.NotEqual, "2", true)]
+        [InlineData(2, (int)IntegerOperationType.Less, "1", true)]
+        [InlineData(1, (int)IntegerOperationType.LessEqual, "2", false)]
+        [InlineData(1, (int)IntegerOperationType.Greater, "2", true)]
+        [InlineData(2, (int)IntegerOperationType.GreaterEqual, "1", false)]
+        [InlineData(1, (int)IntegerOperationType.Equal, "Not an int", false)]
+        [InlineData(1, (int)IntegerOperationType.Equal, "", false)]
+        [InlineData(1, (int)IntegerOperationType.Equal, "2147483648", false)]
+        public void IntegerMatch_Evaluation_Cases_Tests(int value, int operation, string input, bool expectedResult)
         {
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            var integerMatch = new IntegerMatch(value, operation);
+            var integerMatch = new IntegerMatch(value, (IntegerOperationType)operation);
             var matchResult = integerMatch.Evaluate(input, context);
             Assert.Equal(expectedResult, matchResult.Success);
         }

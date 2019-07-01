@@ -3,11 +3,11 @@ JavaScript and TypeScript clients for SignalR for ASP.NET Core
 ## Installation
 
 ```bash
-npm install @aspnet/signalr
+npm install @microsoft/signalr
 ```
 or
 ```bash
-yarn add @aspnet/signalr
+yarn add @microsoft/signalr
 ```
 
 ## Usage
@@ -24,7 +24,7 @@ To use the client in a webworker, copy `*.js` files from the `dist/webworker` fo
 
 ### Node.js
 
-To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@aspnet/signalr')` to load the module. The object returned by `require('@aspnet/signalr')` has the same members as the global `signalR` object (when used in a browser).
+To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@microsoft/signalr')` to load the module. The object returned by `require('@microsoft/signalr')` has the same members as the global `signalR` object (when used in a browser).
 
 ### Example (Browser)
 
@@ -63,7 +63,7 @@ connection.start()
 ### Example (NodeJS)
 
 ```JavaScript
-const signalR = require("@aspnet/signalr");
+const signalR = require("@microsoft/signalr");
 
 let connection = new signalR.HubConnectionBuilder()
     .withUrl("/chat")

@@ -13,6 +13,11 @@
     <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
   </PropertyGroup>
 
+  <ItemGroup>
+    <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
+    <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
+  </ItemGroup>
+
   <Target Name="_CheckForInvalidConfiguration">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
   </Target>
@@ -31,8 +36,14 @@
              BuildInParallel="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <Yarn Command="run build" Condition="'$(IsBuildable)' != 'false'" StandardOutputImportance="High" StandardErrorImportance="High" />
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;_Build" />
+
+  <Target Name="_Build"
+    Condition="'$(IsBuildable)' != 'false'"
+    Inputs="@(TSFiles)"
+    Outputs="$(BaseIntermediateOutputPath)\build-sentinel" >
+    <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
   </Target>
 
   <PropertyGroup>

@@ -30,12 +30,33 @@ namespace Ignitor
 
             var uri = new Uri(args[0]);
 
-            var program = new Program();
-            Console.CancelKeyPress += (sender, e) => { program.Cancel(); };
+            var client = new BlazorClient();
+            client.JSInterop += OnJSInterop;
+            Console.CancelKeyPress += (sender, e) => client.Cancel();
 
-            await program.ExecuteAsync(uri);
+            var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // Click the counter button 1000 times
+            client.RenderBatchReceived += (int browserRendererId, int batchId, byte[] data) =>
+            {
+                if (batchId < 1000)
+                {
+                    client.ClickAsync("thecounter");
+                }
+                else
+                {
+                    done.TrySetResult(true);
+                }
+            };
+
+            await client.ConnectAsync(uri, prerendered: true);
+            await done.Task;
+
             return 0;
         }
+
+        private static void OnJSInterop(int callId, string identifier, string argsJson) =>
+            Console.WriteLine("JS Invoke: " + identifier + " (" + argsJson + ")");
 
         public Program()
         {
@@ -54,14 +75,7 @@ namespace Ignitor
 
         public async Task ExecuteAsync(Uri uri)
         {
-            var httpClient = new HttpClient();
-            var response = await httpClient.GetAsync(uri);
-            var content = await response.Content.ReadAsStringAsync();
-
-            // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
-            var match = Regex.Match(content, $"{Regex.Escape("<!-- M.A.C.Component:")}(.+?){Regex.Escape(" -->")}");
-            var json = JsonDocument.Parse(match.Groups[1].Value);
-            var circuitId = json.RootElement.GetProperty("circuitId").GetString();
+            string circuitId = await GetPrerenderedCircuitId(uri);
 
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
@@ -117,6 +131,19 @@ namespace Ignitor
             }
         }
 
+        private static async Task<string> GetPrerenderedCircuitId(Uri uri)
+        {
+            var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync(uri);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
+            var match = Regex.Match(content, $"{Regex.Escape("<!-- M.A.C.Component:")}(.+?){Regex.Escape(" -->")}");
+            var json = JsonDocument.Parse(match.Groups[1].Value);
+            var circuitId = json.RootElement.GetProperty("circuitId").GetString();
+            return circuitId;
+        }
+
         private static async Task ClickAsync(string id, ElementHive hive, HubConnection connection)
         {
             if (!hive.TryFindElementById(id, out var elementNode))
@@ -132,11 +159,6 @@ namespace Ignitor
         {
             CancellationTokenSource.Cancel();
             CancellationTokenSource.Dispose();
-        }
-
-        private class Error
-        {
-            public string Stack { get; set; }
         }
     }
 }

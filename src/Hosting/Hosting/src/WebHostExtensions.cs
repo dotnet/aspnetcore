@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting

@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
+    <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
   </ItemGroup>
 
   <ItemGroup>

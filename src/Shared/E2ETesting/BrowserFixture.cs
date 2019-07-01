@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -26,6 +28,14 @@ namespace Microsoft.AspNetCore.E2ETesting
         public ILogs Logs { get; private set; }
 
         public IMessageSink DiagnosticsMessageSink { get; }
+
+        public static void EnforceSupportedConfigurations()
+        {
+            // Do not change the current platform support without explicit approval.
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64,
+                "Selenium tests should be running in this platform.");
+        }
 
         public static bool IsHostAutomationSupported()
         {
@@ -78,7 +88,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
-            opts.AddArgument("--headless");
+            if (!Debugger.IsAttached)
+            {
+                opts.AddArgument("--headless");
+            }
 
             // Log errors
             opts.SetLoggingPreference(LogType.Browser, LogLevel.All);

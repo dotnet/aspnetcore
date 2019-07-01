@@ -40,6 +40,7 @@
     <Exec Condition="'$(OS)' != 'Windows_NT'"
           Command="echo '$(ProjectListContentLines.Replace('\t','\\t'))' > $(_RefProjectFileOutputPath)" />
 
+    <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
   <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
@@ -65,6 +66,7 @@
     </PropertyGroup>
 
     <MakeDir Directories="$(_RefSourceOutputPath)" />
+    <Message Importance="High" Text="Generating $(_RefSourceFileOutputPath)" />
     <Exec Command="$(_GenAPICmd)" />
 
     <ItemGroup>
@@ -74,10 +76,6 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ProjectListFile>$(MSBuildThisFileDirectory)..\eng\ProjectReferences.props</ProjectListFile>
-      <RefsTargetFramework>$(TargetFrameworks)</RefsTargetFramework>
-      <RefsTargetFramework Condition="'$(RefsTargetFramework)' == ''">$(TargetFramework)</RefsTargetFramework>
-
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">

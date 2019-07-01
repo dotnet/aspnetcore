@@ -503,5 +503,8 @@
   </data>
   <data name="Property_MustBeInstanceOfType" xml:space="preserve">
     <value>Property '{0}.{1}' must be an instance of type '{2}'.</value>
-  </data>  
+  </data>
+  <data name="ObjectResultExecutor_MaxEnumerationExceeded" xml:space="preserve">
+    <value>'{0}' reached the configured maximum size of the buffer when enumerating a value of type '{1}'. This limit is in place to prevent infinite streams of 'IAsyncEnumerable&lt;&gt;' from continuing indefinitely. If this is not a programming mistake, consider ways to reduce the collection size, or consider manually converting '{1}' into a list rather than increasing the limit.</value>
+  </data>
 </root>

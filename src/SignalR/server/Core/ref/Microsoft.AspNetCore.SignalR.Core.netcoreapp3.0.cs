@@ -127,9 +127,7 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial class HubConnectionContext
     {
-        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval) { }
-        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval, int streamBufferCapacity) { }
+        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, Microsoft.AspNetCore.SignalR.HubConnectionContextOptions contextOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public virtual System.Threading.CancellationToken ConnectionAborted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public virtual string ConnectionId { get { throw null; } }
         public virtual Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
@@ -141,9 +139,16 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual System.Threading.Tasks.ValueTask WriteAsync(Microsoft.AspNetCore.SignalR.Protocol.HubMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public virtual System.Threading.Tasks.ValueTask WriteAsync(Microsoft.AspNetCore.SignalR.SerializedHubMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
+    public partial class HubConnectionContextOptions
+    {
+        public HubConnectionContextOptions() { }
+        public System.TimeSpan ClientTimeoutInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int StreamBufferCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     public partial class HubConnectionHandler<THub> : Microsoft.AspNetCore.Connections.ConnectionHandler where THub : Microsoft.AspNetCore.SignalR.Hub
     {
-        public HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub> lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> hubOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider userIdProvider, Microsoft.AspNetCore.SignalR.Internal.HubDispatcher<THub> dispatcher) { }
+        public HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub> lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> hubOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider userIdProvider, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory serviceScopeFactory) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection) { throw null; }
     }
@@ -166,6 +171,13 @@ namespace Microsoft.AspNetCore.SignalR
             public bool MoveNext() { throw null; }
             public void Reset() { }
         }
+    }
+    public partial class HubInvocationContext
+    {
+        public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, string hubMethodName, object[] hubMethodArguments) { }
+        public Microsoft.AspNetCore.SignalR.HubCallerContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<object> HubMethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string HubMethodName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public abstract partial class HubLifetimeManager<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
     {
@@ -205,6 +217,16 @@ namespace Microsoft.AspNetCore.SignalR
         public long? MaximumReceiveMessageSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int? StreamBufferCapacity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IList<string> SupportedProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
+    {
+        public HubOptionsSetup(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> protocols) { }
+        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions options) { }
+    }
+    public partial class HubOptionsSetup<THub> : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> where THub : Microsoft.AspNetCore.SignalR.Hub
+    {
+        public HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> options) { }
+        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions<THub> options) { }
     }
     public partial class HubOptions<THub> : Microsoft.AspNetCore.SignalR.HubOptions where THub : Microsoft.AspNetCore.SignalR.Hub
     {
@@ -293,84 +315,6 @@ namespace Microsoft.AspNetCore.SignalR
     public static partial class SignalRConnectionBuilderExtensions
     {
         public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHub<THub>(this Microsoft.AspNetCore.Connections.IConnectionBuilder connectionBuilder) where THub : Microsoft.AspNetCore.SignalR.Hub { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.SignalR.Internal
-{
-    public partial class DefaultHubActivator<THub> : Microsoft.AspNetCore.SignalR.IHubActivator<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        public DefaultHubActivator(System.IServiceProvider serviceProvider) { }
-        public virtual THub Create() { throw null; }
-        public virtual void Release(THub hub) { }
-    }
-    public partial class DefaultHubCallerContext : Microsoft.AspNetCore.SignalR.HubCallerContext
-    {
-        public DefaultHubCallerContext(Microsoft.AspNetCore.SignalR.HubConnectionContext connection) { }
-        public override System.Threading.CancellationToken ConnectionAborted { get { throw null; } }
-        public override string ConnectionId { get { throw null; } }
-        public override Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { get { throw null; } }
-        public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } }
-        public override System.Security.Claims.ClaimsPrincipal User { get { throw null; } }
-        public override string UserIdentifier { get { throw null; } }
-        public override void Abort() { }
-    }
-    public partial class DefaultHubDispatcher<THub> : Microsoft.AspNetCore.SignalR.Internal.HubDispatcher<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        public DefaultHubDispatcher(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory serviceScopeFactory, Microsoft.AspNetCore.SignalR.IHubContext<THub> hubContext, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> hubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> globalHubOptions, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher<THub>> logger) { }
-        public override System.Threading.Tasks.Task DispatchMessageAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection, Microsoft.AspNetCore.SignalR.Protocol.HubMessage hubMessage) { throw null; }
-        public override System.Collections.Generic.IReadOnlyList<System.Type> GetParameterTypes(string methodName) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public override System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public override System.Threading.Tasks.Task OnDisconnectedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection, System.Exception exception) { throw null; }
-    }
-    public partial class DefaultHubProtocolResolver : Microsoft.AspNetCore.SignalR.IHubProtocolResolver
-    {
-        public DefaultHubProtocolResolver(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> availableProtocols, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.SignalR.Internal.DefaultHubProtocolResolver> logger) { }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> AllProtocols { get { throw null; } }
-        public virtual Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol GetProtocol(string protocolName, System.Collections.Generic.IReadOnlyList<string> supportedProtocols) { throw null; }
-    }
-    public partial class HubCallerClients : Microsoft.AspNetCore.SignalR.IHubCallerClients, Microsoft.AspNetCore.SignalR.IHubCallerClients<Microsoft.AspNetCore.SignalR.IClientProxy>, Microsoft.AspNetCore.SignalR.IHubClients<Microsoft.AspNetCore.SignalR.IClientProxy>
-    {
-        public HubCallerClients(Microsoft.AspNetCore.SignalR.IHubClients hubClients, string connectionId) { }
-        public Microsoft.AspNetCore.SignalR.IClientProxy All { get { throw null; } }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Caller { get { throw null; } }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Others { get { throw null; } }
-        public Microsoft.AspNetCore.SignalR.IClientProxy AllExcept(System.Collections.Generic.IReadOnlyList<string> excludedConnectionIds) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Client(string connectionId) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Clients(System.Collections.Generic.IReadOnlyList<string> connectionIds) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Group(string groupName) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy GroupExcept(string groupName, System.Collections.Generic.IReadOnlyList<string> excludedConnectionIds) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Groups(System.Collections.Generic.IReadOnlyList<string> groupNames) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy OthersInGroup(string groupName) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy User(string userId) { throw null; }
-        public Microsoft.AspNetCore.SignalR.IClientProxy Users(System.Collections.Generic.IReadOnlyList<string> userIds) { throw null; }
-    }
-    public abstract partial class HubDispatcher<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        protected HubDispatcher() { }
-        public abstract System.Threading.Tasks.Task DispatchMessageAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection, Microsoft.AspNetCore.SignalR.Protocol.HubMessage hubMessage);
-        public abstract System.Collections.Generic.IReadOnlyList<System.Type> GetParameterTypes(string name);
-        public abstract System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection);
-        public abstract System.Threading.Tasks.Task OnDisconnectedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext connection, System.Exception exception);
-    }
-    public partial class HubOptionsSetup : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions>
-    {
-        public HubOptionsSetup(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol> protocols) { }
-        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions options) { }
-    }
-    public partial class HubOptionsSetup<THub> : Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> where THub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        public HubOptionsSetup(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> options) { }
-        public void Configure(Microsoft.AspNetCore.SignalR.HubOptions<THub> options) { }
-    }
-    public static partial class HubReflectionHelper
-    {
-        public static System.Collections.Generic.IEnumerable<System.Reflection.MethodInfo> GetHubMethods(System.Type hubType) { throw null; }
-    }
-    public static partial class TypeBaseEnumerationExtensions
-    {
-        public static System.Collections.Generic.IEnumerable<System.Type> AllBaseTypes(this System.Type type) { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

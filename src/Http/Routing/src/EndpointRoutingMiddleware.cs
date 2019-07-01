@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,9 +14,12 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal sealed class EndpointRoutingMiddleware
     {
+        private const string DiagnosticsEndpointMatchedKey = "Microsoft.AspNetCore.Routing.EndpointMatched";
+
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
         private readonly EndpointDataSource _endpointDataSource;
+        private readonly DiagnosticListener _diagnosticListener;
         private readonly RequestDelegate _next;
 
         private Task<Matcher> _initializationTask;
@@ -24,31 +28,18 @@ namespace Microsoft.AspNetCore.Routing
             MatcherFactory matcherFactory,
             ILogger<EndpointRoutingMiddleware> logger,
             IEndpointRouteBuilder endpointRouteBuilder,
+            DiagnosticListener diagnosticListener,
             RequestDelegate next)
         {
-            if (matcherFactory == null)
-            {
-                throw new ArgumentNullException(nameof(matcherFactory));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (endpointRouteBuilder == null)
             {
                 throw new ArgumentNullException(nameof(endpointRouteBuilder));
             }
 
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            _matcherFactory = matcherFactory;
-            _logger = logger;
-            _next = next;
+            _matcherFactory = matcherFactory ?? throw new ArgumentNullException(nameof(matcherFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
+            _next = next ?? throw new ArgumentNullException(nameof(next));
 
             _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
         }
@@ -106,6 +97,13 @@ namespace Microsoft.AspNetCore.Routing
             }
             else
             {
+                // Raise an event if the route matched
+                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(DiagnosticsEndpointMatchedKey))
+                {
+                    // We're just going to send the HttpContext since it has all of the relevant information
+                    _diagnosticListener.Write(DiagnosticsEndpointMatchedKey, httpContext);
+                }
+
                 Log.MatchSuccess(_logger, endpoint);
             }
 

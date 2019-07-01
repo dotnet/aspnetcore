@@ -45,11 +45,6 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(logger)];
   window['Blazor'].circuitHandlers = circuitHandlers;
 
-  // In the background, start loading the boot config and any embedded resources
-  const embeddedResourcesPromise = fetchBootConfigAsync().then(bootConfig => {
-    return loadEmbeddedResourcesAsync(bootConfig);
-  });
-
   // pass options.configureSignalR to configure the signalR.HubConnectionBuilder
   const initialConnection = await initializeConnection(options, circuitHandlers, logger);
 
@@ -61,9 +56,6 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
       component.initialize();
     }
   }
-
-  // Ensure any embedded resources have been loaded before starting the app
-  await embeddedResourcesPromise;
 
   const circuit = await startCircuit(initialConnection);
 

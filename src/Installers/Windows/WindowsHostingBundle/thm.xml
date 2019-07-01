@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Theme xmlns="http://wixtoolset.org/schemas/thmutil/2010">
-    <Window Width="485" Height="300" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
+    <Window Width="485" Height="317" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
     <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <Font Id="1" Height="-24" Weight="500" Foreground="000000">Segoe UI</Font>
     <Font Id="2" Height="-22" Weight="500" Foreground="666666">Segoe UI</Font>
@@ -21,9 +21,9 @@
         <Hypertext X="11" Y="119" Width="-11" Height="45" FontId="3" Name="InstallResetIIS" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
         <Hypertext X="11" Y="119" Width="-11" Height="45" FontId="3" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
         <Hypertext Name="EulaAndPrivacyHyperlink" X="11" Y="178" Width="-11" Height="51" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
-        <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-        <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
-        <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
+        <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="34" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
+        <Button Name="OptionsButton" X="-191" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
+        <Button Name="InstallButton" X="-91" Y="-11" Width="95" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
         <Button Name="WelcomeCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallCloseButton)</Button>
     </Page>
     <Page Name="Options">
@@ -47,8 +47,8 @@
     </Page>
     <Page Name="Progress">
         <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.ProgressHeader)</Text>
-        <Text X="11" Y="121" Width="70" Height="17" FontId="3" DisablePrefix="yes">#(loc.ProgressLabel)</Text>
-        <Text Name="OverallProgressPackageText" X="85" Y="121" Width="-11" Height="17" FontId="3" DisablePrefix="yes">#(loc.OverallProgressPackageText)</Text>
+        <Text X="11" Y="121" Width="90" Height="17" FontId="3" DisablePrefix="yes">#(loc.ProgressLabel)</Text>
+        <Text Name="OverallProgressPackageText" X="105" Y="121" Width="-11" Height="17" FontId="3" DisablePrefix="yes">#(loc.OverallProgressPackageText)</Text>
         <Progressbar Name="OverallCalculatedProgressbar" X="11" Y="143" Width="-11" Height="15" />
         <Button Name="ProgressCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.ProgressCancelButton)</Button>
     </Page>

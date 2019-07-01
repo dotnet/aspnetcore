@@ -3,16 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging.Testing;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
-    public abstract class JsonInputFormatterTestBase
+    public abstract class JsonInputFormatterTestBase : LoggedTest
     {
         [Theory]
         [InlineData("application/json", true)]
@@ -100,6 +105,61 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result.HasError);
             var stringValue = Assert.IsType<string>(result.Model);
             Assert.Equal("abcd", stringValue);
+        }
+
+        [Fact]
+        public virtual async Task JsonFormatter_EscapedKeys_Bracket()
+        {
+            var expectedKey = JsonFormatter_EscapedKeys_Bracket_Expected;
+
+            // Arrange
+            var content = "[{\"It[s a key\":1234556}]";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(IEnumerable<IDictionary<string, short>>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                });
+        }
+
+        [Fact]
+        public virtual async Task JsonFormatter_EscapedKeys()
+        {
+            var expectedKey = JsonFormatter_EscapedKeys_Expected;
+
+            // Arrange
+            var content = "[{\"It\\\"s a key\": 1234556}]";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(
+                typeof(IEnumerable<IDictionary<string, short>>), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                });
         }
 
         [Fact]
@@ -200,6 +260,33 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public virtual async Task ReadAsync_ArrayOfObjects_HasCorrectKey()
+        {
+            // Arrange
+            var formatter = GetInputFormatter();
+
+            var content = "[{\"Age\": 5}, {\"Age\": 3}, {\"Age\": \"Cheese\"} ]";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(List<ComplexModel>), httpContext);
+
+            var expectedKey = ReadAsync_ArrayOfObjects_HasCorrectKey_Expected;
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError, "Model should have had an error!");
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
+        }
+
+        [Fact]
         public virtual async Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
             // Arrange
@@ -210,15 +297,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = GetHttpContext(contentBytes);
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexModel), httpContext);
+            var expectedKey = ReadAsync_AddsModelValidationErrorsToModelState_Expected;
 
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
-            Assert.True(result.HasError);
-            Assert.Equal(
-                "Could not convert string to decimal: not-an-age. Path 'Age', line 1, position 44.",
-                formatterContext.ModelState["Age"].Errors[0].ErrorMessage);
+            Assert.True(result.HasError, "Model should have had an error!");
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp =>
+                {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]
@@ -227,19 +318,23 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var formatter = GetInputFormatter();
 
-            var content = "[0, 23, 300]";
+            var content = "[0, 23, 33767]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
 
-            var formatterContext = CreateInputFormatterContext(typeof(byte[]), httpContext);
+            var formatterContext = CreateInputFormatterContext(typeof(short[]), httpContext);
+
+            var expectedValue = ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected;
 
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
-            Assert.True(result.HasError);
-            Assert.Equal("The supplied value is invalid.", formatterContext.ModelState["[2]"].Errors[0].ErrorMessage);
-            Assert.Null(formatterContext.ModelState["[2]"].Errors[0].Exception);
+            Assert.True(result.HasError, "Model should have produced an error!");
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal(expectedValue, kvp.Key);
+                });
         }
 
         [Fact]
@@ -253,15 +348,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = GetHttpContext(contentBytes);
 
             var formatterContext = CreateInputFormatterContext(typeof(ComplexModel[]), httpContext, modelName: "names");
+            var expectedKey = ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected;
 
             // Act
             var result = await formatter.ReadAsync(formatterContext);
 
             // Assert
             Assert.True(result.HasError);
-            Assert.Equal(
-                "Error converting value 300 to type 'System.Byte'. Path '[1].Small', line 1, position 69.",
-                formatterContext.ModelState["names[1].Small"].Errors[0].ErrorMessage);
+            Assert.Collection(
+                formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
         }
 
         [Fact]
@@ -318,6 +417,65 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Null(result.Model);
         }
 
+        [Fact]
+        public async Task ReadAsync_ComplexPoco()
+        {
+            // Arrange
+            var formatter = GetInputFormatter();
+
+            var content = "{ \"Id\": 5, \"Person\": { \"Name\": \"name\", \"Numbers\": [3, 2, \"Hamburger\"]} }";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(ComplexPoco), httpContext);
+
+            var expectedKey = ReadAsync_ComplexPoco_Expected;
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError, "Model should have had an error!");
+            Assert.Collection(formatterContext.ModelState.OrderBy(k => k.Key),
+                kvp => {
+                    Assert.Equal(expectedKey, kvp.Key);
+                    Assert.Single(kvp.Value.Errors);
+                });
+        }
+
+        [Fact]
+        public virtual async Task ReadAsync_RequiredAttribute()
+        {
+            // Arrange
+            var formatter = GetInputFormatter();
+            var content = "{ \"Id\": 5, \"Person\": {\"Numbers\": [3]} }";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+            var httpContext = GetHttpContext(contentBytes);
+
+            var formatterContext = CreateInputFormatterContext(typeof(ComplexPoco), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.True(result.HasError, "Model should have had an error!");
+            Assert.Single(formatterContext.ModelState["Person.Name"].Errors);
+        }
+
+        internal abstract string JsonFormatter_EscapedKeys_Bracket_Expected { get; }
+
+        internal abstract string JsonFormatter_EscapedKeys_Expected { get; }
+
+        internal abstract string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected { get; }
+
+        internal abstract string ReadAsync_AddsModelValidationErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_InvalidArray_AddsOverflowErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState_Expected { get; }
+
+        internal abstract string ReadAsync_ComplexPoco_Expected { get; }
+
         protected abstract TextInputFormatter GetInputFormatter();
 
         protected static HttpContext GetHttpContext(
@@ -354,6 +512,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 metadata: metadata,
                 readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader,
                 treatEmptyInputAsDefaultValue: treatEmptyInputAsDefaultValue);
+        }
+
+        protected sealed class ComplexPoco
+        {
+            public int Id { get; set; }
+            public Person Person{ get; set; }
+        }
+
+        protected sealed class Person
+        {
+            [Required]
+            [JsonProperty(Required = Required.Always)]
+            public string Name { get; set; }
+            public IEnumerable<int> Numbers { get; set; }
         }
 
         protected sealed class ComplexModel

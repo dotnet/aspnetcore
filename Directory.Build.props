@@ -1,4 +1,9 @@
 ﻿<Project>
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
@@ -18,10 +23,11 @@
     <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
   </PropertyGroup>
 
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
-
     <Product>Microsoft ASP.NET Core</Product>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
@@ -51,21 +57,22 @@
 
   <!-- Source code settings -->
   <PropertyGroup>
-    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
     <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
-    <!-- These project types are disabled because the presence of a PackageReference causes issues for NuGet. -->
-    <DisableSourceLink Condition="'$(MSBuildProjectExtension)' == '.debproj' OR '$(MSBuildProjectExtension)' == '.rpmproj'">true</DisableSourceLink>
+    <!-- Disable source link on local builds for faster local builds. -->
+    <EnableSourceLink Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(OfficialBuildId)' == ''">false</EnableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup>
     <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
+
+    <NETCoreAppFrameworkIdentifier>.NETCoreApp</NETCoreAppFrameworkIdentifier>
+    <NETCoreAppFramework>netcoreapp$(AspNetCoreMajorMinorVersion)</NETCoreAppFramework>
+    <AspNetCoreAppFrameworkBrandName>ASP.NET Core $(AspNetCoreMajorMinorVersion)</AspNetCoreAppFrameworkBrandName>
 
     <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
@@ -133,10 +140,9 @@
     <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
-  <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+  <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!--
       Disable deterministic source paths in test assets and samples.
       In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths

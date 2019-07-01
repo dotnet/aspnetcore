@@ -19,6 +19,7 @@ namespace TestServer
                         .AddCommandLine(args)
                         .Build())
                 .UseStartup<TStartup>()
+                .UseStaticWebAssets()
                 .Build();
     }
 }

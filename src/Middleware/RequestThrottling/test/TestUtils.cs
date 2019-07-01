@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RequestThrottling.Policies;
+using Microsoft.AspNetCore.RequestThrottling.QueuePolicies;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -37,42 +37,65 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static TailDrop CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 5000)
+        public static RequestThrottlingMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
-            var options = Options.Create(new TailDropOptions
+            return CreateTestMiddleware(
+                queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
+                onRejected: onRejected,
+                next: next
+                );
+        }
+
+        internal static StackQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        {
+            var options = Options.Create(new QueuePolicyOptions
+            {
+                MaxConcurrentRequests = maxConcurrentRequests,
+                RequestQueueLimit = requestsQueuelimit
+            });
+
+            return new StackQueuePolicy(options);
+        }
+
+        internal static TailDropQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        {
+            var options = Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new TailDrop(options);
+            return new TailDropQueuePolicy(options);
         }
     }
 
-    public class TestStrategy : IQueuePolicy
+    internal class TestQueue : IQueuePolicy
     {
-        private Func<Task<bool>> _invoke { get; }
+        private Func<TestQueue, Task<bool>> _onTryEnter { get; }
         private Action _onExit { get; }
 
-        public TestStrategy(Func<Task<bool>> invoke, Action onExit = null)
+        private int _queuedRequests;
+        public int QueuedRequests { get => _queuedRequests; }
+
+        public TestQueue(Func<TestQueue, Task<bool>> onTryEnter, Action onExit = null)
         {
-            _invoke = invoke;
+            _onTryEnter = onTryEnter;
             _onExit = onExit ?? (() => { });
         }
 
-        public TestStrategy(Func<bool> invoke, Action onExit = null)
-            : this(async () =>
-            {
-                await Task.CompletedTask;
-                return invoke();
-            },
-            onExit)
-        { }
-
+        public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null) :
+            this(async (state) =>
+           {
+               await Task.CompletedTask;
+               return onTryEnter(state);
+           }, onExit) { }
+ 
         public async Task<bool> TryEnterAsync()
         {
-            await Task.CompletedTask;
-            return await _invoke();
+            Interlocked.Increment(ref _queuedRequests);
+            var result = await _onTryEnter(this);
+            Interlocked.Decrement(ref _queuedRequests);
+            return result;
         }
 
         public void OnExit()
@@ -80,14 +103,14 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             _onExit();
         }
 
-        public static TestStrategy AlwaysReject =
-            new TestStrategy(() => false);
+        public static TestQueue AlwaysFalse =
+            new TestQueue((_) => false);
 
-        public static TestStrategy AlwaysPass =
-            new TestStrategy(() => true);
+        public static TestQueue AlwaysTrue =
+            new TestQueue((_) => true);
 
-        public static TestStrategy AlwaysBlock =
-            new TestStrategy(async () =>
+        public static TestQueue AlwaysBlock =
+            new TestQueue(async (_) =>
             {
                 await new SemaphoreSlim(0).WaitAsync();
                 return false;
