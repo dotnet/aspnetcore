@@ -39,7 +39,7 @@
     EditContext editContext;
     string submissionStatus;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         editContext = new EditContext(person).AddDataAnnotationsValidation();
 

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void RenderComponentAsync_CanRenderEmptyElement()
         {
             // Arrange
-            
+
             var expectedHtml = new[] { "<", "p", ">", "</", "p", ">" };
             var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
             {
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             [Parameter] public bool Nested { get; set; }
             [Parameter] public int Value { get; set; }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 Value = Value * 2;
                 await Task.Yield();
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             [Parameter]
             public int Value { get; set; }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 Value = Value * 2;
                 await Task.Delay(Value * 100);

@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Components
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
         protected virtual void OnAfterRender() { }
         protected virtual System.Threading.Tasks.Task OnAfterRenderAsync() { throw null; }
-        protected virtual void OnInit() { }
-        protected virtual System.Threading.Tasks.Task OnInitAsync() { throw null; }
+        protected virtual void OnInitialized() { }
+        protected virtual System.Threading.Tasks.Task OnInitializedAsync() { throw null; }
         protected virtual void OnParametersSet() { }
         protected virtual System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
         public virtual System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }

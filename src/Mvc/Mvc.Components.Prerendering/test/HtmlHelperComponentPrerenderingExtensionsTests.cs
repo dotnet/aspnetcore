@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             [Parameter] public bool Force { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 UriHelper.NavigateTo(RedirectUri, Force);
             }

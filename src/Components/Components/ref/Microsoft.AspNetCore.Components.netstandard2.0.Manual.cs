@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnInit() { }
+        protected override void OnInitialized() { }
         void System.IDisposable.Dispose() { }
     }
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
     {
         public DataAnnotationsValidator() { }
-        protected override void OnInit() { }
+        protected override void OnInitialized() { }
     }
 
     public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase

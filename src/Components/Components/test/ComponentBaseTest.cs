@@ -402,21 +402,21 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseElement();
             }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (RunsBaseOnInit)
                 {
-                    base.OnInit();
+                    base.OnInitialized();
                 }
 
                 OnInitLogic?.Invoke(this);
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (RunsBaseOnInitAsync)
                 {
-                    await base.OnInitAsync();
+                    await base.OnInitializedAsync();
                 }
 
                 if (OnInitAsyncLogic != null)

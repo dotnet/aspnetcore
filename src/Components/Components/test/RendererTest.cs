@@ -3888,17 +3888,16 @@ namespace Microsoft.AspNetCore.Components.Test
 
             [Parameter] public ConcurrentQueue<(int testId, EventType @event)> Log { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (TryGetEntry(EventType.OnInit, out var entry))
                 {
                     var result = entry.EventAction();
                     LogResult(result.Result);
                 }
-                base.OnInit();
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (TryGetEntry(EventType.OnInitAsyncSync, out var entrySync))
                 {

@@ -31,7 +31,7 @@
     string largeOrgChartJson;
     int numPeopleDeserialized;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         smallOrgChartJson = JsonSerializer.Serialize(smallOrgChart);
         largeOrgChartJson = JsonSerializer.Serialize(largeOrgChart);
