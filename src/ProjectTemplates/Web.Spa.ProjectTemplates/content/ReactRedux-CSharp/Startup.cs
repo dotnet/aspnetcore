@@ -24,9 +24,6 @@ namespace Company.WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-#if (OrganizationalAuth || IndividualAuth)
-            services.AddRazorPages();
-#endif
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -60,13 +57,6 @@ namespace Company.WebApplication1
 
             app.UseRouting();
 
-#if (IndividualLocalAuth)
-            app.UseAuthentication();
-            app.UseIdentityServer();
-#endif
-#if (!NoAuth)
-            app.UseAuthorization();
-#endif
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
