@@ -61,6 +61,7 @@ namespace Microsoft.JSInterop
         protected JSRuntimeBase() { }
         protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
+        protected virtual object OnDotNetInvocationException(System.Exception exception, string assemblyName, string methodIdentifier) { throw null; }
     }
 }
 namespace Microsoft.JSInterop.Internal

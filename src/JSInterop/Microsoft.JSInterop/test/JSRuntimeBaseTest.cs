@@ -168,6 +168,38 @@ namespace Microsoft.JSInterop.Tests
             Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(4));
         }
 
+        [Fact]
+        public void CanSanitizeDotNetInteropExceptions()
+        {
+            // Arrange
+            var expectedMessage = "An error ocurred while invoking '[Assembly]::Method'. Swapping to 'Development' environment will " +
+                "display more detailed information about the error that occurred.";
+
+            string GetMessage(string assembly, string method) => $"An error ocurred while invoking '[{assembly}]::{method}'. Swapping to 'Development' environment will " +
+                "display more detailed information about the error that occurred.";
+
+            var runtime = new TestJSRuntime()
+            {
+                OnDotNetException = (e, a, m) => new JSError { Message = GetMessage(a, m) }
+            };
+
+            var exception = new Exception("Some really sensitive data in here");
+
+            // Act
+            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method");
+
+            // Assert
+            var call = runtime.BeginInvokeCalls.Single();
+            Assert.Equal(0, call.AsyncHandle);
+            Assert.Equal("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", call.Identifier);
+            Assert.Equal($"[\"0\",false,{{\"message\":\"{expectedMessage.Replace("'", "\\u0027")}\"}}]", call.ArgsJson);
+        }
+
+        private class JSError
+        {
+            public string Message { get; set; }
+        }
+
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
@@ -177,6 +209,18 @@ namespace Microsoft.JSInterop.Tests
                 public long AsyncHandle { get; set; }
                 public string Identifier { get; set; }
                 public string ArgsJson { get; set; }
+            }
+
+            public Func<Exception, string, string, object> OnDotNetException { get; set; }
+
+            protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodName)
+            {
+                if (OnDotNetException != null)
+                {
+                    return OnDotNetException(exception, assemblyName, methodName);
+                }
+
+                return base.OnDotNetInvocationException(exception, assemblyName, methodName);
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)

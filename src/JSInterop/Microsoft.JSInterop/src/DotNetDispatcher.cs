@@ -103,7 +103,7 @@ namespace Microsoft.JSInterop
             else if (syncException != null)
             {
                 // Threw synchronously, let's respond.
-                jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, syncException);
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, syncException, assemblyName, methodIdentifier);
             }
             else if (syncResult is Task task)
             {
@@ -114,16 +114,17 @@ namespace Microsoft.JSInterop
                     if (t.Exception != null)
                     {
                         var exception = t.Exception.GetBaseException();
-                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception));
+
+                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception), assemblyName, methodIdentifier);
                     }
 
                     var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result);
+                    jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result, assemblyName, methodIdentifier);
                 }, TaskScheduler.Current);
             }
             else
             {
-                jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, syncResult);
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, syncResult, assemblyName, methodIdentifier);
             }
         }
 

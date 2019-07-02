@@ -62,18 +62,31 @@ namespace Microsoft.JSInterop
         /// <param name="argsJson">A JSON representation of the arguments.</param>
         protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
 
-        internal void EndInvokeDotNet(string callId, bool success, object resultOrException)
+        /// <summary>
+        /// Allows derived classes to configure the information about an exception in a JS interop call that gets sent to JavaScript.
+        /// </summary>
+        /// <remarks>
+        /// This callback can be used in remote JS interop scenarios to sanitize exceptions that happen on the server to avoid disclosing
+        /// sensitive information to remote browser clients.
+        /// </remarks>
+        /// <param name="exception">The exception that occurred.</param>
+        /// <param name="assemblyName">The assembly for the invoked .NET method.</param>
+        /// <param name="methodIdentifier">The identifier for the invoked .NET method.</param>
+        /// <returns>An object containing information about the exception.</returns>
+        protected virtual object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier) => exception.ToString();
+
+        internal void EndInvokeDotNet(string callId, bool success, object resultOrException, string assemblyName, string methodIdentifier)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.
             // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            if (!success && resultOrException is Exception)
+            if (!success && resultOrException is Exception ex)
             {
-                resultOrException = resultOrException.ToString();
+                resultOrException = OnDotNetInvocationException(ex, assemblyName, methodIdentifier);
             }
             else if (!success && resultOrException is ExceptionDispatchInfo edi)
             {
-                resultOrException = edi.SourceException.ToString();
+                resultOrException = OnDotNetInvocationException(edi.SourceException, assemblyName, methodIdentifier);
             }
 
             // We pass 0 as the async handle because we don't want the JS-side code to
