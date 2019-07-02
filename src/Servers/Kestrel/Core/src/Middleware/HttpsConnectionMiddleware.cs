@@ -236,6 +236,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 await using (sslStream)
                 {
                     await _next(context);
+                    // Dispose the inner stream (SslDuplexPipe) before disposing the SslStream
+                    // as the duplex pipe can hit an ODE as it still may be writing.
+                    await sslDuplexPipe.DisposeAsync();
                 }
             }
             finally
