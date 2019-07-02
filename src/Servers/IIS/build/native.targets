@@ -13,7 +13,7 @@
       <FileType>Document</FileType>
       <Command>mc "%(FullPath)" -h $(IntDir) -r $(IntDir)</Command>
       <Message>Compiling Event Messages ...</Message>
-      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG0409.bin</Outputs>
+      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG00001.bin</Outputs>
     </CustomBuild>
 
     <MessageFile Remove="@(MessageFile)" />
