@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 supplierParams.Add("Name", name);
             }
 
-            renderer.Invoke(() => supplier.SetParametersAsync(ParameterCollection.FromDictionary(supplierParams)));
+            renderer.InvokeAsync((Action)(() => supplier.SetParametersAsync(ParameterCollection.FromDictionary(supplierParams))));
             return supplier;
         }
        
