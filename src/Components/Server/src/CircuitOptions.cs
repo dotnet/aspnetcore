@@ -46,5 +46,14 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Defaults to <c>3 minutes</c>.
         /// </value>
         public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
+
+        /// <summary>
+        /// Gets or sets a value that determines whether or not to send detailed exception messages from .NET interop method invocation
+        /// exceptions to JavaScript.
+        /// </summary>
+        /// <remarks>
+        /// The default value for this property is <c>false</c>. This value should only be turned on in development scenarios as turning it
+        /// on in production might result in a sensitive information leak.</remarks>
+        public bool DotNetInteropExceptionDetails { get; set; }
     }
 }
