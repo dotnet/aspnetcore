@@ -1442,7 +1442,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // so it can be observed by BodyWriter.Complete(). If this isn't possible because an
                     // async OnStarting callback hadn't yet run, it's OK, since the Exception will be observed with
                     // the call to _bodyControl.StopAsync() in ProcessRequests().
-                    throw lengthException;
+                    ThrowException(lengthException);
                 }
 
                 return ProduceEnd();
@@ -1459,11 +1459,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (!VerifyResponseContentLength(out var lengthException))
                 {
-                    throw lengthException;
+                    ThrowException(lengthException);
                 }
 
                 await ProduceEnd();
             }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowException(Exception exception)
+        {
+            throw exception;
         }
 
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

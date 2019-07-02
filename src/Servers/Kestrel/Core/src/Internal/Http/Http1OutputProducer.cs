@@ -722,8 +722,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_writeStreamSuffixCalled)
             {
-                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+                ThrowSuffixSent();
             }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowSuffixSent()
+        {
+            throw new InvalidOperationException("Writing is not allowed after writer was completed.");
         }
 
         /// <summary>
