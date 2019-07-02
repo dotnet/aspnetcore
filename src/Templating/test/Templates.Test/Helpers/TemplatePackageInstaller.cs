@@ -21,7 +21,7 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.1.x",
             "Microsoft.DotNet.Web.ProjectTemplates.2.0",
             "Microsoft.DotNet.Web.ProjectTemplates.2.1",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
         };
 
         public static string CustomHivePath { get; } = Path.Combine(AppContext.BaseDirectory, ".templateengine");

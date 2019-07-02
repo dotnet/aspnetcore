@@ -70,7 +70,7 @@
 
       <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(PackageVersion)" />
       <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="$(PackageVersion)" />
-      <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Version="$(PackageVersion)" />
+      <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1" Version="$(PackageVersion)" />
     </ItemGroup>
 
     <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
