@@ -1,7 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
 using System;
 
 namespace Microsoft.AspNetCore.Components.Layouts
@@ -10,14 +9,8 @@ namespace Microsoft.AspNetCore.Components.Layouts
     /// Indicates that the associated component type uses a specified layout.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class LayoutAttribute : Attribute
+    public sealed class LayoutAttribute : Attribute
     {
-        /// <summary>
-        /// The type of the layout. The type myst implement <see cref="IComponent"/>
-        /// and must accept a parameter with the name 'Body'.
-        /// </summary>
-        public Type LayoutType { get; private set; }
-
         /// <summary>
         /// Constructs an instance of <see cref="LayoutAttribute"/>.
         /// </summary>
@@ -37,5 +30,11 @@ namespace Microsoft.AspNetCore.Components.Layouts
             // be a runtime error if the referenced component type rejects the 'Body' parameter
             // when it gets used.
         }
+
+        /// <summary>
+        /// The type of the layout. The type must implement <see cref="IComponent"/>
+        /// and must accept a parameter with the name 'Body'.
+        /// </summary>
+        public Type LayoutType { get; private set; }
     }
 }
