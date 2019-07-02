@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RemoteJSRuntime(IOptions<CircuitOptions> options)
         {
             _options = options.Value;
+            DefaultAsyncTimeout = _options.DefaultAsyncJavaScriptInteropCallTimeout;
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)

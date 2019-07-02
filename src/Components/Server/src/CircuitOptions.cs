@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -52,8 +51,18 @@ namespace Microsoft.AspNetCore.Components.Server
         /// exceptions to JavaScript.
         /// </summary>
         /// <remarks>
-        /// The default value for this property is <c>false</c>. This value should only be turned on in development scenarios as turning it
-        /// on in production might result in a sensitive information leak.</remarks>
+        /// This value should only be turned on in development scenarios as turning it on in production might result in the leak of
+        /// sensitive information to untrusted parties.
+        /// </remarks>
+        /// <value>Defaults to <c>false</c>.</value>
         public bool DotNetInteropExceptionDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that indicates how long the server will wait before timing out an asynchronous JavaScript function invocation.
+        /// </summary>
+        /// <value>
+        /// Defaults to <c>1 minute</c>.
+        /// </value>
+        public TimeSpan DefaultAsyncJavaScriptInteropCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
     }
 }
