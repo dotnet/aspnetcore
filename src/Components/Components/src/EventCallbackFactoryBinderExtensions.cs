@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Components
     // For now we're not necessarily handling this correctly since we parse the same way for number and text.
     public static class EventCallbackFactoryBinderExtensions
     {
-        private delegate bool BindConverter<T>(object obj, out T value);
+        private delegate bool BindConverter<T>(object obj, CultureInfo culture, out T value);
 
         // Perf: conversion delegates are written as static funcs so we can prevent
         // allocations for these simple cases.
         private readonly static BindConverter<string> ConvertToString = ConvertToStringCore;
 
-        private static bool ConvertToStringCore(object obj, out string value)
+        private static bool ConvertToStringCore(object obj, CultureInfo culture, out string value)
         {
             // We expect the input to already be a string.
             value = (string)obj;
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<bool> ConvertToBool = ConvertToBoolCore;
         private static BindConverter<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
 
-        private static bool ConvertToBoolCore(object obj, out bool value)
+        private static bool ConvertToBoolCore(object obj, CultureInfo culture, out bool value)
         {
             // We expect the input to already be a bool.
             value = (bool)obj;
             return true;
         }
 
-        private static bool ConvertToNullableBoolCore(object obj, out bool? value)
+        private static bool ConvertToNullableBoolCore(object obj, CultureInfo culture, out bool? value)
         {
             // We expect the input to already be a bool.
             value = (bool?)obj;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<int> ConvertToInt = ConvertToIntCore;
         private static BindConverter<int?> ConvertToNullableInt = ConvertToNullableIntCore;
 
-        private static bool ConvertToIntCore(object obj, out int value)
+        private static bool ConvertToIntCore(object obj, CultureInfo culture, out int value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
+            if (!int.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableIntCore(object obj, out int? value)
+        private static bool ConvertToNullableIntCore(object obj, CultureInfo culture, out int? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
+            if (!int.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<long> ConvertToLong = ConvertToLongCore;
         private static BindConverter<long?> ConvertToNullableLong = ConvertToNullableLongCore;
 
-        private static bool ConvertToLongCore(object obj, out long value)
+        private static bool ConvertToLongCore(object obj, CultureInfo culture, out long value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
+            if (!long.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableLongCore(object obj, out long? value)
+        private static bool ConvertToNullableLongCore(object obj, CultureInfo culture, out long? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
+            if (!long.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<float> ConvertToFloat = ConvertToFloatCore;
         private static BindConverter<float?> ConvertToNullableFloat = ConvertToNullableFloatCore;
 
-        private static bool ConvertToFloatCore(object obj, out float value)
+        private static bool ConvertToFloatCore(object obj, CultureInfo culture, out float value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!float.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableFloatCore(object obj, out float? value)
+        private static bool ConvertToNullableFloatCore(object obj, CultureInfo culture, out float? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!float.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!float.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<double> ConvertToDouble = ConvertToDoubleCore;
         private static BindConverter<double?> ConvertToNullableDouble = ConvertToNullableDoubleCore;
 
-        private static bool ConvertToDoubleCore(object obj, out double value)
+        private static bool ConvertToDoubleCore(object obj, CultureInfo culture, out double value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableDoubleCore(object obj, out double? value)
+        private static bool ConvertToNullableDoubleCore(object obj, CultureInfo culture, out double? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!double.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<decimal> ConvertToDecimal = ConvertToDecimalCore;
         private static BindConverter<decimal?> ConvertToNullableDecimal = ConvertToNullableDecimalCore;
 
-        private static bool ConvertToDecimalCore(object obj, out decimal value)
+        private static bool ConvertToDecimalCore(object obj, CultureInfo culture, out decimal value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!decimal.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableDecimalCore(object obj, out decimal? value)
+        private static bool ConvertToNullableDecimalCore(object obj, CultureInfo culture, out decimal? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
+            if (!decimal.TryParse(text, NumberStyles.Number, culture ?? CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Components
         private static BindConverter<DateTime> ConvertToDateTime = ConvertToDateTimeCore;
         private static BindConverter<DateTime?> ConvertToNullableDateTime = ConvertToNullableDateTimeCore;
 
-        private static bool ConvertToDateTimeCore(object obj, out DateTime value)
+        private static bool ConvertToDateTimeCore(object obj, CultureInfo culture, out DateTime value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            if (!DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
             {
                 value = default;
                 return false;
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableDateTimeCore(object obj, out DateTime? value)
+        private static bool ConvertToNullableDateTimeCore(object obj, CultureInfo culture, out DateTime? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            if (!DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
             {
                 value = default;
                 return false;
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToEnum<T>(object obj, out T value) where T : struct, Enum
+        private static bool ConvertToEnum<T>(object obj, CultureInfo culture, out T value) where T : struct, Enum
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
-        private static bool ConvertToNullableEnum<T>(object obj, out Nullable<T> value) where T : struct, Enum
+        private static bool ConvertToNullableEnum<T>(object obj, CultureInfo culture,  out T? value) where T : struct, Enum
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -346,14 +346,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<string> setter,
-            string existingValue)
+            string existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<string>(factory, receiver, setter, ConvertToString);
+            return CreateBinderCore<string>(factory, receiver, setter, culture, ConvertToString);
         }
 
         /// <summary>
@@ -363,14 +365,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool> setter,
-            bool existingValue)
+            bool existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<bool>(factory, receiver, setter, ConvertToBool);
+            return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
         }
 
         /// <summary>
@@ -380,14 +384,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool?> setter,
-            bool? existingValue)
+            bool? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<bool?>(factory, receiver, setter, ConvertToNullableBool);
+            return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
         }
 
         /// <summary>
@@ -397,14 +403,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int> setter,
-            int existingValue)
+            int existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<int>(factory, receiver, setter, ConvertToInt);
+            return CreateBinderCore<int>(factory, receiver, setter, culture, ConvertToInt);
         }
 
         /// <summary>
@@ -414,14 +422,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int?> setter,
-            int? existingValue)
+            int? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<int?>(factory, receiver, setter, ConvertToNullableInt);
+            return CreateBinderCore<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
         }
 
         /// <summary>
@@ -431,14 +441,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long> setter,
-            long existingValue)
+            long existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<long>(factory, receiver, setter, ConvertToLong);
+            return CreateBinderCore<long>(factory, receiver, setter, culture, ConvertToLong);
         }
 
         /// <summary>
@@ -448,14 +460,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long?> setter,
-            long? existingValue)
+            long? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<long?>(factory, receiver, setter, ConvertToNullableLong);
+            return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
         }
 
         /// <summary>
@@ -465,14 +479,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float> setter,
-            float existingValue)
+            float existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<float>(factory, receiver, setter, ConvertToFloat);
+            return CreateBinderCore<float>(factory, receiver, setter, culture, ConvertToFloat);
         }
 
         /// <summary>
@@ -482,14 +498,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float?> setter,
-            float? existingValue)
+            float? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<float?>(factory, receiver, setter, ConvertToNullableFloat);
+            return CreateBinderCore<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
         }
 
         /// <summary>
@@ -499,14 +517,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double> setter,
-            double existingValue)
+            double existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<double>(factory, receiver, setter, ConvertToDouble);
+            return CreateBinderCore<double>(factory, receiver, setter, culture, ConvertToDouble);
         }
 
         /// <summary>
@@ -516,14 +536,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double?> setter,
-            double? existingValue)
+            double? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<double?>(factory, receiver, setter, ConvertToNullableDouble);
+            return CreateBinderCore<double?>(factory, receiver, setter, culture, ConvertToNullableDouble);
         }
 
         /// <summary>
@@ -533,14 +555,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal> setter,
-            decimal existingValue)
+            decimal existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<decimal>(factory, receiver, setter, ConvertToDecimal);
+            return CreateBinderCore<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
         }
 
         /// <summary>
@@ -550,14 +574,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal?> setter,
-            decimal? existingValue)
+            decimal? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<decimal?>(factory, receiver, setter, ConvertToNullableDecimal);
+            return CreateBinderCore<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
         }
 
         /// <summary>
@@ -567,14 +593,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
-            DateTime existingValue)
+            DateTime existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<DateTime>(factory, receiver, setter, ConvertToDateTime);
+            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
         }
 
         /// <summary>
@@ -584,14 +612,16 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime?> setter,
-            DateTime? existingValue)
+            DateTime? existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<DateTime?>(factory, receiver, setter, ConvertToNullableDateTime);
+            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
         }
 
         /// <summary>
@@ -602,13 +632,15 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
         /// <param name="format"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
             DateTime existingValue,
-            string format)
+            string format,
+            CultureInfo culture = null)
         {
             // Avoiding CreateBinderCore so we can avoid an extra allocating lambda
             // when a format is used.
@@ -618,7 +650,7 @@ namespace Microsoft.AspNetCore.Components
                 var converted = false;
                 try
                 {
-                    value = ConvertDateTime(e.Value, format);
+                    value = ConvertDateTime(e.Value, culture, format);
                     converted = true;
                 }
                 catch
@@ -633,20 +665,20 @@ namespace Microsoft.AspNetCore.Components
             };
             return factory.Create<UIChangeEventArgs>(receiver, callback);
 
-            static DateTime ConvertDateTime(object obj, string format)
+            static DateTime ConvertDateTime(object obj, CultureInfo culture, string format)
             {
                 var text = (string)obj;
                 if (string.IsNullOrEmpty(text))
                 {
                     return default;
                 }
-                else if (format != null && DateTime.TryParseExact(text, format, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var value))
+                else if (format != null && DateTime.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind, out var value))
                 {
                     return value;
                 }
                 else
                 {
-                    return DateTime.Parse(text);
+                    return DateTime.Parse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind);
                 }
             }
         }
@@ -659,20 +691,23 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver"></param>
         /// <param name="setter"></param>
         /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
         /// <returns></returns>
         public static EventCallback<UIChangeEventArgs> CreateBinder<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            T existingValue)
+            T existingValue,
+            CultureInfo culture = null)
         {
-            return CreateBinderCore<T>(factory, receiver, setter, BinderConverterCache.Get<T>());
+            return CreateBinderCore<T>(factory, receiver, setter, culture, BinderConverterCache.Get<T>());
         }
 
         private static EventCallback<UIChangeEventArgs> CreateBinderCore<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
+            CultureInfo culture,
             BindConverter<T> converter)
         {
             Action<UIChangeEventArgs> callback = e =>
@@ -681,7 +716,7 @@ namespace Microsoft.AspNetCore.Components
                 var converted = false;
                 try
                 {
-                    converted = converter(e.Value, out value);
+                    converted = converter(e.Value, culture, out value);
                 }
                 catch
                 {
@@ -822,7 +857,7 @@ namespace Microsoft.AspNetCore.Components
 
                 return ConvertWithTypeConverter;
 
-                bool ConvertWithTypeConverter(object obj, out T value)
+                bool ConvertWithTypeConverter(object obj, CultureInfo culture, out T value)
                 {
                     var text = (string)obj;
                     if (string.IsNullOrEmpty(text))
@@ -832,7 +867,7 @@ namespace Microsoft.AspNetCore.Components
                     }
 
                     // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
-                    var converted = typeConverter.ConvertFromString(context: null, CultureInfo.CurrentCulture, text);
+                    var converted = typeConverter.ConvertFromString(context: null, culture ?? CultureInfo.CurrentCulture, text);
                     if (converted == null)
                     {
                         value = default;

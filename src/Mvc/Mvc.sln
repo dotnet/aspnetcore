@@ -293,7 +293,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Server", "..\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj", "{916BF32D-6896-4D02-BBD1-A72878FDBDFF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser", "..\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj", "{C0890480-9353-4E1A-B738-256FD6573844}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web", "..\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{C0890480-9353-4E1A-B738-256FD6573844}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "..\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{C6669E3D-930B-4936-9DD9-A410C3CA858A}"
 EndProject

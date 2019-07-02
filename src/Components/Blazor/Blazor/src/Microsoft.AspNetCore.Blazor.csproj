@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <Reference Include="Mono.WebAssembly.Interop" />
-    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
 </Project>

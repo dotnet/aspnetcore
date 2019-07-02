@@ -497,34 +497,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public DfaGraphWriter(System.IServiceProvider services) { }
         public void Write(Microsoft.AspNetCore.Routing.EndpointDataSource dataSource, System.IO.TextWriter writer) { }
     }
-    [System.ObsoleteAttribute("This type will be marked as internal in a future release.")]
-    public enum SegmentState
-    {
-        Beginning = 0,
-        Inside = 1,
-    }
-    [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
-    [System.ObsoleteAttribute("This type will be marked as internal in a future release.")]
-    public partial class UriBuildingContext
-    {
-        public UriBuildingContext(System.Text.Encodings.Web.UrlEncoder urlEncoder) { }
-        public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Internal.SegmentState BufferState { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.IO.TextWriter PathWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.IO.TextWriter QueryWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Internal.SegmentState UriState { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool Accept(string value) { throw null; }
-        public bool Accept(string value, bool encodeSlashes) { throw null; }
-        public bool Buffer(string value) { throw null; }
-        public void Clear() { }
-        public void EndSegment() { }
-        public void Remove(string literal) { }
-        public Microsoft.AspNetCore.Http.PathString ToPathString() { throw null; }
-        public Microsoft.AspNetCore.Http.QueryString ToQueryString() { throw null; }
-        public override string ToString() { throw null; }
-    }
 }
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -767,10 +739,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     }
     public partial class TemplateBinder
     {
-        [System.ObsoleteAttribute("This constructor is obsolete and will be marked internal in a future release. Use the TemplateBinderFactory service to create TemplateBinder instances.")]
-        public TemplateBinder(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IEnumerable<string> requiredKeys, System.Collections.Generic.IEnumerable<System.ValueTuple<string, Microsoft.AspNetCore.Routing.IParameterPolicy>> parameterPolicies) { }
-        [System.ObsoleteAttribute("This constructor is obsolete and will be marked internal in a furture release. Use the TemplateBinderFactory service to create TemplateBinder instances.")]
-        public TemplateBinder(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults) { }
+        internal TemplateBinder() { }
         public string BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
         public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
         public static bool RoutePartsEqual(object a, object b) { throw null; }
@@ -868,8 +837,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     }
     public partial class TreeRouteBuilder
     {
-        [System.ObsoleteAttribute("This constructor will be marked internal in a future release. Use the service provider to create instances of TreeRouteBuilder.")]
-        public TreeRouteBuilder(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver) { }
+        internal TreeRouteBuilder() { }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry> InboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> OutboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Routing.Tree.TreeRouter Build() { throw null; }
@@ -880,9 +848,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
     }
     public partial class TreeRouter : Microsoft.AspNetCore.Routing.IRouter
     {
+        internal TreeRouter() { }
         public static readonly string RouteGroupKey;
-        [System.ObsoleteAttribute("This constructor will be marked obsolete in a future release. Use the TreeRouterBuilder to create instances of TreeRouter.")]
-        public TreeRouter(Microsoft.AspNetCore.Routing.Tree.UrlMatchingTree[] trees, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> linkGenerationEntries, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.Extensions.Logging.ILogger routeLogger, Microsoft.Extensions.Logging.ILogger constraintLogger, int version) { }
         public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

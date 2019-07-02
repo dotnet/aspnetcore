@@ -11,6 +11,6 @@
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="$publishdir$**\*" target="tools/" />
-    <file src="..\..\..\Browser.JS\dist\$configuration$\blazor.*.js" target="tools/blazor" />
+    <file src="..\..\..\Web.JS\dist\$configuration$\blazor.*.js" target="tools/blazor" />
   </files>
 </package>

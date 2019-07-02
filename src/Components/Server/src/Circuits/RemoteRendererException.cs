@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     /// <summary>
     /// Represents an exception related to remote rendering.

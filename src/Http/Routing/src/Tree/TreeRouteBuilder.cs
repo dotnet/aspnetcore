@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -20,9 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
         private readonly UrlEncoder _urlEncoder;
-#pragma warning disable CS0618 // Type or member is obsolete
         private readonly ObjectPool<UriBuildingContext> _objectPool;
-#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IInlineConstraintResolver _constraintResolver;
 
         /// <summary>
@@ -31,12 +28,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
-        [Obsolete("This constructor will be marked internal in a future release. Use the service provider to create instances of TreeRouteBuilder.")]
-        public TreeRouteBuilder(
+        internal TreeRouteBuilder(
             ILoggerFactory loggerFactory,
-#pragma warning disable CS0618, PUB0001 // Type or member is obsolete
             ObjectPool<UriBuildingContext> objectPool,
-#pragma warning restore CS0618, PUB0001 // Type or member is obsolete
             IInlineConstraintResolver constraintResolver)
         {
             if (loggerFactory == null)
@@ -244,7 +238,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 tree.AddEntry(entry);
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
             return new TreeRouter(
                 trees.Values.OrderBy(tree => tree.Order).ToArray(),
                 OutboundEntries,
@@ -253,7 +246,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 _logger,
                 _constraintLogger,
                 version);
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

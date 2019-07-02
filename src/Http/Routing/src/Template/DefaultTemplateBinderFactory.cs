@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.ObjectPool;
 
@@ -13,15 +12,11 @@ namespace Microsoft.AspNetCore.Routing.Template
     internal sealed class DefaultTemplateBinderFactory : TemplateBinderFactory
     {
         private readonly ParameterPolicyFactory _policyFactory;
-#pragma warning disable CS0618 // Type or member is obsolete
         private readonly ObjectPool<UriBuildingContext> _pool;
-#pragma warning restore CS0618 // Type or member is obsolete
 
         public DefaultTemplateBinderFactory(
             ParameterPolicyFactory policyFactory,
-#pragma warning disable CS0618 // Type or member is obsolete
             ObjectPool<UriBuildingContext> pool)
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (policyFactory == null)
             {
@@ -50,9 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(nameof(defaults));
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
             return new TemplateBinder(UrlEncoder.Default, _pool, template, defaults);
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override TemplateBinder Create(RoutePattern pattern)

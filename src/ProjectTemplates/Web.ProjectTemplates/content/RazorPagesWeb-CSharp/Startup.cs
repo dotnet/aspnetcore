@@ -52,7 +52,6 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
 #if (UseLocalDB)
@@ -108,8 +107,8 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-
 #if (OrganizationalAuth)
+
             services.AddRazorPages().AddMvcOptions(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
