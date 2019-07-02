@@ -148,7 +148,6 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.False(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
             o.RemoveScheme("signin2");
             Assert.True(o.TryAddScheme(new AuthenticationScheme("signin2", "whatever", typeof(Handler))));
-
         }
 
         [Fact]
