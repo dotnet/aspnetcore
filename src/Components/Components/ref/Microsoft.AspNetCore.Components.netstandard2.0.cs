@@ -205,6 +205,7 @@ namespace Microsoft.AspNetCore.Components
     public readonly partial struct EventCallback<T>
     {
         private readonly object _dummy;
+        public static readonly Microsoft.AspNetCore.Components.EventCallback<T> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(T arg) { throw null; }
