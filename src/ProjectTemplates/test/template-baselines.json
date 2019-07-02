@@ -1144,7 +1144,7 @@
         "ClientApp/src/assets/.gitkeep",
         "ClientApp/src/environments/environment.prod.ts",
         "ClientApp/src/environments/environment.ts",
-        "ClientApp/src/browserslist",
+        "ClientApp/browserslist",
         "ClientApp/src/index.html",
         "ClientApp/src/karma.conf.js",
         "ClientApp/src/main.ts",
