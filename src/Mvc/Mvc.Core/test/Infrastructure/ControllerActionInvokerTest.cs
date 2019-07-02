@@ -1454,8 +1454,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         #endregion
 
+        #region Logs
+
         [Fact]
-        public async Task LogsControllerFactory()
+        public async Task InvokeAsync_LogsControllerFactory()
         {
             // Arrange
             var testSink = new TestSink();
@@ -1482,10 +1484,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
-            var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} (Microsoft.AspNetCore.Mvc.Core.Test)";
+            var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
             Assert.Contains($"Executing controller factory for controller {controllerName}", messages);
             Assert.Contains($"Executed controller factory for controller {controllerName}", messages);
         }
+
+        #endregion
 
         protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
