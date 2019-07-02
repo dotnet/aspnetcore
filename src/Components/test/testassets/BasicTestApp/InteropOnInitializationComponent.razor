@@ -19,11 +19,12 @@
 
 <p>
     Value set via JS interop call:
-    <input id="val-set-by-interop" @ref="@myElem" />
+    <input id="val-set-by-interop" @ref="@myElem" @ref:suppressField />
 </p>
 
 @code {
     string infoFromJs;
+    ElementRef myElem;
 
     protected override async Task OnAfterRenderAsync()
     {

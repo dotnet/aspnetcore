@@ -11,7 +11,7 @@
 @if (_toggleCapturedComponentPresence)
 {
     <div id="child-component">
-        <CounterComponent @ref="_myChildCounter" />
+        <CounterComponent @ref="_myChildCounter" @ref:suppressField />
     </div>
 }
 
@@ -26,6 +26,7 @@
 
 @code {
     bool _toggleCapturedComponentPresence = true;
+    CounterComponent _myChildCounter;
 
     void ResetChildCounter()
     {
