@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                await Renderer.Invoke(() =>
+                await Renderer.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
                     DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);

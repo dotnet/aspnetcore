@@ -3,8 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Dispatches external actions to be executed on the context of a <see cref="Renderer"/>.
@@ -14,29 +15,29 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <summary>
         /// Invokes the given <see cref="Action"/> in the context of the associated <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="action">The action to execute.</param>
+        /// <param name="workItem">The action to execute.</param>
         /// <returns>A <see cref="Task"/> that will be completed when the action has finished executing.</returns>
-        Task Invoke(Action action);
+        Task InvokeAsync(Action workItem);
 
         /// <summary>
         /// Invokes the given <see cref="Func{TResult}"/> in the context of the associated <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="asyncAction">The asynchronous action to execute.</param>
+        /// <param name="workItem">The asynchronous action to execute.</param>
         /// <returns>A <see cref="Task"/> that will be completed when the action has finished executing.</returns>
-        Task InvokeAsync(Func<Task> asyncAction);
+        Task InvokeAsync(Func<Task> workItem);
 
         /// <summary>
         /// Invokes the given <see cref="Func{TResult}"/> in the context of the associated <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="function">The function to execute.</param>
+        /// <param name="workItem">The function to execute.</param>
         /// <returns>A <see cref="Task{TResult}"/> that will be completed when the function has finished executing.</returns>
-        Task<TResult> Invoke<TResult>(Func<TResult> function);
+        Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem);
 
         /// <summary>
         /// Invokes the given <see cref="Func{TResult}"/> in the context of the associated <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="asyncFunction">The asynchronous function to execute.</param>
+        /// <param name="workItem">The asynchronous function to execute.</param>
         /// <returns>A <see cref="Task{TResult}"/> that will be completed when the function has finished executing.</returns>
-        Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> asyncFunction);
+        Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem);
     }
 }

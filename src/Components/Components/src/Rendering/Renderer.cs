@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// synchronization context.
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
-        public virtual Task Invoke(Action workItem)
+        public virtual Task InvokeAsync(Action workItem)
         {
             // This is for example when we run on a system with a single thread, like WebAssembly.
             if (_dispatcher == null)
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return _dispatcher.Invoke(workItem);
+                return _dispatcher.InvokeAsync(workItem);
             }
         }
 

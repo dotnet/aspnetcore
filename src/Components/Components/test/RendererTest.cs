@@ -2016,7 +2016,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
             var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
-            renderHandle.Invoke(() => renderHandle.Render(builder
+            renderHandle.InvokeAsync(() => renderHandle.Render(builder
                 => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
@@ -2905,7 +2905,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             var asyncExceptionTcs = new TaskCompletionSource<object>();
             taskToAwait = asyncExceptionTcs.Task;
-            await renderer.Invoke(component.TriggerRender);
+            await renderer.InvokeAsync(component.TriggerRender);
 
             // Act
             var exception = new InvalidOperationException();
@@ -3409,7 +3409,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
             {
-                var t = _renderHandle.Invoke(() => _renderHandle.Render(_renderFragment));
+                var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 // This should always be run synchronously
                 Assert.True(t.IsCompleted);
                 if (t.IsFaulted)
@@ -3659,7 +3659,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Invoke(() => renderHandle.Render(builder =>
+                    renderHandle.InvokeAsync(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     }));
@@ -3820,7 +3820,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return TriggerRenderAsync();
             }
 
-            public Task TriggerRenderAsync() => _renderHandle.Invoke(() => _renderHandle.Render(RenderFragment));
+            public Task TriggerRenderAsync() => _renderHandle.InvokeAsync(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)
