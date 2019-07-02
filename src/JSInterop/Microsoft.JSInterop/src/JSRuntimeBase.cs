@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
@@ -20,7 +22,70 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
 
+        private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
+            new ConcurrentDictionary<long, CancellationTokenRegistration>();
+
         internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
+
+        /// <summary>
+        /// Gets or sets the default timeout for asynchronous JavaScript calls.
+        /// </summary>
+        protected TimeSpan? DefaultAsyncTimeout { get; set; }
+
+        /// <summary>
+        /// Invokes the specified JavaScript function asynchronously.
+        /// </summary>
+        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
+        /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="args">JSON-serializable arguments.</param>
+        /// <param name="cancellationToken">A cancellation token to signal the cancellation of the operation.</param>
+        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
+        public Task<T> InvokeAsync<T>(string identifier, IEnumerable<object> args, CancellationToken cancellationToken = default)
+        {
+            var taskId = Interlocked.Increment(ref _nextPendingTaskId);
+            var tcs = new TaskCompletionSource<T>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            if (cancellationToken != default)
+            {
+                _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
+                {
+                    tcs.TrySetCanceled(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
+                });
+            }
+            _pendingTasks[taskId] = tcs;
+
+            try
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    tcs.TrySetCanceled(cancellationToken);
+                    CleanupTasksAndRegistrations(taskId);
+
+                    return tcs.Task;
+                }
+
+                var argsJson = args?.Any() == true ?
+                    JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options) :
+                    null;
+                BeginInvokeJS(taskId, identifier, argsJson);
+
+                return tcs.Task;
+            }
+            catch
+            {
+                CleanupTasksAndRegistrations(taskId);
+                throw;
+            }
+        }
+
+        private void CleanupTasksAndRegistrations(long taskId)
+        {
+            _pendingTasks.TryRemove(taskId, out _);
+            if (_cancellationRegistrations.TryRemove(taskId, out var registration))
+            {
+                registration.Dispose();
+            }
+        }
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -31,36 +96,32 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
         public Task<T> InvokeAsync<T>(string identifier, params object[] args)
         {
-            // We might consider also adding a default timeout here in case we don't want to
-            // risk a memory leak in the scenario where the JS-side code is failing to complete
-            // the operation.
-
-            var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<T>();
-            _pendingTasks[taskId] = tcs;
-
-            try
+            if (!DefaultAsyncTimeout.HasValue)
             {
-                var argsJson = args?.Length > 0 ?
-                    JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options) :
-                    null;
-                BeginInvokeJS(taskId, identifier, argsJson);
-                return tcs.Task;
+                return InvokeAsync<T>(identifier, args, default);
             }
-            catch
+            else
             {
-                _pendingTasks.TryRemove(taskId, out _);
-                throw;
+                return InvokeWithDefaultCancellation<T>(identifier, args);
+            }
+        }
+
+        private async Task<T> InvokeWithDefaultCancellation<T>(string identifier, IEnumerable<object> args)
+        {
+            using (var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value))
+            {
+                // We need to await here due to the using
+                return await InvokeAsync<T>(identifier, args, cts.Token);
             }
         }
 
         /// <summary>
         /// Begins an asynchronous function invocation.
         /// </summary>
-        /// <param name="asyncHandle">The identifier for the function invocation, or zero if no async callback is required.</param>
+        /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
+        protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
 
         /// <summary>
         /// Allows derived classes to configure the information about an exception in a JS interop call that gets sent to JavaScript.
@@ -95,14 +156,18 @@ namespace Microsoft.JSInterop
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 
-        internal void EndInvokeJS(long asyncHandle, bool succeeded, JSAsyncCallResult asyncCallResult)
+        internal void EndInvokeJS(long taskId, bool succeeded, JSAsyncCallResult asyncCallResult)
         {
             using (asyncCallResult?.JsonDocument)
             {
-                if (!_pendingTasks.TryRemove(asyncHandle, out var tcs))
+                if (!_pendingTasks.TryRemove(taskId, out var tcs))
                 {
-                    throw new ArgumentException($"There is no pending task with handle '{asyncHandle}'.");
+                    // We should simply return if we can't find an id for the invocation.
+                    // This likely means that the method that initiated the call defined a timeout and stopped waiting.
+                    return;
                 }
+
+                CleanupTasksAndRegistrations(taskId);
 
                 if (succeeded)
                 {
