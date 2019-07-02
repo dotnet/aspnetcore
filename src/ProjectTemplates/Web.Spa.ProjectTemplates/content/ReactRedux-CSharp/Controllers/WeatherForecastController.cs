@@ -10,9 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Company.WebApplication1.Controllers
 {
-#if (!NoAuth)
-    [Authorize]
-#endif
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
