@@ -21,24 +21,21 @@
     "@angular/platform-browser-dynamic": "8.0.0",
     "@angular/platform-server": "8.0.0",
     "@angular/router": "8.0.0",
-    "@nguniversal/module-map-ngfactory-loader": "7.1.0",
+    "@nguniversal/module-map-ngfactory-loader": "8.0.0-rc.1",
     "core-js": "^2.6.5",
     "rxjs": "^6.4.0",
     "zone.js": "~0.9.1",
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^4.3.1",
-    "core-js": "^2.6.5",
-    "jquery": "3.3.1",
+    "jquery": "3.4.1",
     "oidc-client": "^1.8.0",
-    "popper.js": "^1.14.3",
-    "rxjs": "^6.4.0",
-    "zone.js": "^0.8.29"
+    "popper.js": "^1.14.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.800.0",
-    "@angular/cli": "~8.0.1",
-    "@angular/compiler-cli": "^8.0.0",
-    "@angular/language-service": "^8.0.0",
+    "@angular-devkit/build-angular": "^0.800.6",
+    "@angular/cli": "8.0.6",
+    "@angular/compiler-cli": "8.0.0",
+    "@angular/language-service": "8.0.0",
     "@types/jasmine": "~3.3.9",
     "@types/jasminewd2": "~2.0.6",
     "@types/node": "~11.10.5",
@@ -50,7 +47,7 @@
     "karma-coverage-istanbul-reporter": "~2.0.5",
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.4.0",
-    "typescript": "~3.4.5"
+    "typescript": "3.4.5"
   },
   "optionalDependencies": {
     "node-sass": "^4.9.3",
