@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly EventCallbackFactory Factory = new EventCallbackFactory();
 
         /// <summary>
-        /// Gets an empty <see cref="EventCallback{T}"/>.
+        /// Gets an empty <see cref="EventCallback"/>.
         /// </summary>
         public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
 
@@ -72,6 +72,11 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public readonly struct EventCallback<T> : IEventCallback
     {
+        /// <summary>
+        /// Gets an empty <see cref="EventCallback{T}"/>.
+        /// </summary>
+        public static readonly EventCallback<T> Empty = new EventCallback<T>(null, (Action)(() => { }));
+
         internal readonly MulticastDelegate Delegate;
         internal readonly IHandleEvent Receiver;
 
