@@ -25,7 +25,12 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor()
+                .AddCircuitOptions(o =>
+                {
+                    var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
+                    o.DotNetInteropExceptionDetails = detailedErrors;
+                });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             services.AddAuthorization(options =>

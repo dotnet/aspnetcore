@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 return base.OnDotNetInvocationException(exception, assemblyName, methodIdentifier);
             }
 
-            var message = $"There was an exception invoking '{methodIdentifier} on assembly {assemblyName}'. For more details turn on " +
+            var message = $"There was an exception '{exception.GetType().Name}' invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
                 $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DotNetInteropExceptionDetails)}'";
 
             return message;

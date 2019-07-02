@@ -210,6 +210,12 @@ function asyncFunctionThrowsAsyncException() {
   });
 }
 
+function asyncFunctionTakesLongerThanDefaultTimeoutToResolve() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(undefined), 5000);
+    });
+}
+
 function collectInteropResults() {
   let result = {};
   let properties = Object.getOwnPropertyNames(results);
