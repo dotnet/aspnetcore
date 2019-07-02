@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,6 +31,9 @@ namespace Microsoft.JSInterop.Tests
         {
             public Task<T> InvokeAsync<T>(string identifier, params object[] args)
                 => throw new NotImplementedException();
+
+            public Task<TValue> InvokeAsync<TValue>(string identifier, IEnumerable<object> args, CancellationToken cancellationToken = default) =>
+                throw new NotImplementedException();
         }
     }
 }

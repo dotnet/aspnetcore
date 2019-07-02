@@ -32,6 +32,7 @@ namespace Microsoft.JSInterop
     }
     public partial interface IJSRuntime
     {
+        System.Threading.Tasks.Task<TValue> InvokeAsync<TValue>(string identifier, System.Collections.Generic.IEnumerable<object> args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         System.Threading.Tasks.Task<TValue> InvokeAsync<TValue>(string identifier, params object[] args);
     }
     public partial class JSException : System.Exception
