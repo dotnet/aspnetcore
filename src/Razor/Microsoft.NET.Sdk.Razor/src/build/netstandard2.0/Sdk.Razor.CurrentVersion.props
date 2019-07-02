@@ -80,12 +80,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**\*.razor" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <EnableRazorSdkContent Condition="'$(EnableRazorSdkContent)' =='' and '$(UsingMicrosoftNETSdkWeb)' == '' ">true</EnableRazorSdkContent>
-  </PropertyGroup>
-
-  <Import 
-    Project="$(MSBuildThisFileDirectory)..\..\Sdk\Sdk.Razor.StaticAssets.ProjectSystem.props"
-    Condition=" '$(EnableRazorSdkContent)' == 'true' " />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Sdk\Sdk.Razor.StaticAssets.ProjectSystem.props" />
 
 </Project>
