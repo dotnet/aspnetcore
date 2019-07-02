@@ -121,7 +121,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
+<GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
 
 @code {
     GenericContext<int> _my;
@@ -188,7 +188,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" />
+<GenericContext Items=""@(new List<int>() { 1, 2, })"" @ref=""_my"" @ref:suppressField />
 
 @code {
     GenericContext<int> _my;
@@ -221,7 +221,7 @@ namespace Test
 
             var assembly = CompileToAssembly("Test.cshtml", @"
 @typeparam TItem
-<GenericContext Items=""@MyItems"" @ref=""_my"" />
+<GenericContext Items=""@MyItems"" @ref=""_my"" @ref:suppressField />
 
 @code {
     [Parameter] List<TItem> MyItems { get; set; }
