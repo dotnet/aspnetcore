@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.ObjectPool
     }
 
     /// <summary>
-    /// Methods for creating <see cref="ObjectPool{T}"/>'s.
+    /// Methods for creating <see cref="ObjectPool{T}"/> instances.
     /// </summary>
     public static class ObjectPool
     {

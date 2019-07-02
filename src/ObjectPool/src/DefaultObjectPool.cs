@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.ObjectPool
     /// Default implementation of <see cref="ObjectPool{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type to pool objects for.</typeparam>
+    /// <remarks>This implementation keeps a cache of retained objects. This means that if objects are returned when the pool has already reached "maximumRetained" objects they will be available to be Garbage Collected.</remarks>
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     {
         private protected readonly ObjectWrapper[] _items;

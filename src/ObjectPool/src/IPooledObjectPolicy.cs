@@ -16,10 +16,10 @@ namespace Microsoft.Extensions.ObjectPool
         T Create();
 
         /// <summary>
-        /// Return an object to the pool.
+        /// Runs some processing when an object was returned to the pool. Can be used to reset the state of an object and indicate if the object should be returned to the pool.
         /// </summary>
         /// <param name="obj">The object to return to the pool.</param>
-        /// <returns><code>true</code> if returned to the pool.</returns>
+        /// <returns><code>true</code> if the object should be returned to the pool. <code>false</code> if it's not possible/desirable for the pool to keep the object.</returns>
         bool Return(T obj);
     }
 }

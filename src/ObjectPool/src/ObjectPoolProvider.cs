@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.ObjectPool
 {
     /// <summary>
-    /// A provider of <see cref="ObjectPool{T}"/>'s.
+    /// A provider of <see cref="ObjectPool{T}"/> instances.
     /// </summary>
     public abstract class ObjectPoolProvider
     {

@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.ObjectPool
 {
     /// <summary>
-    /// A provider of <see cref="DefaultObjectPool{T}"/>'s.
+    /// The default <see cref="ObjectPoolProvider"/>.
     /// </summary>
     public class DefaultObjectPoolProvider : ObjectPoolProvider
     {
