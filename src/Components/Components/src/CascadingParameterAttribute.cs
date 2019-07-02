@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     /// supplied by the closest ancestor <see cref="CascadingValue{T}"/> component that
     /// supplies values with a compatible type and name.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class CascadingParameterAttribute : Attribute
     {
         /// <summary>

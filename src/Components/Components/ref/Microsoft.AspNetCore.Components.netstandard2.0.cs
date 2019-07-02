@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<string> setter, string existingValue) { throw null; }
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler<T>(System.Action<T> setter, T existingValue) { throw null; }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
         public CascadingParameterAttribute() { }
@@ -333,8 +333,8 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false)]
-    public partial class InjectAttribute : System.Attribute
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
+    public sealed partial class InjectAttribute : System.Attribute
     {
         public InjectAttribute() { }
     }
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Components
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Components
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
-    public partial class RouteAttribute : System.Attribute
+    public sealed partial class RouteAttribute : System.Attribute
     {
         public RouteAttribute(string template) { }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 namespace Microsoft.AspNetCore.Components.Layouts
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
-    public partial class LayoutAttribute : System.Attribute
+    public sealed partial class LayoutAttribute : System.Attribute
     {
         public LayoutAttribute(System.Type layoutType) { }
         public System.Type LayoutType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
