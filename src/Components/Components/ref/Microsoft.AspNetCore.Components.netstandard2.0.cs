@@ -194,9 +194,9 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIWheelEventArgs> Create(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Func<Microsoft.AspNetCore.Components.UIWheelEventArgs, System.Threading.Tasks.Task> callback) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct EventCallbackWorkItem
+    public readonly partial struct EventCallbackWorkItem
     {
-        private object _dummy;
+        private readonly object _dummy;
         public static readonly Microsoft.AspNetCore.Components.EventCallbackWorkItem Empty;
         public EventCallbackWorkItem(System.MulticastDelegate @delegate) { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
