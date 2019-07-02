@@ -33,8 +33,6 @@
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
-    <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
-    <UsingToolMicrosoftNetCompilers Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.fsproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</UsingToolMicrosoftNetCompilers>
     <!-- Only use Microsoft.NETFramework.ReferenceAssemblies on non-windows builds. Using this on Windows breaks MVC runtime compilation. -->
     <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'">true</UsingToolNetFrameworkReferenceAssemblies>
     <!-- Disable XLIFF tasks -->
@@ -53,6 +51,8 @@
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19323.4</MicrosoftDotNetGenAPIPackageVersion>
+    <!-- Packages from dotnet/roslyn -->
+    <MicrosoftNetCompilersToolsetVersion>3.3.0-beta1-19351-01</MicrosoftNetCompilersToolsetVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview7-27826-20</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27826-20</MicrosoftNETCoreAppRefPackageVersion>
@@ -254,6 +254,10 @@
       https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json;
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://grpc.jfrog.io/grpc/api/nuget/v3/grpc-nuget-dev;
+    </RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetVersion.Contains('-')) ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
     </RestoreSources>
     <!-- TODO remove this once we move Microsoft.Internal.AspNetCore.H2Spec.All to a non-myget feed -->
     <RestoreSources>

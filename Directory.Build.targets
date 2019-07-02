@@ -125,6 +125,11 @@
       <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
+    <!-- Track compiler separately from Arcade.-->
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">
