@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     /// <summary>
-    /// A provider of <see cref="BatchingLogger"/>'s.
+    /// A provider of <see cref="BatchingLogger"/> instances.
     /// </summary>
     public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternalScope
     {
