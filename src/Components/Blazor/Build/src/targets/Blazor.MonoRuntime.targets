@@ -170,6 +170,8 @@
       </BlazorItemOutput>
     </ItemGroup>
 
+    <Error Condition="'@(BlazorJsFile->Count())' == '0'" Text="No JS files found in '$(BlazorJsPath)'" />
+
     <ItemGroup Label="Static content supplied by NuGet packages">
       <_BlazorPackageContentOutput Include="@(BlazorPackageContentFile)" Condition="%(SourcePackage) != ''">
         <TargetOutputPath>$(TargetDir)$(BaseBlazorPackageContentOutputPath)%(SourcePackage)\%(RecursiveDir)\%(Filename)%(Extension)</TargetOutputPath>
