@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -72,8 +73,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Abort(Exception error)
         {
-            _requestReader.Abort(error);
-            _emptyRequestReader.Abort(error);
+            _requestReader.Abort(new ConnectionAbortedException(error.Message, error));
+            _emptyRequestReader.Abort(new ConnectionAbortedException(error.Message, error));
             _responseWriter.Abort();
         }
     }
