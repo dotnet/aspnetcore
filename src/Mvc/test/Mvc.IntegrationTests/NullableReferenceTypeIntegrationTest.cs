@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 #nullable restore
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
         public async Task BindProperty_WithNonNullableReferenceType_NoData_ValidationError()
         {
             // Arrange
