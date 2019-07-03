@@ -127,7 +127,7 @@
 
     <!-- Track compiler separately from Arcade.-->
     <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetVersion)"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
         PrivateAssets="all"
         IsImplicitlyDefined="true" />
   </ItemGroup>

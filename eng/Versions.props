@@ -52,7 +52,7 @@
     <!-- Packages from dotnet/arcade -->
     <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19323.4</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>3.3.0-beta1-19351-01</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta1-19351-01</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview7-27826-20</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview7-27826-20</MicrosoftNETCoreAppRefPackageVersion>
@@ -255,7 +255,7 @@
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://grpc.jfrog.io/grpc/api/nuget/v3/grpc-nuget-dev;
     </RestoreSources>
-    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetVersion.Contains('-')) ">
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetPackageVersion.Contains('-')) ">
       $(RestoreSources);
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
     </RestoreSources>
