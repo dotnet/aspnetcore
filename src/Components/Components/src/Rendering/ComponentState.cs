@@ -165,7 +165,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var numCascadingParameters = _cascadingParameters.Count;
             for (var i = 0; i < numCascadingParameters; i++)
             {
-                _cascadingParameters[i].ValueSupplier.Unsubscribe(this);
+                var supplier = _cascadingParameters[i].ValueSupplier;
+                if (!supplier.CurrentValueIsFixed)
+                {
+                    supplier.Unsubscribe(this);
+                }
             }
         }
     }
