@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <param name="path">The portion of the request path that identifies the requested resource.</param>
         /// <param name="query">The query, if any.</param>
         /// <param name="fragment">The fragment, if any.</param>
-        /// <returns></returns>
+        /// <returns>The combined URI components, properly encoded for use in HTTP headers.</returns>
         public static string BuildRelative(
             PathString pathBase = new PathString(),
             PathString path = new PathString(),
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <param name="path">The portion of the request path that identifies the requested resource.</param>
         /// <param name="query">The query, if any.</param>
         /// <param name="fragment">The fragment, if any.</param>
-        /// <returns></returns>
+        /// <returns>The combined URI components, properly encoded for use in HTTP headers.</returns>
         public static string BuildAbsolute(
             string scheme,
             HostString host,
@@ -90,9 +90,9 @@ namespace Microsoft.AspNetCore.Http.Extensions
         public static void FromAbsolute(
             string uri,
             out string scheme,
-            out HostString host, 
+            out HostString host,
             out PathString path,
-            out QueryString query, 
+            out QueryString query,
             out FragmentString fragment)
         {
             if (uri == null)
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 path = PathString.FromUriComponent(uri.Substring(searchIndex, limit - searchIndex));
                 limit = searchIndex;
             }
-            
+
             host = HostString.FromUriComponent(uri.Substring(startIndex, limit - startIndex));
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// HTTP headers. Note that a unicode host name will be encoded as punycode.
         /// </summary>
         /// <param name="uri">The Uri to encode.</param>
-        /// <returns></returns>
+        /// <returns>The encoded string version of <paramref name="uri"/>.</returns>
         public static string Encode(Uri uri)
         {
             if (uri == null)
@@ -171,16 +171,16 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// and other HTTP operations.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
-        /// <returns></returns>
+        /// <returns>The encoded string version of the URL from <paramref name="request"/>.</returns>
         public static string GetEncodedUrl(this HttpRequest request)
         {
             return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
         }
         /// <summary>
-        /// Returns the relative url 
+        /// Returns the relative URI.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
-        /// <returns></returns>
+        /// <returns>The path and query off of <paramref name="request"/>.</returns>
         public static string GetEncodedPathAndQuery(this HttpRequest request)
         {
             return BuildRelative(request.PathBase, request.Path, request.QueryString);
@@ -191,10 +191,11 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// suitable only for display. This format should not be used in HTTP headers or other HTTP operations.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
-        /// <returns></returns>
+        /// <returns>The combined components of the request URL in a fully un-escaped form (except for the QueryString)
+        /// suitable only for display.</returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
-            var scheme = request.Scheme ?? string.Empty;            
+            var scheme = request.Scheme ?? string.Empty;
             var host = request.Host.Value ?? string.Empty;
             var pathBase = request.PathBase.Value ?? string.Empty;
             var path = request.Path.Value ?? string.Empty;

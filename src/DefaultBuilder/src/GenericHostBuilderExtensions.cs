@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Hosting
         /// </remarks>
         /// <param name="builder">The <see cref="IHostBuilder" /> instance to configure</param>
         /// <param name="configure">The configure callback</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder ConfigureWebHostDefaults(this IHostBuilder builder, Action<IWebHostBuilder> configure)
         {
             return builder.ConfigureWebHost(webHostBuilder =>
