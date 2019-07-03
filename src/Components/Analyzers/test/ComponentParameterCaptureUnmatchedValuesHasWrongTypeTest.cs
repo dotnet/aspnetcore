@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureUnmatchedValues = true)] {propertyType} MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] public {propertyType} MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureUnmatchedValues = false)] string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = false)] public string MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureUnmatchedValues = true)] string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] public string MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                         Severity = DiagnosticSeverity.Warning,
                         Locations = new[]
                         {
-                        new DiagnosticResultLocation("Test0.cs", 7, 63)
+                        new DiagnosticResultLocation("Test0.cs", 7, 70)
                         }
                     });
         }
