@@ -2903,7 +2903,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var expectedString = new string('a', expectedLength);
             await using (var server = new TestServer(async httpContext =>
             {
-                httpContext.Response.Headers["Content-Length"] = new[] { expectedLength.ToString() };
+                httpContext.Response.ContentLength = expectedLength;
                 await httpContext.Response.WriteAsync(expectedString);
                 Assert.True(httpContext.Response.HasStarted);
             }, testContext))
@@ -2926,7 +2926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task UnflushedContentLengthResponseIsFlushedAutomtatically()
+        public async Task UnflushedContentLengthResponseIsFlushedAutomatically()
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var expectedLength = 100000;
@@ -2949,7 +2949,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using (var server = new TestServer(httpContext =>
             {
-                httpContext.Response.Headers["Content-Length"] = new[] { expectedLength.ToString() };
+                httpContext.Response.ContentLength = expectedLength;
 
                 WriteStringWithoutFlushing(httpContext.Response.BodyWriter, expectedString);
 

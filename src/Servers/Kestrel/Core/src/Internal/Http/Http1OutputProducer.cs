@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _autoChunk;
 
         // We rely on the TimingPipeFlusher to give us ValueTasks that can be safely awaited multiple times.
-        private bool _suffixSent;
+        private bool _writeStreamSuffixCalled;
         private ValueTask<FlushResult> _writeStreamSuffixValueTask;
 
         private int _advancedBytesForChunk;
@@ -117,11 +117,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_suffixSent)
+                if (_writeStreamSuffixCalled)
                 {
-                    // If WriteStreamSuffixAsync has already beend called, no-op and return the previously returned ValueTask.
+                    // If WriteStreamSuffixAsync has already been called, no-op and return the previously returned ValueTask.
+                    return _writeStreamSuffixValueTask;
                 }
-                else if (_autoChunk)
+
+                if (_autoChunk)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                     _writeStreamSuffixValueTask = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _writeStreamSuffixValueTask = default;
                 }
 
-                _suffixSent = true;
+                _writeStreamSuffixCalled = true;
                 return _writeStreamSuffixValueTask;
             }
         }
@@ -525,7 +527,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
-            _suffixSent = false;
+            _writeStreamSuffixCalled = false;
             _writeStreamSuffixValueTask = default;
             _currentChunkMemoryUpdated = false;
             _startCalled = false;
@@ -717,7 +719,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [StackTraceHidden]
         private void ThrowIfSuffixSent()
         {
-            if (_suffixSent)
+            if (_writeStreamSuffixCalled)
             {
                 throw new InvalidOperationException("Writing is not allowed after writer was completed.");
             }
