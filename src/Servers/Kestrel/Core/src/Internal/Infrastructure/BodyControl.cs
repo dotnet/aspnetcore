@@ -80,8 +80,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Abort(ConnectionAbortedException error)
         {
-            _requestReader.Abort(new ConnectionAbortedException(error.Message, error));
-            _emptyRequestReader.Abort(new ConnectionAbortedException(error.Message, error));
+            _requestReader.Abort(new ConnectionAbortedException(error.Message, error, error.CancellationToken));
+            _emptyRequestReader.Abort(new ConnectionAbortedException(error.Message, error, error.CancellationToken));
             _responseWriter.Abort();
         }
     }

@@ -473,8 +473,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AbortCore();
 
             // Unblock the request body.
-            PoisonRequestBodyStream(new ConnectionAbortedException(abortReason.Message, abortReason));
-            RequestBodyPipe.Writer.Complete(new ConnectionAbortedException(abortReason.Message, abortReason));
+            PoisonRequestBodyStream(new ConnectionAbortedException(abortReason.Message, abortReason, abortReason.CancellationToken));
+            RequestBodyPipe.Writer.Complete(new ConnectionAbortedException(abortReason.Message, abortReason, abortReason.CancellationToken));
 
             _inputFlowControl.Abort();
         }

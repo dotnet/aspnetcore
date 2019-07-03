@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private MessageBody _body;
         private HttpStreamState _state;
-        private Exception _error;
+        private ExceptionDispatchInfo _error;
 
         public HttpRequestPipeReader()
         {
@@ -99,7 +99,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_state != HttpStreamState.Closed)
             {
                 _state = HttpStreamState.Aborted;
-                _error = error;
+
+                if (error != null)
+                {
+                    _error = ExceptionDispatchInfo.Capture(error);
+                }
             }
         }
 
@@ -119,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_error != null)
                 {
-                    ExceptionDispatchInfo.Capture(_error).Throw();
+                    _error.Throw();
                 }
                 else
                 {

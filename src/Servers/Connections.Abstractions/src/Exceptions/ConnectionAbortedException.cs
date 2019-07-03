@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Connections
 {
@@ -10,11 +11,18 @@ namespace Microsoft.AspNetCore.Connections
 
         }
 
-        public ConnectionAbortedException(string message) : base(message)
+        public ConnectionAbortedException(string message)
+            : base(message)
         {
         }
 
-        public ConnectionAbortedException(string message, Exception inner) : base(message, inner)
+        public ConnectionAbortedException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+
+        public ConnectionAbortedException(string message, Exception inner, CancellationToken cancellationToken)
+            : base(message, inner, cancellationToken)
         {
         }
     }
