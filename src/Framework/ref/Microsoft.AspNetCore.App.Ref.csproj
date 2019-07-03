@@ -6,6 +6,8 @@
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
     <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <!-- Exclude this project from source build -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <PackageId>$(TargetingPackName)</PackageId>
     <VersionPrefix>$(TargetingPackVersionPrefix)</VersionPrefix>
 

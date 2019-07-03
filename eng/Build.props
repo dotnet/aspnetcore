@@ -154,8 +154,8 @@
                           $(RepoRoot)src\Analyzers\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
-                          " />
-        <DotNetProjects Remove="
+                          "
+                        Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
                           $(RepoRoot)**\node_modules\**\*;
