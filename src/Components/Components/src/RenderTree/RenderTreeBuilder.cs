@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -18,14 +17,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.
     /// </summary>
-    public class RenderTreeBuilder
+    public class RenderTreeBuilder : IDisposable
     {
         private readonly static object BoxedTrue = true;
         private readonly static object BoxedFalse = false;
         private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
         private readonly Renderer _renderer;
-        private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>(10);
+        private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>();
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
         private bool _hasSeenAddMultipleAttributes;
@@ -794,6 +793,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
             seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
+        }
+
+        public void Dispose()
+        {
+            _entries.Dispose();
         }
     }
 }

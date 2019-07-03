@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// and the intermediate states (such as the queue of components still to
     /// be rendered).
     /// </summary>
-    internal class RenderBatchBuilder
+    internal class RenderBatchBuilder : IDisposable
     {
         // Primary result data
         public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
@@ -20,8 +21,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ArrayBuilder<int> DisposedEventHandlerIds { get; } = new ArrayBuilder<int>();
 
         // Buffers referenced by UpdatedComponentDiffs
-        public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>();
-        public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>();
+        public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);
+        public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>(64);
 
         // State of render pipeline
         public Queue<RenderQueueEntry> ComponentRenderQueue { get; } = new Queue<RenderQueueEntry>();
@@ -56,5 +57,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ReferenceFramesBuffer.ToRange(),
                 DisposedComponentIds.ToRange(),
                 DisposedEventHandlerIds.ToRange());
+
+        public void Dispose()
+        {
+            EditsBuffer.Dispose();
+            ReferenceFramesBuffer.Dispose();
+            UpdatedComponentDiffs.Dispose();
+            DisposedComponentIds.Dispose();
+            DisposedEventHandlerIds.Dispose();
+        }
     }
 }

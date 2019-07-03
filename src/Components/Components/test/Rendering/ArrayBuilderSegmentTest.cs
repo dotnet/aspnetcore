@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void BasicPropertiesWork()
         {
             // Arrange: builder containing 1..5
-            var builder = new ArrayBuilder<int>();
+            using var builder = new ArrayBuilder<int>();
             builder.Append(new[] { 1, 2, 3, 4, 5 }, 0, 5);
 
             // Act: take segment containing 2..3
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void StillWorksAfterUnderlyingCapacityChange()
         {
             // Arrange: builder containing 1..8
-            var builder = new ArrayBuilder<int>(capacity: 10);
+            using var builder = new ArrayBuilder<int>(minCapacity: 10);
             builder.Append(new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, 0, 8);
             var originalBuffer = builder.Buffer;
 

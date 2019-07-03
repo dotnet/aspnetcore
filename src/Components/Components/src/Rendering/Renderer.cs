@@ -664,13 +664,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     try
                     {
-                        disposable.Dispose();
+                        componentState.Dispose();
                     }
                     catch (Exception exception)
                     {
                         HandleException(exception);
                     }
                 }
+
+                _batchBuilder.Dispose();
             }
         }
 
