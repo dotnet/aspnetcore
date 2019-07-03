@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Reflection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -15,17 +15,10 @@ namespace Microsoft.AspNetCore.Components
         private readonly static BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IDictionary<Type, Action<IComponent>> _cachedInitializers
-            = new ConcurrentDictionary<Type, Action<IComponent>>();
+        private readonly IDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers
+            = new ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>>();
 
-        public ComponentFactory(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider
-                ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        public IComponent InstantiateComponent(Type componentType)
+        public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
         {
             if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
@@ -34,11 +27,11 @@ namespace Microsoft.AspNetCore.Components
             }
 
             var instance = (IComponent)Activator.CreateInstance(componentType);
-            PerformPropertyInjection(instance);
+            PerformPropertyInjection(serviceProvider, instance);
             return instance;
         }
 
-        private void PerformPropertyInjection(IComponent instance)
+        private void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
         {
             // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
             // We might generate the initializer more than once for a given type, but would
@@ -50,10 +43,10 @@ namespace Microsoft.AspNetCore.Components
                 _cachedInitializers[instanceType] = initializer;
             }
 
-            initializer(instance);
+            initializer(serviceProvider, instance);
         }
 
-        private Action<IComponent> CreateInitializer(Type type)
+        private static Action<IServiceProvider, IComponent> CreateInitializer(Type type)
         {
             // Do all the reflection up front
             var injectableProperties =
@@ -68,19 +61,19 @@ namespace Microsoft.AspNetCore.Components
 
             // Return an action whose closure can write all the injected properties
             // without any further reflection calls (just typecasts)
-            return instance =>
+            return (serviceProvider, instance) =>
             {
-                foreach (var injectable in injectables)
+                foreach (var (propertyName, propertyType, setter) in injectables)
                 {
-                    var serviceInstance = _serviceProvider.GetService(injectable.propertyType);
+                    var serviceInstance = serviceProvider.GetService(propertyType);
                     if (serviceInstance == null)
                     {
                         throw new InvalidOperationException($"Cannot provide a value for property " +
-                            $"'{injectable.propertyName}' on type '{type.FullName}'. There is no " +
-                            $"registered service of type '{injectable.propertyType}'.");
+                            $"'{propertyName}' on type '{type.FullName}'. There is no " +
+                            $"registered service of type '{propertyType}'.");
                     }
 
-                    injectable.setter.SetValue(instance, serviceInstance);
+                    setter.SetValue(instance, serviceInstance);
                 }
             };
         }

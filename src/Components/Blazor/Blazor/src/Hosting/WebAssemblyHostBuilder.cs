@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         private void CreateServiceProvider()
         {
             var services = new ServiceCollection();
+            services.AddComponents();
             services.AddSingleton(_BrowserHostBuilderContext);
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
             services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);

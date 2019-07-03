@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     public abstract class Renderer : IDisposable
     {
         private readonly ComponentFactory _componentFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
@@ -57,7 +59,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         public Renderer(IServiceProvider serviceProvider)
         {
-            _componentFactory = new ComponentFactory(serviceProvider);
+            _componentFactory = serviceProvider.GetRequiredService<ComponentFactory>();
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => _componentFactory.InstantiateComponent(componentType);
+            => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
