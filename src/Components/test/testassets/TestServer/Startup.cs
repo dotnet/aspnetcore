@@ -72,14 +72,6 @@ namespace TestServer
                 });
             });
 
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapRazorPages();
-            });
-
             // Separately, mount a prerendered server-side Blazor app on /prerendered
             app.Map("/prerendered", subdirApp =>
             {
@@ -91,6 +83,14 @@ namespace TestServer
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
                 });
+            });
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
         }
     }
