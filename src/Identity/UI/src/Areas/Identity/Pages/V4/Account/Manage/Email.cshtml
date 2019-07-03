@@ -17,7 +17,9 @@
                 {
                     <div class="input-group">
                         <input asp-for="Email" class="form-control" disabled />
-                        <span class="input-group-addon" aria-hidden="true"><span class="glyphicon glyphicon-ok text-success"></span></span>
+                        <div class="input-group-append">
+                            <span class="input-group-text text-success font-weight-bold">✓</span>
+                        </div>
                     </div>
                 }
                  else
