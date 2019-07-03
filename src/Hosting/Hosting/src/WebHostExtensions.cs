@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="host"></param>
         /// <param name="timeout">The timeout for stopping gracefully. Once expired the
         /// server may terminate any remaining active connections.</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> that completes when the <see cref="IWebHost"/> stops.</returns>
         public static Task StopAsync(this IWebHost host, TimeSpan timeout)
         {
             return host.StopAsync(new CancellationTokenSource(timeout).Token);
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="host">The running <see cref="IWebHost"/>.</param>
         /// <param name="token">The token to trigger shutdown.</param>
+        /// <returns>A <see cref="Task"/> that completes when shutdown is triggered via Ctrl+C or SIGTERM.</returns>
         public static async Task WaitForShutdownAsync(this IWebHost host, CancellationToken token = default)
         {
             var done = new ManualResetEventSlim(false);
