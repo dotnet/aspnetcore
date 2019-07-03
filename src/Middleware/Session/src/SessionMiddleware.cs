@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Session
                 {
                     try
                     {
-                        await feature.Session.CommitAsync(context.RequestAborted);
+                        await feature.Session.CommitAsync();
                     }
                     catch (OperationCanceledException)
                     {
