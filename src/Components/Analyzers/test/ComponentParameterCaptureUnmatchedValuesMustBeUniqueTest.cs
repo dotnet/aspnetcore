@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureUnmatchedValues = false)] string MyProperty {{ get; set; }}
-            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = false)] public string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> MyOtherProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyProperty {{ get; set; }}
-            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> MyOtherProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
