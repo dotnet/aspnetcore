@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private bool _disposed;
         private EndPoint _endPoint;
 
-
         /// <summary>
         /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
         /// closing the connection without error.
