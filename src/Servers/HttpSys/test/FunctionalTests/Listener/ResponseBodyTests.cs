@@ -229,7 +229,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBodyWriteExceptions_ClientDisconnectsBeforeFirstWrite_WriteThrows()
         {
             string address;
@@ -250,23 +249,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
                 await disconnectCts.Task.WithTimeout();
 
-                Assert.Throws<IOException>(() =>
+                await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Write notices the disconnect.
                     for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
-                        context.Response.Body.Write(new byte[1000], 0, 1000);
+                        context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 });
 
-                Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[1000], 0, 1000));
+                Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length));
 
                 context.Dispose();
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBodyWriteExceptions_ClientDisconnectsBeforeFirstWriteAsync_WriteThrows()
         {
             string address;
@@ -291,18 +290,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     // It can take several tries before Write notices the disconnect.
                     for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
-                        await context.Response.Body.WriteAsync(new byte[1000], 0, 1000);
+                        await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 });
 
-                await Assert.ThrowsAsync<ObjectDisposedException>(() => context.Response.Body.WriteAsync(new byte[1000], 0, 1000));
+                await Assert.ThrowsAsync<ObjectDisposedException>(() => context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length));
 
                 context.Dispose();
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBody_ClientDisconnectsBeforeFirstWrite_WriteCompletesSilently()
         {
             string address;
@@ -324,14 +323,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
-                    context.Response.Body.Write(new byte[1000], 0, 1000);
+                    context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                 }
                 context.Dispose();
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBody_ClientDisconnectsBeforeFirstWriteAsync_WriteCompletesSilently()
         {
             string address;
@@ -352,14 +350,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
-                    await context.Response.Body.WriteAsync(new byte[1000], 0, 1000);
+                    await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                 }
                 context.Dispose();
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBodyWriteExceptions_ClientDisconnectsBeforeSecondWrite_WriteThrows()
         {
             string address;
@@ -386,12 +383,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     await disconnectCts.Task.WithTimeout();
                 }
 
-                Assert.Throws<IOException>(() =>
+                await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Write notices the disconnect.
                     for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
-                        context.Response.Body.Write(new byte[1000], 0, 1000);
+                        context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 });
                 context.Dispose();
@@ -399,7 +397,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBodyWriteExceptions_ClientDisconnectsBeforeSecondWriteAsync_WriteThrows()
         {
             string address;
@@ -430,7 +427,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     // It can take several tries before Write notices the disconnect.
                     for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
-                        await context.Response.Body.WriteAsync(new byte[1000], 0, 1000);
+                        await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 });
                 context.Dispose();
@@ -438,7 +436,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBody_ClientDisconnectsBeforeSecondWrite_WriteCompletesSilently()
         {
             string address;
@@ -467,14 +464,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
-                    context.Response.Body.Write(new byte[1000], 0, 1000);
+                    context.Response.Body.Write(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                 }
                 context.Dispose();
             }
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2729", FlakyOn.AzP.Windows)]
         public async Task ResponseBody_ClientDisconnectsBeforeSecondWriteAsync_WriteCompletesSilently()
         {
             string address;
@@ -502,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
-                    await context.Response.Body.WriteAsync(new byte[1000], 0, 1000);
+                    await context.Response.Body.WriteAsync(Utilities.WriteBuffer, 0, Utilities.WriteBuffer.Length);
                 }
                 context.Dispose();
             }
