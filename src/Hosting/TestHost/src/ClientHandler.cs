@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly Version V11 = new Version(1, 1);
-        private readonly Version V20 = new Version(2, 0);
-
         private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
@@ -73,7 +70,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 var req = context.Request;
 
-                if (request.Version == V20)
+                if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
                     req.Protocol = "HTTP/2";

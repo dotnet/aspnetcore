@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -15,9 +16,6 @@ namespace Microsoft.AspNetCore.TestHost
 {
     public class ResponseResetTests
     {
-        private readonly Version V11 = new Version(1, 1);
-        private readonly Version V2 = new Version(2, 0);
-
         [Fact]
         // Reset is only present for HTTP/2
         public async Task ResetFeature_Http11_Missing()
@@ -30,7 +28,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V11;
+            client.DefaultRequestVersion = HttpVersion.Version11;
             var response = await client.GetAsync("/");
             response.EnsureSuccessStatusCode();
         }
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V2;
+            client.DefaultRequestVersion = HttpVersion.Version20;
             var response = await client.GetAsync("/");
             response.EnsureSuccessStatusCode();
         }
@@ -65,7 +63,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V2;
+            client.DefaultRequestVersion = HttpVersion.Version20;
             var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/"));
             Assert.Equal("The application reset the request with error code 12345.", rex.Message);
             Assert.Equal(12345, rex.ErrorCode);
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V2;
+            client.DefaultRequestVersion = HttpVersion.Version20;
             var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
             Assert.Equal("The application reset the request with error code 12345.", rex.Message);
             Assert.Equal(12345, rex.ErrorCode);
@@ -106,7 +104,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V2;
+            client.DefaultRequestVersion = HttpVersion.Version20;
             var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            client.DefaultRequestVersion = V2;
+            client.DefaultRequestVersion = HttpVersion.Version20;
             var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
