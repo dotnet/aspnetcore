@@ -61,13 +61,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly IRetryPolicy _reconnectPolicy;
-        private readonly EndPoint _endPoint;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
         // Holds all mutable state other than user-defined handlers and settable properties.
         private readonly ReconnectingConnectionState _state;
 
         private bool _disposed;
+        private EndPoint _endPoint;
+
 
         /// <summary>
         /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -447,6 +448,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
             Log.Started(_logger);
+        }
+
+        public void UpdateUrl(string url)
+        {
+            if (!(_endPoint is UriEndPoint uriEndPoint))
+            {
+                throw new NotSupportedException($"The provided {nameof(EndPoint)} must be of type {nameof(UriEndPoint)}.");
+            }
+
+            uriEndPoint.Uri = new Uri(url);
+            _endPoint = uriEndPoint;
         }
 
         private ValueTask CloseAsync(ConnectionContext connection)
