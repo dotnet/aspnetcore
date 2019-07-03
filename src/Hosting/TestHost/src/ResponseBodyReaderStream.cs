@@ -80,6 +80,11 @@ namespace Microsoft.AspNetCore.TestHost
             using var registration = cancellationToken.Register(Cancel);
             var result = await _pipe.Reader.ReadAsync(cancellationToken);
 
+            if (result.IsCanceled)
+            {
+                throw new OperationCanceledException();
+            }
+
             if (result.Buffer.IsEmpty && result.IsCompleted)
             {
                 _pipe.Reader.Complete();
@@ -114,9 +119,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal void Cancel()
         {
-            _aborted = true;
-            _abortException = new OperationCanceledException();
-            _pipe.Writer.Complete(_abortException);
+            Abort(new OperationCanceledException());
         }
 
         internal void Abort(Exception innerException)
@@ -124,6 +127,8 @@ namespace Microsoft.AspNetCore.TestHost
             Contract.Requires(innerException != null);
             _aborted = true;
             _abortException = innerException;
+            _pipe.Reader.CancelPendingRead();
+            _pipe.Reader.Complete();
         }
 
         private void CheckAborted()

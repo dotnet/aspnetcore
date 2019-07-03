@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class HttpContextBuilder : IHttpBodyControlFeature
+    internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
     {
         private readonly ApplicationWrapper _application;
         private readonly bool _preserveExecutionContext;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly ResponseBodyReaderStream _responseReaderStream;
         private readonly ResponseBodyPipeWriter _responsePipeWriter;
         private readonly ResponseFeature _responseFeature;
-        private readonly RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
+        private readonly RequestLifetimeFeature _requestLifetimeFeature;
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
         private bool _returningResponse;
@@ -34,13 +35,14 @@ namespace Microsoft.AspNetCore.TestHost
             _preserveExecutionContext = preserveExecutionContext;
             _httpContext = new DefaultHttpContext();
             _responseFeature = new ResponseFeature(Abort);
+            _requestLifetimeFeature = new RequestLifetimeFeature(Abort);
 
             var request = _httpContext.Request;
             request.Protocol = "HTTP/1.1";
             request.Method = HttpMethods.Get;
 
             var pipe = new Pipe();
-            _responseReaderStream = new ResponseBodyReaderStream(pipe, AbortRequest, () => _responseReadCompleteCallback?.Invoke(_httpContext));
+            _responseReaderStream = new ResponseBodyReaderStream(pipe, ClientInitiatedAbort, () => _responseReadCompleteCallback?.Invoke(_httpContext));
             _responsePipeWriter = new ResponseBodyPipeWriter(pipe, ReturnResponseMessageAsync);
             _responseFeature.Body = new ResponseBodyWriterStream(_responsePipeWriter, () => AllowSynchronousIO);
             _responseFeature.BodySnapshot = _responseFeature.Body;
@@ -77,11 +79,17 @@ namespace Microsoft.AspNetCore.TestHost
         /// <returns></returns>
         internal Task<HttpContext> SendAsync(CancellationToken cancellationToken)
         {
-            var registration = cancellationToken.Register(AbortRequest);
+            var registration = cancellationToken.Register(ClientInitiatedAbort);
 
             // Everything inside this function happens in the SERVER's execution context (unless PreserveExecutionContext is true)
             async Task RunRequestAsync()
             {
+                // HTTP/2 specific features must be added after the request has been configured.
+                if (string.Equals("HTTP/2", _httpContext.Request.Protocol, StringComparison.OrdinalIgnoreCase))
+                {
+                    _httpContext.Features.Set<IHttpResetFeature>(this);
+                }
+
                 // This will configure IHttpContextAccessor so it needs to happen INSIDE this function,
                 // since we are now inside the Server's execution context. If it happens outside this cont
                 // it will be lost when we abandon the execution context.
@@ -120,13 +128,16 @@ namespace Microsoft.AspNetCore.TestHost
             return _responseTcs.Task;
         }
 
-        internal void AbortRequest()
+        // Triggered by request CancellationToken canceling or response stream Disposal.
+        internal void ClientInitiatedAbort()
         {
             if (!_pipelineFinished)
             {
-                _requestLifetimeFeature.Abort();
+                // We don't want to trigger the token for already completed responses.
+                _requestLifetimeFeature.Cancel();
             }
-            _responsePipeWriter.Complete();
+            // Writes will still succeed, the app will only get an error if they check the CT.
+            _responseReaderStream.Abort(new IOException("The client aborted the request."));
         }
 
         internal async Task CompleteResponseAsync()
@@ -178,10 +189,15 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal void Abort(Exception exception)
         {
-            _pipelineFinished = true;
             _responsePipeWriter.Abort(exception);
             _responseReaderStream.Abort(exception);
+            _requestLifetimeFeature.Cancel();
             _responseTcs.TrySetException(exception);
+        }
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            Abort(new HttpResetTestException(errorCode));
         }
     }
 }

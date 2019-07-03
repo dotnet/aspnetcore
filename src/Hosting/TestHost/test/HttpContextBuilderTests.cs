@@ -194,8 +194,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            var read = await readTask.WithTimeout();
-            Assert.Equal(0, read);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
             block.SetResult(0);
         }
 
@@ -313,19 +312,22 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task CallingAbortInsideHandlerShouldSetRequestAborted()
         {
+            var requestAborted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Run(context =>
                     {
+                        context.RequestAborted.Register(() => requestAborted.SetResult(0));
                         context.Abort();
                         return Task.CompletedTask;
                     });
                 });
             var server = new TestServer(builder);
 
-            var ctx = await server.SendAsync(c => { });
-            Assert.True(ctx.RequestAborted.IsCancellationRequested);
+            var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
+            Assert.Equal("The application aborted the request.", ex.Message);
+            await requestAborted.Task.WithTimeout();
         }
 
         private class VerifierLogger : ILogger<IWebHost>

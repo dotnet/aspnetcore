@@ -301,8 +301,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            var read = await readTask.WithTimeout();
-            Assert.Equal(0, read);
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
             block.SetResult(0);
         }
 
