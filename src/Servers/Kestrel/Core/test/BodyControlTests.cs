@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -26,9 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await response.WriteAsync(new byte[1], 0, 1);
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(() => request.ReadAsync(new byte[1], 0, 1)));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
         }
 
         [Fact]
@@ -45,13 +46,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, writeEx.Message);
 
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(() => request.ReadAsync(new byte[1], 0, 1)));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
 
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(() => upgrade.ReadAsync(new byte[1], 0, 1)));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
 
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
 
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
@@ -71,12 +72,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, writeEx.Message);
 
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(() => request.ReadAsync(new byte[1], 0, 1)));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
 
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(() => upgrade.ReadAsync(new byte[1], 0, 1)));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
             Assert.Same(ex,
-                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
+                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
 
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
@@ -92,17 +93,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await response.WriteAsync(new byte[1], 0, 1);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.AdvanceTo(new SequencePosition())));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.AdvanceTo(new SequencePosition()))).InnerException);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition())));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()))).InnerException);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.CancelPendingRead()));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.CancelPendingRead())).InnerException);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.TryRead(out var res)));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.TryRead(out var res))).InnerException);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.Complete()));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.Complete())).InnerException);
             Assert.Same(ex,
-                Assert.Throws<Exception>(() => requestPipe.OnWriterCompleted(null, null)));
+                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.OnWriterCompleted(null, null))).InnerException);
         }
 
         [Fact]
