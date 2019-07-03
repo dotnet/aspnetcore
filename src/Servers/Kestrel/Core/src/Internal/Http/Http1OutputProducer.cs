@@ -55,7 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // and append the end terminator.
 
         private bool _autoChunk;
-        private bool _suffixSent;
+
+        // We rely on the TimingPipeFlusher to give us ValueTasks that can be safely awaited multiple times.
+        private bool _writeStreamSuffixCalled;
+        private ValueTask<FlushResult> _writeStreamSuffixValueTask;
+
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
@@ -113,15 +117,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_suffixSent || !_autoChunk)
+                if (_writeStreamSuffixCalled)
                 {
-                    _suffixSent = true;
-                    return FlushAsync();
+                    // If WriteStreamSuffixAsync has already been called, no-op and return the previously returned ValueTask.
+                    return _writeStreamSuffixValueTask;
                 }
 
-                _suffixSent = true;
-                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                return WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                if (_autoChunk)
+                {
+                    var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                    _writeStreamSuffixValueTask = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                }
+                else if (_unflushedBytes > 0)
+                {
+                    _writeStreamSuffixValueTask = FlushAsync();
+                }
+                else
+                {
+                    _writeStreamSuffixValueTask = default;
+                }
+
+                _writeStreamSuffixCalled = true;
+                return _writeStreamSuffixValueTask;
             }
         }
 
@@ -510,7 +527,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
-            _suffixSent = false;
+            _writeStreamSuffixCalled = false;
+            _writeStreamSuffixValueTask = default;
             _currentChunkMemoryUpdated = false;
             _startCalled = false;
         }
@@ -701,7 +719,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [StackTraceHidden]
         private void ThrowIfSuffixSent()
         {
-            if (_suffixSent)
+            if (_writeStreamSuffixCalled)
             {
                 throw new InvalidOperationException("Writing is not allowed after writer was completed.");
             }
