@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop.Internal;
 using Xunit;
@@ -36,6 +37,69 @@ namespace Microsoft.JSInterop.Tests
                     Assert.Equal("[\"some other arg\"]", call.ArgsJson);
                     Assert.NotEqual(runtime.BeginInvokeCalls[0].AsyncHandle, call.AsyncHandle);
                 });
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.DefaultTimeout = TimeSpan.FromSeconds(1);
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
+
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CompletesSuccessfullyBeforeTimeout()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+            runtime.DefaultTimeout = TimeSpan.FromSeconds(10);
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
+            runtime.EndInvokeJS(2, succeeded: true, null);
+
+            // Assert
+            await task;
+        }
+
+        [Fact]
+        public async Task InvokeAsync_CancelsAsyncTasksWhenCancellationTokenFires()
+        {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            var runtime = new TestJSRuntime();
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
+
+            cts.Cancel();
+            
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        }
+
+        [Fact]
+        public async Task InvokeAsync_DoesNotStartWorkWhenCancellationHasBeenRequested()
+        {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+            var runtime = new TestJSRuntime();
+
+            // Act
+            var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
+
+            cts.Cancel();
+
+            // Assert
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+            Assert.Empty(runtime.BeginInvokeCalls);
         }
 
         [Fact]
@@ -115,21 +179,19 @@ namespace Microsoft.JSInterop.Tests
         }
 
         [Fact]
-        public void CannotCompleteSameAsyncCallMoreThanOnce()
+        public async Task CompletingSameAsyncCallMoreThanOnce_IgnoresSecondResultAsync()
         {
             // Arrange
             var runtime = new TestJSRuntime();
 
             // Act/Assert
-            runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
+            var task = runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
             var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
-            runtime.OnEndInvoke(asyncHandle, true, null);
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                // Second "end invoke" will fail
-                runtime.OnEndInvoke(asyncHandle, true, null);
-            });
-            Assert.Equal($"There is no pending task with handle '{asyncHandle}'.", ex.Message);
+            runtime.OnEndInvoke(asyncHandle, true, new JSAsyncCallResult(JsonDocument.Parse("{}"), JsonDocument.Parse("{\"Message\": \"Some data\"}").RootElement.GetProperty("Message")));
+            runtime.OnEndInvoke(asyncHandle, false, new JSAsyncCallResult(null, JsonDocument.Parse("{\"Message\": \"Exception\"}").RootElement.GetProperty("Message")));
+
+            var result = await task;
+            Assert.Equal("Some data", result);
         }
 
         [Fact]
@@ -168,15 +230,67 @@ namespace Microsoft.JSInterop.Tests
             Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(4));
         }
 
+        [Fact]
+        public void CanSanitizeDotNetInteropExceptions()
+        {
+            // Arrange
+            var expectedMessage = "An error ocurred while invoking '[Assembly]::Method'. Swapping to 'Development' environment will " +
+                "display more detailed information about the error that occurred.";
+
+            string GetMessage(string assembly, string method) => $"An error ocurred while invoking '[{assembly}]::{method}'. Swapping to 'Development' environment will " +
+                "display more detailed information about the error that occurred.";
+
+            var runtime = new TestJSRuntime()
+            {
+                OnDotNetException = (e, a, m) => new JSError { Message = GetMessage(a, m) }
+            };
+
+            var exception = new Exception("Some really sensitive data in here");
+
+            // Act
+            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method");
+
+            // Assert
+            var call = runtime.BeginInvokeCalls.Single();
+            Assert.Equal(0, call.AsyncHandle);
+            Assert.Equal("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", call.Identifier);
+            Assert.Equal($"[\"0\",false,{{\"message\":\"{expectedMessage.Replace("'", "\\u0027")}\"}}]", call.ArgsJson);
+        }
+
+        private class JSError
+        {
+            public string Message { get; set; }
+        }
+
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
+
+            public TimeSpan? DefaultTimeout
+            {
+                set
+                {
+                    base.DefaultAsyncTimeout = value;
+                }
+            }
 
             public class BeginInvokeAsyncArgs
             {
                 public long AsyncHandle { get; set; }
                 public string Identifier { get; set; }
                 public string ArgsJson { get; set; }
+            }
+
+            public Func<Exception, string, string, object> OnDotNetException { get; set; }
+
+            protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodName)
+            {
+                if (OnDotNetException != null)
+                {
+                    return OnDotNetException(exception, assemblyName, methodName);
+                }
+
+                return base.OnDotNetInvocationException(exception, assemblyName, methodName);
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
