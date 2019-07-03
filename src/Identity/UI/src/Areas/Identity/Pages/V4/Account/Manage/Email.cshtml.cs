@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnPostChangeEmailAsync() => throw new NotImplementedException();
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
             return Page();
         }
 
-        public override async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostChangeEmailAsync()
         {
             if (!ModelState.IsValid)
             {
