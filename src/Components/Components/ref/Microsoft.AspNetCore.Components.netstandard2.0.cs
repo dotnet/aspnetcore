@@ -54,22 +54,6 @@ namespace Microsoft.AspNetCore.Components
         public static string GetEventHandlerValue<T>(string value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
         public static string GetValue(System.DateTime value, string format) { throw null; }
         public static T GetValue<T>(T value) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<bool> setter, bool existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<System.DateTime> setter, System.DateTime existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<System.DateTime> setter, System.DateTime existingValue, string format) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<decimal> setter, decimal existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<double> setter, double existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<int> setter, int existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<long> setter, long existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<bool?> setter, bool? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<decimal?> setter, decimal? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<double?> setter, double? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<int?> setter, int? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<long?> setter, long? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float?> setter, float? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float> setter, float existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<string> setter, string existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler<T>(System.Action<T> setter, T existingValue) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
