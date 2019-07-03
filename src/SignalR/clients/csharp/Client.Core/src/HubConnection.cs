@@ -454,11 +454,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             if (!(_endPoint is UriEndPoint uriEndPoint))
             {
-                throw new NotSupportedException($"The provided {nameof(EndPoint)} must be of type {nameof(UriEndPoint)}.");
+                // If we don't have a UriEndpoint here then we aren't using http and users shouldn't be
+                // calling update url. How should we message this effectively
+                throw new NotSupportedException($"Some message about http.");
             }
 
-            uriEndPoint.Uri = new Uri(url);
-            _endPoint = uriEndPoint;
+            _endPoint = new UriEndPoint(new Uri(url));
         }
 
         private ValueTask CloseAsync(ConnectionContext connection)
