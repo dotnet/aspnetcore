@@ -493,7 +493,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void PoisonRequestBodyStream(Exception abortReason)
+        protected void PoisonRequestBodyStream(ConnectionAbortedException abortReason)
+        {
+            _bodyControl?.Abort(abortReason);
+        }
+
+        protected void PoisonRequestBodyStream(IOException abortReason)
         {
             _bodyControl?.Abort(abortReason);
         }

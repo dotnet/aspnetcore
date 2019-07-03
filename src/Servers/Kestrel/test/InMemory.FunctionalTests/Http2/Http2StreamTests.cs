@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_SingleDataFrameOverSize_Reset()
         {
-            Exception thrownEx = null;
+            IOException thrownEx = null;
 
             var headers = new[]
             {
@@ -820,7 +820,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                thrownEx = await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -838,13 +838,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.NotNull(thrownEx);
             Assert.Equal(expectedError.Message, thrownEx.InnerException.Message);
-            Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
+            Assert.IsType<IOException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_SingleDataFrameUnderSize_Reset()
         {
-            ConnectionAbortedException thrownEx = null;
+            IOException thrownEx = null;
 
             var headers = new[]
             {
@@ -855,7 +855,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                thrownEx = await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -873,13 +873,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.NotNull(thrownEx);
             Assert.Equal(expectedError.Message, thrownEx.Message);
-            Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
+            Assert.IsType<IOException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
-            ConnectionAbortedException thrownEx = null;
+            IOException thrownEx = null;
 
             var headers = new[]
             {
@@ -890,7 +890,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                thrownEx = await Assert.ThrowsAsync<ConnectionAbortedException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -909,13 +909,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.NotNull(thrownEx);
             Assert.Equal(expectedError.Message, thrownEx.Message);
-            Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
+            Assert.IsType<IOException>(thrownEx.InnerException);
         }
 
         [Fact]
         public async Task ContentLength_Received_MultipleDataFramesUnderSize_Reset()
         {
-            Exception thrownEx = null;
+            IOException thrownEx = null;
 
             var headers = new[]
             {
@@ -926,7 +926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                thrownEx = await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                thrownEx = await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     var buffer = new byte[100];
                     while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
@@ -944,8 +944,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var expectedError = new Http2StreamErrorException(1, CoreStrings.Http2StreamErrorLessDataThanLength, Http2ErrorCode.PROTOCOL_ERROR);
 
             Assert.NotNull(thrownEx);
-            Assert.Equal(expectedError.Message, thrownEx.InnerException.Message);
-            Assert.IsType<ConnectionAbortedException>(thrownEx.InnerException);
+            Assert.Equal(expectedError.Message, thrownEx.Message);
+            Assert.IsType<IOException>(thrownEx.InnerException);
         }
 
         [Fact]
@@ -2211,7 +2211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
                 }
-                catch (TaskCanceledException ex) when (ex.InnerException is ConnectionAbortedException)// Expected failure
+                catch (IOException) // Expected failure
                 {
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -2254,7 +2254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     _runningStreams[streamIdFeature.StreamId].TrySetException(new Exception("ReadAsync was expected to throw."));
                 }
-                catch (TaskCanceledException ex) when (ex.InnerException is ConnectionAbortedException) // Expected failure
+                catch (IOException) // Expected failure
                 {
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 

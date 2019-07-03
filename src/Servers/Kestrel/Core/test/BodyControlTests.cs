@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,94 +17,160 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class BodyControlTests
     {
+        private delegate void AbortAction<TException>(BodyControl bodyControl, TException exception) where TException : Exception;
+
+        private readonly static AbortAction<ConnectionAbortedException> abortConnectionAbortedException = (bc, e) => bc.Abort(e);
+        private readonly static AbortAction<IOException> abortIOException = (bc, e) => bc.Abort(e);
+
         [Fact]
-        public async Task BodyControlThrowAfterAbort()
+        public async Task BodyControlThrowAfterAbort_ConnectionAbortedException()
+        {
+            var ex = new ConnectionAbortedException("My error");
+
+            await BodyControlThrowAfterAbort(ex, abortConnectionAbortedException);
+        }
+
+        [Fact]
+        public async Task BodyControlThrowAfterAbort_IOException()
+        {
+            var ex = new IOException("My error");
+
+            await BodyControlThrowAfterAbort(ex, abortIOException);
+        }
+
+        private static async Task BodyControlThrowAfterAbort<TException>(TException exception, AbortAction<TException> abortAction)
+            where TException : Exception
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
             var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
-            var ex = new Exception("My error");
-            bodyControl.Abort(ex);
+            abortAction(bodyControl, exception);
 
             await response.WriteAsync(new byte[1], 0, 1);
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(async () => await requestPipe.ReadAsync())).InnerException);
         }
 
         [Fact]
-        public async Task BodyControlThrowOnAbortAfterUpgrade()
+        public async Task BodyControlThrowOnAbortAfterUpgrade_ConnectionAbortedException()
+        {
+            var ex = new ConnectionAbortedException("My error");
+
+            await BodyControlThrowOnAbortAfterUpgrade(ex, abortConnectionAbortedException);
+        }
+
+        [Fact]
+        public async Task BodyControlThrowOnAbortAfterUpgrade_IOException()
+        {
+            var ex = new IOException("My error");
+
+            await BodyControlThrowOnAbortAfterUpgrade(ex, abortIOException);
+        }
+
+        private async Task BodyControlThrowOnAbortAfterUpgrade<TException>(TException exception, AbortAction<TException> abortAction)
+            where TException : Exception
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
             var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = bodyControl.Upgrade();
-            var ex = new Exception("My error");
-            bodyControl.Abort(ex);
+            abortAction(bodyControl, exception);
 
             var writeEx = await Assert.ThrowsAsync<InvalidOperationException>(() => response.WriteAsync(new byte[1], 0, 1));
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, writeEx.Message);
 
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
 
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
 
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(async () => await requestPipe.ReadAsync())).InnerException);
 
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
 
         [Fact]
-        public async Task BodyControlThrowOnUpgradeAfterAbort()
+        public async Task BodyControlThrowOnUpgradeAfterAbort_ConnectionAbortedException()
+        {
+            var ex = new ConnectionAbortedException("My error");
+
+            await BodyControlThrowOnUpgradeAfterAbort(ex, abortConnectionAbortedException);
+        }
+
+        [Fact]
+        public async Task BodyControlThrowOnUpgradeAfterAbort_IOException()
+        {
+            var ex = new IOException("My error");
+
+            await BodyControlThrowOnUpgradeAfterAbort(ex, abortIOException);
+        }
+
+        private async Task BodyControlThrowOnUpgradeAfterAbort<TException>(TException exception, AbortAction<TException> abortAction)
+            where TException : Exception
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
 
             var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
-            var ex = new Exception("My error");
-            bodyControl.Abort(ex);
+            abortAction(bodyControl, exception);
 
             var upgrade = bodyControl.Upgrade();
 
             var writeEx = await Assert.ThrowsAsync<InvalidOperationException>(() => response.WriteAsync(new byte[1], 0, 1));
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, writeEx.Message);
 
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(() => request.ReadAsync(new byte[1], 0, 1))).InnerException);
 
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
-            Assert.Same(ex,
-                (await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await requestPipe.ReadAsync())).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(() => upgrade.ReadAsync(new byte[1], 0, 1))).InnerException);
+            Assert.Same(exception,
+                (await Assert.ThrowsAsync<TException>(async () => await requestPipe.ReadAsync())).InnerException);
 
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
 
+
         [Fact]
-        public async Task RequestPipeMethodsThrowAfterAbort()
+        public async Task RequestPipeMethodsThrowAfterAbort_ConnectionAbortedException()
+        {
+            var ex = new ConnectionAbortedException("My error");
+
+            await RequestPipeMethodsThrowAfterAbort(ex, abortConnectionAbortedException);
+        }
+
+        [Fact]
+        public async Task RequestPipeMethodsThrowAfterAbort_IOException()
+        {
+            var ex = new IOException("My error");
+
+            await RequestPipeMethodsThrowAfterAbort(ex, abortIOException);
+        }
+
+        private async Task RequestPipeMethodsThrowAfterAbort<TException>(TException exception, AbortAction<TException> abortAction)
+            where TException : Exception
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
 
             var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
-            var ex = new Exception("My error");
-            bodyControl.Abort(ex);
+            abortAction(bodyControl, exception);
 
             await response.WriteAsync(new byte[1], 0, 1);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.AdvanceTo(new SequencePosition()))).InnerException);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()))).InnerException);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.CancelPendingRead())).InnerException);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.TryRead(out var res))).InnerException);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.Complete())).InnerException);
-            Assert.Same(ex,
-                (Assert.Throws<ConnectionAbortedException>(() => requestPipe.OnWriterCompleted(null, null))).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.AdvanceTo(new SequencePosition()))).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()))).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.CancelPendingRead())).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.TryRead(out var res))).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.Complete())).InnerException);
+            Assert.Same(exception,
+                (Assert.Throws<TException>(() => requestPipe.OnWriterCompleted(null, null))).InnerException);
         }
 
         [Fact]

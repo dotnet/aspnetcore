@@ -71,7 +71,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return _responseWriter.StopAcceptingWritesAsync();
         }
 
-        public void Abort(Exception error)
+        public void Abort(IOException error)
+        {
+            _requestReader.Abort(new IOException(error.Message, error));
+            _emptyRequestReader.Abort(new IOException(error.Message, error));
+            _responseWriter.Abort();
+        }
+
+        public void Abort(ConnectionAbortedException error)
         {
             _requestReader.Abort(new ConnectionAbortedException(error.Message, error));
             _emptyRequestReader.Abort(new ConnectionAbortedException(error.Message, error));

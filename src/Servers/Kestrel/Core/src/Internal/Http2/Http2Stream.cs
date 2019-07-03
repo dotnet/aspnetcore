@@ -433,7 +433,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return;
             }
 
-            AbortCore(abortReason);
+            AbortCore();
+
+            // Unblock the request body.
+            PoisonRequestBodyStream(new IOException(abortReason.Message, abortReason));
+            RequestBodyPipe.Writer.Complete(new IOException(abortReason.Message, abortReason));
+
+            _inputFlowControl.Abort();
         }
 
         protected override void OnErrorAfterResponseStarted()
@@ -464,22 +470,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Don't block on IO. This never faults.
             _ = _http2Output.WriteRstStreamAsync(error);
 
-            AbortCore(abortReason);
-        }
-
-        private void AbortCore(Exception abortReason)
-        {
-            // Call _http2Output.Stop() prior to poisoning the request body stream or pipe to
-            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http2Output.Stop();
-
-            AbortRequest();
+            AbortCore();
 
             // Unblock the request body.
             PoisonRequestBodyStream(new ConnectionAbortedException(abortReason.Message, abortReason));
             RequestBodyPipe.Writer.Complete(new ConnectionAbortedException(abortReason.Message, abortReason));
 
             _inputFlowControl.Abort();
+        }
+
+        private void AbortCore()
+        {
+            // Call _http2Output.Stop() prior to poisoning the request body stream or pipe to
+            // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
+            _http2Output.Stop();
+
+            AbortRequest();
         }
 
         private Pipe CreateRequestBodyPipe(uint windowSize)
