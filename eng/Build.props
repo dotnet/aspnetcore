@@ -122,9 +122,11 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
 
-        <!-- Tool projects except FirstRunCertGenerator are not neede in source build -->
+        <!-- Source build: Exclude Tool projects except FirstRunCertGenerator -->
+        <!-- Source build: Exclude AspNetCore.App.Ref project -->
         <ProjectToExclude Condition="'$(DotNetBuildFromSource)' == 'true'"
-                          Include="$(RepoRoot)src\Tools\**\*.*proj"
+                          Include="$(RepoRoot)src\Tools\**\*.*proj;
+                                  $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
                           Exclude="$(RepoRoot)src\Tools\FirstRunCertGenerator\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"/>
 
         <DotNetProjects Include="
