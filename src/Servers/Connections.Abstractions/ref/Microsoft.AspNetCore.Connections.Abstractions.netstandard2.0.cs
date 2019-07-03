@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Connections
         public ConnectionAbortedException() { }
         public ConnectionAbortedException(string message) { }
         public ConnectionAbortedException(string message, System.Exception inner) { }
+        public ConnectionAbortedException(string message, System.Exception inner, System.Threading.CancellationToken cancellationToken) { }
     }
     public partial class ConnectionBuilder : Microsoft.AspNetCore.Connections.IConnectionBuilder
     {
