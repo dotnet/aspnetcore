@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         internal ValidationStateChangedEventArgs() { }
     }
 }
-namespace Microsoft.AspNetCore.Components.Layouts
+namespace Microsoft.AspNetCore.Components
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public partial class LayoutAttribute : System.Attribute

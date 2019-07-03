@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static class LayoutAttribute
         {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.Layouts.LayoutAttribute";
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.LayoutAttribute";
         }
 
         public static class InjectAttribute
