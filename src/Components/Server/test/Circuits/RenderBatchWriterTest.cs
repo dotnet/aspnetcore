@@ -152,11 +152,13 @@ namespace Microsoft.AspNetCore.Components.Server
                 RenderTreeEdit.UpdateMarkup(108, 109),
                 RenderTreeEdit.RemoveAttribute(110, "Some removed attribute"), // To test deduplication
             };
+            var editsBuilder = new ArrayBuilder<RenderTreeEdit>();
+            editsBuilder.Append(edits, 0, edits.Length);
+            var editsSegment = editsBuilder.ToSegment(1, edits.Length); // Skip first to show offset is respected
             var bytes = Serialize(new RenderBatch(
                 new ArrayRange<RenderTreeDiff>(new[]
                 {
-                    new RenderTreeDiff(123, new ArraySegment<RenderTreeEdit>(
-                        edits, 1, edits.Length - 1)) // Skip first to show offset is respected
+                    new RenderTreeDiff(123, editsSegment) 
                 }, 1),
                 default,
                 default,
