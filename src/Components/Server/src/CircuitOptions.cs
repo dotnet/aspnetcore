@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// sensitive information to untrusted parties.
         /// </remarks>
         /// <value>Defaults to <c>false</c>.</value>
-        public bool DotNetInteropExceptionDetails { get; set; }
+        public bool JSInteropDetailedErrors { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates how long the server will wait before timing out an asynchronous JavaScript function invocation.
@@ -63,6 +63,6 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <value>
         /// Defaults to <c>1 minute</c>.
         /// </value>
-        public TimeSpan DefaultAsyncJavaScriptInteropCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
+        public TimeSpan JSInteropDefaultCallTimeout { get; set; } = TimeSpan.FromMinutes(1);
     }
 }

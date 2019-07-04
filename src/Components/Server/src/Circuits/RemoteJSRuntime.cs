@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RemoteJSRuntime(IOptions<CircuitOptions> options)
         {
             _options = options.Value;
-            DefaultAsyncTimeout = _options.DefaultAsyncJavaScriptInteropCallTimeout;
+            DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)
@@ -27,13 +27,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier)
         {
 
-            if (_options.DotNetInteropExceptionDetails)
+            if (_options.JSInteropDetailedErrors)
             {
                 return base.OnDotNetInvocationException(exception, assemblyName, methodIdentifier);
             }
 
-            var message = $"There was an exception '{exception.GetType().Name}' invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
-                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DotNetInteropExceptionDetails)}'";
+            var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
+                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.JSInteropDetailedErrors)}'";
 
             return message;
         }

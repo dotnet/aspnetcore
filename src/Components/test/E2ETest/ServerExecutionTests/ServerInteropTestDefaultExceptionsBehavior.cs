@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
 
             string GetExpectedMessage(string method) =>
-                $"\"There was an exception 'InvalidOperationException' invoking '{method}' on assembly 'BasicTestApp'. For more details turn on " +
-                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DotNetInteropExceptionDetails)}'\"";
+                $"\"There was an exception invoking '{method}' on assembly 'BasicTestApp'. For more details turn on " +
+                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.JSInteropDetailedErrors)}'\"";
         }
     }
 }

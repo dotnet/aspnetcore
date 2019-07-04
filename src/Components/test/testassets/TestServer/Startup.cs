@@ -29,7 +29,7 @@ namespace TestServer
                 .AddCircuitOptions(o =>
                 {
                     var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
-                    o.DotNetInteropExceptionDetails = detailedErrors;
+                    o.JSInteropDetailedErrors = detailedErrors;
                 });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 

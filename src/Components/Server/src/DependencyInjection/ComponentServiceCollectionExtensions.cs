@@ -78,9 +78,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IComponentContext, RemoteComponentContext>();
             services.AddScoped<AuthenticationStateProvider, FixedAuthenticationStateProvider>();
 
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
+
             if (configure != null)
             {
-                services.Configure<CircuitOptions>(configure);
+                services.Configure(configure);
             }
 
             return builder;
