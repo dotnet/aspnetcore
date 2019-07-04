@@ -504,6 +504,10 @@
             {
               "Name": "serverName",
               "Type": "System.String"
+            },
+            {
+              "Name": "extraArgs",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
             }
           ],
           "ReturnType": "System.Void",
@@ -515,25 +519,6 @@
         {
           "Kind": "Method",
           "Name": "UseReactDevelopmentServer",
-          "Parameters": [
-            {
-              "Name": "spaBuilder",
-              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
-            },
-            {
-              "Name": "npmScript",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "UseVueDevelopmentServer",
           "Parameters": [
             {
               "Name": "spaBuilder",

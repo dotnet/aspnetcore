@@ -63,18 +63,17 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
         }
 
         private static async Task<int> StartDevServerAsync(
-            string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger)
+            string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger, IDictionary<string, string> extraArgs)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting {serverName} server on port {portNumber}...");
 
             var envVars = new Dictionary<string, string>
             {
-                { "PORT", portNumber.ToString() },
-                { "BROWSER", "none" }, // We don't want the dev server to open its own extra browser window pointing to the internal dev server port
+                { "PORT", portNumber.ToString() }
             };
             var npmScriptRunner = new NpmScriptRunner(
-                sourcePath, npmScriptName, null, envVars);
+                sourcePath, npmScriptName, null, envVars.Union(extraArgs));
             npmScriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
@@ -22,12 +22,11 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
         /// <param name="npmScript">The name of the script in your package.json file that launches the create-react-app server.</param>
-        [Obsolete("Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer is deprecated, please use Microsoft.AspNetCore.SpaServices.DevelopmentServer.DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer instead.")]
         public static void UseReactDevelopmentServer(
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
-            DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer(spaBuilder, npmScript);
+            DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer(spaBuilder, npmScript, "Starting the development server", "create-react-app");
         }
     }
 }
