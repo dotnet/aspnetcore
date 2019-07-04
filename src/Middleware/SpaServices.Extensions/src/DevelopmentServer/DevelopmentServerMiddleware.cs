@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SpaServices.Util;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SpaServices.Extensions.Util;
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
         }
 
         private static async Task<int> StartDevServerAsync(
-            string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger, IDictionary<string, string> extraArgs)
+            string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger, Dictionary<string, string> extraArgs = null)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting {serverName} server on port {portNumber}...");
@@ -72,8 +73,17 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             {
                 { "PORT", portNumber.ToString() }
             };
+            if (extraArgs == null)
+            {
+                extraArgs = new Dictionary<string, string>
+                {
+                    { "BROWSER", "None" }
+                };
+            }
+            var extraKeys = new HashSet<string>(extraArgs.Keys);
+            extraKeys.UnionWith(envVars.Keys);
             var npmScriptRunner = new NpmScriptRunner(
-                sourcePath, npmScriptName, null, envVars.Union(extraArgs));
+                sourcePath, npmScriptName, null, envVars);
             npmScriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
