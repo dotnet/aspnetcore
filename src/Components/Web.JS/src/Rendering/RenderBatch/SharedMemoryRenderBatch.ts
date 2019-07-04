@@ -69,7 +69,7 @@ const arrayRangeReader = {
 const arrayBuilderSegmentReader = {
   structLength: 12,
   values: <T>(arrayBuilderSegment: ArrayBuilderSegment<T>) => {
-    // Evaluate arraySegment->_builder->array, i.e., two deferences needed
+    // Evaluate arraySegment->_builder->array, i.e., two dereferences needed
     const builder = platform.readObjectField<System_Object>(arrayBuilderSegment as any, 0);
     const builderFieldsAddress = platform.getObjectFieldsBaseAddress(builder);
     return platform.readObjectField<System_Array<T>>(builderFieldsAddress, 0) as any as ArrayValues<T>;
