@@ -49,7 +49,7 @@ export class SharedMemoryRenderBatch implements RenderBatch {
 
   arrayRangeReader = arrayRangeReader;
 
-  arraySegmentReader = arraySegmentReader;
+  arrayBuilderSegmentReader = arrayBuilderSegmentReader;
 
   diffReader = diffReader;
 
@@ -66,7 +66,7 @@ const arrayRangeReader = {
 };
 
 // Keep in sync with memory layout in ArraySegment
-const arraySegmentReader = {
+const arrayBuilderSegmentReader = {
   structLength: 12,
   values: <T>(arraySegment: ArraySegment<T>) => {
     // Evaluate arraySegment->_builder->array, i.e., two deferences needed
@@ -80,7 +80,7 @@ const arraySegmentReader = {
 
 // Keep in sync with memory layout in RenderTreeDiff.cs
 const diffReader = {
-  structLength: 4 + arraySegmentReader.structLength,
+  structLength: 4 + arrayBuilderSegmentReader.structLength,
   componentId: (diff: RenderTreeDiff) => platform.readInt32Field(diff as any, 0),
   edits: (diff: RenderTreeDiff) => platform.readStructField<Pointer>(diff as any, 4) as any as ArraySegment<RenderTreeEdit>,
   editsEntry: (values: ArrayValues<RenderTreeEdit>, index: number) => arrayValuesEntry(values, index, editReader.structLength),

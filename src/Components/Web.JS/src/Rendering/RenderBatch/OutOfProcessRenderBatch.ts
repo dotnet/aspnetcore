@@ -1,4 +1,4 @@
-import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArraySegmentReader, ArraySegment } from './RenderBatch';
+import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArrayBuilderSegmentReader, ArraySegment } from './RenderBatch';
 import { decodeUtf8 } from './Utf8Decoder';
 
 const updatedComponentsEntryLength = 4; // Each is a single int32 giving the location of the data
@@ -13,7 +13,7 @@ export class OutOfProcessRenderBatch implements RenderBatch {
     const stringReader = new OutOfProcessStringReader(batchData);
 
     this.arrayRangeReader = new OutOfProcessArrayRangeReader(batchData);
-    this.arraySegmentReader = new OutOfProcessArraySegmentReader(batchData);
+    this.arrayBuilderSegmentReader = new OutOfProcessArrayBuilderSegmentReader(batchData);
     this.diffReader = new OutOfProcessRenderTreeDiffReader(batchData);
     this.editReader = new OutOfProcessRenderTreeEditReader(batchData, stringReader);
     this.frameReader = new OutOfProcessRenderTreeFrameReader(batchData, stringReader);
@@ -62,7 +62,7 @@ export class OutOfProcessRenderBatch implements RenderBatch {
 
   arrayRangeReader: ArrayRangeReader;
 
-  arraySegmentReader: ArraySegmentReader;
+  arrayBuilderSegmentReader: ArrayBuilderSegmentReader;
 }
 
 class OutOfProcessRenderTreeDiffReader implements RenderTreeDiffReader {
@@ -207,7 +207,7 @@ class OutOfProcessArrayRangeReader implements ArrayRangeReader {
   }
 }
 
-class OutOfProcessArraySegmentReader implements ArraySegmentReader {
+class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader {
   constructor(private batchDataUint8: Uint8Array) {
   }
 

@@ -13,7 +13,7 @@ export interface RenderBatch {
   editReader: RenderTreeEditReader;
   frameReader: RenderTreeFrameReader;
   arrayRangeReader: ArrayRangeReader;
-  arraySegmentReader: ArraySegmentReader;
+  arrayBuilderSegmentReader: ArrayBuilderSegmentReader;
 }
 
 export interface ArrayRangeReader {
@@ -21,7 +21,7 @@ export interface ArrayRangeReader {
   values<T>(arrayRange: ArrayRange<T>): ArrayValues<T>;
 }
 
-export interface ArraySegmentReader {
+export interface ArrayBuilderSegmentReader {
   offset<T>(arraySegment: ArraySegment<T>): number;
   count<T>(arraySegment: ArraySegment<T>): number;
   values<T>(arraySegment: ArraySegment<T>): ArrayValues<T>;

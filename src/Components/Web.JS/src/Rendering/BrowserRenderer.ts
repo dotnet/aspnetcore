@@ -76,12 +76,12 @@ export class BrowserRenderer {
     let childIndexAtCurrentDepth = childIndex;
     let permutationList: PermutationListEntry[] | undefined;
 
-    const arraySegmentReader = batch.arraySegmentReader;
+    const arrayBuilderSegmentReader = batch.arrayBuilderSegmentReader;
     const editReader = batch.editReader;
     const frameReader = batch.frameReader;
-    const editsValues = arraySegmentReader.values(edits);
-    const editsOffset = arraySegmentReader.offset(edits);
-    const editsLength = arraySegmentReader.count(edits);
+    const editsValues = arrayBuilderSegmentReader.values(edits);
+    const editsOffset = arrayBuilderSegmentReader.offset(edits);
+    const editsLength = arrayBuilderSegmentReader.count(edits);
     const maxEditIndexExcl = editsOffset + editsLength;
 
     for (let editIndex = editsOffset; editIndex < maxEditIndexExcl; editIndex++) {
