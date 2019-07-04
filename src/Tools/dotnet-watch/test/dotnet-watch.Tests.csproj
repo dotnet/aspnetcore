@@ -28,13 +28,15 @@
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
 
-  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build">
+  <!-- Do not publish in source build -->
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
   </Target>
 
-  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish">
+  <!-- Do not publish in source build -->
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />

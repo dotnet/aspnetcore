@@ -7,6 +7,8 @@
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <PackAsTool>true</PackAsTool>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- This tool should not be built in source build -->
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
