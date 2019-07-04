@@ -1,5 +1,5 @@
 import { platform } from '../../Environment';
-import { RenderBatch, ArrayRange, ArrayRangeReader, ArraySegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
+import { RenderBatch, ArrayRange, ArrayRangeReader, ArrayBuilderSegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
 import { Pointer, System_Array, System_Object } from '../../Platform/Platform';
 
 // Used when running on Mono WebAssembly for shared-memory interop. The code here encapsulates
@@ -68,21 +68,21 @@ const arrayRangeReader = {
 // Keep in sync with memory layout in ArraySegment
 const arrayBuilderSegmentReader = {
   structLength: 12,
-  values: <T>(arraySegment: ArraySegment<T>) => {
+  values: <T>(arrayBuilderSegment: ArrayBuilderSegment<T>) => {
     // Evaluate arraySegment->_builder->array, i.e., two deferences needed
-    const builder = platform.readObjectField<System_Object>(arraySegment as any, 0);
+    const builder = platform.readObjectField<System_Object>(arrayBuilderSegment as any, 0);
     const builderFieldsAddress = platform.getObjectFieldsBaseAddress(builder);
     return platform.readObjectField<System_Array<T>>(builderFieldsAddress, 0) as any as ArrayValues<T>;
   },
-  offset: <T>(arraySegment: ArraySegment<T>) => platform.readInt32Field(arraySegment as any, 4),
-  count: <T>(arraySegment: ArraySegment<T>) => platform.readInt32Field(arraySegment as any, 8),
+  offset: <T>(arrayBuilderSegment: ArrayBuilderSegment<T>) => platform.readInt32Field(arrayBuilderSegment as any, 4),
+  count: <T>(arrayBuilderSegment: ArrayBuilderSegment<T>) => platform.readInt32Field(arrayBuilderSegment as any, 8),
 };
 
 // Keep in sync with memory layout in RenderTreeDiff.cs
 const diffReader = {
   structLength: 4 + arrayBuilderSegmentReader.structLength,
   componentId: (diff: RenderTreeDiff) => platform.readInt32Field(diff as any, 0),
-  edits: (diff: RenderTreeDiff) => platform.readStructField<Pointer>(diff as any, 4) as any as ArraySegment<RenderTreeEdit>,
+  edits: (diff: RenderTreeDiff) => platform.readStructField<Pointer>(diff as any, 4) as any as ArrayBuilderSegment<RenderTreeEdit>,
   editsEntry: (values: ArrayValues<RenderTreeEdit>, index: number) => arrayValuesEntry(values, index, editReader.structLength),
 };
 
