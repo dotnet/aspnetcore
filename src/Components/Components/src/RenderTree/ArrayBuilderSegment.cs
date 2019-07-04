@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// Represents a range of elements within an instance of <see cref="ArrayBuilder{T}"/>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the array</typeparam>
-    public struct ArrayBuilderSegment<T> : IEnumerable<T>
+    public readonly struct ArrayBuilderSegment<T> : IEnumerable<T>
     {
         private readonly ArrayBuilder<T> _builder;
         private readonly int _offset;
