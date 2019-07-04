@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,37 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Assert
             serviceScope.Verify(s => s.Dispose(), Times.Once());
+            Assert.True(remoteRenderer.Disposed);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesResourcesEvenIfCircuitHandlerOrComponentThrows()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            var handler = new Mock<CircuitHandler>();
+            handler
+                .Setup(h => h.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+                .Throws<InvalidTimeZoneException>();
+            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var circuitHost = TestCircuitHost.Create(
+                Guid.NewGuid().ToString(),
+                serviceScope.Object,
+                remoteRenderer,
+                handlers: new[] { handler.Object });
+
+            var throwOnDisposeComponent = new ThrowOnDisposeComponent();
+            circuitHost.Renderer.AssignRootComponentId(throwOnDisposeComponent);
+
+            // Act
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(async () =>
+            {
+                await circuitHost.DisposeAsync();
+            });
+
+            // Assert
+            Assert.True(throwOnDisposeComponent.DidCallDispose);
+            serviceScope.Verify(scope => scope.Dispose(), Times.Once());
             Assert.True(remoteRenderer.Disposed);
         }
 
@@ -237,6 +269,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 Called = true;
                 Assert.Same(Dispatcher, SynchronizationContext.Current);
+            }
+        }
+
+        private class ThrowOnDisposeComponent : IComponent, IDisposable
+        {
+            public bool DidCallDispose { get; private set; }
+            public void Configure(RenderHandle renderHandle) { }
+
+            public Task SetParametersAsync(ParameterCollection parameters)
+                => Task.CompletedTask;
+
+            public void Dispose()
+            {
+                DidCallDispose = true;
+                throw new InvalidFilterCriteriaException();
             }
         }
     }

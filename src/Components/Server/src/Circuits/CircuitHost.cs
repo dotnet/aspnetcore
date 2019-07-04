@@ -293,10 +293,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             await Renderer.InvokeAsync(async () =>
             {
-                await OnConnectionDownAsync(CancellationToken.None);
-                await OnCircuitDownAsync();
-                Renderer.Dispose();
-                _scope.Dispose();
+                try
+                {
+                    await OnConnectionDownAsync(CancellationToken.None);
+                    await OnCircuitDownAsync();
+                }
+                finally
+                {
+                    Renderer.Dispose();
+                    _scope.Dispose();
+                }
             });
         }
 
