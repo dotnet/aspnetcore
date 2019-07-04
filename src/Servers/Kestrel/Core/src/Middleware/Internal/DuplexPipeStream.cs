@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = ReadAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = WriteAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));

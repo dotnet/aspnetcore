@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.IO;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed class HttpRequestStream : Stream
     {
-        private HttpRequestPipeReader _pipeReader;
+        private readonly HttpRequestPipeReader _pipeReader;
         private readonly IHttpBodyControlFeature _bodyControl;
 
         public HttpRequestStream(IHttpBodyControlFeature bodyControl, HttpRequestPipeReader pipeReader)
@@ -155,12 +154,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var readableBufferLength = readableBuffer.Length;
 
                 var consumed = readableBuffer.End;
-                var actual = 0;
                 try
                 {
                     if (readableBufferLength != 0)
                     {
-                        actual = (int)Math.Min(readableBufferLength, buffer.Length);
+                        var actual = (int)Math.Min(readableBufferLength, buffer.Length);
 
                         var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
                         consumed = slice.End;

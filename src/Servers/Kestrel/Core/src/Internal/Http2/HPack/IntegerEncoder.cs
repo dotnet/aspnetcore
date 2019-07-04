@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     return false;
                 }
 
-                i = i - ((1 << n) - 1);
+                i -= ((1 << n) - 1);
                 while (i >= 128)
                 {
                     buffer[j++] = (byte)(i % 128 + 128);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         return false;
                     }
 
-                    i = i / 128;
+                    i /= 128;
                 }
                 buffer[j++] = (byte)i;
             }

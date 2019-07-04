@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 return new ValueTask<FlushResult>(pipeFlushTask.Result);
             }
 
-            return TimeFlushAsyncAwaited(pipeFlushTask, minRate, count, outputAborter, cancellationToken);
+            return TimeFlushAsyncAwaited(pipeFlushTask, minRate, outputAborter, cancellationToken);
         }
 
-        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             if (minRate != null)
             {
