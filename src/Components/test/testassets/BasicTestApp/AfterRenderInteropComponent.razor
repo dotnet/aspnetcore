@@ -1,7 +1,7 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 
-<input @ref="myInput" value="Value set during render" />
+<input @ref="myInput" @ref:suppressField value="Value set during render" />
 
 @code {
     ElementRef myInput;
