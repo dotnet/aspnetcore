@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier)
         {
-
             if (_options.JSInteropDetailedErrors)
             {
                 return base.OnDotNetInvocationException(exception, assemblyName, methodIdentifier);
