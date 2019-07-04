@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http
             _getTempDirectory = () => _tempDirectory;
         }
 
-        public FileBufferingReadStream CreateReadStream(Stream inner, int bufferThreshold, long? bufferLimit = null)
+        public Stream CreateReadStream(Stream inner, int bufferThreshold, long? bufferLimit = null)
         {
             return new FileBufferingReadStream(inner, bufferThreshold, bufferLimit, _getTempDirectory);
         }
