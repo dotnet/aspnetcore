@@ -213,7 +213,7 @@ class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader
 
   offset<T>(arrayBuilderSegment: ArrayBuilderSegment<T>) {
     // Not used by the out-of-process representation of RenderBatch data.
-    // This only exists on the ArraySegmentReader for the shared-memory representation.
+    // This only exists on the ArrayBuilderSegmentReader for the shared-memory representation.
     return 0;
   }
 
