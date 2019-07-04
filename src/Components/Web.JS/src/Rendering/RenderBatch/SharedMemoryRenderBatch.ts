@@ -1,6 +1,6 @@
 import { platform } from '../../Environment';
 import { RenderBatch, ArrayRange, ArrayRangeReader, ArraySegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
-import { Pointer, System_Array } from '../../Platform/Platform';
+import { Pointer, System_Array, System_Object } from '../../Platform/Platform';
 
 // Used when running on Mono WebAssembly for shared-memory interop. The code here encapsulates
 // our knowledge of the memory layout of RenderBatch and all referenced types.
@@ -68,7 +68,12 @@ const arrayRangeReader = {
 // Keep in sync with memory layout in ArraySegment
 const arraySegmentReader = {
   structLength: 12,
-  values: <T>(arraySegment: ArraySegment<T>) => platform.readObjectField<System_Array<T>>(arraySegment as any, 0) as any as ArrayValues<T>,
+  values: <T>(arraySegment: ArraySegment<T>) => {
+    // Evaluate arraySegment->_builder->array, i.e., two deferences needed
+    const builder = platform.readObjectField<System_Object>(arraySegment as any, 0);
+    const builderFieldsAddress = platform.getObjectFieldsBaseAddress(builder);
+    return platform.readObjectField<System_Array<T>>(builderFieldsAddress, 0) as any as ArrayValues<T>;
+  },
   offset: <T>(arraySegment: ArraySegment<T>) => platform.readInt32Field(arraySegment as any, 4),
   count: <T>(arraySegment: ArraySegment<T>) => platform.readInt32Field(arraySegment as any, 8),
 };
