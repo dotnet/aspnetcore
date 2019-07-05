@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}");
 
                 _disposingCircuit = LoggerMessage.Define<string>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.DisposingCircuit,
                     "Disposing circuit with identifier {CircuitId}");
 

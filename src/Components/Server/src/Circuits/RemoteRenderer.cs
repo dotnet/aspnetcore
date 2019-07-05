@@ -290,12 +290,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     "Unhandled exception rendering component: {Message}");
 
                 _beginUpdateDisplayAsync = LoggerMessage.Define<long, int, string>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.BeginUpdateDisplayAsync,
                     "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.");
 
                 _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.SkipUpdateDisplayAsync,
                     "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
 
@@ -305,12 +305,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     "Sending data for batch failed: {Message}");
 
                 _completingBatchWithError = LoggerMessage.Define<long, string>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.CompletingBatchWithError,
                     "Completing batch {BatchId} with error: {ErrorMessage}");
 
                 _completingBatchWithoutError = LoggerMessage.Define<long>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.CompletingBatchWithoutError,
                     "Completing batch {BatchId} without error");
             }
