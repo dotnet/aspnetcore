@@ -627,7 +627,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
-                GetRequiredComponentState(disposeComponentId).DisposeInBatch(_batchBuilder);
+                var disposeComponentState = GetRequiredComponentState(disposeComponentId);
+                Log.DisposingComponent(_logger, disposeComponentState);
+                disposeComponentState.DisposeInBatch(_batchBuilder);
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
@@ -717,6 +719,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             foreach (var componentState in _componentStateById.Values)
             {
+                Log.DisposingComponent(_logger, componentState);
+
                 if (componentState.Component is IDisposable disposable)
                 {
                     try

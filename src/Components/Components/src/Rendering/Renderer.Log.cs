@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             private static readonly Action<ILogger, int, Type, Exception> _renderingComponent =
                 LoggerMessage.Define<int, Type>(LogLevel.Trace, new EventId(3, "RenderingComponent"), "Rendering component {componentId} of type {componentType}");
 
+            private static readonly Action<ILogger, int, Type, Exception> _disposingComponent =
+                LoggerMessage.Define<int, Type>(LogLevel.Trace, new EventId(4, "DisposingComponent"), "Disposing component {componentId} of type {componentType}");
+
             public static void InitializingComponent(ILogger logger, ComponentState componentState, ComponentState parentComponentState)
             {
                 if (logger.IsEnabled(LogLevel.Trace)) // This is almost always false, so skip the evaluations
@@ -39,6 +42,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 if (logger.IsEnabled(LogLevel.Trace)) // This is almost always false, so skip the evaluations
                 {
                     _renderingComponent(logger, componentState.ComponentId, componentState.Component.GetType(), null);
+                }
+            }
+
+            internal static void DisposingComponent(ILogger<Renderer> logger, ComponentState componentState)
+            {
+                if (logger.IsEnabled(LogLevel.Trace)) // This is almost always false, so skip the evaluations
+                {
+                    _disposingComponent(logger, componentState.ComponentId, componentState.Component.GetType(), null);
                 }
             }
         }
