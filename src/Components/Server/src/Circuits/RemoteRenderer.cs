@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     return;
                 }
 
-                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
+                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Length);
                 await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, pending.Data);
             }
             catch (Exception e)
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
-            private static readonly Action<ILogger, string, Exception> _beginUpdateDisplayAsync;
+            private static readonly Action<ILogger, long, int, string, Exception> _beginUpdateDisplayAsync;
             private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
 
@@ -279,10 +279,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     EventIds.UnhandledExceptionRenderingComponent,
                     "Unhandled exception rendering component: {Message}");
 
-                _beginUpdateDisplayAsync = LoggerMessage.Define<string>(
+                _beginUpdateDisplayAsync = LoggerMessage.Define<long, int, string>(
                     LogLevel.Trace,
                     EventIds.BeginUpdateDisplayAsync,
-                    "Begin remote rendering of components on client {ConnectionId}.");
+                    "Sending render batch {batchId} of size {dataLength} bytes to client {ConnectionId}.");
 
                 _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
                     LogLevel.Trace,
@@ -308,10 +308,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     exception);
             }
 
-            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId)
+            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId, long batchId, int dataLength)
             {
                 _beginUpdateDisplayAsync(
                     logger,
+                    batchId,
+                    dataLength,
                     connectionId,
                     null);
             }

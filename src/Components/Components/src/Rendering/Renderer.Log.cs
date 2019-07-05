@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         internal static class Log
         {
-            private const LogLevel RendererLogLevel = LogLevel.Debug;
+            private const LogLevel RendererLogLevel = LogLevel.Trace;
 
             private static readonly Action<ILogger, int, Type, int, Type, Exception> _initializingChildComponent =
                 LoggerMessage.Define<int, Type, int, Type>(RendererLogLevel, new EventId(1, "InitializingChildComponent"), "Initializing component {componentId} ({componentType}) as child of {parentComponentId} ({parentComponentId})");
