@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "date");
             builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValueAsString));
+            builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             switch (value)
             {
                 case DateTime dateTimeValue:
-                    return dateTimeValue.ToString(DateFormat, CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(dateTimeValue, DateFormat, CultureInfo.InvariantCulture);
                 case DateTimeOffset dateTimeOffsetValue:
-                    return dateTimeOffsetValue.ToString(DateFormat, CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(dateTimeOffsetValue, DateFormat, CultureInfo.InvariantCulture);
                 default:
                     return string.Empty; // Handles null for Nullable<DateTime>, etc.
             }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTime(string value, out T result)
         {
-            var success = DateTime.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTimeOffset(string value, out T result)
         {
-            var success = DateTimeOffset.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
