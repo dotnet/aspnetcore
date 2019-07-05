@@ -45,13 +45,6 @@ namespace Microsoft.AspNetCore.Components
     }
     public static partial class BindMethods
     {
-        public static Microsoft.AspNetCore.Components.EventCallback GetEventHandlerValue<T>(Microsoft.AspNetCore.Components.EventCallback value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<T> GetEventHandlerValue<T>(Microsoft.AspNetCore.Components.EventCallback<T> value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static System.MulticastDelegate GetEventHandlerValue<T>(System.Action value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static System.MulticastDelegate GetEventHandlerValue<T>(System.Action<T> value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static System.MulticastDelegate GetEventHandlerValue<T>(System.Func<System.Threading.Tasks.Task> value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static System.MulticastDelegate GetEventHandlerValue<T>(System.Func<T, System.Threading.Tasks.Task> value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
-        public static string GetEventHandlerValue<T>(string value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
         public static string GetValue(System.DateTime value, string format) { throw null; }
         public static T GetValue<T>(T value) { throw null; }
     }
@@ -442,31 +435,6 @@ namespace Microsoft.AspNetCore.Components
         public UIEventArgs() { }
         public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public static partial class UIEventArgsRenderTreeBuilderExtensions
-    {
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIChangeEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIClipboardEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIDragEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIErrorEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIFocusEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIKeyboardEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIPointerEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIProgressEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UITouchEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIWheelEventArgs> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIChangeEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIClipboardEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIDragEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIErrorEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIFocusEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIKeyboardEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIMouseEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIPointerEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIProgressEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UITouchEventArgs, System.Threading.Tasks.Task> value) { }
-        public static void AddAttribute(this Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIWheelEventArgs, System.Threading.Tasks.Task> value) { }
-    }
     public partial class UIFocusEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
     {
         public UIFocusEventArgs() { }
@@ -564,6 +532,13 @@ namespace Microsoft.AspNetCore.Components
         public System.Uri ToAbsoluteUri(string href) { throw null; }
         public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
         protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
+    }
+}
+namespace Microsoft.AspNetCore.Components.CompilerServices
+{
+    public static partial class RuntimeHelpers
+    {
+        public static T TypeCheck<T>(T value) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Forms
@@ -728,9 +703,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
         public void AddAttribute(int sequence, string name, System.Action value) { }
-        public void AddAttribute(int sequence, string name, System.Action<Microsoft.AspNetCore.Components.UIEventArgs> value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.Func<Microsoft.AspNetCore.Components.UIEventArgs, System.Threading.Tasks.Task> value) { }
         public void AddAttribute(int sequence, string name, System.Func<System.Threading.Tasks.Task> value) { }
         public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
         public void AddAttribute(int sequence, string name, object value) { }

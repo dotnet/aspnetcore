@@ -2197,12 +2197,12 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.AddContent(0, "Child event count: " + eventCount);
                 builder.OpenComponent<EventComponent>(1);
-                builder.AddAttribute(2, nameof(EventComponent.OnTest), args =>
+                builder.AddAttribute(2, nameof(EventComponent.OnTest), new Action<UIEventArgs>(args =>
                 {
                     eventCount++;
                     rootComponent.TriggerRender();
                     childComponent.TriggerRender();
-                });
+                }));
                 builder.CloseComponent();
             });
             var rootComponentId = renderer.AssignRootComponentId(rootComponent);
@@ -3637,7 +3637,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => _renderHandle.Render(builder =>
                 {
                     builder.OpenElement(0, "my button");
-                    builder.AddAttribute(1, "my click handler", eventArgs => OnClick(eventArgs));
+                    builder.AddAttribute(1, "my click handler", new Action<UIEventArgs>(eventArgs => OnClick(eventArgs)));
                     builder.CloseElement();
                 });
         }
@@ -4068,12 +4068,12 @@ namespace Microsoft.AspNetCore.Components.Test
 
                 builder.OpenElement(0, "element with event");
                 builder.AddAttribute(1, nameof(BoundString), BoundString);
-                builder.AddAttribute(2, "ontestevent", (UIChangeEventArgs eventArgs) =>
+                builder.AddAttribute(2, "ontestevent", new Action<UIChangeEventArgs>((UIChangeEventArgs eventArgs) =>
                 {
                     BoundString = (string)eventArgs.Value;
                     TriggerRender();
                     GC.KeepAlive(unrelatedThingToMakeTheLambdaCapture);
-                });
+                }));
                 builder.SetUpdatesAttributeName(nameof(BoundString));
                 builder.CloseElement();
             }
