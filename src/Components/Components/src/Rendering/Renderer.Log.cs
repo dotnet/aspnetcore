@@ -13,16 +13,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
             private const LogLevel RendererLogLevel = LogLevel.Trace;
 
             private static readonly Action<ILogger, int, Type, int, Type, Exception> _initializingChildComponent =
-                LoggerMessage.Define<int, Type, int, Type>(RendererLogLevel, new EventId(1, "InitializingChildComponent"), "Initializing component {componentId} ({componentType}) as child of {parentComponentId} ({parentComponentId})");
+                LoggerMessage.Define<int, Type, int, Type>(RendererLogLevel, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentId})");
 
             private static readonly Action<ILogger, int, Type, Exception> _initializingRootComponent =
-                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(2, "InitializingRootComponent"), "Initializing root component {componentId} ({componentType})");
+                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(2, "InitializingRootComponent"), "Initializing root component {ComponentId} ({ComponentType})");
 
             private static readonly Action<ILogger, int, Type, Exception> _renderingComponent =
-                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(3, "RenderingComponent"), "Rendering component {componentId} of type {componentType}");
+                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(3, "RenderingComponent"), "Rendering component {ComponentId} of type {ComponentType}");
 
             private static readonly Action<ILogger, int, Type, Exception> _disposingComponent =
-                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(4, "DisposingComponent"), "Disposing component {componentId} of type {componentType}");
+                LoggerMessage.Define<int, Type>(RendererLogLevel, new EventId(4, "DisposingComponent"), "Disposing component {ComponentId} of type {ComponentType}");
 
             public static void InitializingComponent(ILogger logger, ComponentState componentState, ComponentState parentComponentState)
             {
