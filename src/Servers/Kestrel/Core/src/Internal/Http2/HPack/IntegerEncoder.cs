@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                         return false;
                     }
 
-                    i /= 128;
+                    i = ((uint)i) / 128;
                 }
                 buffer[j++] = (byte)i;
             }

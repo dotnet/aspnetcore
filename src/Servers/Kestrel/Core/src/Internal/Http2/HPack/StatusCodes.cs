@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended => _bytesStatus510,
                 Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired => _bytesStatus511,
 
-                _ => Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture)),
+                _ => CreateStatusBytes(statusCode)
             };
         }
     }
