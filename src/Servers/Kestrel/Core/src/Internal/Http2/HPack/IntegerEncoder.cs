@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 while (i >= 128)
                 {
                     var ui = (uint)i; // Use unsigned for optimizations
-                    buffer[j++] = (byte)((ui & 127) + 128); // (i % 128 + 128)
+                    buffer[j++] = (byte)((ui % 128) + 128);
 
                     if (j >= buffer.Length)
                     {
