@@ -226,6 +226,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
             }
 
+            Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
+
             if (fieldInfo != null)
             {
                 var latestEquivalentEventHandlerId = FindLatestEventHandlerIdInChain(eventHandlerId);
