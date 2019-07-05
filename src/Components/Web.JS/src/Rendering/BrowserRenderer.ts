@@ -1,4 +1,4 @@
-import { RenderBatch, ArraySegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
+import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
 import { EventForDotNet, UIEventArgs } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
@@ -29,7 +29,7 @@ export class BrowserRenderer {
     rootComponentsPendingFirstRender[componentId] = element;
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -71,17 +71,17 @@ export class BrowserRenderer {
     this.childComponentLocations[componentId] = element;
   }
 
-  private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
+  private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
     let permutationList: PermutationListEntry[] | undefined;
 
-    const arraySegmentReader = batch.arraySegmentReader;
+    const arrayBuilderSegmentReader = batch.arrayBuilderSegmentReader;
     const editReader = batch.editReader;
     const frameReader = batch.frameReader;
-    const editsValues = arraySegmentReader.values(edits);
-    const editsOffset = arraySegmentReader.offset(edits);
-    const editsLength = arraySegmentReader.count(edits);
+    const editsValues = arrayBuilderSegmentReader.values(edits);
+    const editsOffset = arrayBuilderSegmentReader.offset(edits);
+    const editsLength = arrayBuilderSegmentReader.count(edits);
     const maxEditIndexExcl = editsOffset + editsLength;
 
     for (let editIndex = editsOffset; editIndex < maxEditIndexExcl; editIndex++) {

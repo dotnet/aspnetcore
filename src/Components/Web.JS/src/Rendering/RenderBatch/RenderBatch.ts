@@ -13,7 +13,7 @@ export interface RenderBatch {
   editReader: RenderTreeEditReader;
   frameReader: RenderTreeFrameReader;
   arrayRangeReader: ArrayRangeReader;
-  arraySegmentReader: ArraySegmentReader;
+  arrayBuilderSegmentReader: ArrayBuilderSegmentReader;
 }
 
 export interface ArrayRangeReader {
@@ -21,15 +21,15 @@ export interface ArrayRangeReader {
   values<T>(arrayRange: ArrayRange<T>): ArrayValues<T>;
 }
 
-export interface ArraySegmentReader {
-  offset<T>(arraySegment: ArraySegment<T>): number;
-  count<T>(arraySegment: ArraySegment<T>): number;
-  values<T>(arraySegment: ArraySegment<T>): ArrayValues<T>;
+export interface ArrayBuilderSegmentReader {
+  offset<T>(arrayBuilderSegment: ArrayBuilderSegment<T>): number;
+  count<T>(arrayBuilderSegment: ArrayBuilderSegment<T>): number;
+  values<T>(arrayBuilderSegment: ArrayBuilderSegment<T>): ArrayValues<T>;
 }
 
 export interface RenderTreeDiffReader {
   componentId(diff: RenderTreeDiff): number;
-  edits(diff: RenderTreeDiff): ArraySegment<RenderTreeEdit>;
+  edits(diff: RenderTreeDiff): ArrayBuilderSegment<RenderTreeEdit>;
   editsEntry(values: ArrayValues<RenderTreeEdit>, index: number): RenderTreeEdit;
 }
 
@@ -55,7 +55,7 @@ export interface RenderTreeFrameReader {
 }
 
 export interface ArrayRange<T> { ArrayRange__DO_NOT_IMPLEMENT: any }
-export interface ArraySegment<T> { ArraySegment__DO_NOT_IMPLEMENT: any }
+export interface ArrayBuilderSegment<T> { ArrayBuilderSegment__DO_NOT_IMPLEMENT: any }
 export interface ArrayValues<T> { ArrayValues__DO_NOT_IMPLEMENT: any }
 
 export interface RenderTreeDiff { RenderTreeDiff__DO_NOT_IMPLEMENT: any }

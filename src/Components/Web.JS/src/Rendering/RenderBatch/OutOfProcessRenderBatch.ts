@@ -1,4 +1,4 @@
-import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArraySegmentReader, ArraySegment } from './RenderBatch';
+import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArrayBuilderSegmentReader, ArrayBuilderSegment } from './RenderBatch';
 import { decodeUtf8 } from './Utf8Decoder';
 
 const updatedComponentsEntryLength = 4; // Each is a single int32 giving the location of the data
@@ -13,7 +13,7 @@ export class OutOfProcessRenderBatch implements RenderBatch {
     const stringReader = new OutOfProcessStringReader(batchData);
 
     this.arrayRangeReader = new OutOfProcessArrayRangeReader(batchData);
-    this.arraySegmentReader = new OutOfProcessArraySegmentReader(batchData);
+    this.arrayBuilderSegmentReader = new OutOfProcessArrayBuilderSegmentReader(batchData);
     this.diffReader = new OutOfProcessRenderTreeDiffReader(batchData);
     this.editReader = new OutOfProcessRenderTreeEditReader(batchData, stringReader);
     this.frameReader = new OutOfProcessRenderTreeFrameReader(batchData, stringReader);
@@ -62,7 +62,7 @@ export class OutOfProcessRenderBatch implements RenderBatch {
 
   arrayRangeReader: ArrayRangeReader;
 
-  arraySegmentReader: ArraySegmentReader;
+  arrayBuilderSegmentReader: ArrayBuilderSegmentReader;
 }
 
 class OutOfProcessRenderTreeDiffReader implements RenderTreeDiffReader {
@@ -207,24 +207,24 @@ class OutOfProcessArrayRangeReader implements ArrayRangeReader {
   }
 }
 
-class OutOfProcessArraySegmentReader implements ArraySegmentReader {
+class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader {
   constructor(private batchDataUint8: Uint8Array) {
   }
 
-  offset<T>(arraySegment: ArraySegment<T>) {
+  offset<T>(arrayBuilderSegment: ArrayBuilderSegment<T>) {
     // Not used by the out-of-process representation of RenderBatch data.
-    // This only exists on the ArraySegmentReader for the shared-memory representation.
+    // This only exists on the ArrayBuilderSegmentReader for the shared-memory representation.
     return 0;
   }
 
-  count<T>(arraySegment: ArraySegment<T>) {
+  count<T>(arrayBuilderSegment: ArrayBuilderSegment<T>) {
     // First int is count
-    return readInt32LE(this.batchDataUint8, arraySegment as any);
+    return readInt32LE(this.batchDataUint8, arrayBuilderSegment as any);
   }
 
-  values<T>(arraySegment: ArraySegment<T>): ArrayValues<T> {
+  values<T>(arrayBuilderSegment: ArrayBuilderSegment<T>): ArrayValues<T> {
     // Entries data starts after the 'count' int (i.e., after 4 bytes)
-    return arraySegment as any + 4;
+    return arrayBuilderSegment as any + 4;
   }
 }
 

@@ -34,9 +34,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             }
 
             // Clone the diff, because its underlying storage will get reused in subsequent batches
+            var cloneBuilder = new ArrayBuilder<RenderTreeEdit>();
+            cloneBuilder.Append(diff.Edits.ToArray(), 0, diff.Edits.Count);
             var diffClone = new RenderTreeDiff(
                 diff.ComponentId,
-                new ArraySegment<RenderTreeEdit>(diff.Edits.ToArray()));
+                cloneBuilder.ToSegment(0, diff.Edits.Count));
             DiffsByComponentId[componentId].Add(diffClone);
             DiffsInOrder.Add(diffClone);
         }

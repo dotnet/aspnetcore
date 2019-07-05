@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (cancellationStatus.Canceled)
             {
                 // Avoid creating a circuit host if other component earlier in the pipeline already triggered
-                // cancelation (e.g., by navigating or throwing). Instead render nothing.
+                // cancellation (e.g., by navigating or throwing). Instead render nothing.
                 return new ComponentPrerenderResult(Array.Empty<string>());
             }
             var circuitHost = GetOrCreateCircuitHost(context, cancellationStatus);
