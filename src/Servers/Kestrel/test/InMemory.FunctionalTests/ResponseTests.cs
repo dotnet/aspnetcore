@@ -2905,9 +2905,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var expectedString = new string('a', expectedLength);
             await using (var server = new TestServer(async httpContext =>
             {
-                httpContext.Response.Headers["Content-Length"] = new[] { expectedLength.ToString() };
+                httpContext.Response.ContentLength = expectedLength;
                 await httpContext.Response.WriteAsync(expectedString);
                 Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        $"Content-Length: {expectedLength}",
+                        "",
+                        expectedString);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UnflushedContentLengthResponseIsFlushedAutomatically()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedLength = 100000;
+            var expectedString = new string('a', expectedLength);
+
+            void WriteStringWithoutFlushing(PipeWriter writer, string content)
+            {
+                var encoder = Encoding.ASCII.GetEncoder();
+                var encodedLength = Encoding.ASCII.GetByteCount(expectedString);
+                var source = expectedString.AsSpan();
+                var completed = false;
+
+                while (!completed)
+                {
+                    encoder.Convert(source, writer.GetSpan(), flush: source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                    writer.Advance(bytesUsed);
+                    source = source.Slice(charsUsed);
+                }
+            }
+
+            await using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = expectedLength;
+
+                WriteStringWithoutFlushing(httpContext.Response.BodyWriter, expectedString);
+
+                Assert.False(httpContext.Response.HasStarted);
+                return Task.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
