@@ -5,14 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Browser;
-using Microsoft.AspNetCore.Components.Browser.Rendering;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
             var renderRegistry = new RendererRegistry();
-            var jsRuntime = new RemoteJSRuntime();
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()));
             var dispatcher = Rendering.Renderer.CreateDefaultDispatcher();
 
             if (remoteRenderer == null)

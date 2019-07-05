@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {

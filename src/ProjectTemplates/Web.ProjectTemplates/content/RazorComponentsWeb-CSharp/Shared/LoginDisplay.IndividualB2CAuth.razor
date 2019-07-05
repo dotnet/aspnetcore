@@ -22,7 +22,7 @@
 @code {
     bool canEditProfile;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         var options = AzureADB2COptions.Get(AzureADB2CDefaults.AuthenticationScheme);
         canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);

@@ -3,17 +3,38 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class RemoteJSRuntime : JSRuntimeBase
     {
+        private readonly CircuitOptions _options;
         private CircuitClientProxy _clientProxy;
+
+        public RemoteJSRuntime(IOptions<CircuitOptions> options)
+        {
+            _options = options.Value;
+            DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
+        }
 
         internal void Initialize(CircuitClientProxy clientProxy)
         {
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
+        }
+
+        protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier)
+        {
+            if (_options.JSInteropDetailedErrors)
+            {
+                return base.OnDotNetInvocationException(exception, assemblyName, methodIdentifier);
+            }
+
+            var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
+                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.JSInteropDetailedErrors)}'";
+
+            return message;
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)

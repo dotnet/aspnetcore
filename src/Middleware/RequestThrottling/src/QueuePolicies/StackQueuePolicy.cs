@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     internal class StackQueuePolicy : IQueuePolicy
     {

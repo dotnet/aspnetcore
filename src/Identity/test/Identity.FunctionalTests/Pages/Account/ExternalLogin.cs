@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
                 ["Input_Email"] = email
             });
             var redirect = ResponseAssert.IsRedirect(response);
-            Assert.True(String.Equals(RegisterConfirmation.Path + "?email=" + email, redirect.ToString(), StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(RegisterConfirmation.Path + "?email=" + email, redirect.ToString(), StringComparer.OrdinalIgnoreCase);
+
             var registerResponse = await Client.GetAsync(redirect);
             var register = await ResponseAssert.IsHtmlDocumentAsync(registerResponse);
 

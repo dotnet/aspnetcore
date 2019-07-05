@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     /// <summary>
     /// Queueing policies, meant to be used with the <see cref="RequestThrottlingMiddleware"></see>.

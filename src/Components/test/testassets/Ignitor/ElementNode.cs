@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Browser;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Ignitor
@@ -96,7 +96,7 @@ namespace Ignitor
             var serializedJson = JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             var argsObject = new object[] { browserDescriptor, serializedJson };
             var callId = "0";
-            var assemblyName = "Microsoft.AspNetCore.Components.Browser";
+            var assemblyName = "Microsoft.AspNetCore.Components.Web";
             var methodIdentifier = "DispatchEvent";
             var dotNetObjectId = 0;
             var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });

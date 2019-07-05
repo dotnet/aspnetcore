@@ -25,7 +25,12 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor()
+                .AddCircuitOptions(o =>
+                {
+                    var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
+                    o.JSInteropDetailedErrors = detailedErrors;
+                });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             services.AddAuthorization(options =>
@@ -72,14 +77,6 @@ namespace TestServer
                 });
             });
 
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapRazorPages();
-            });
-
             // Separately, mount a prerendered server-side Blazor app on /prerendered
             app.Map("/prerendered", subdirApp =>
             {
@@ -91,6 +88,14 @@ namespace TestServer
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
                 });
+            });
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
         }
     }

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _state = state;
         }
 
-        public Task Invoke(Action action)
+        public Task InvokeAsync(Action action)
         {
             var completion = new RendererSynchronizationTaskCompletionSource<Action, object>(action);
             ExecuteSynchronouslyIfPossible((state) =>
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return completion.Task;
         }
 
-        public Task<TResult> Invoke<TResult>(Func<TResult> function)
+        public Task<TResult> InvokeAsync<TResult>(Func<TResult> function)
         {
             var completion = new RendererSynchronizationTaskCompletionSource<Func<TResult>, TResult>(function);
             ExecuteSynchronouslyIfPossible((state) =>

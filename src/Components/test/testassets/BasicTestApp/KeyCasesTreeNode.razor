@@ -46,7 +46,7 @@
     [Parameter] Node Data { get; set; }
     [CascadingParameter] KeyCasesComponent.RenderContext RenderContext { get; set; }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         firstCreatedOnUpdateCount = RenderContext.UpdateCount;
     }

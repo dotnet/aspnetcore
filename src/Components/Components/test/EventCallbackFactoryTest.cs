@@ -297,20 +297,6 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void CreateT_String_ReturnsInput()
-        {
-            // Arrange
-            var component = new EventComponent();
-            var input = "some_js";
-
-            // Act
-            var callback = EventCallback.Factory.Create<UIMouseEventArgs>(component, input);
-
-            // Assert
-            Assert.Same(input, callback);
-        }
-
-        [Fact]
         public void CreateT_EventCallback_ReturnsInput()
         {
             // Arrange

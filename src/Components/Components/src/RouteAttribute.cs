@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components
     /// Indicates that the associated component should match the specified route template pattern.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public class RouteAttribute : Attribute
+    public sealed class RouteAttribute : Attribute
     {
         /// <summary>
         /// Constructs an instance of <see cref="RouteAttribute"/>.

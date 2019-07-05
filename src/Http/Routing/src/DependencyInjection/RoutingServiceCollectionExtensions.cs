@@ -35,7 +35,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
-#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
@@ -51,7 +50,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 var constraintResolver = s.GetRequiredService<IInlineConstraintResolver>();
                 return new TreeRouteBuilder(loggerFactory, objectPool, constraintResolver);
             }));
-#pragma warning restore CS0618 // Type or member is obsolete
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 

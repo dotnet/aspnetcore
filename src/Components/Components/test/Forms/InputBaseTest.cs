@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var inputComponent = new TestInputComponent<string>();
             var testRenderer = new TestRenderer();
             var componentId = testRenderer.AssignRootComponentId(inputComponent);
-            
+
             // Act/Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => testRenderer.RenderRootComponentAsync(componentId));
@@ -71,25 +71,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Assert
             Assert.Equal("some value", inputComponent.CurrentValue);
-        }
-
-        [Fact]
-        public async Task ExposesIdToSubclass()
-        {
-            // Arrange
-            var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
-            {
-                Id = "test-id",
-                EditContext = new EditContext(model),
-                ValueExpression = () => model.StringProperty
-            };
-
-            // Act
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
-
-            // Assert
-            Assert.Same(rootComponent.Id, inputComponent.Id);
         }
 
         [Fact]
@@ -264,7 +245,10 @@ namespace Microsoft.AspNetCore.Components.Forms
             var model = new TestModel();
             var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
-                Class = "my-class other-class",
+                AdditionalAttributes = new Dictionary<string, object>()
+                {
+                    { "class", "my-class other-class" },
+                },
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.StringProperty
             };
@@ -370,7 +354,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                     .OfType<TComponent>()
                     .Single();
 
-        private static async Task<TComponent> RenderAndGetTestInputComponentAsync<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) where TComponent: TestInputComponent<TValue>
+        private static async Task<TComponent> RenderAndGetTestInputComponentAsync<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) where TComponent : TestInputComponent<TValue>
         {
             var testRenderer = new TestRenderer();
             var componentId = testRenderer.AssignRootComponentId(hostComponent);
@@ -401,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 set { base.CurrentValueAsString = value; }
             }
 
-            public new string Id => base.Id;
+            public new IReadOnlyDictionary<string, object> AdditionalAttributes => base.AdditionalAttributes;
 
             public new string CssClass => base.CssClass;
 
@@ -437,11 +421,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent where TComponent: TestInputComponent<TValue>
+        class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent where TComponent : TestInputComponent<TValue>
         {
-            public string Id { get; set; }
-
-            public string Class { get; set; }
+            public Dictionary<string, object> AdditionalAttributes { get; set; }
 
             public EditContext EditContext { get; set; }
 
@@ -462,8 +444,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                     childBuilder.AddAttribute(1, "ValueChanged",
                         EventCallback.Factory.Create(this, ValueChanged));
                     childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
-                    childBuilder.AddAttribute(3, nameof(Id), Id);
-                    childBuilder.AddAttribute(4, nameof(Class), Class);
+                    childBuilder.AddMultipleAttributes(3, AdditionalAttributes);
                     childBuilder.CloseComponent();
                 }));
                 builder.CloseComponent();

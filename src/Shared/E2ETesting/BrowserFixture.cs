@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -27,6 +28,14 @@ namespace Microsoft.AspNetCore.E2ETesting
         public ILogs Logs { get; private set; }
 
         public IMessageSink DiagnosticsMessageSink { get; }
+
+        public static void EnforceSupportedConfigurations()
+        {
+            // Do not change the current platform support without explicit approval.
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64,
+                "Selenium tests should be running in this platform.");
+        }
 
         public static bool IsHostAutomationSupported()
         {

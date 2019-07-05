@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Browser;
-using Microsoft.AspNetCore.Components.Browser.Rendering;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                await Renderer.Invoke(() =>
+                await Renderer.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
                     DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
@@ -293,10 +293,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             await Renderer.InvokeAsync(async () =>
             {
-                await OnConnectionDownAsync(CancellationToken.None);
-                await OnCircuitDownAsync();
-                Renderer.Dispose();
-                _scope.Dispose();
+                try
+                {
+                    await OnConnectionDownAsync(CancellationToken.None);
+                    await OnCircuitDownAsync();
+                }
+                finally
+                {
+                    Renderer.Dispose();
+                    _scope.Dispose();
+                }
             });
         }
 

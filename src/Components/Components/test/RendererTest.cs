@@ -2016,7 +2016,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
             var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
-            renderHandle.Invoke(() => renderHandle.Render(builder
+            renderHandle.InvokeAsync(() => renderHandle.Render(builder
                 => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
@@ -2905,7 +2905,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             var asyncExceptionTcs = new TaskCompletionSource<object>();
             taskToAwait = asyncExceptionTcs.Task;
-            await renderer.Invoke(component.TriggerRender);
+            await renderer.InvokeAsync(component.TriggerRender);
 
             // Act
             var exception = new InvalidOperationException();
@@ -3409,7 +3409,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
             {
-                var t = _renderHandle.Invoke(() => _renderHandle.Render(_renderFragment));
+                var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 // This should always be run synchronously
                 Assert.True(t.IsCompleted);
                 if (t.IsFaulted)
@@ -3659,7 +3659,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Invoke(() => renderHandle.Render(builder =>
+                    renderHandle.InvokeAsync(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     }));
@@ -3684,11 +3684,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenElement(0, "input");
                 builder.AddAttribute(1, "type", "checkbox");
                 builder.AddAttribute(2, "value", BindMethods.GetValue(CheckboxEnabled));
-                builder.AddAttribute(3, "onchange", BindMethods.SetValueHandler(__value => CheckboxEnabled = __value, CheckboxEnabled));
+                builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CheckboxEnabled = __value, CheckboxEnabled));
                 builder.CloseElement();
                 builder.OpenElement(4, "input");
                 builder.AddAttribute(5, "value", BindMethods.GetValue(SomeStringProperty));
-                builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => SomeStringProperty = __value, SomeStringProperty));
+                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => SomeStringProperty = __value, SomeStringProperty));
                 builder.AddAttribute(7, "disabled", !CheckboxEnabled);
                 builder.CloseElement();
             }
@@ -3820,7 +3820,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return TriggerRenderAsync();
             }
 
-            public Task TriggerRenderAsync() => _renderHandle.Invoke(() => _renderHandle.Render(RenderFragment));
+            public Task TriggerRenderAsync() => _renderHandle.InvokeAsync(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)
@@ -3888,17 +3888,16 @@ namespace Microsoft.AspNetCore.Components.Test
 
             [Parameter] public ConcurrentQueue<(int testId, EventType @event)> Log { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (TryGetEntry(EventType.OnInit, out var entry))
                 {
                     var result = entry.EventAction();
                     LogResult(result.Result);
                 }
-                base.OnInit();
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (TryGetEntry(EventType.OnInitAsyncSync, out var entrySync))
                 {

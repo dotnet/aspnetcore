@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.RequestThrottling.QueuePolicies
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     /// <summary>
     /// Specifies options for the <see cref="IQueuePolicy"/>

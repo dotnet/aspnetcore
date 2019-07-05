@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -48,13 +47,13 @@ namespace Microsoft.AspNetCore.Components
         /// synchronization context.
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
-        public Task Invoke(Action workItem)
+        public Task InvokeAsync(Action workItem)
         {
             if (_renderer == null)
             {
                 throw new InvalidOperationException("The render handle is not yet assigned.");
             }
-            return _renderer.Invoke(workItem);
+            return _renderer.InvokeAsync(workItem);
         }
 
         /// <summary>

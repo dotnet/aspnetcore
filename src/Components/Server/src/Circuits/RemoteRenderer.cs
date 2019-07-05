@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     internal class RemoteRenderer : HtmlRenderer
     {

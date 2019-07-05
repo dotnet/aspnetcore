@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="$(TemplateComponentsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(TemplateComponentsPackageVersion)" />
   </ItemGroup>
 
 </Project>

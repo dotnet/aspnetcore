@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <returns>The <see cref="AntiforgeryTokenSet"/> for this request.</returns>
         /// <remarks>
         /// Unlike <see cref="GetAndStoreTokens(HttpContext)"/>, this method has no side effect. The caller
         /// is responsible for setting the response cookie and injecting the returned
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// Validates an antiforgery token that was supplied as part of the request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <returns>A <see cref="Task"/> that completes when validation has completed.</returns>
         /// <exception cref="AntiforgeryValidationException">
         /// Thrown when the request does not include a valid antiforgery token.
         /// </exception>

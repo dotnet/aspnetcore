@@ -111,6 +111,32 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             }), GetUnwrappedContent(result));
         }
 
+        [Fact]
+        public async Task DisposesCircuitScopeEvenIfPrerenderingThrows()
+        {
+            // Arrange
+            var circuitFactory = new MockServiceScopeCircuitFactory();
+            var circuitRegistry = new CircuitRegistry(
+                Options.Create(new CircuitOptions()),
+                Mock.Of<ILogger<CircuitRegistry>>(),
+                TestCircuitIdFactory.CreateTestFactory());
+            var httpContext = new DefaultHttpContext();
+            var prerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
+            var prerenderingContext = new ComponentPrerenderingContext
+            {
+                ComponentType = typeof(ThrowExceptionComponent),
+                Parameters = ParameterCollection.Empty,
+                Context = httpContext
+            };
+
+            // Act
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(async () =>
+                await prerenderer.PrerenderComponentAsync(prerenderingContext));
+
+            // Assert
+            circuitFactory.MockServiceScope.Verify(scope => scope.Dispose(), Times.Once());
+        }
+
         class TestCircuitFactory : CircuitFactory
         {
             public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute)
@@ -124,6 +150,17 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                 });
                 var serviceScope = serviceCollection.BuildServiceProvider().CreateScope();
                 return TestCircuitHost.Create(Guid.NewGuid().ToString(), serviceScope);
+            }
+        }
+
+        class MockServiceScopeCircuitFactory : CircuitFactory
+        {
+            public Mock<IServiceScope> MockServiceScope { get; }
+                = new Mock<IServiceScope>();
+
+            public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute)
+            {
+                return TestCircuitHost.Create(Guid.NewGuid().ToString(), MockServiceScope.Object);
             }
         }
 
@@ -150,6 +187,15 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
                 return Task.CompletedTask;
             }
+        }
+
+        class ThrowExceptionComponent : IComponent
+        {
+            public void Configure(RenderHandle renderHandle)
+                => throw new InvalidTimeZoneException();
+
+            public Task SetParametersAsync(ParameterCollection parameters)
+                 => Task.CompletedTask;
         }
     }
 }
