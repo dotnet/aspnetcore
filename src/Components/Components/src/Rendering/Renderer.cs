@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Renderer(IServiceProvider serviceProvider)
         {
             _componentFactory = new ComponentFactory(serviceProvider);
+            _logger = (ILogger<Renderer>)serviceProvider.GetService(typeof(ILogger<Renderer>))
+                ?? NullLogger<Renderer>.Instance;
         }
 
         /// <summary>
@@ -71,8 +73,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
         {
             _dispatcher = dispatcher;
-            _logger = (ILogger<Renderer>)serviceProvider.GetService(typeof(ILogger<Renderer>))
-                ?? NullLogger<Renderer>.Instance;
         }
 
         /// <summary>
