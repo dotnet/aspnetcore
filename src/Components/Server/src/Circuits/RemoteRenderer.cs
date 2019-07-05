@@ -213,10 +213,15 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
             else
             {
-                var message = $"Completing batch {entry.BatchId} " +
-                    (errorMessageOrNull == null ? "without error." : "with error.");
+                if (errorMessageOrNull == null)
+                {
+                    Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+                }
+                else
+                {
+                    Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+                }
 
-                _logger.LogDebug(message);
                 CompleteRender(entry.CompletionSource, errorMessageOrNull);
             }
         }
@@ -264,6 +269,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, long, int, string, Exception> _beginUpdateDisplayAsync;
             private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
+            private static readonly Action<ILogger, long, string, Exception> _completingBatchWithError;
+            private static readonly Action<ILogger, long, Exception> _completingBatchWithoutError;
 
             private static class EventIds
             {
@@ -271,6 +278,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
                 public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
                 public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
+                public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
+                public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
             }
 
             static Log()
@@ -283,7 +292,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 _beginUpdateDisplayAsync = LoggerMessage.Define<long, int, string>(
                     LogLevel.Trace,
                     EventIds.BeginUpdateDisplayAsync,
-                    "Sending render batch {batchId} of size {dataLength} bytes to client {ConnectionId}.");
+                    "Sending render batch {BatchId} of size {DataLength} bytes to client {ConnectionId}.");
 
                 _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
                     LogLevel.Trace,
@@ -294,6 +303,16 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     LogLevel.Information,
                     EventIds.SendBatchDataFailed,
                     "Sending data for batch failed: {Message}");
+
+                _completingBatchWithError = LoggerMessage.Define<long, string>(
+                    LogLevel.Trace,
+                    EventIds.CompletingBatchWithError,
+                    "Completing batch {BatchId} with error: {ErrorMessage}");
+
+                _completingBatchWithoutError = LoggerMessage.Define<long>(
+                    LogLevel.Trace,
+                    EventIds.CompletingBatchWithoutError,
+                    "Completing batch {BatchId} without error");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -324,6 +343,23 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 _bufferingRenderDisconnectedClient(
                     logger,
                     connectionId,
+                    null);
+            }
+
+            public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage)
+            {
+                _completingBatchWithError(
+                    logger,
+                    batchId,
+                    errorMessage,
+                    null);
+            }
+
+            public static void CompletingBatchWithoutError(ILogger logger, long batchId)
+            {
+                _completingBatchWithoutError(
+                    logger,
+                    batchId,
                     null);
             }
         }
