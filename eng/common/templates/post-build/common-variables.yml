@@ -5,5 +5,14 @@ variables:
   # .NET Tools - Validation
   PublicValidationRelease_30_Channel_Id: 9
 
+  # .NET Core 3.0 Internal Servicing
+  InternalServicing_30_Channel_Id: 184
+
+  # .NET Core 3.0 Release
+  PublicRelease_30_Channel_Id: 19
+
+  # Whether the build is internal or not
+  IsInternalBuild: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
+
   SourceLinkCLIVersion: 3.0.0
   SymbolToolVersion: 1.0.1

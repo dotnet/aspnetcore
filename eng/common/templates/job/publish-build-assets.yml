@@ -66,7 +66,6 @@ jobs:
         script: |
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsInternalBuild)
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
     - task: PublishBuildArtifacts@1
       displayName: Publish ReleaseConfigs Artifact
