@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "checkbox");
             builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "checked", BindMethods.GetValue(CurrentValue));
+            builder.AddAttribute(4, "checked", BindConverter.FormatValue(CurrentValue));
             builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CurrentValue = __value, CurrentValue));
             builder.CloseElement();
         }
