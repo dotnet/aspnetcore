@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
     /// dispatching events to them, and notifying when the user interface is being updated.
     /// </summary>
-    public abstract class Renderer : IDisposable
+    public abstract partial class Renderer : IDisposable
     {
         private readonly ComponentFactory _componentFactory;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
         private readonly Dictionary<int, int> _eventHandlerIdReplacements = new Dictionary<int, int>();
         private readonly IDispatcher _dispatcher;
+        private readonly ILogger<Renderer> _logger;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -68,6 +71,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
         {
             _dispatcher = dispatcher;
+            _logger = (ILogger<Renderer>)serviceProvider.GetService(typeof(ILogger<Renderer>))
+                ?? NullLogger<Renderer>.Instance;
         }
 
         /// <summary>
@@ -613,8 +618,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
-            renderQueueEntry.ComponentState
-                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
+            var componentState = renderQueueEntry.ComponentState;
+            Log.RenderingComponent(_logger, componentState);
+            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
