@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -26,10 +27,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Initializes a new instance of <see cref="HtmlRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        /// <param name="dispatcher"></param>
-        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher)
-            : base(serviceProvider, dispatcher)
+        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IDispatcher dispatcher, Func<string, string> htmlEncoder)
+            : base(serviceProvider, loggerFactory, dispatcher)
         {
             _htmlEncoder = htmlEncoder;
         }

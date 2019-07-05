@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -58,21 +57,33 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Constructs an instance of <see cref="Renderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
-        public Renderer(IServiceProvider serviceProvider)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
+            if (serviceProvider is null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (loggerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _componentFactory = new ComponentFactory(serviceProvider);
-            _logger = (ILogger<Renderer>)serviceProvider.GetService(typeof(ILogger<Renderer>))
-                ?? NullLogger<Renderer>.Instance;
+            _logger = loggerFactory.CreateLogger<Renderer>();
         }
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
-        public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IDispatcher dispatcher)
+            : this(serviceProvider, loggerFactory)
         {
-            _dispatcher = dispatcher;
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         /// <summary>

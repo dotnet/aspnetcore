@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         protected override HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
         {
-            return new HtmlRenderer(serviceProvider, _encoder, Dispatcher);
+            return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, Dispatcher, _encoder);
         }
     }
 }

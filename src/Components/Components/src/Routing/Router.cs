@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         [Inject] private IComponentContext ComponentContext { get; set; }
 
-        [Inject] private IServiceProvider ServiceProvider { get; set; }
+        [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly that should be searched, along with its referenced
@@ -59,8 +59,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public void Configure(RenderHandle renderHandle)
         {
-            _logger = (ILogger<Router>)ServiceProvider.GetService(typeof(ILogger<Router>))
-                ?? NullLogger<Router>.Instance;
+            _logger = LoggerFactory.CreateLogger<Router>();
             _renderHandle = renderHandle;
             _baseUri = UriHelper.GetBaseUri();
             _locationAbsolute = UriHelper.GetAbsoluteUri();

@@ -37,13 +37,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         /// </summary>
         public RemoteRenderer(
             IServiceProvider serviceProvider,
+            ILoggerFactory loggerFactory,
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
             IDispatcher dispatcher,
             HtmlEncoder encoder,
             ILogger logger)
-            : base(serviceProvider, encoder.Encode, dispatcher)
+            : base(serviceProvider, loggerFactory, dispatcher, encoder.Encode)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -26,8 +27,9 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
-        public WebAssemblyRenderer(IServiceProvider serviceProvider)
-            : base(serviceProvider)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+            : base(serviceProvider, loggerFactory)
         {
             // The browser renderer registers and unregisters itself with the static
             // registry. This works well with the WebAssembly runtime, and is simple for the

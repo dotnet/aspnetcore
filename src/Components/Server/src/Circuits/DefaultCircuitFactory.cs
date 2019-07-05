@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var dispatcher = Renderer.CreateDefaultDispatcher();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
+                _loggerFactory,
                 rendererRegistry,
                 jsRuntime,
                 client,

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
@@ -17,11 +18,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
         }
 
-        public TestRenderer(IDispatcher dispatcher) : base(new TestServiceProvider(), dispatcher)
+        public TestRenderer(IDispatcher dispatcher) : base(new TestServiceProvider(), NullLoggerFactory.Instance, dispatcher)
         {
         }
 
-        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, new RendererSynchronizationContext())
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, NullLoggerFactory.Instance, new RendererSynchronizationContext())
         {
         }
 
