@@ -75,19 +75,20 @@ namespace Microsoft.JSInterop
             // code has to implement its own way of returning async results.
             var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
 
-            var targetInstance = (object)null;
-            if (dotNetObjectId != default)
-            {
-                targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
-            }
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
+            object targetInstance = null;
 
             try
             {
+                if (dotNetObjectId != default)
+                {
+                    targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
+                }
+
                 syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
             }
             catch (Exception ex)

@@ -381,6 +381,23 @@ namespace Microsoft.JSInterop.Tests
             Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", result[2].GetString());
         });
 
+        [Fact]
+        public Task BeginInvoke_ThrowsWithInvalid_DotNetObjectRef() => WithJSRuntime(jsRuntime =>
+        {
+            // Arrange
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvoke(callId, null, "InvokableInstanceVoid", 1, null);
+
+            // Assert
+            using var jsonDocument = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson);
+            var result = jsonDocument.RootElement;
+            Assert.Equal(callId, result[0].GetString());
+            Assert.False(result[1].GetBoolean()); // Fails
+
+            Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectRef instance was already disposed.", result[2].GetString());
+        });
+
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
         {
             return WithJSRuntime(jsRuntime =>
