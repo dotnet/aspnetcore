@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             internal static void HandlingEvent(ILogger<Renderer> logger, int eventHandlerId, UIEventArgs eventArgs)
             {
-                _handlingEvent(logger, eventHandlerId, eventArgs.Type, null);
+                _handlingEvent(logger, eventHandlerId, eventArgs?.Type ?? "null", null);
             }
         }
     }
