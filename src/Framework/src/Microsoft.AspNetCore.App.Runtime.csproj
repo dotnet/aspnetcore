@@ -441,6 +441,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
+  <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
   <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
           Name="_CreateRedistSharedFxArchive"
           Inputs="@(SharedFxContent)"
