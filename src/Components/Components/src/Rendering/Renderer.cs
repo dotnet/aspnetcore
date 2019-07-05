@@ -194,6 +194,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var componentId = _nextComponentId++;
             var parentComponentState = GetOptionalComponentState(parentComponentId);
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
+            Log.InitializingComponent(_logger, componentState, parentComponentState);
             _componentStateById.Add(componentId, componentState);
             component.Configure(new RenderHandle(this, componentId));
             return componentState;
