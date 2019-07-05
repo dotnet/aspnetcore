@@ -52,5 +52,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         IEnumerator IEnumerable.GetEnumerator()
             => ((IEnumerable)new ArraySegment<T>(_builder.Buffer, _offset, _count)).GetEnumerator();
+
+        // TODO: If this assembly later moves to netstandard2.1, consider adding a public
+        // GetEnumerator method that returns ArraySegment.Enumerator to avoid boxing.
     }
 }
