@@ -714,6 +714,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ArrayBuilderSegment<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public T[] Array { get { throw null; } }
+        public int Count { get { throw null; } }
+        public T this[int index] { get { throw null; } }
+        public int Offset { get { throw null; } }
+        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ArrayRange<T>
     {
         public readonly T[] Array;
@@ -759,7 +771,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public readonly partial struct RenderTreeDiff
     {
         public readonly int ComponentId;
-        public readonly System.ArraySegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
+        public readonly Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly partial struct RenderTreeEdit
