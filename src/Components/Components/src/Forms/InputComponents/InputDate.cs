@@ -25,10 +25,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "date");
-            builder.AddAttribute(3, "id", Id);
-            builder.AddAttribute(4, "class", CssClass);
-            builder.AddAttribute(5, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(3, "class", CssClass);
+            builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValueAsString));
+            builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 
