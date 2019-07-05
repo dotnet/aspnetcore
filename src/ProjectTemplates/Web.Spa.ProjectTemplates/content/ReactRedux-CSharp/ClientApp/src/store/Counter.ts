@@ -24,8 +24,8 @@ export type KnownAction = IncrementCountAction | DecrementCountAction;
 // They don't directly mutate state, but they can have external side-effects (such as loading data).
 
 export const actionCreators = {
-    increment: () => <IncrementCountAction>{ type: 'INCREMENT_COUNT' },
-    decrement: () => <DecrementCountAction>{ type: 'DECREMENT_COUNT' }
+    increment: () => ({ type: 'INCREMENT_COUNT' } as IncrementCountAction),
+    decrement: () => ({ type: 'DECREMENT_COUNT' } as DecrementCountAction)
 };
 
 // ----------------

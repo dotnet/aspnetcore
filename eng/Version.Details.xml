@@ -420,5 +420,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>0538d10f82468dd7539d9abdb7b60c378989e0a6</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta1-19351-01">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>c91adff42c488aef2c2c532a7b053fb55e0c16ea</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
