@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(4, "id", Id);
             builder.AddAttribute(5, "class", CssClass);
             builder.AddAttribute(6, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(7, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 

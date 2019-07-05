@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(2, "id", Id);
             builder.AddAttribute(3, "class", CssClass);
             builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValue));
-            builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
+            builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 

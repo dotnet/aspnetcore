@@ -168,19 +168,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            var config = BlazorConfig.Read(clientAssemblyFilePath);
-
-            // We want to serve "index.html" from whichever directory contains it in this priority order:
-            // 1. Client app "dist" directory
-            // 2. Client app "wwwroot" directory
-            // 3. Server app "wwwroot" directory
             var directory = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>().WebRootPath;
-            var indexHtml = config.FindIndexHtmlFile();
-            if (indexHtml != null)
-            {
-                directory = Path.GetDirectoryName(indexHtml);
-            }
-
             var options = new StaticFileOptions()
             {
                 FileProvider = new PhysicalFileProvider(directory),
