@@ -363,17 +363,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   Targets related to creating .zip/.tar.gz
   #########################################
   -->
-  <Target Name="_DownloadAndExtractDotNetRuntime">
-    <!-- Download dotnet runtime from web when not building from source -->
-    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)') and '$(DotNetRuntimeArchiveSource)' == ''"
+  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"
       DestinationFileName="$(DotNetRuntimeArchiveFileName)" />
-
-    <!-- Copy from corefx build output when building from source -->
-    <Copy Condition="! Exists('$(DotNetRuntimeArchive)') and '$(DotNetRuntimeArchiveSource)' != ''"
-          SourceFiles="$(DotNetRuntimeArchiveSource)"
-          DestinationFiles="$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)" />
 
     <!-- Extract the dotnet-runtime archive -->
     <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
@@ -447,7 +441,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
-  <Target Name="_CreateRedistSharedFxArchive"
+  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Name="_CreateRedistSharedFxArchive"
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistArchiveOutputPath)" />
