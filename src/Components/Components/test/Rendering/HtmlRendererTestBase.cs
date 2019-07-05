@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     public abstract class HtmlRendererTestBase
     {
         protected readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
-        protected readonly IDispatcher Dispatcher = Renderer.CreateDefaultDispatcher();
+        protected readonly Dispatcher Dispatcher = Renderer.CreateDefaultDispatcher();
 
         protected abstract HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider);
 

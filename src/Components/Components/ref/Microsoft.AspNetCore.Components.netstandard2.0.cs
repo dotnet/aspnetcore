@@ -85,6 +85,16 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.UIDataTransferItem[] Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string[] Types { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public abstract partial class Dispatcher
+    {
+        protected Dispatcher() { }
+        public abstract event System.UnhandledExceptionEventHandler UnhandledException;
+        public abstract bool CheckAccess();
+        public abstract System.Threading.Tasks.Task InvokeAsync(System.Action workItem);
+        public abstract System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem);
+        public abstract System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> workItem);
+        public abstract System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<TResult> workItem);
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ElementRef
     {
@@ -303,13 +313,6 @@ namespace Microsoft.AspNetCore.Components
     {
         bool IsConnected { get; }
     }
-    public partial interface IDispatcher
-    {
-        System.Threading.Tasks.Task InvokeAsync(System.Action workItem);
-        System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem);
-        System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> workItem);
-        System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<TResult> workItem);
-    }
     public partial interface IHandleAfterRender
     {
         System.Threading.Tasks.Task OnAfterRenderAsync();
@@ -406,9 +409,8 @@ namespace Microsoft.AspNetCore.Components
     {
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
+        public Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
         public bool IsInitialized { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
-        public System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
@@ -654,7 +656,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     }
     public partial class HtmlRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
     {
-        public HtmlRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.IDispatcher dispatcher, System.Func<string, string> htmlEncoder) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
+        public HtmlRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.Dispatcher dispatcher, System.Func<string, string> htmlEncoder) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
         protected override void HandleException(System.Exception exception) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
@@ -673,18 +675,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
     public abstract partial class Renderer : System.IDisposable
     {
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.IDispatcher dispatcher) { }
+        public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.Dispatcher dispatcher) { }
+        public Microsoft.AspNetCore.Components.Dispatcher Dispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
-        public static Microsoft.AspNetCore.Components.IDispatcher CreateDefaultDispatcher() { throw null; }
+        public static Microsoft.AspNetCore.Components.Dispatcher CreateDefaultDispatcher() { throw null; }
         public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo fieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
         protected Microsoft.AspNetCore.Components.IComponent InstantiateComponent(System.Type componentType) { throw null; }
-        public virtual System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
-        public virtual System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }

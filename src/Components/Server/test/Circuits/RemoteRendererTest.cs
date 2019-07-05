@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             public void TriggerRender()
             {
-                var task = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
+                var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 Assert.True(task.IsCompletedSuccessfully);
             }
         }
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             public void TriggerRender()
             {
-                var task = _renderHandle.InvokeAsync(() => _renderHandle.Render(Content));
+                var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(Content));
                 Assert.True(task.IsCompletedSuccessfully);
             }
         }

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
-            IDispatcher dispatcher,
+            Dispatcher dispatcher,
             HtmlEncoder encoder,
             ILogger logger)
             : base(serviceProvider, loggerFactory, dispatcher, encoder.Encode)

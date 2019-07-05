@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
         private readonly Dictionary<int, int> _eventHandlerIdReplacements = new Dictionary<int, int>();
-        private readonly IDispatcher _dispatcher;
         private readonly ILogger<Renderer> _logger;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
@@ -37,19 +36,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             add
             {
-                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
-                {
-                    return;
-                }
-                rendererSynchronizationContext.UnhandledException += value;
+                Dispatcher.UnhandledException += value;
             }
             remove
             {
-                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
-                {
-                    return;
-                }
-                rendererSynchronizationContext.UnhandledException -= value;
+                Dispatcher.UnhandledException -= value;
             }
         }
 
@@ -72,6 +63,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             _componentFactory = new ComponentFactory(serviceProvider);
             _logger = loggerFactory.CreateLogger<Renderer>();
+            _componentFactory = new ComponentFactory(serviceProvider);
+            Dispatcher = NullDispatcher.Instance;
         }
 
         /// <summary>
@@ -79,18 +72,23 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
-        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IDispatcher dispatcher)
+        /// <param name="dispatcher">The <see cref="Dispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Dispatcher dispatcher)
             : this(serviceProvider, loggerFactory)
         {
-            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            Dispatcher = dispatcher ?? NullDispatcher.Instance;
         }
 
         /// <summary>
-        /// Creates an <see cref="IDispatcher"/> that can be used with one or more <see cref="Renderer"/>.
+        /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with this <see cref="Renderer" />.
         /// </summary>
-        /// <returns>The <see cref="IDispatcher"/>.</returns>
-        public static IDispatcher CreateDefaultDispatcher() => new RendererSynchronizationContext();
+        public Dispatcher Dispatcher { get; }
+
+        /// <summary>
+        /// Creates an <see cref="Dispatcher"/> that can be used with one or more <see cref="Renderer"/>.
+        /// </summary>
+        /// <returns>The <see cref="Dispatcher"/>.</returns>
+        public static Dispatcher CreateDefaultDispatcher() => new RendererSynchronizationContextDispatcher();
 
         /// <summary>
         /// Constructs a new component of the specified type.
@@ -272,58 +270,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return GetErrorHandledTask(task);
         }
 
-        /// <summary>
-        /// Executes the supplied work item on the renderer's
-        /// synchronization context.
-        /// </summary>
-        /// <param name="workItem">The work item to execute.</param>
-        public virtual Task InvokeAsync(Action workItem)
-        {
-            // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (_dispatcher == null)
-            {
-                workItem();
-                return Task.CompletedTask;
-            }
-
-            if (SynchronizationContext.Current == _dispatcher)
-            {
-                // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
-                // No need to dispatch. Avoid deadlock by invoking directly.
-                workItem();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _dispatcher.InvokeAsync(workItem);
-            }
-        }
-
-        /// <summary>
-        /// Executes the supplied work item on the renderer's
-        /// synchronization context.
-        /// </summary>
-        /// <param name="workItem">The work item to execute.</param>
-        public virtual Task InvokeAsync(Func<Task> workItem)
-        {
-            // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (_dispatcher == null)
-            {
-                return workItem();
-            }
-
-            if (SynchronizationContext.Current == _dispatcher)
-            {
-                // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
-                // No need to dispatch. Avoid deadlock by invoking directly.
-                return workItem();
-            }
-            else
-            {
-                return _dispatcher.InvokeAsync(workItem);
-            }
-        }
-
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {
             if (frame.FrameType != RenderTreeFrameType.Component)
@@ -448,12 +394,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void EnsureSynchronizationContext()
         {
-            // When the IDispatcher is a synchronization context
+            // When the Dispatcher is a synchronization context
             // Render operations are not thread-safe, so they need to be serialized.
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
-            if (_dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
+            if (!Dispatcher.CheckAccess())
             {
                 throw new InvalidOperationException(
                     "The current thread is not associated with the renderer's synchronization context. " +

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server
             // Assert
             AssertBinaryContents(bytes, /* startIndex */ 0,
                 0,  // Length of UpdatedComponents
-                0,  // Length of ReferenceFrames                
+                0,  // Length of ReferenceFrames
                 3, 123, int.MaxValue, int.MinValue, // DisposedComponentIds as length-prefixed array
                 0,  // Length of DisposedEventHandlerIds
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 2,   // Length of UpdatedComponents
                 0,   // Index of UpdatedComponents[0]
                 8,   // Index of UpdatedComponents[1]
-                
+
                 0,   // Length of ReferenceFrames
                 0,   // Length of DisposedComponentIds
                 0,   // Length of DisposedEventHandlerIds
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Server
             var bytes = Serialize(new RenderBatch(
                 new ArrayRange<RenderTreeDiff>(new[]
                 {
-                    new RenderTreeDiff(123, editsSegment) 
+                    new RenderTreeDiff(123, editsSegment)
                 }, 1),
                 default,
                 default,
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 shift += 7;
                 numBytesRead++;
             }
-            
+
             return result;
         }
 
@@ -376,7 +376,7 @@ namespace Microsoft.AspNetCore.Components.Server
         class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
             {
             }
 

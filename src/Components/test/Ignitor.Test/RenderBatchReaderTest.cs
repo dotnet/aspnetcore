@@ -335,7 +335,7 @@ namespace Ignitor
         class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
             {
             }
 

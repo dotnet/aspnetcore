@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
+        /// <param name="dispatcher">The <see cref="Dispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IDispatcher dispatcher, Func<string, string> htmlEncoder)
+        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Dispatcher dispatcher, Func<string, string> htmlEncoder)
             : base(serviceProvider, loggerFactory, dispatcher)
         {
             _htmlEncoder = htmlEncoder;

@@ -7,19 +7,18 @@ using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IList<ComponentDescriptor> descriptors, IDispatcher dispatcher, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IList<ComponentDescriptor> descriptors, Dispatcher dispatcher, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
             : base(circuitId, scope, client, rendererRegistry, renderer, descriptors, dispatcher, jsRuntime, circuitHandlers, logger)
         {
         }

@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             handler2.VerifyAll();
         }
 
-        private static TestRemoteRenderer GetRemoteRenderer(IDispatcher dispatcher)
+        private static TestRemoteRenderer GetRemoteRenderer(Dispatcher dispatcher)
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IDispatcher dispatcher, IJSRuntime jsRuntime, IClientProxy client)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, Dispatcher dispatcher, IJSRuntime jsRuntime, IClientProxy client)
                 : base(serviceProvider, NullLoggerFactory.Instance, rendererRegistry, jsRuntime, new CircuitClientProxy(client, "connection"), dispatcher, HtmlEncoder.Default, NullLogger.Instance)
             {
             }
@@ -257,12 +257,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private class DispatcherComponent : ComponentBase, IDisposable
         {
-            public DispatcherComponent(IDispatcher dispatcher)
+            public DispatcherComponent(Dispatcher dispatcher)
             {
                 Dispatcher = dispatcher;
             }
 
-            public IDispatcher Dispatcher { get; }
+            public Dispatcher Dispatcher { get; }
             public bool Called { get; private set; }
 
             public void Dispose()
