@@ -39,14 +39,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 i -= ((1 << n) - 1);
                 while (i >= 128)
                 {
-                    buffer[j++] = (byte)(i % 128 + 128);
+                    var ui = (uint)i; // Use unsigned for optimizations
+                    buffer[j++] = (byte)((ui & 127) + 128); // (i % 128 + 128)
 
                     if (j >= buffer.Length)
                     {
                         return false;
                     }
 
-                    i = ((uint)i) / 128;
+                    i = (int)(ui / 128); // Jit converts unsigned divide by power-of-2 constant to clean shift
                 }
                 buffer[j++] = (byte)i;
             }
