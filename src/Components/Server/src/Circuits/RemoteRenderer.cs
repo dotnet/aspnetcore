@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -106,6 +105,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             while (PendingRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
+                entry.Data.Dispose();
             }
             _rendererRegistry.TryRemove(Id);
         }
@@ -123,30 +123,34 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to
             // snapshot its contents now.
-            // TODO: Consider using some kind of array pool instead of allocating a new
-            //       buffer on every render.
-            byte[] batchBytes;
-            using (var memoryStream = new MemoryStream())
+            using var memoryStream = new ArrayBuilderMemoryStream();
+            PendingRender pendingRender;
+            var arrayBuilder = memoryStream.ArrayBuilder;
+            try
             {
                 using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
                 {
                     renderBatchWriter.Write(in batch);
                 }
 
-                batchBytes = memoryStream.ToArray();
+                var renderId = Interlocked.Increment(ref _nextRenderId);
+
+                pendingRender = new PendingRender(
+                    renderId,
+                    arrayBuilder,
+                    new TaskCompletionSource<object>());
+
+                // Buffer the rendered batches no matter what. We'll send it down immediately when the client
+                // is connected or right after the client reconnects.
+
+                PendingRenderBatches.Enqueue(pendingRender);
             }
-
-            var renderId = Interlocked.Increment(ref _nextRenderId);
-
-            var pendingRender = new PendingRender(
-                renderId,
-                batchBytes,
-                new TaskCompletionSource<object>());
-
-            // Buffer the rendered batches no matter what. We'll send it down immediately when the client
-            // is connected or right after the client reconnects.
-
-            PendingRenderBatches.Enqueue(pendingRender);
+            catch
+            {
+                // if we throw prior to queueing the write, dispose the builder.
+                arrayBuilder.Dispose();
+                throw;
+            }
 
             // Fire and forget the initial send for this batch (if connected). Otherwise it will be sent
             // as soon as the client reconnects.
@@ -181,8 +185,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     return;
                 }
 
-                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Length);
-                await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, pending.Data);
+                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
+                var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
+                await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, segment);
             }
             catch (Exception e)
             {
@@ -207,21 +212,32 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
-            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incomingBatchId)
+            if (!PendingRenderBatches.TryDequeue(out var entry))
             {
                 HandleException(
                     new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
             }
             else
             {
-                if (errorMessageOrNull == null)
+                entry.Data.Dispose();
+
+                if (entry.BatchId != incomingBatchId)
                 {
-                    Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+                    HandleException(
+                        new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
                 }
                 else
                 {
-                    Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+                    if (errorMessageOrNull == null)
+                    {
+                        Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+                    }
+                    else
+                    {
+                        Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+                    }
                 }
+
 
                 CompleteRender(entry.CompletionSource, errorMessageOrNull);
             }
@@ -241,7 +257,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         internal readonly struct PendingRender
         {
-            public PendingRender(long batchId, byte[] data, TaskCompletionSource<object> completionSource)
+            public PendingRender(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
             {
                 BatchId = batchId;
                 Data = data;
@@ -249,7 +265,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
 
             public long BatchId { get; }
-            public byte[] Data { get; }
+            public ArrayBuilder<byte> Data { get; }
             public TaskCompletionSource<object> CompletionSource { get; }
         }
 
