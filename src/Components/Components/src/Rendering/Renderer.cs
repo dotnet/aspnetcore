@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _componentFactory = new ComponentFactory(serviceProvider);
+            _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(serviceProvider);
         }

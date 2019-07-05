@@ -159,22 +159,12 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             public bool Equals(RouteTemplate x, RouteTemplate y)
             {
-                if (x == null && y == null)
-                {
-                    return true;
-                }
-
-                if ((x == null) != (y == null))
-                {
-                    return false;
-                }
-
                 if (x.Segments.Length != y.Segments.Length)
                 {
                     return false;
                 }
 
-                for (int i = 0; i < x.Segments.Length; i++)
+                for (var i = 0; i < x.Segments.Length; i++)
                 {
                     var xSegment = x.Segments[i];
                     var ySegment = y.Segments[i];

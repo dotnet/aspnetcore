@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    internal class RouteEntry
+    internal readonly struct RouteEntry
     {
         public RouteEntry(RouteTemplate template, Type handler)
         {
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // Parameters will be lazily initialized.
-            IDictionary<string, object> parameters = null;
-            for (int i = 0; i < Template.Segments.Length; i++)
+            Dictionary<string, object> parameters = null;
+            for (var i = 0; i < Template.Segments.Length; i++)
             {
                 var segment = Template.Segments[i];
                 var pathSegment = context.Segments[i];
@@ -39,23 +39,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                 {
                     if (segment.IsParameter)
                     {
-                        GetParameters()[segment.Value] = matchedParameterValue;
+                        parameters ??= new Dictionary<string, object>(StringComparer.Ordinal);
+                        parameters[segment.Value] = matchedParameterValue;
                     }
                 }
             }
 
             context.Parameters = parameters;
             context.Handler = Handler;
-
-            IDictionary<string, object> GetParameters()
-            {
-                if (parameters == null)
-                {
-                    parameters = new Dictionary<string, object>();
-                }
-
-                return parameters;
-            }
         }
     }
 }
