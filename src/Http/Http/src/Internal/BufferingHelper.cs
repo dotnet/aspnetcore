@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
             return request;
         }
 
-        [Obsolete("This method is obsolete. Use `EnableRewind` instead.")]
+        [Obsolete("This method is obsolete. Use `EnableRewind` with `IFileBufferingStreamFactory` instead.")]
         public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
             int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
