@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.RenderTree
 <div id="test-selector">
-  Select test:
+    Select test:
     <select @bind=SelectedComponentTypeName>
         <option value="none">Choose...</option>
         <option value="BasicTestApp.InteropComponent">Interop component</option>
@@ -60,13 +60,17 @@
         <option value="BasicTestApp.DuplicateAttributesComponent">Duplicate attributes</option>
         <option value="BasicTestApp.MovingCheckboxesComponent">Moving checkboxes diff case</option>
         <option value="BasicTestApp.LaggyTypingComponent">Laggy typing</option>
+        <option value="BasicTestApp.CulturePicker">Culture Picker</option>
+        <option value="BasicTestApp.LocalizedText">Localized Text</option>
     </select>
 
-  @if (SelectedComponentType != null)
-  {
-    <span id="source-info"><code><tt>@(SelectedComponentType.Name.Replace(".", "/")).cshtml</tt></code></span>
-  }
-  <hr />
+    <span id="runtime-info"><code><tt>@System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</tt></code></span>
+
+    @if (SelectedComponentType != null)
+    {
+        <span id="source-info"><code><tt>@(SelectedComponentType.Name.Replace(".", "/")).razor</tt></code></span>
+    }
+    <hr />
 </div>
 
 <app>
