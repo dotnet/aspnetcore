@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Http
             return new FileBufferingReadStream(inner, bufferThreshold, bufferLimit, _getTempDirectory);
         }
 
-        public FileBufferingWriteStream CreateWriteStream()
+        public IBufferedWriteStream CreateWriteStream()
         {
             return new FileBufferingWriteStream(tempFileDirectoryAccessor: _getTempDirectory);
         }
 
-        public FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = null)
+        public IBufferedWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = null)
         {
             return new FileBufferingWriteStream(memoryThreshold, bufferLimit, _getTempDirectory);
         }

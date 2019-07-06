@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http
     public interface IFileBufferingStreamFactory
     {
         Stream CreateReadStream(Stream inner, int bufferThreshold, long? bufferLimit = null);
-        FileBufferingWriteStream CreateWriteStream();
-        FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = null);
+        IBufferedWriteStream CreateWriteStream();
+        IBufferedWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = null);
     }
 }

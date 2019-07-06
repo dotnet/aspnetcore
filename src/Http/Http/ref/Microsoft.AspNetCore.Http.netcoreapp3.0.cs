@@ -165,9 +165,9 @@ namespace Microsoft.AspNetCore.Http
     public partial class HttpFileBufferingStreamFactory : Microsoft.AspNetCore.Http.IFileBufferingStreamFactory
     {
         public HttpFileBufferingStreamFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.HttpBufferingOptions> bufferingOptions) { }
-        public Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?)) { throw null; }
-        public Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream() { throw null; }
-        public Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?)) { throw null; }
+        public System.IO.Stream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?)) { throw null; }
+        public Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream CreateWriteStream() { throw null; }
+        public Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?)) { throw null; }
     }
     public static partial class HttpRequestRewindExtensions
     {
@@ -182,15 +182,20 @@ namespace Microsoft.AspNetCore.Http
     }
     public partial interface IFileBufferingStreamFactory
     {
-        Microsoft.AspNetCore.WebUtilities.FileBufferingReadStream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?));
-        Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream();
-        Microsoft.AspNetCore.WebUtilities.FileBufferingWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?));
+        System.IO.Stream CreateReadStream(System.IO.Stream inner, int bufferThreshold, long? bufferLimit = default(long?));
+        Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream CreateWriteStream();
+        Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream CreateWriteStream(int memoryThreshold, long? bufferLimit = default(long?));
     }
     public partial class MiddlewareFactory : Microsoft.AspNetCore.Http.IMiddlewareFactory
     {
         public MiddlewareFactory(System.IServiceProvider serviceProvider) { }
         public Microsoft.AspNetCore.Http.IMiddleware Create(System.Type middlewareType) { throw null; }
         public void Release(Microsoft.AspNetCore.Http.IMiddleware middleware) { }
+    }
+    public partial class PostConfigureHttpBufferingOptions : Microsoft.Extensions.Options.IPostConfigureOptions<Microsoft.AspNetCore.Http.HttpBufferingOptions>
+    {
+        public PostConfigureHttpBufferingOptions() { }
+        public void PostConfigure(string name, Microsoft.AspNetCore.Http.HttpBufferingOptions options) { }
     }
     public partial class QueryCollection : Microsoft.AspNetCore.Http.IQueryCollection, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
     {
@@ -371,6 +376,11 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public static partial class HttpBufferingServiceCollectionExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpBuffering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpBuffering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Http.HttpBufferingOptions> configureOptions) { throw null; }
+    }
     public static partial class HttpServiceCollectionExtensions
     {
         public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpContextAccessor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }

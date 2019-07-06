@@ -739,7 +739,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(Options.Create(new MvcOptions()))
-                .AddSingleton(Options.Create(new HttpBufferingOptions()))
+                .AddHttpBuffering()
                 .BuildServiceProvider();
             return httpContext;
         }

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -22,8 +22,7 @@ namespace Microsoft.AspNetCore.Http
             var body = request.Body;
             if (!body.CanSeek)
             {
-                var httpBufferingOptions = request.HttpContext.RequestServices.GetRequiredService<IOptions<HttpBufferingOptions>>();
-                var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
+                var factory = request.HttpContext.RequestServices.GetRequiredService<IFileBufferingStreamFactory>();
                 var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 request.Body = fileStream;
                 request.HttpContext.Response.RegisterForDispose(fileStream);
@@ -31,8 +30,9 @@ namespace Microsoft.AspNetCore.Http
             return request;
         }
 
+        [Obsolete("This method is obsolete. Use `EnableRewind` instead.")]
         public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
-            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null, IOptions<HttpBufferingOptions> httpBufferingOptions = null)
+            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
             if (section == null)
             {
@@ -46,9 +46,34 @@ namespace Microsoft.AspNetCore.Http
             var body = section.Body;
             if (!body.CanSeek)
             {
-                httpBufferingOptions ??= Options.Create(new HttpBufferingOptions());
-                var factory = new HttpFileBufferingStreamFactory(httpBufferingOptions);
-                var fileStream = factory.CreateReadStream(body, bufferThreshold, bufferLimit);
+                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
+                section.Body = fileStream;
+                registerForDispose(fileStream);
+            }
+            return section;
+        }
+
+        public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
+            IFileBufferingStreamFactory fileBufferingStreamFactory, int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
+        {
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+            if (registerForDispose == null)
+            {
+                throw new ArgumentNullException(nameof(registerForDispose));
+            }
+
+            if (fileBufferingStreamFactory == null)
+            {
+                throw new ArgumentNullException(nameof(fileBufferingStreamFactory));
+            }
+
+            var body = section.Body;
+            if (!body.CanSeek)
+            {
+                var fileStream = fileBufferingStreamFactory.CreateReadStream(body, bufferThreshold, bufferLimit);
                 section.Body = fileStream;
                 registerForDispose(fileStream);
             }

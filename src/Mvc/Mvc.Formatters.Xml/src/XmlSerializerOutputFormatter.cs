@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly ILogger _logger;
         private MvcOptions _mvcOptions;
+        private IFileBufferingStreamFactory _fileBufferingStreamFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
@@ -241,11 +242,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            IBufferedWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                _fileBufferingStreamFactory ??= httpContext.RequestServices.GetRequiredService<IFileBufferingStreamFactory>();
+                fileBufferingWriteStream = _fileBufferingStreamFactory.CreateWriteStream();
+                responseStream = fileBufferingWriteStream.Buffer;
             }
 
             try
@@ -260,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
-                    response.ContentLength = fileBufferingWriteStream.Length;
+                    response.ContentLength = fileBufferingWriteStream.Buffer.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }
@@ -268,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.DisposeAsync();
+                    await fileBufferingWriteStream.Buffer.DisposeAsync();
                 }
             }
         }

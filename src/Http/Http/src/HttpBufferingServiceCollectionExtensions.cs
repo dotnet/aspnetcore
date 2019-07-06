@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods for setting up Http Buffering services in an <see cref="IServiceCollection" />.
     /// </summary>
-    public static class HttpBufferingExtensions
+    public static class HttpBufferingServiceCollectionExtensions
     {
         /// <summary>
         /// Adds services required to enable Http Bufering to the specified <see cref="IServiceCollection" />.

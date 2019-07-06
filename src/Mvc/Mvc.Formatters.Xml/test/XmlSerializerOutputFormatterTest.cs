@@ -524,6 +524,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(Options.Create(new MvcOptions()))
+                .AddHttpBuffering()
                 .BuildServiceProvider();
             return httpContext;
         }

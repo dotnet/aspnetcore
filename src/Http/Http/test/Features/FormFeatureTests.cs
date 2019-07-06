@@ -8,7 +8,6 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -633,7 +632,7 @@ MultipartFormField +
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = new ServiceCollection()
-                .AddSingleton(Options.Create(new HttpBufferingOptions()))
+                .AddHttpBuffering()
                 .BuildServiceProvider()
             };
             return httpContext;

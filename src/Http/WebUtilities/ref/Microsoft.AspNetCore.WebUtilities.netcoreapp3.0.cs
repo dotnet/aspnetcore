@@ -65,9 +65,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override void Write(byte[] buffer, int offset, int count) { }
         public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public sealed partial class FileBufferingWriteStream : System.IO.Stream
+    public sealed partial class FileBufferingWriteStream : System.IO.Stream, Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream
     {
         public FileBufferingWriteStream(int memoryThreshold = 32768, long? bufferLimit = default(long?), System.Func<string> tempFileDirectoryAccessor = null) { }
+        public System.IO.Stream Buffer { get { throw null; } }
         public override bool CanRead { get { throw null; } }
         public override bool CanSeek { get { throw null; } }
         public override bool CanWrite { get { throw null; } }
@@ -165,6 +166,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override System.Threading.Tasks.Task WriteAsync(char value) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(char[] values, int index, int count) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(string value) { throw null; }
+    }
+    public partial interface IBufferedWriteStream
+    {
+        System.IO.Stream Buffer { get; }
+        System.Threading.Tasks.Task DrainBufferAsync(System.IO.Stream destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct KeyValueAccumulator

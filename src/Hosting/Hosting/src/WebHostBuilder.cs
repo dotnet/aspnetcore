@@ -283,6 +283,7 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
+            services.AddHttpBuffering();
             services.AddOptions();
             services.AddLogging();
 

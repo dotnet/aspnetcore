@@ -184,11 +184,11 @@ namespace Microsoft.AspNetCore.Http.Features
                             var fileSection = new FileMultipartSection(section, contentDisposition);
 
                             // Enable buffering for the file if not already done for the full body
-                            var httpBufferingOptions = _request.HttpContext.RequestServices.GetService<IOptions<HttpBufferingOptions>>();
+                            var fileBufferingStreamFactory = _request.HttpContext.RequestServices.GetRequiredService<IFileBufferingStreamFactory>();
                             section.EnableRewind(
                                 _request.HttpContext.Response.RegisterForDispose,
-                                _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit,
-                                httpBufferingOptions);
+                                fileBufferingStreamFactory,
+                                _options.MemoryBufferThreshold, _options.MultipartBodyLengthLimit);
 
                             // Find the end
                             await section.Body.DrainAsync(cancellationToken);
