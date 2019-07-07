@@ -685,6 +685,8 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
             services.AddSingleton<IActionResultExecutor<ViewComponentResult>, ViewComponentResultExecutor>();
             services.AddSingleton<IHttpResponseStreamWriterFactory, TestHttpResponseStreamWriterFactory>();
+            services.AddSingleton(Options.Create(new HttpBufferingOptions { TempFileDirectory = Path.GetTempPath() }));
+            services.AddSingleton<IFileBufferingStreamFactory, HttpFileBufferingStreamFactory>();
 
             return services;
         }
