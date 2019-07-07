@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.Buffer.DisposeAsync();
+                    await fileBufferingWriteStream.DisposeAsync();
                 }
             }
         }

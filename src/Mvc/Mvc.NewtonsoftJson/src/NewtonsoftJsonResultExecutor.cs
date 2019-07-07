@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             {
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.Buffer.DisposeAsync();
+                    await fileBufferingWriteStream.DisposeAsync();
                 }
             }
         }
