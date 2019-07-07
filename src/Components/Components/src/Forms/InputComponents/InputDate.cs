@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputDate<T> : InputBase<T>
     {
-        const string dateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
+        private const string DateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
 
         /// <summary>
         /// Gets or sets the error message used when displaying an a parsing error.
@@ -37,9 +38,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             switch (value)
             {
                 case DateTime dateTimeValue:
-                    return dateTimeValue.ToString(dateFormat);
+                    return dateTimeValue.ToString(DateFormat, CultureInfo.InvariantCulture);
                 case DateTimeOffset dateTimeOffsetValue:
-                    return dateTimeOffsetValue.ToString(dateFormat);
+                    return dateTimeOffsetValue.ToString(DateFormat, CultureInfo.InvariantCulture);
                 default:
                     return string.Empty; // Handles null for Nullable<DateTime>, etc.
             }
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTime(string value, out T result)
         {
-            var success = DateTime.TryParse(value, out var parsedValue);
+            var success = DateTime.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTimeOffset(string value, out T result)
         {
-            var success = DateTimeOffset.TryParse(value, out var parsedValue);
+            var success = DateTimeOffset.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;

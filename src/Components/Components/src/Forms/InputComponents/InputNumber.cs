@@ -86,6 +86,39 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
+        /// <summary>
+        /// Formats the value as a string. Derived classes can override this to determine the formating used for <c>CurrentValueAsString</c>.
+        /// </summary>
+        /// <param name="value">The value to format.</param>
+        /// <returns>A string representation of the value.</returns>
+        protected override string FormatValueAsString(T value)
+        {
+            // Avoiding a cast to IFormattable to avoid boxing.
+            switch (value)
+            {
+                case null:
+                    return null;
+
+                case int @int:
+                    return @int.ToString(CultureInfo.InvariantCulture);
+
+                case long @long:
+                    return @long.ToString(CultureInfo.InvariantCulture);
+
+                case float @float:
+                    return @float.ToString(CultureInfo.InvariantCulture);
+
+                case double @double:
+                    return @double.ToString(CultureInfo.InvariantCulture);
+
+                case decimal @decimal:
+                    return @decimal.ToString(CultureInfo.InvariantCulture);
+
+                default:
+                    throw new InvalidOperationException($"Unsupported type {value.GetType()}");
+            }
+        }
+
         static bool TryParseInt(string value, out T result)
         {
             var success = int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue);

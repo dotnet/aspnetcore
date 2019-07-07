@@ -173,6 +173,72 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
         }
 
+        [Theory]
+        [InlineData("en-US")]
+        [InlineData("fr-FR")]
+        public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithFormComponents(string culture)
+        {
+            var cultureInfo = CultureInfo.GetCultureInfo(culture);
+
+            var selector = new SelectElement(Browser.FindElement(By.Id("culture-selector")));
+            selector.SelectByValue(culture);
+
+            // That should have triggered a redirect, wait for the main test selector to come up.
+            MountTestComponent<GlobalizationBindCases>();
+            WaitUntilExists(By.Id("globalization-cases"));
+
+            var cultureDisplay = WaitUntilExists(By.Id("culture-name-display"));
+            Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+
+            // int
+            var input = Browser.FindElement(By.Id("inputnumber_int"));
+            var display = Browser.FindElement(By.Id("inputnumber_int_value"));
+            Browser.Equal(42.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            input.Clear();
+            input.SendKeys(9000.ToString(CultureInfo.InvariantCulture));
+            input.SendKeys("\t");
+            Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            // decimal
+            input = Browser.FindElement(By.Id("inputnumber_decimal"));
+            display = Browser.FindElement(By.Id("inputnumber_decimal_value"));
+            Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            input.Clear();
+            input.SendKeys(9000.42m.ToString(CultureInfo.InvariantCulture));
+            input.SendKeys("\t");
+            Browser.Equal(9000.42m.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            // datetime
+            input = Browser.FindElement(By.Id("inputdate_datetime"));
+            display = Browser.FindElement(By.Id("inputdate_datetime_value"));
+            var extraInput = Browser.FindElement(By.Id("inputdate_datetime_extrainput"));
+            Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            ReplaceText(extraInput, new DateTime(2000, 1, 2).ToString(cultureInfo));
+            extraInput.SendKeys("\t");
+            Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            // datetimeoffset
+            input = Browser.FindElement(By.Id("inputdate_datetimeoffset"));
+            display = Browser.FindElement(By.Id("inputdate_datetimeoffset_value"));
+            extraInput = Browser.FindElement(By.Id("inputdate_datetimeoffset_extrainput"));
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            ReplaceText(extraInput, new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
+            extraInput.SendKeys("\t");
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
+            Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        }
+
         // see: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/214
         //
         // Calling Clear() can trigger onchange, which will revert the value to its default.
