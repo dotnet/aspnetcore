@@ -30,29 +30,6 @@ namespace Microsoft.AspNetCore.Http
             return request;
         }
 
-        [Obsolete("This method is obsolete. Use `EnableRewind` with `IFileBufferingStreamFactory` instead.")]
-        public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
-            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
-        {
-            if (section == null)
-            {
-                throw new ArgumentNullException(nameof(section));
-            }
-            if (registerForDispose == null)
-            {
-                throw new ArgumentNullException(nameof(registerForDispose));
-            }
-
-            var body = section.Body;
-            if (!body.CanSeek)
-            {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
-                section.Body = fileStream;
-                registerForDispose(fileStream);
-            }
-            return section;
-        }
-
         public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
             IFileBufferingStreamFactory fileBufferingStreamFactory, int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
