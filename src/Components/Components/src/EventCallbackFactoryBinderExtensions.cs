@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 
@@ -26,6 +25,7 @@ namespace Microsoft.AspNetCore.Components
     public static class EventCallbackFactoryBinderExtensions
     {
         private delegate bool BindConverter<T>(object obj, CultureInfo culture, out T value);
+        private delegate bool BindConverterWithFormat<T>(object obj, CultureInfo culture, string format, out T value);
 
         // Perf: conversion delegates are written as static funcs so we can prevent
         // allocations for these simple cases.
@@ -261,9 +261,16 @@ namespace Microsoft.AspNetCore.Components
         }
 
         private static BindConverter<DateTime> ConvertToDateTime = ConvertToDateTimeCore;
+        private static BindConverterWithFormat<DateTime> ConvertToDateTimeWithFormat = ConvertToDateTimeCore;
         private static BindConverter<DateTime?> ConvertToNullableDateTime = ConvertToNullableDateTimeCore;
+        private static BindConverterWithFormat<DateTime?> ConvertToNullableDateTimeWithFormat = ConvertToNullableDateTimeCore;
 
         private static bool ConvertToDateTimeCore(object obj, CultureInfo culture, out DateTime value)
+        {
+            return ConvertToDateTimeCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToDateTimeCore(object obj, CultureInfo culture, string format, out DateTime value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -272,17 +279,27 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            if (format != null && DateTime.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
             {
-                value = default;
-                return false;
+                value = converted;
+                return true;
+            }
+            else if (format == null && DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out converted))
+            {
+                value = converted;
+                return true;
             }
 
-            value = converted;
-            return true;
+            value = default;
+            return false;
         }
 
         private static bool ConvertToNullableDateTimeCore(object obj, CultureInfo culture, out DateTime? value)
+        {
+            return ConvertToNullableDateTimeCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToNullableDateTimeCore(object obj, CultureInfo culture, string format, out DateTime? value)
         {
             var text = (string)obj;
             if (string.IsNullOrEmpty(text))
@@ -291,14 +308,82 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            if (format != null && DateTime.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            {
+                value = converted;
+                return true;
+            }
+            else if (format == null && DateTime.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out converted))
+            {
+                value = converted;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        private static BindConverter<DateTimeOffset> ConvertToDateTimeOffset = ConvertToDateTimeOffsetCore;
+        private static BindConverterWithFormat<DateTimeOffset> ConvertToDateTimeOffsetWithFormat = ConvertToDateTimeOffsetCore;
+        private static BindConverter<DateTimeOffset?> ConvertToNullableDateTimeOffset = ConvertToNullableDateTimeOffsetCore;
+        private static BindConverterWithFormat<DateTimeOffset?> ConvertToNullableDateTimeOffsetWithFormat = ConvertToNullableDateTimeOffsetCore;
+
+        private static bool ConvertToDateTimeOffsetCore(object obj, CultureInfo culture, out DateTimeOffset value)
+        {
+            return ConvertToDateTimeOffsetCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToDateTimeOffsetCore(object obj, CultureInfo culture, string format, out DateTimeOffset value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
             {
                 value = default;
                 return false;
             }
 
-            value = converted;
-            return true;
+            if (format != null && DateTimeOffset.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            {
+                value = converted;
+                return true;
+            }
+            else if (format == null && DateTimeOffset.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out converted))
+            {
+                value = converted;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
+        private static bool ConvertToNullableDateTimeOffsetCore(object obj, CultureInfo culture, out DateTimeOffset? value)
+        {
+            return ConvertToNullableDateTimeOffsetCore(obj, culture, format: null, out value);
+        }
+
+        private static bool ConvertToNullableDateTimeOffsetCore(object obj, CultureInfo culture, string format, out DateTimeOffset? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (format != null && DateTimeOffset.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out var converted))
+            {
+                value = converted;
+                return true;
+            }
+            else if (format == null && DateTimeOffset.TryParse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.None, out converted))
+            {
+                value = converted;
+                return true;
+            }
+
+            value = default;
+            return false;
         }
 
         private static bool ConvertToEnum<T>(object obj, CultureInfo culture, out T value) where T : struct, Enum
@@ -602,26 +687,7 @@ namespace Microsoft.AspNetCore.Components
             DateTime existingValue,
             CultureInfo culture = null)
         {
-            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
-        }
-
-        /// <summary>
-        /// For internal use only.
-        /// </summary>
-        /// <param name="factory"></param>
-        /// <param name="receiver"></param>
-        /// <param name="setter"></param>
-        /// <param name="existingValue"></param>
-        /// <param name="culture"></param>
-        /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
-            this EventCallbackFactory factory,
-            object receiver,
-            Action<DateTime?> setter,
-            DateTime? existingValue,
-            CultureInfo culture = null)
-        {
-            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
+            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format: null, ConvertToDateTimeWithFormat);
         }
 
         /// <summary>
@@ -642,45 +708,127 @@ namespace Microsoft.AspNetCore.Components
             string format,
             CultureInfo culture = null)
         {
-            // Avoiding CreateBinderCore so we can avoid an extra allocating lambda
-            // when a format is used.
-            Action<UIChangeEventArgs> callback = (e) =>
-            {
-                DateTime value = default;
-                var converted = false;
-                try
-                {
-                    value = ConvertDateTime(e.Value, culture, format);
-                    converted = true;
-                }
-                catch
-                {
-                }
+            return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
+        }
 
-                // See comments in CreateBinderCore
-                if (converted)
-                {
-                    setter(value);
-                }
-            };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTime?> setter,
+            DateTime? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format: null, ConvertToNullableDateTimeWithFormat);
+        }
 
-            static DateTime ConvertDateTime(object obj, CultureInfo culture, string format)
-            {
-                var text = (string)obj;
-                if (string.IsNullOrEmpty(text))
-                {
-                    return default;
-                }
-                else if (format != null && DateTime.TryParseExact(text, format, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind, out var value))
-                {
-                    return value;
-                }
-                else
-                {
-                    return DateTime.Parse(text, culture ?? CultureInfo.CurrentCulture, DateTimeStyles.RoundtripKind);
-                }
-            }
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTime?> setter,
+            DateTime? existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset> setter,
+            DateTimeOffset existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format: null, ConvertToDateTimeOffsetWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset> setter,
+            DateTimeOffset existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset?> setter,
+            DateTimeOffset? existingValue,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format: null, ConvertToNullableDateTimeOffsetWithFormat);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <param name="format"></param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<DateTimeOffset?> setter,
+            DateTimeOffset? existingValue,
+            string format,
+            CultureInfo culture = null)
+        {
+            return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
         }
 
         /// <summary>
@@ -717,6 +865,50 @@ namespace Microsoft.AspNetCore.Components
                 try
                 {
                     converted = converter(e.Value, culture, out value);
+                }
+                catch
+                {
+                }
+
+                // We only invoke the setter if the conversion didn't throw, or if the newly-entered value is empty.
+                // If the user entered some non-empty value we couldn't parse, we leave the state of the .NET field
+                // unchanged, which for a two-way binding results in the UI reverting to its previous valid state
+                // because the diff will see the current .NET output no longer matches the render tree since we
+                // patched it to reflect the state of the UI.
+                //
+                // This reversion behavior is valuable because alternatives are problematic:
+                // - If we assigned default(T) on failure, the user would lose whatever data they were editing,
+                //   for example if they accidentally pressed an alphabetical key while editing a number with
+                //   @bind:event="oninput"
+                // - If the diff mechanism didn't revert to the previous good value, the user wouldn't necessarily
+                //   know that the data they are submitting is different from what they think they've typed
+                if (converted)
+                {
+                    setter(value);
+                }
+                else if (string.Empty.Equals(e.Value))
+                {
+                    setter(default);
+                }
+            };
+            return factory.Create<UIChangeEventArgs>(receiver, callback);
+        }
+
+        private static EventCallback<UIChangeEventArgs> CreateBinderCore<T>(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<T> setter,
+            CultureInfo culture,
+            string format,
+            BindConverterWithFormat<T> converter)
+        {
+            Action<UIChangeEventArgs> callback = e =>
+            {
+                T value = default;
+                var converted = false;
+                try
+                {
+                    converted = converter(e.Value, culture, format, out value);
                 }
                 catch
                 {
@@ -820,6 +1012,14 @@ namespace Microsoft.AspNetCore.Components
                     else if (typeof(T) == typeof(DateTime?))
                     {
                         converter = ConvertToNullableDateTime;
+                    }
+                    else if (typeof(T) == typeof(DateTimeOffset))
+                    {
+                        converter = ConvertToDateTimeOffset;
+                    }
+                    else if (typeof(T) == typeof(DateTimeOffset?))
+                    {
+                        converter = ConvertToNullableDateTimeOffset;
                     }
                     else if (typeof(T).IsEnum)
                     {
