@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override void Write(byte[] buffer, int offset, int count) { }
         public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public sealed partial class FileBufferingWriteStream : System.IO.Stream, Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream
+    public sealed partial class FileBufferingWriteStream : System.IO.Stream, Microsoft.AspNetCore.WebUtilities.IBufferedWriteStream, System.IAsyncDisposable, System.IDisposable
     {
         public FileBufferingWriteStream(int memoryThreshold = 32768, long? bufferLimit = default(long?), System.Func<string> tempFileDirectoryAccessor = null) { }
         public System.IO.Stream Buffer { get { throw null; } }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override System.Threading.Tasks.Task WriteAsync(char[] values, int index, int count) { throw null; }
         public override System.Threading.Tasks.Task WriteAsync(string value) { throw null; }
     }
-    public partial interface IBufferedWriteStream
+    public partial interface IBufferedWriteStream : System.IAsyncDisposable, System.IDisposable
     {
         System.IO.Stream Buffer { get; }
         System.Threading.Tasks.Task DrainBufferAsync(System.IO.Stream destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
