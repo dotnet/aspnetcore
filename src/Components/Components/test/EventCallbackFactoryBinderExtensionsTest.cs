@@ -421,7 +421,6 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(1, component.Count);
         }
 
-        // For now format is only supported by this specific method.
         [Fact]
         public async Task CreateBinder_DateTime_Format()
         {
@@ -429,6 +428,104 @@ namespace Microsoft.AspNetCore.Components
             var value = DateTime.Now;
             var component = new EventCountingComponent();
             Action<DateTime> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTime_Format()
+        {
+            // Arrange
+            var value = (DateTime?)DateTime.Now;
+            var component = new EventCountingComponent();
+            Action<DateTime?> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_DateTimeOffset()
+        {
+            // Arrange
+            var value = DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTimeOffset()
+        {
+            // Arrange
+            var value = (DateTimeOffset?)DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_DateTimeOffset_Format()
+        {
+            // Arrange
+            var value = DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTimeOffset_Format()
+        {
+            // Arrange
+            var value = (DateTimeOffset?)DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset?> setter = (_) => value = _;
             var format = "ddd yyyy-MM-dd";
 
             var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
