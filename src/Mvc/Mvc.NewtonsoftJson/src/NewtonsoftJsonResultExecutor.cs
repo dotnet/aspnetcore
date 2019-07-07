@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }.ToString();
 
         private readonly IHttpResponseStreamWriterFactory _writerFactory;
+        private readonly IFileBufferingStreamFactory _streamFactory;
         private readonly ILogger _logger;
         private readonly MvcOptions _mvcOptions;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
@@ -37,12 +39,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
         /// </summary>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="streamFactory">The <see cref="IFileBufferingStreamFactory"/>.</param>
         /// <param name="logger">The <see cref="ILogger{NewtonsoftJsonResultExecutor}"/>.</param>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
         public NewtonsoftJsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
+            IFileBufferingStreamFactory streamFactory,
             ILogger<NewtonsoftJsonResultExecutor> logger,
             IOptions<MvcOptions> mvcOptions,
             IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
@@ -51,6 +55,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             if (writerFactory == null)
             {
                 throw new ArgumentNullException(nameof(writerFactory));
+            }
+
+            if (streamFactory == null)
+            {
+                throw new ArgumentNullException(nameof(streamFactory));
             }
 
             if (logger == null)
@@ -69,6 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
 
             _writerFactory = writerFactory;
+            _streamFactory = streamFactory;
             _logger = logger;
             _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
             _jsonOptions = jsonOptions.Value;
@@ -115,11 +125,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             Log.JsonResultExecuting(_logger, result.Value);
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            IBufferedWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                fileBufferingWriteStream = _streamFactory.CreateWriteStream();
+                responseStream = fileBufferingWriteStream.Buffer;
             }
 
             try
@@ -151,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             {
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.DisposeAsync();
+                    await fileBufferingWriteStream.Buffer.DisposeAsync();
                 }
             }
         }

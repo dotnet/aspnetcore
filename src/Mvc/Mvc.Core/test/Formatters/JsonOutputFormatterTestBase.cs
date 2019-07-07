@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -102,10 +103,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             MediaTypeHeaderValue contentType,
             Stream responseStream = null)
         {
-            var httpContext = new DefaultHttpContext();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new ServiceCollection()
+                .AddHttpBuffering()
+                .BuildServiceProvider()
+            };
             httpContext.Request.ContentType = contentType.ToString();
             httpContext.Request.Headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
-
 
             httpContext.Response.Body = responseStream ?? new MemoryStream();
             return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private readonly IArrayPool<char> _charPool;
         private readonly MvcOptions _mvcOptions;
+        private IFileBufferingStreamFactory _fileBufferingStreamFactory;
 
         // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
         // the serializer and invalidate it when the settings change.
@@ -131,14 +133,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
-            var response = context.HttpContext.Response;
+            var httpContext = context.HttpContext;
+            var response = httpContext.Response;
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            IBufferedWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                _fileBufferingStreamFactory ??= httpContext.RequestServices.GetRequiredService<IFileBufferingStreamFactory>();
+                fileBufferingWriteStream = _fileBufferingStreamFactory.CreateWriteStream();
+                responseStream = fileBufferingWriteStream.Buffer;
             }
 
             try
@@ -154,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
-                    response.ContentLength = fileBufferingWriteStream.Length;
+                    response.ContentLength = fileBufferingWriteStream.Buffer.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }
@@ -162,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.DisposeAsync();
+                    await fileBufferingWriteStream.Buffer.DisposeAsync();
                 }
             }
         }

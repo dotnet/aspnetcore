@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             var executor = new NewtonsoftJsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),
+                GetFileBufferingStreamFactory(),
                 NullLogger<NewtonsoftJsonResultExecutor>.Instance,
                 Options.Create(new MvcOptions()),
                 Options.Create(new MvcNewtonsoftJsonOptions()),
@@ -61,6 +62,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private static ActionContext GetActionContext()
         {
             return new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
+        }
+
+        private static IFileBufferingStreamFactory GetFileBufferingStreamFactory()
+        {
+            return new HttpFileBufferingStreamFactory(Options.Create(new HttpBufferingOptions
+            {
+                TempFileDirectory = Path.GetTempPath()
+            }));
         }
 
         private static byte[] GetWrittenBytes(HttpContext context)
