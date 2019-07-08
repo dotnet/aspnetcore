@@ -36,7 +36,7 @@
     {
       "condition": "(Hosted && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Shared/BlazorWasm-CSharp.Shared.csproj"
-  }
+    }
   ],
   "shortName": "blazorwasm",
   "sourceName": "BlazorWasm-CSharp",

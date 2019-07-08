@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
   </ItemGroup>
   <!--#if Hosted -->
   <ItemGroup>
