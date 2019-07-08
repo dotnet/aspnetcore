@@ -9,7 +9,8 @@
 
 <button id="thecounter" @onclick="@IncrementCount">Click me</button>
 
-@code {
+@code
+{
     int currentCount = 0;
     string error = "";
 
@@ -18,7 +19,8 @@
         currentCount++;
     }
 
-    async Task TriggerJSInterop(){
+    async Task TriggerJSInterop()
+    {
         try
         {
             var result = await JSRuntime.InvokeAsync<int>(
