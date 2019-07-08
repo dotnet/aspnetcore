@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027ComponentsApp.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             // Act
             Client.InvokeDotNetMethod(
                 "1",
-                "ComponentsApp.Server",
+                "BasicTestApp",
                 "MadeUpMethod",
                 null,
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             // Act
             Client.InvokeDotNetMethod(
                 "1",
-                "ComponentsApp.Server",
+                "BasicTestApp",
                 "CreateInformation",
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
@@ -219,14 +219,14 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             var expectedImportantDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027ComponentsApp.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
             Client.InvokeDotNetMethod(
                 "1",
-                "ComponentsApp.Server",
+                "BasicTestApp",
                 "CreateImportant",
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             // Act
             Client.InvokeDotNetMethod(
                 "1",
-                "ComponentsApp.Server",
+                "BasicTestApp",
                 "ReceiveTrivial",
                 null,
                 JsonSerializer.Serialize(new object[] { new { __dotNetObject = 1 } }));
