@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Layouts
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Indicates that the associated component type uses a specified layout.

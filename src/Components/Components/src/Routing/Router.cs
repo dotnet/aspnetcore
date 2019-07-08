@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// assemblies, for components matching the URI.
         /// </summary>
         [Parameter] public Assembly AppAssembly { get; private set; }
-        
+
         /// <summary>
         /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
