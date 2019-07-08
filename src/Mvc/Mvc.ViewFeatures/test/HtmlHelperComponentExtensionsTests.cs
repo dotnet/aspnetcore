@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -224,6 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
             services.AddSingleton<IUriHelper,HttpUriHelper>();
             services.AddSingleton<StaticComponentRenderer>();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
 
             configureServices?.Invoke(services);
 

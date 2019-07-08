@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
     /// dispatching events to them, and notifying when the user interface is being updated.
     /// </summary>
-    public abstract class Renderer : IDisposable
+    public abstract partial class Renderer : IDisposable
     {
         private readonly ComponentFactory _componentFactory;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
         private readonly Dictionary<int, int> _eventHandlerIdReplacements = new Dictionary<int, int>();
         private readonly IDispatcher _dispatcher;
+        private readonly ILogger<Renderer> _logger;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -55,19 +57,33 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Constructs an instance of <see cref="Renderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
-        public Renderer(IServiceProvider serviceProvider)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {
+            if (serviceProvider is null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if (loggerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _componentFactory = new ComponentFactory(serviceProvider);
+            _logger = loggerFactory.CreateLogger<Renderer>();
         }
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
-        public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IDispatcher dispatcher)
+            : this(serviceProvider, loggerFactory)
         {
-            _dispatcher = dispatcher;
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         /// <summary>
@@ -189,6 +205,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var componentId = _nextComponentId++;
             var parentComponentState = GetOptionalComponentState(parentComponentId);
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
+            Log.InitializingComponent(_logger, componentState, parentComponentState);
             _componentStateById.Add(componentId, componentState);
             component.Configure(new RenderHandle(this, componentId));
             return componentState;
@@ -219,6 +236,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
             }
+
+            Log.HandlingEvent(_logger, eventHandlerId, eventArgs);
 
             if (fieldInfo != null)
             {
@@ -613,14 +632,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
-            renderQueueEntry.ComponentState
-                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
+            var componentState = renderQueueEntry.ComponentState;
+            Log.RenderingComponent(_logger, componentState);
+            componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
-                GetRequiredComponentState(disposeComponentId).DisposeInBatch(_batchBuilder);
+                var disposeComponentState = GetRequiredComponentState(disposeComponentId);
+                Log.DisposingComponent(_logger, disposeComponentState);
+                disposeComponentState.DisposeInBatch(_batchBuilder);
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
@@ -710,6 +732,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             foreach (var componentState in _componentStateById.Values)
             {
+                Log.DisposingComponent(_logger, componentState);
+
                 if (componentState.Component is IDisposable disposable)
                 {
                     try
