@@ -138,8 +138,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             if (HasPageModel)
             {
+                _logger.ExecutingPageModelFactory(_pageContext);
+
                 // Since this is a PageModel, we need to activate it, and then run a handler method on the model.
                 _pageModel = CacheEntry.ModelFactory(_pageContext);
+
+                _logger.ExecutedPageModelFactory(_pageContext);
+
                 _pageContext.ViewData.Model = _pageModel;
 
                 return _pageModel;
@@ -156,7 +161,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     _htmlHelperOptions);
                 _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
 
+                _logger.ExecutingPageFactory(_pageContext);
+
                 _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
+
+                _logger.ExecutedPageFactory(_pageContext);
 
                 if (_actionDescriptor.ModelTypeInfo == _actionDescriptor.PageTypeInfo)
                 {
