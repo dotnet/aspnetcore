@@ -68,11 +68,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 null,
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
-            await Task.Delay(1000);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            await Task.Delay(DefaultLatencyTimeout);
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -117,10 +114,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -165,10 +159,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { _serverFixture.RootUri }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -213,10 +204,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            var (callId, functionName, arguments) = Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -261,10 +249,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -307,10 +292,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return element == (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedDotNetObjectRef);
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedDotNetObjectRef));
 
             client.InvokeDotNetMethod(
                 "1",
@@ -320,10 +302,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return element == (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]");
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
 
             client.InvokeDotNetMethod(
                 "1",
@@ -333,10 +312,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(5000);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return element == (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]");
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -382,9 +358,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
+            Assert.Single(interopCalls, element =>
             {
-                return element == (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedImportantDotNetObjectRef);
+                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedImportantDotNetObjectRef) == element;
             });
 
             client.InvokeDotNetMethod(
@@ -395,10 +371,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { new { __dotNetObject = 1 } }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return element == (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError);
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
@@ -435,9 +408,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await client.ClickAsync("triggerjsinterop");
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
+            Assert.Single(interopCalls, element =>
             {
-                return element == (4, "sendMalformedCallbackReturn", null);
+                return (4, "sendMalformedCallbackReturn", null) == element;
             });
 
             var invalidJSInteropResponse = client.PrepareForNextBatch();
@@ -496,10 +469,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "[ \"invalidPayload\"}");
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, ((int callId, string functionName, string arguments) element) =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError) == element;
-            });
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(client, batches);
         }
