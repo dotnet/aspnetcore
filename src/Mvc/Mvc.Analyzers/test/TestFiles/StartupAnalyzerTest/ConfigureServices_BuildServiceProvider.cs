@@ -6,16 +6,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
 {
-    public class ConfigureServices_BuildServiceProvider
+    public class MvcOptions_UseMvc
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            /*MM1*/services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            /*MM*/app.UseMvc();
         }
     }
 }

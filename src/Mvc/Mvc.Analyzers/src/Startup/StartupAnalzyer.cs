@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Analyzers
         private readonly static Func<CompilationAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[] DiagnosticValidatorFactories = new Func<CompilationAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[]
         {
             UseMvcDiagnosticValidator.CreateAndInitialize,
+            BuildServiceProviderValidator.CreateAndInitialize
         };
 
 #pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Analyzers
             SupportedDiagnostics = ImmutableArray.Create<DiagnosticDescriptor>(new[]
             {
                 UnsupportedUseMvcWithEndpointRouting,
+                BuildServiceProviderShouldNotCalledInConfigureServicesMethod
             });
 
             // By default the analyzer will only run for files ending with Startup.cs

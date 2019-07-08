@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="TestFiles\StartupAnalyzerTest\ConfigureServices_BuildServiceProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
     <ProjectReference Include="..\..\Mvc\ref\Microsoft.AspNetCore.Mvc.csproj" />
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
