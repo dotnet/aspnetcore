@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _contextLock = new object();
 
         private bool _pipeWriterCompleted;
-        private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
         private int _currentMemoryPrefixBytes;
@@ -56,6 +55,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // and append the end terminator.
 
         private bool _autoChunk;
+
+        // We rely on the TimingPipeFlusher to give us ValueTasks that can be safely awaited multiple times.
+        private bool _writeStreamSuffixCalled;
+        private ValueTask<FlushResult> _writeStreamSuffixValueTask;
+
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
@@ -86,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _memoryPool = memoryPool;
         }
 
+        // For tests
+        internal PipeWriter PipeWriter => _pipeWriter;
+
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -108,7 +115,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
-            return WriteAsync(EndChunkedResponseBytes);
+            lock (_contextLock)
+            {
+                if (_writeStreamSuffixCalled)
+                {
+                    // If WriteStreamSuffixAsync has already been called, no-op and return the previously returned ValueTask.
+                    return _writeStreamSuffixValueTask;
+                }
+
+                if (_autoChunk)
+                {
+                    var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                    _writeStreamSuffixValueTask = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
+                }
+                else if (_unflushedBytes > 0)
+                {
+                    _writeStreamSuffixValueTask = FlushAsync();
+                }
+                else
+                {
+                    _writeStreamSuffixValueTask = default;
+                }
+
+                _writeStreamSuffixCalled = true;
+                return _writeStreamSuffixValueTask;
+            }
         }
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -143,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
             {
-                // Local function so in the common-path the stack space for BufferWriter isn't reservered and cleared when it isn't used.
+                // Local function so in the common-path the stack space for BufferWriter isn't reserved and cleared when it isn't used.
 
                 Debug.Assert(!producer._pipeWriterCompleted);
                 Debug.Assert(producer._autoChunk && producer._advancedBytesForChunk > 0);
@@ -166,7 +197,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return GetFakeMemory(sizeHint);
                 }
@@ -189,7 +222,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return GetFakeMemory(sizeHint).Span;
                 }
@@ -212,7 +247,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                ThrowIfSuffixSent();
+
+                if (_pipeWriterCompleted)
                 {
                     return;
                 }
@@ -254,6 +291,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -294,6 +333,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return;
@@ -401,8 +442,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _log.ConnectionDisconnect(_connectionId);
                 _pipeWriterCompleted = true;
-                _completed = true;
-                _pipeWriter.Complete();
             }
         }
 
@@ -424,11 +463,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Complete()
+        public void Stop()
         {
             lock (_contextLock)
             {
-                _completed = true;
+                CompletePipe();
             }
         }
 
@@ -441,6 +480,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -459,6 +500,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -484,6 +527,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Cleared in sequential address ascending order 
             _currentMemoryPrefixBytes = 0;
             _autoChunk = false;
+            _writeStreamSuffixCalled = false;
+            _writeStreamSuffixValueTask = default;
             _currentChunkMemoryUpdated = false;
             _startCalled = false;
         }
@@ -494,6 +539,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                ThrowIfSuffixSent();
+
                 if (_pipeWriterCompleted)
                 {
                     return default;
@@ -669,6 +716,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _position = 0;
         }
 
+        [StackTraceHidden]
+        private void ThrowIfSuffixSent()
+        {
+            if (_writeStreamSuffixCalled)
+            {
+                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+            }
+        }
 
         /// <summary>
         /// Holds a byte[] from the pool and a size value. Basically a Memory but guaranteed to be backed by an ArrayPool byte[], so that we know we can return it.

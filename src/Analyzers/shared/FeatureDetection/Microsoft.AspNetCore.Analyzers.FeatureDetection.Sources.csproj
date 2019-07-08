@@ -7,6 +7,7 @@
     <TargetFramework>netstandard1.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <IsSourcePackage>true</IsSourcePackage>
     <NoBuild>true</NoBuild>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -16,7 +17,7 @@
     <ContentTargetFolders>contentFiles</ContentTargetFolders>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <DefaultExcludeItems>$(DefaultExcludeItems);$(BaseOutputPath);$(BaseIntermediateOutputPath);</DefaultExcludeItems>
-    <NoWarn>$(NoWarn);NU5105;CS8021</NoWarn>
+    <NoWarn>$(NoWarn);CS8021</NoWarn>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 

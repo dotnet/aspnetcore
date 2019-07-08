@@ -10,10 +10,10 @@
     Result: <strong id="result">@result</strong>
 </p>
 
-<button id="run-without-dispatch" @onclick=@RunWithoutDispatch>Run without dispatch</button>
-<button id="run-with-dispatch" @onclick=@RunWithDispatch>Run with dispatch</button>
-<button id="run-with-double-dispatch" @onclick=@RunWithDoubleDispatch>Run with double dispatch</button>
-<button id="run-async-with-dispatch" @onclick=@RunAsyncWorkWithDispatch>Run async work with dispatch</button>
+<button id="run-without-dispatch" @onclick=RunWithoutDispatch>Run without dispatch</button>
+<button id="run-with-dispatch" @onclick=RunWithDispatch>Run with dispatch</button>
+<button id="run-with-double-dispatch" @onclick=RunWithDoubleDispatch>Run with double dispatch</button>
+<button id="run-async-with-dispatch" @onclick=RunAsyncWorkWithDispatch>Run async work with dispatch</button>
 
 @code {
     string result;
@@ -27,7 +27,7 @@
     async Task RunWithDispatch()
     {
         await Task.Delay(1).ConfigureAwait(false);
-        await Invoke(AttemptToRender);
+        await InvokeAsync(AttemptToRender);
 
         // So we can observe that the dispatched work item completed by now
         if (result == "Success")
@@ -39,7 +39,7 @@
     async Task RunWithDoubleDispatch()
     {
         await Task.Delay(1).ConfigureAwait(false);
-        await InvokeAsync(() => Invoke(AttemptToRender));
+        await InvokeAsync(() => InvokeAsync(AttemptToRender));
 
         // So we can observe that the dispatched work item completed by now
         if (result == "Success")

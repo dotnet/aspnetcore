@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -75,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = default(ReconnectingConnectionFactory);
                     var startCallCount = 0;
                     var originalConnectionId = "originalConnectionId";
@@ -189,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var startCallCount = 0;
 
                     Task OnTestConnectionStart()
@@ -281,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -376,7 +379,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -431,7 +434,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -489,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -596,7 +599,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(autoHandshake: false));
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -715,7 +718,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     async Task OnTestConnectionStart()
@@ -806,7 +809,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (StartVerifiableLog(ExpectedErrors))
                 {
-                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory);
+                    var builder = new HubConnectionBuilder().WithLoggerFactory(LoggerFactory).WithUrl("http://example.com");
                     var testConnectionFactory = new ReconnectingConnectionFactory();
                     builder.Services.AddSingleton<IConnectionFactory>(testConnectionFactory);
 
@@ -886,7 +889,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     return _testConnectionTcs.Task;
                 }
 
-                public async Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+                public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
                 {
                     var testConnection = _testConnectionFactory();
 
@@ -894,7 +897,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     try
                     {
-                        return await testConnection.StartAsync(transferFormat);
+                        return new DisposeInterceptingConnectionContextDecorator(await testConnection.StartAsync(), this);
                     }
                     catch
                     {
@@ -911,6 +914,31 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await disposingTestConnection.DisposeAsync();
                 }
+            }
+
+            private class DisposeInterceptingConnectionContextDecorator : ConnectionContext
+            {
+                private readonly ConnectionContext _inner;
+                private readonly ReconnectingConnectionFactory _reconnectingConnectionFactory;
+
+                public DisposeInterceptingConnectionContextDecorator(ConnectionContext inner, ReconnectingConnectionFactory reconnectingConnectionFactory)
+                {
+                    _inner = inner;
+                    _reconnectingConnectionFactory = reconnectingConnectionFactory;
+                }
+
+                public override string ConnectionId { get => _inner.ConnectionId; set => _inner.ConnectionId = value; }
+                public override IFeatureCollection Features => _inner.Features;
+                public override IDictionary<object, object> Items { get => _inner.Items; set => _inner.Items = value; }
+                public override IDuplexPipe Transport { get => _inner.Transport; set => _inner.Transport = value; }
+                public override CancellationToken ConnectionClosed { get => _inner.ConnectionClosed; set => _inner.ConnectionClosed = value; }
+                public override EndPoint LocalEndPoint { get => _inner.LocalEndPoint; set => _inner.LocalEndPoint = value; }
+                public override EndPoint RemoteEndPoint { get => _inner.RemoteEndPoint; set => _inner.RemoteEndPoint = value; }
+
+                public override void Abort(ConnectionAbortedException abortReason) => _inner.Abort(abortReason);
+                public override void Abort() => _inner.Abort();
+
+                public override ValueTask DisposeAsync() => new ValueTask(_reconnectingConnectionFactory.DisposeAsync(_inner));
             }
         }
     }

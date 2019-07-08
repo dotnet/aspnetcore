@@ -2,52 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
-    public class SqlServerTestStore : IDisposable
+    public class SqlTestStore : IDisposable
     {
-        private static int _scratchCount;
+        public static SqlTestStore CreateScratch() => new SqlTestStore($"D{Guid.NewGuid()}");
 
-        public static SqlServerTestStore CreateScratch()
+        private SqlTestStore(string name)
         {
-            var name = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Scratch_" + Interlocked.Increment(ref _scratchCount);
-            var db = new SqlServerTestStore(name);
-            return db;
+            ConnectionString = $"Data Source = {name}.db";
         }
 
-        private readonly string _connectionString;
-
-        private SqlServerTestStore(string name)
-        {
-            _connectionString = $@"Server=(localdb)\mssqllocaldb;Database={name};Timeout=600";
-        }
-
-        public string ConnectionString
-        {
-            get { return _connectionString; }
-        }
+        public string ConnectionString { get; }
 
         private void EnsureDeleted()
         {
-            if (!PlatformHelper.IsMono)
+            using (var db = new DbContext(new DbContextOptionsBuilder().UseSqlite(ConnectionString).Options))
             {
-                var optionsBuilder = new DbContextOptionsBuilder();
-                optionsBuilder.UseSqlServer(_connectionString, b => b.CommandTimeout(600).EnableRetryOnFailure());
-
-                using (var db = new DbContext(optionsBuilder.Options))
-                {
-                    db.Database.EnsureDeleted();
-                }
+                db.Database.EnsureDeleted();
             }
         }
 
-        public virtual void Dispose()
-        {
-            EnsureDeleted();
-        }
+        public virtual void Dispose() => EnsureDeleted();
     }
 }

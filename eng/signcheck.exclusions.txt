@@ -1,8 +1,0 @@
-*/AppHostTemplate/apphost.exe;AspNetCoreRuntime.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
-*/runtime.*.microsoft.netcore.dotnetapphost/*/apphost.exe;Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
-*.js;; Exclude all JavaScript files from codesigning because we don't expect these to run on Windows Script Host
-*.binlog;; Exclude msbuild log files
-*.symbols.nupkg;; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
-;*.symbols.nupkg; Exclude everything inside NuGet symbols packages. These are not shipped to customers and should not be code signed.
-;runtime.osx-x64.Microsoft.AspNetCore.App.*.nupkg; Exclude the contents of the MacOS runtime package because MacOS only supports codesigning for MacOS native binaries and apps
-;runtime.linux-*.Microsoft.AspNetCore.App.*.nupkg; Exclude the contents of the Linux runtime packages because Linux doesn't support validating authenticode signatures

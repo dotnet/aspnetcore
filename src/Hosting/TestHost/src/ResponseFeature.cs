@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class ResponseFeature : IHttpResponseFeature, IHttpResponseStartFeature
+    internal class ResponseFeature : IHttpResponseFeature, IHttpResponseStartFeature, IResponseBodyPipeFeature
     {
         private readonly HeaderDictionary _headers = new HeaderDictionary();
         private readonly Action<Exception> _abort;
@@ -66,6 +67,30 @@ namespace Microsoft.AspNetCore.TestHost
         public IHeaderDictionary Headers { get; set; }
 
         public Stream Body { get; set; }
+
+        internal Stream BodySnapshot { get; set; }
+
+        internal PipeWriter BodyWriter { get; set; }
+
+        public PipeWriter Writer
+        {
+            get
+            {
+                if (!ReferenceEquals(BodySnapshot, Body))
+                {
+                    BodySnapshot = Body;
+                    BodyWriter = PipeWriter.Create(Body);
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeWriter)self).Complete();
+                        return Task.CompletedTask;
+                    }, BodyWriter);
+                }
+
+                return BodyWriter;
+            }
+        }
 
         public bool HasStarted { get; set; }
 

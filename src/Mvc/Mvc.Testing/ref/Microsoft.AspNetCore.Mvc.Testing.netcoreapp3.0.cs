@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         protected virtual Microsoft.AspNetCore.Hosting.IWebHostBuilder CreateWebHostBuilder() { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
-        public virtual void EnsureDatabaseCreated() { }
         ~WebApplicationFactory() { }
         protected virtual System.Collections.Generic.IEnumerable<System.Reflection.Assembly> GetTestAssemblies() { throw null; }
         public Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint> WithWebHostBuilder(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder> configuration) { throw null; }

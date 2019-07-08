@@ -59,6 +59,20 @@ jobs:
           /p:Configuration=$(_BuildConfig)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+    - task: powershell@2
+      displayName: Create ReleaseConfigs Artifact
+      inputs:
+        targetType: inline
+        script: |
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
+          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
+    - task: PublishBuildArtifacts@1
+      displayName: Publish ReleaseConfigs Artifact
+      inputs:
+        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs.txt'
+        PublishLocation: Container
+        ArtifactName: ReleaseConfigs
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - task: PublishBuildArtifacts@1
         displayName: Publish Logs to VSTS

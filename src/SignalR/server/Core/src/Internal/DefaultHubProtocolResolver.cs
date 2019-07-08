@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    public class DefaultHubProtocolResolver : IHubProtocolResolver
+    internal class DefaultHubProtocolResolver : IHubProtocolResolver
     {
         private readonly ILogger<DefaultHubProtocolResolver> _logger;
         private readonly List<IHubProtocol> _hubProtocols;

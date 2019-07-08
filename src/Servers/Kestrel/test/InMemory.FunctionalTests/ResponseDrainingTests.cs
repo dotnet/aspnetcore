@@ -15,17 +15,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
     {
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
+        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);

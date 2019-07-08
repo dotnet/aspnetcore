@@ -25,4 +25,8 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Microbenchmarks" />
+  </ItemGroup>
+
 </Project>

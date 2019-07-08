@@ -48,7 +48,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/api/SampleData/Weather");
+                await aspNetProcess.AssertOk("weatherforecast");
                 await aspNetProcess.AssertNotFound("/");
             }
 
@@ -59,7 +59,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
 
-                await aspNetProcess.AssertOk("/api/SampleData/Weather");
+                await aspNetProcess.AssertOk("weatherforecast");
                 await aspNetProcess.AssertNotFound("/");
             }
         }

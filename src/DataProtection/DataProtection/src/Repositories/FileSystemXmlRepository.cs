@@ -143,8 +143,17 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
                 // Renames are atomic operations on the file systems we support.
                 _logger.WritingDataToFile(finalFilename);
 
-                // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
-                File.Copy(tempFilename, finalFilename);
+                try
+                {
+                    // Prefer the atomic move operation to avoid multi-process startup issues
+                    File.Move(tempFilename, finalFilename);
+                }
+                catch (IOException)
+                {
+                    // Use File.Copy because File.Move on NFS shares has issues in .NET Core 2.0
+                    // See https://github.com/aspnet/AspNetCore/issues/2941 for more context
+                    File.Copy(tempFilename, finalFilename);
+                }
             }
             finally
             {

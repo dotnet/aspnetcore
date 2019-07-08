@@ -1,17 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>Microsoft.AspNetCore.Blazor.Build</id>
-    <version>$version$</version>
-    <authors>Microsoft</authors>
-    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-    <description>Build mechanism for ASP.NET Core Components.</description>
-    <tags>aspnet components</tags>
-    <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
-    <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
-    <projectUrl>https://asp.net/</projectUrl>
-    <repository type="git" url="https://github.com/aspnet/aspnetcore" commit="$repositorycommit$" />
-    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    $CommonMetadataElements$
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
     </dependencies>
@@ -20,7 +10,7 @@
     <file src="..\..\..\THIRD-PARTY-NOTICES.txt" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
-    <file src="$publishdir$netcoreapp3.0\**\*" target="tools/" />
-    <file src="..\..\..\Browser.JS\dist\$configuration$\blazor.*.js" target="tools/blazor" />
+    <file src="$publishdir$**\*" target="tools/" />
+    <file src="..\..\..\Web.JS\dist\$configuration$\blazor.*.js" target="tools/blazor" />
   </files>
 </package>

@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _exceptionProcessingAuth;
         private static Action<ILogger, Exception> _challengeNegotiate;
         private static Action<ILogger, Exception> _reauthenticating;
+        private static Action<ILogger, Exception> _deferring;
 
         static NegotiateLoggingExtensions()
         {
@@ -45,6 +46,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(7, "Reauthenticating"),
                 logLevel: LogLevel.Debug,
                 formatString: "Negotiate data received for an already authenticated connection, Re-authenticating.");
+            _deferring = LoggerMessage.Define(
+                eventId: new EventId(8, "Deferring"),
+                logLevel: LogLevel.Information,
+                formatString: "Deferring to the server's implementation of Windows Authentication.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
@@ -67,5 +72,8 @@ namespace Microsoft.Extensions.Logging
 
         public static void Reauthenticating(this ILogger logger)
             => _reauthenticating(logger, null);
+
+        public static void Deferring(this ILogger logger)
+            => _deferring(logger, null);
     }
 }

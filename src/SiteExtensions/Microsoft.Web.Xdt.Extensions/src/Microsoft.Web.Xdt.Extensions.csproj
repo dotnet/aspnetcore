@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Additional functionality for Xdt transforms.</Description>
     <TargetFramework>net461</TargetFramework>
+    <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>

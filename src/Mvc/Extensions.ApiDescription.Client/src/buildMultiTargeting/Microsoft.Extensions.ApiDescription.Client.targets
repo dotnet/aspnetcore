@@ -1,5 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
+  <ItemGroup>
+    <PropertyPageSchema Include="../build/OpenApiItemsSchema.xaml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
   <Target Name="GenerateOpenApiCode">
     <MSBuild Projects="$(MSBuildProjectFile)"
         Targets="GenerateOpenApiCode"

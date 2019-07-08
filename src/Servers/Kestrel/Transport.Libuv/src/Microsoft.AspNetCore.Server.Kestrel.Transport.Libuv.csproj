@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Libuv transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -12,7 +12,11 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
-    <Compile Include="..\..\Core\src\Internal\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\CorrelationIdGenerator.cs" Link="Internal\CorrelationIdGenerator.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +25,6 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="System.Threading.Channels"  />
   </ItemGroup>
 
 </Project>

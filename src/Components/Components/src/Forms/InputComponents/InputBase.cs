@@ -27,20 +27,10 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
 
         /// <summary>
-        /// Gets a value for the component's 'id' attribute.
-        /// </summary>
-        [Parameter] public string Id { get; private set; }
-
-        /// <summary>
-        /// Gets a value for the component's 'class' attribute.
-        /// </summary>
-        [Parameter] public string Class { get; private set; }
-
-        /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
         /// </summary>
         /// <example>
-        /// @bind-Value="@model.PropertyName"
+        /// @bind-Value="model.PropertyName"
         /// </example>
         [Parameter] public T Value { get; private set; }
 
@@ -157,14 +147,25 @@ namespace Microsoft.AspNetCore.Components.Forms
             => EditContext.FieldClass(FieldIdentifier);
 
         /// <summary>
-        /// Gets a CSS class string that combines the <see cref="Class"/> and <see cref="FieldClass"/>
+        /// Gets a CSS class string that combines the <c>class</c> attribute and <see cref="FieldClass"/>
         /// properties. Derived components should typically use this value for the primary HTML element's
         /// 'class' attribute.
         /// </summary>
         protected string CssClass
-            => string.IsNullOrEmpty(Class)
-            ? FieldClass // Never null or empty
-            : $"{Class} {FieldClass}";
+        {
+            get
+            {
+                if (AdditionalAttributes != null &&
+                    AdditionalAttributes.TryGetValue("class", out var @class) &&
+                    !string.IsNullOrEmpty(Convert.ToString(@class)))
+                {
+                    return $"{@class} {FieldClass}";
+                }
+
+                return FieldClass; // Never null or empty
+            }
+        }
+
 
         /// <inheritdoc />
         public override Task SetParametersAsync(ParameterCollection parameters)

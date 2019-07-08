@@ -5,6 +5,7 @@ import { IConnection } from "../src/IConnection";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 export class TestConnection implements IConnection {
+    public baseUrl: string;
     public readonly features: any = {};
     public connectionId?: string;
 
@@ -22,6 +23,7 @@ export class TestConnection implements IConnection {
         this.sentData = [];
         this.lastInvocationId = null;
         this.autoHandshake = autoHandshake;
+        this.baseUrl = "http://example.com";
     }
 
     public start(): Promise<void> {

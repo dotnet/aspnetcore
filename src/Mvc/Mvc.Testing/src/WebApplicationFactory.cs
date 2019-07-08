@@ -162,12 +162,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             SetContentRoot(builder);
             _configuration(builder);
             _server = CreateServer(builder);
-
-            EnsureDatabaseCreated();
-        }
-
-        public virtual void EnsureDatabaseCreated()
-        {
         }
 
         private void SetContentRoot(IWebHostBuilder builder)

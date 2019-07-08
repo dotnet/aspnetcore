@@ -3,10 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <RestoreAdditionalProjectSources Condition="'$(IncludeCustomRestoreSourcesSymbol)'=='true'">
-      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-      https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
-    </RestoreAdditionalProjectSources>
     <LangVersion>7.3</LangVersion>
     <RazorLangVersion>3.0</RazorLangVersion>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
@@ -20,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="$(TemplateComponentsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(TemplateComponentsPackageVersion)" />
   </ItemGroup>
 
 </Project>

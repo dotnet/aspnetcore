@@ -19,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
         private static readonly AvailableTransport _webSocketAvailableTransport =
             new AvailableTransport
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // We specifically clone the identity on first poll if it's a windows identity
                     // If we swapped the new User here we'd have to dispose the old identities which could race with the application
                     // trying to access the identity.
-                    if (context.User.Identity is WindowsIdentity)
+                    if (!(context.User.Identity is WindowsIdentity))
                     {
                         existing.User = context.User;
                     }

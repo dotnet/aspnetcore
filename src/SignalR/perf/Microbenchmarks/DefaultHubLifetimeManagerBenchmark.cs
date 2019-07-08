@@ -51,7 +51,11 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     ConnectionId = connectionId,
                     Transport = new TestDuplexPipe(ForceAsync)
                 };
-                var hubConnectionContext = new HubConnectionContext(connectionContext, TimeSpan.Zero, NullLoggerFactory.Instance);
+                var contextOptions = new HubConnectionContextOptions()
+                {
+                    KeepAliveInterval = TimeSpan.Zero,
+                };
+                var hubConnectionContext = new HubConnectionContext(connectionContext, contextOptions, NullLoggerFactory.Instance);
                 hubConnectionContext.UserIdentifier = userIdentifier;
                 hubConnectionContext.Protocol = jsonHubProtocol;
 

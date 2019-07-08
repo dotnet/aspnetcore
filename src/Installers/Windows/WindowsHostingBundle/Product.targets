@@ -7,15 +7,15 @@
 
   <ItemGroup>
     <Platforms Include="x64;x86" />
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe">
       <TargetPlatform>x64</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe">
       <TargetPlatform>x86</TargetPlatform>
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+      <Version>$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </RuntimeInstallers>
   </ItemGroup>
 
@@ -26,11 +26,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x64.exe</TargetFileName>
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe$(DotNetAssetRootAccessTokenSuffix)">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.exe</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-win-x86.exe</TargetFileName>
+      <RemoteAsset Include="$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppRuntimeVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe$(DotNetAssetRootAccessTokenSuffix)">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.exe</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 
@@ -52,7 +52,7 @@
     <Exec Command="$(DarkToolPath) -x $(DotNetDarkOutputPath)\%(RuntimeInstallers.Version)\%(TargetPlatform) %(Identity)" />
 
     <ItemGroup>
-      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppPackageVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
+      <DotNetPayload Include="$(DotNetDarkOutputPath)\$(MicrosoftNETCoreAppRuntimeVersion)\%(Platforms.Identity)\AttachedContainer\**\dotnet-host-*win-*.msi">
         <ProductVersionProperty>DotNetRedistLtsInstallerProductVersion%(Platforms.Identity)</ProductVersionProperty>
         <ProductCodeProperty>DotNetRedistLtsInstallerProductCode%(Platforms.Identity)</ProductCodeProperty>
         <UpgradeCodeProperty>DotNetRedistLtsInstallerUpgradeCode%(Platforms.Identity)</UpgradeCodeProperty>

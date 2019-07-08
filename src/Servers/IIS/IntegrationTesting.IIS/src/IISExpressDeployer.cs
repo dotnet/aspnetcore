@@ -264,6 +264,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         Logger.LogInformation("Started iisexpress successfully. Process Id : {processId}, Port: {port}", _hostProcess.Id, port);
                         return (url: url, hostExitToken: hostExitTokenSource.Token);
                     }
+
+                    ChangePort(contentRoot, (uri.Scheme == "https") ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort());
                 }
 
                 var message = $"Failed to initialize IIS Express after {MaximumAttempts} attempts to select a port";
@@ -274,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private void PrepareConfig(string contentRoot, int port)
         {
-            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;;
+            var serverConfig = DeploymentParameters.ServerConfigTemplateContent;
             // Config is required. If not present then fall back to one we carry with us.
             if (string.IsNullOrEmpty(serverConfig))
             {
@@ -310,6 +312,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
             Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
 
+            File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
+        }
+
+        private void ChangePort(string contentRoot, int port)
+        {
+            var serverConfig = File.ReadAllText(DeploymentParameters.ServerConfigLocation);
+            XDocument config = XDocument.Parse(serverConfig);
+            ConfigureModuleAndBinding(config.Root, contentRoot, port);
             File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
         }
 

@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnInit() { }
+        protected override void OnInitialized() { }
         void System.IDisposable.Dispose() { }
     }
 
@@ -102,6 +102,21 @@ namespace Microsoft.AspNetCore.Components
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
+
+    public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
+    {
+        public PageDisplay() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public System.Type Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public System.Collections.Generic.IDictionary<string, object> PageParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+    }
 }
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -109,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
     {
         public DataAnnotationsValidator() { }
-        protected override void OnInit() { }
+        protected override void OnInitialized() { }
     }
 
     public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase
@@ -138,16 +153,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected InputBase() { }
         [Parameter(CaptureUnmatchedValues = true)]
         public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Class { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected string CssClass { get { throw null; } }
         protected T CurrentValue { get { throw null; } set { } }
         protected string CurrentValueAsString { get { throw null; } set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected string FieldClass { get { throw null; } }
         protected Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -231,24 +242,6 @@ namespace Microsoft.AspNetCore.Components.Forms
     }
 }
 
-namespace Microsoft.AspNetCore.Components.Layouts
-{
-    public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
-    {
-        public PageDisplay() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Type Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Collections.Generic.IDictionary<string, object> PageParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
-}
-
 namespace Microsoft.AspNetCore.Components.Routing
 {
     public partial class NavLink : Microsoft.AspNetCore.Components.IComponent, System.IDisposable
@@ -256,6 +249,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public NavLink() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string ActiveClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public RenderFragment ChildContent { get; set; }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.Routing.NavLinkMatch Match { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
@@ -270,6 +267,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         public System.Reflection.Assembly AppAssembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment NotFoundContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }

@@ -58,4 +58,7 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;No cerrar las aplicaciones. Será necesario un reinicio.</String>
   <String Id="FilesInUseOkButton">&amp;Aceptar</String>
   <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
+
+  <String Id="Welcome">Programa de instalación de [WixBundle].</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Términos de licencia&lt;/a&gt; y &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;declaración de privacidad&lt;/a&gt;.</String>
 </WixLocalization>

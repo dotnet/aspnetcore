@@ -1,4 +1,19 @@
 <Project>
+  <!-- Set versioning properties after Arcade SDK targets have been imported. -->
+  <PropertyGroup>
+    <!-- Used for generating stable upgrade codes for bundles -->
+    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
+    <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
+    <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
+    <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
+    <BundleVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+
+    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <InstallDir>$(ProductName)</InstallDir>
     <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(PackageVersion)</DepProviderKey>
@@ -6,8 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform)</GuidInputs>
-    <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumberSuffix)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
   </PropertyGroup>
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
@@ -44,10 +58,14 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
+    <Error Text="Missing required property: PackageFileName" Condition="'$(PackageFileName)' == ''" />
+  </Target>
+
   <Target Name="CopyToArtifactsDirectory"
-          Condition=" '$(IsProductInstaller)' == 'true' "
+          Condition=" '$(IsShipping)' == 'true' "
           AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(InstallersOutputPath)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>
       <_cabs Include="$(TargetDir)**/*.cab" />
     </ItemGroup>

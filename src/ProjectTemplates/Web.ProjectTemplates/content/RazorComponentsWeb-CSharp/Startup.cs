@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -35,6 +36,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
+#endif
+#if (IndividualLocalAuth)
+using RazorComponentsWeb_CSharp.Areas.Identity;
 #endif
 using RazorComponentsWeb_CSharp.Data;
 
@@ -122,6 +126,9 @@ namespace RazorComponentsWeb_CSharp
 #endif
             services.AddRazorPages();
             services.AddServerSideBlazor();
+#if (IndividualLocalAuth)
+            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+#endif
             services.AddSingleton<WeatherForecastService>();
         }
 

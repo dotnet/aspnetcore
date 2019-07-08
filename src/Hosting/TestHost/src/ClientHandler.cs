@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly IHttpApplication<Context> _application;
+        private readonly ApplicationWrapper _application;
         private readonly PathString _pathBase;
 
         /// <summary>
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="pathBase">The base path.</param>
         /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
-        internal ClientHandler(PathString pathBase, IHttpApplication<Context> application)
+        internal ClientHandler(PathString pathBase, ApplicationWrapper application)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 
@@ -65,14 +64,21 @@ namespace Microsoft.AspNetCore.TestHost
 
             var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
 
-            Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
             contextBuilder.Configure(context =>
             {
                 var req = context.Request;
 
-                req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                if (request.Version == HttpVersion.Version20)
+                {
+                    // https://tools.ietf.org/html/rfc7540
+                    req.Protocol = "HTTP/2";
+                }
+                else
+                {
+                    req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                }
                 req.Method = request.Method.ToString();
 
                 req.Scheme = request.RequestUri.Scheme;
@@ -115,8 +121,6 @@ namespace Microsoft.AspNetCore.TestHost
                     body.Seek(0, SeekOrigin.Begin);
                 }
                 req.Body = new AsyncStreamWrapper(body, () => contextBuilder.AllowSynchronousIO);
-
-                responseBody = context.Response.Body;
             });
 
             var response = new HttpResponseMessage();
@@ -139,7 +143,7 @@ namespace Microsoft.AspNetCore.TestHost
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
 
-            response.Content = new StreamContent(responseBody);
+            response.Content = new StreamContent(httpContext.Response.Body);
 
             foreach (var header in httpContext.Response.Headers)
             {

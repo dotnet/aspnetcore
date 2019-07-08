@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
@@ -33,5 +33,9 @@
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
+
+  <ItemGroup> 
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Connections.Tests" /> 
+  </ItemGroup> 
 
 </Project>

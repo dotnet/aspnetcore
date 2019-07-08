@@ -13,7 +13,7 @@ import * as _debug from "debug";
 const debug = _debug("signalr-functional-tests:run");
 
 const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "artifacts");
-const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "log");
 
 const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;
 
@@ -171,6 +171,9 @@ const configFile = sauce ?
     path.resolve(__dirname, "karma.local.conf.js");
 debug(`Loading Karma config file: ${configFile}`);
 
+// Workaround for 'wd' not installing correctly. https://github.com/karma-runner/karma-sauce-launcher/issues/117
+exec("node ../node_modules/wd/scripts/build-browser-scripts.js");
+
 // Gross but it works
 process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS = allBrowsers ? "true" : null;
 const config = (karma as any).config.parseConfig(configFile);
@@ -232,7 +235,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTests", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTests.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "netcoreapp3.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
@@ -242,7 +245,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
             desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
-
         const dotnet = spawn("dotnet", [serverPath], {
             env: {
                 ...process.env,

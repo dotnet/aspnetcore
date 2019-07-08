@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
 #endif
         [ConditionalFact]
+        [CollectDump]
         public async Task TestUnixDomainSocket()
         {
             var path = Path.GetTempFileName();
@@ -34,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             try
             {
+                var serverConnectionCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
                 async Task EchoServer(ConnectionContext connection)
                 {
                     // For graceful shutdown
@@ -47,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                             if (result.IsCompleted)
                             {
+                                Logger.LogDebug("Application receive loop ending for connection {connectionId}.", connection.ConnectionId);
                                 break;
                             }
 
@@ -57,7 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     catch (OperationCanceledException)
                     {
-
+                        Logger.LogDebug("Graceful shutdown triggered for {connectionId}.", connection.ConnectionId);
+                    }
+                    finally
+                    {
+                        serverConnectionCompletedTcs.TrySetResult(null);
                     }
                 }
 
@@ -92,6 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         Assert.Equal(data, buffer);
                     }
+
+                    // Wait for the server to complete the loop because of the FIN
+                    await serverConnectionCompletedTcs.Task.DefaultTimeout();
 
                     await host.StopAsync();
                 }

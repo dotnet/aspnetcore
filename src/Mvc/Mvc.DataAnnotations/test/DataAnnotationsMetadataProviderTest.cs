@@ -1142,7 +1142,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.Equal(initialValue, context.ValidationMetadata.IsRequired);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
         public void CreateValidationMetadata_InfersRequiredAttribute_NoNonNullableProperty()
         {
             // Arrange
@@ -1325,7 +1325,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.Same(attribute, validatorMetadata);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
         public void IsNonNullable_FindsNonNullableProperty()
         {
             // Arrange
@@ -1353,7 +1353,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.False(result);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
         public void IsNonNullable_FindsNonNullableParameter()
         {
             // Arrange

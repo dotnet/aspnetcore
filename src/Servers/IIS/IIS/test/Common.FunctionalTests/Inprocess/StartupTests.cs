@@ -366,6 +366,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        public async Task SingleExecutable_FailedToFindNativeDependencies()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            File.Delete(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll"));
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.38 - ANCM Application DLL Not Found");
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
+        }
+
+        [ConditionalFact]
         public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependenciesErrorInResponse()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);

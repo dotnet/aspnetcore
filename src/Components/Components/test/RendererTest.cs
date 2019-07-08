@@ -2016,7 +2016,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
             var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
-            renderHandle.Invoke(() => renderHandle.Render(builder
+            renderHandle.InvokeAsync(() => renderHandle.Render(builder
                 => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
@@ -2905,7 +2905,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             var asyncExceptionTcs = new TaskCompletionSource<object>();
             taskToAwait = asyncExceptionTcs.Task;
-            await renderer.Invoke(component.TriggerRender);
+            await renderer.InvokeAsync(component.TriggerRender);
 
             // Act
             var exception = new InvalidOperationException();
@@ -3271,6 +3271,105 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(exception2, renderer.HandledExceptions);
         }
 
+        [Theory]
+        [InlineData(null)] // No existing attribute to update
+        [InlineData("old property value")] // Has existing attribute to update
+        public void EventFieldInfoCanPatchTreeSoDiffDoesNotUpdateAttribute(string oldValue)
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            var component = new BoundPropertyComponent { BoundString = oldValue };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
+                .AttributeEventHandlerId;
+
+            // Act: Fire event and re-render
+            var eventFieldInfo = new EventFieldInfo
+            {
+                FieldValue = "new property value",
+                ComponentId = componentId
+            };
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, eventFieldInfo, new UIChangeEventArgs
+            {
+                Value = "new property value"
+            });
+            Assert.True(dispatchEventTask.IsCompletedSuccessfully);
+
+            // Assert: Property was updated, but the diff doesn't include changing the
+            // element attribute, since we told it the element attribute was already updated
+            Assert.Equal("new property value", component.BoundString);
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch2 = renderer.Batches[1];
+            Assert.Collection(batch2.DiffsInOrder.Single().Edits.ToArray(), edit =>
+            {
+                // The only edit is updating the event handler ID, since the test component
+                // deliberately uses a capturing lambda. The whole point of this test is to
+                // show that the diff does *not* update the BoundString value attribute.
+                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
+                AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
+            });
+        }
+
+        [Fact]
+        public void EventFieldInfoWorksWhenEventHandlerIdWasSuperseded()
+        {
+            // Arrange: Render a component with an event handler
+            // We want the renderer to think none of the "UpdateDisplay" calls ever complete, because we
+            // want to keep reusing the same eventHandlerId and not let it get disposed
+            var renderCompletedTcs = new TaskCompletionSource<object>();
+            var renderer = new TestRenderer { NextRenderResultTask = renderCompletedTcs.Task };
+            var component = new BoundPropertyComponent { BoundString = "old property value" };
+            var componentId = renderer.AssignRootComponentId(component);
+
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
+                .AttributeEventHandlerId;
+
+            // Act: Fire event and re-render *repeatedly*, without changing to use a newer event handler ID,
+            // even though we know the event handler ID is getting updated in successive diffs
+            for (var i = 0; i < 10; i++)
+            {
+                var newPropertyValue = $"new property value {i}";
+                var fieldInfo = new EventFieldInfo
+                {
+                    ComponentId = componentId,
+                    FieldValue = newPropertyValue,
+                };
+                var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, fieldInfo, new UIChangeEventArgs
+                {
+                    Value = newPropertyValue
+                });
+                Assert.True(dispatchEventTask.IsCompletedSuccessfully);
+
+                // Assert: Property was updated, but the diff doesn't include changing the
+                // element attribute, since we told it the element attribute was already updated
+                Assert.Equal(newPropertyValue, component.BoundString);
+                Assert.Equal(i + 2, renderer.Batches.Count);
+                var latestBatch = renderer.Batches.Last();
+                Assert.Collection(latestBatch.DiffsInOrder.Single().Edits.ToArray(), edit =>
+                {
+                    // The only edit is updating the event handler ID, since the test component
+                    // deliberately uses a capturing lambda. The whole point of this test is to
+                    // show that the diff does *not* update the BoundString value attribute.
+                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                    var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
+                    AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                    Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                    Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
+                });
+            }
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
@@ -3310,7 +3409,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
             {
-                var t = _renderHandle.Invoke(() => _renderHandle.Render(_renderFragment));
+                var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 // This should always be run synchronously
                 Assert.True(t.IsCompleted);
                 if (t.IsFaulted)
@@ -3560,7 +3659,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Invoke(() => renderHandle.Render(builder =>
+                    renderHandle.InvokeAsync(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     }));
@@ -3585,11 +3684,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenElement(0, "input");
                 builder.AddAttribute(1, "type", "checkbox");
                 builder.AddAttribute(2, "value", BindMethods.GetValue(CheckboxEnabled));
-                builder.AddAttribute(3, "onchange", BindMethods.SetValueHandler(__value => CheckboxEnabled = __value, CheckboxEnabled));
+                builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CheckboxEnabled = __value, CheckboxEnabled));
                 builder.CloseElement();
                 builder.OpenElement(4, "input");
                 builder.AddAttribute(5, "value", BindMethods.GetValue(SomeStringProperty));
-                builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => SomeStringProperty = __value, SomeStringProperty));
+                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => SomeStringProperty = __value, SomeStringProperty));
                 builder.AddAttribute(7, "disabled", !CheckboxEnabled);
                 builder.CloseElement();
             }
@@ -3721,7 +3820,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return TriggerRenderAsync();
             }
 
-            public Task TriggerRenderAsync() => _renderHandle.Invoke(() => _renderHandle.Render(RenderFragment));
+            public Task TriggerRenderAsync() => _renderHandle.InvokeAsync(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)
@@ -3789,17 +3888,16 @@ namespace Microsoft.AspNetCore.Components.Test
 
             [Parameter] public ConcurrentQueue<(int testId, EventType @event)> Log { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (TryGetEntry(EventType.OnInit, out var entry))
                 {
                     var result = entry.EventAction();
                     LogResult(result.Result);
                 }
-                base.OnInit();
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (TryGetEntry(EventType.OnInitAsyncSync, out var entrySync))
                 {
@@ -3956,6 +4054,27 @@ namespace Microsoft.AspNetCore.Components.Test
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "p");
+                builder.CloseElement();
+            }
+        }
+
+        class BoundPropertyComponent : AutoRenderComponent
+        {
+            public string BoundString { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var unrelatedThingToMakeTheLambdaCapture = new object();
+
+                builder.OpenElement(0, "element with event");
+                builder.AddAttribute(1, nameof(BoundString), BoundString);
+                builder.AddAttribute(2, "ontestevent", (UIChangeEventArgs eventArgs) =>
+                {
+                    BoundString = (string)eventArgs.Value;
+                    TriggerRender();
+                    GC.KeepAlive(unrelatedThingToMakeTheLambdaCapture);
+                });
+                builder.SetUpdatesAttributeName(nameof(BoundString));
                 builder.CloseElement();
             }
         }

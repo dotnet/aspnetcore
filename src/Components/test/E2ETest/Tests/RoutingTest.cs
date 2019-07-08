@@ -302,6 +302,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanGoBackFromNotAComponent()
+        {
+            SetUrlViaPushState("/");
+
+            // First go to some URL on the router
+            var app = MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Other")).Click();
+            Browser.True(() => Browser.Url.EndsWith("/Other"));
+
+            // Now follow a link out of the SPA entirely
+            app.FindElement(By.LinkText("Not a component")).Click();
+            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
+            Browser.True(() => Browser.Url.EndsWith("/NotAComponent.html"));
+
+            // Now click back
+            // Because of how the tests are structured with the router not appearing until the router
+            // tests are selected, we can only observe the test selector being there, but this is enough
+            // to show we did go back to the right place and the Blazor app started up
+            Browser.Navigate().Back();
+            Browser.True(() => Browser.Url.EndsWith("/Other"));
+            WaitUntilTestSelectorReady();
+        }
+
+        [Fact]
         public void CanNavigateProgrammatically()
         {
             SetUrlViaPushState("/");

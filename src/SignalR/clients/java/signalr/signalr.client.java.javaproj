@@ -11,10 +11,8 @@
 
     <IsShippingPackage>true</IsShippingPackage>
 
-    <!-- Pass the Java Package Version down to Gradle -->
-    <GradleOptions>-PpackageVersion="$(PackageVersion)"</GradleOptions>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
-    <GradleOptions Condition="'$(CI)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,4 +51,9 @@
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- Pass the Java Package Version down to Gradle -->
+    <GradleOptions>-PpackageVersion="$(PackageVersion)"</GradleOptions>
+  </PropertyGroup>
 </Project>

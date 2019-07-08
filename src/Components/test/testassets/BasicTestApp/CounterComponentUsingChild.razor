@@ -3,7 +3,7 @@
 <!-- Note: passing 'Message' parameter with lowercase name to show it's case insensitive -->
 <p>Current count: <MessageComponent message=@currentCount.ToString() /></p>
 
-<button @onclick="@IncrementCount">Click me</button>
+<button @onclick="IncrementCount">Click me</button>
 
 @code {
     int currentCount = 0;

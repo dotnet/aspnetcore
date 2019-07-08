@@ -14,7 +14,9 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -30,7 +32,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOptions>, IAuthenticationSignOutHandler
     {
         private const string NonceProperty = "N";
-
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
@@ -256,7 +257,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
@@ -366,6 +367,24 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Scope = string.Join(" ", properties.GetParameter<ICollection<string>>(OpenIdConnectParameterNames.Scope) ?? Options.Scope),
             };
 
+            // https://tools.ietf.org/html/rfc7636
+            if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
+            {
+                var bytes = new byte[32];
+                CryptoRandom.GetBytes(bytes);
+                var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
+
+                // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
+                properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+
+                using var sha256 = SHA256.Create();
+                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
+
+                message.Parameters.Add(OAuthConstants.CodeChallengeKey, codeChallenge);
+                message.Parameters.Add(OAuthConstants.CodeChallengeMethodKey, OAuthConstants.CodeChallengeMethodS256);
+            }
+
             // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
             var maxAge = properties.GetParameter<TimeSpan?>(OpenIdConnectParameterNames.MaxAge) ?? Options.MaxAge;
@@ -442,7 +461,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
@@ -1097,6 +1116,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 RedirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey]
             };
 
+            // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see HandleChallengeAsyncInternal
+            if (properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
+            {
+                tokenEndpointRequest.Parameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                properties.Items.Remove(OAuthConstants.CodeVerifierKey);
+            }
+
             var context = new AuthorizationCodeReceivedContext(Context, Scheme, Options, properties)
             {
                 ProtocolMessage = authorizationResponse,
@@ -1283,12 +1309,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Logger.ResponseError(message.Error, description, errorUri);
             }
 
-            return new OpenIdConnectProtocolException(string.Format(
+            var ex = new OpenIdConnectProtocolException(string.Format(
                 CultureInfo.InvariantCulture,
                 Resources.MessageContainsError,
                 message.Error,
                 description,
                 errorUri));
+            ex.Data["error"] = message.Error;
+            ex.Data["error_description"] = description;
+            ex.Data["error_uri"] = errorUri;
+            return ex;
         }
     }
 }

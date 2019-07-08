@@ -10,7 +10,13 @@
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
     <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
+    <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
   </PropertyGroup>
+
+  <ItemGroup>
+    <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
+    <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
+  </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
@@ -30,8 +36,14 @@
              BuildInParallel="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <Yarn Command="run build" Condition="'$(IsBuildable)' != 'false'" StandardOutputImportance="High" StandardErrorImportance="High" />
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;_Build" />
+
+  <Target Name="_Build"
+    Condition="'$(IsBuildable)' != 'false'"
+    Inputs="@(TSFiles)"
+    Outputs="$(BaseIntermediateOutputPath)\build-sentinel" >
+    <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
   </Target>
 
   <PropertyGroup>
@@ -47,28 +59,13 @@
 
   <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
     <PropertyGroup>
-      <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
       <_PackageTargetPath>$(MSBuildProjectDirectory)\$(PackageFileName)</_PackageTargetPath>
     </PropertyGroup>
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
-    <ReadLinesFromFile File="$(PackageJson)" Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))">
-      <Output TaskParameter="Lines" ItemName="PackageJsonContent" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup Condition="@(PackageJsonContent->Count()) > 0">
-      <_PackageJsonContent>@(PackageJsonContent->'%(Identity)', '%0a')</_PackageJsonContent>
-      <_PackageJsonContent>$(_PackageJsonContent.Replace('%(ReplacePackageContent.Identity)', '%(ReplacePackageContent.ReplaceWith)'))</_PackageJsonContent>
-    </PropertyGroup>
-
-    <WriteLinesToFile
-      File="$(PackageJson)"
-      Lines="$(_PackageJsonContent)"
-      Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))"
-      Overwrite="true" />
-
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js $(PackageJson) $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />

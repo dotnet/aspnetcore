@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Identity.DefaultUI.WebSite;
@@ -12,16 +14,45 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
     public static class FunctionalTestsServiceCollectionExtensions
     {
-        public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, DbConnection connection) where TContext : DbContext =>
-            services.AddDbContext<TContext>(options =>
-                options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
-                    .UseSqlite(connection));
+        public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, DbConnection connection) where TContext : DbContext
+        {
+            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<TContext>));
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+            
+            services.AddScoped(p =>
+            DbContextOptionsFactory<TContext>(
+            p,
+            (sp, options) => options
+                .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                .UseSqlite(connection)));
+            
+                return services;
+        }
+
+        private static DbContextOptions<TContext> DbContextOptionsFactory<TContext>(
+            IServiceProvider applicationServiceProvider,
+            Action<IServiceProvider, DbContextOptionsBuilder> optionsAction)
+            where TContext : DbContext
+        {
+            var builder = new DbContextOptionsBuilder<TContext>(
+                new DbContextOptions<TContext>(new Dictionary<Type, IDbContextOptionsExtension>()));
+
+            builder.UseApplicationServiceProvider(applicationServiceProvider);
+
+            optionsAction?.Invoke(applicationServiceProvider, builder);
+
+            return builder.Options;
+        }
 
         public static IServiceCollection SetupTestThirdPartyLogin(this IServiceCollection services) =>
             services.AddAuthentication()

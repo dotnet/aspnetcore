@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>blazor-devserver</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Blazor.DevServer</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
@@ -20,31 +19,20 @@
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <!-- Pack settings -->
   <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
-    <PublishDir>$(IntermediatePackDir)$(TargetFramework)\</PublishDir>
     <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
   </PropertyGroup>
 
-  <!-- Executes /t:Publish for all target frameworks before packing-->
-  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
-    <PropertyGroup>
-      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-      <NuspecProperties>
-        packageId=$(PackageId);
-        description=$(Description);
-        publishDir=$([MSBuild]::NormalizeDirectory($(PublishDir)));
-        componentsrootdir=..\..\..\;
-        blazorversion=$(PackageVersion);
-        repositorycommit=$(SourceRevisionId);</NuspecProperties>
-    </PropertyGroup>
-    <ItemGroup>
-      <_TargetFramework Include="$(TargetFramework)" />
-    </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
-  </Target>
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="componentsrootdir=..\..\..\" />
+    <NuspecProperty Include="blazorversion=$(PackageVersion)" />
+  </ItemGroup>
+
 </Project>

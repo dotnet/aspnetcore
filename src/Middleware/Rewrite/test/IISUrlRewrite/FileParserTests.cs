@@ -4,10 +4,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
-using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlMatches;
+using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -156,6 +155,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(2, rules.Count);
             Assert.True(rules[0].Global);
             Assert.False(rules[1].Global);
+        }
+
+        [Fact]
+        public void Should_skip_empty_conditions()
+        {
+            // arrange
+            var xml = @"<rewrite>
+                            <rules>
+                                <rule name=""redirect-aspnet-mvc"" enabled=""true"" stopProcessing=""true"">
+                                    <match url=""^aspnet/Mvc"" />
+                                    <conditions logicalGrouping=""MatchAll"" trackAllCaptures=""false"" />
+                                    <action type=""Redirect"" url=""https://github.com/aspnet/AspNetCore"" />
+                                </rule>
+                            </rules>
+                        </rewrite>";
+
+            // act
+            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
+
+            // assert
+            Assert.Null(rules[0].Conditions);
         }
 
         // Creates a rule with appropriate default values of the url rewrite rule.

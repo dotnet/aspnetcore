@@ -51,6 +51,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool PersistKerberosCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool PersistNtlmCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class PostConfigureNegotiateOptions : Microsoft.Extensions.Options.IPostConfigureOptions<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
+    {
+        public PostConfigureNegotiateOptions(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth> serverAuthServices, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler> logger) { }
+        public void PostConfigure(string name, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options) { }
+    }
 }
 namespace Microsoft.Extensions.DependencyInjection
 {

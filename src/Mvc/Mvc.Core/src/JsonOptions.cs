@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class JsonOptions
     {
         /// <summary>
-        /// Gets the <see cref="System.Text.Json.Serialization.JsonSerializerOptions"/> used by <see cref="SystemTextJsonInputFormatter"/> and
+        /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used by <see cref="SystemTextJsonInputFormatter"/> and
         /// <see cref="SystemTextJsonOutputFormatter"/>.
         /// </summary>
         public JsonSerializerOptions JsonSerializerOptions { get; } = new JsonSerializerOptions

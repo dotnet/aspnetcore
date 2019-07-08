@@ -3,7 +3,7 @@
 
 namespace System.Buffers
 {
-    internal static class MemoryPoolFactory
+    internal static class SlabMemoryPoolFactory
     {
         public static MemoryPool<byte> Create()
         {

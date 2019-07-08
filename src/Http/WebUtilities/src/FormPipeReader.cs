@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             throw new InvalidDataException($"Form value length limit {ValueLengthLimit} exceeded.");
         }
 
-        private string GetDecodedStringFromReadOnlySequence(ReadOnlySequence<byte> ros)
+        private string GetDecodedStringFromReadOnlySequence(in ReadOnlySequence<byte> ros)
         {
             if (ros.IsSingleSegment)
             {

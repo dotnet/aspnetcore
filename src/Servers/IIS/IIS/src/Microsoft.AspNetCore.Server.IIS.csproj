@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -35,6 +35,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
     <Reference Include="System.IO.Pipelines" />
@@ -53,6 +55,7 @@
 
   <Target Name="AddRunNativeComponents"
           BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="DebugSymbolsProjectOutputGroup"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     public class RemoteComponentContextTest
     {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private class FakeClientProxy : IClientProxy
         {
             public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
-            { 
+            {
                 throw new NotImplementedException();
             }
         }

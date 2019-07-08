@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -91,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/DecreaseRequestLimit", new StringContent("1"));
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
+            StopServer();
+
             if (deploymentParameters.ServerType == ServerType.IISExpress)
             {
                 Assert.Single(TestSink.Writes, w => w.Message.Contains("Increasing the MaxRequestBodySize conflicts with the max value for IIS limit maxAllowedContentLength." +

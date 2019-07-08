@@ -13,8 +13,7 @@
   <Import Condition="$(IIS-Setup) == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
 
   <!-- Build error if submodule dependencies could not be found. -->
-  <Import Project="$(MSBuildProjectDirectory)\..\build\versions.props" Condition="Exists('$(MSBuildProjectDirectory)\..\build\versions.props')" />
-  <Import Project="$(MSBuildProjectDirectory)\..\build\settings.props" Condition="Exists('$(MSBuildProjectDirectory)\..\build\settings.props')" />
+  <Import Project="..\build\settings.props" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -42,7 +41,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -89,11 +88,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\versions.props'))" />
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\settings.props'))" />
-  </Target>
 </Project>

@@ -118,6 +118,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
                     return null;
                 }
+                catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
+                {
+                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                    return null;
+                }
                 catch (SocketException)
                 {
                     // The connection got reset while it was in the backlog, so we try again.

@@ -3,20 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public abstract class RouteBase : IRouter, INamedRouter
     {
+        private readonly object _loggersLock = new object();
+
         private TemplateMatcher _matcher;
         private TemplateBinder _binder;
         private ILogger _logger;
@@ -246,7 +245,6 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
         private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
@@ -255,15 +253,28 @@ namespace Microsoft.AspNetCore.Routing
                 _binder = binderFactory.Create(ParsedTemplate, Defaults);
             }
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         private void EnsureLoggers(HttpContext context)
         {
+            // We check first using the _logger to see if the loggers have been initialized to avoid taking
+            // the lock on the most common case.
             if (_logger == null)
             {
-                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger(typeof(RouteBase).FullName);
-                _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+                // We need to lock here to ensure that _constraintLogger and _logger get initialized atomically.
+                lock (_loggersLock)
+                {
+                    if (_logger != null)
+                    {
+                        // Multiple threads might have tried to accquire the lock at the same time. Technically
+                        // there is nothing wrong if things get reinitialized by a second thread, but its easy
+                        // to prevent by just rechecking and returning here.
+                        return;
+                    }
+
+                    var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                    _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+                    _logger = factory.CreateLogger(typeof(RouteBase).FullName);
+                }
             }
         }
 

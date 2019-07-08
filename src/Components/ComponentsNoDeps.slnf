@@ -17,7 +17,7 @@
       "Blazor\\testassets\\MonoSanityClient\\MonoSanityClient.csproj",
       "Blazor\\testassets\\MonoSanity\\MonoSanity.csproj",
       "Blazor\\testassets\\StandaloneApp\\StandaloneApp.csproj",
-      "Browser\\src\\Microsoft.AspNetCore.Components.Browser.csproj",
+      "Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",
       "Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
@@ -29,7 +29,9 @@
       "test\\testassets\\ComponentsApp.App\\ComponentsApp.App.csproj",
       "test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "test\\testassets\\TestServer\\Components.TestServer.csproj"
+      "test\\testassets\\TestServer\\Components.TestServer.csproj",
+      "test\\testassets\\Ignitor\\Ignitor.csproj",
+      "test\\Ignitor.Test\\Ignitor.Test.csproj"
     ]
   }
 }

@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial class DataProtectorTokenProvider<TUser> : Microsoft.AspNetCore.Identity.IUserTwoFactorTokenProvider<TUser> where TUser : class
     {
-        public DataProtectorTokenProvider(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions> options) { }
+        public DataProtectorTokenProvider(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions> options, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>> logger) { }
+        public Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>> Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Name { get { throw null; } }
         protected Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected Microsoft.AspNetCore.DataProtection.IDataProtector Protector { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

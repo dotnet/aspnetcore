@@ -48,37 +48,19 @@ namespace Microsoft.AspNetCore.SignalR
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
         /// </summary>
         /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
-        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
-            : this(connectionContext, keepAliveInterval, loggerFactory, HubOptionsSetup.DefaultClientTimeoutInterval, HubOptionsSetup.DefaultStreamBufferCapacity) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
-        /// </summary>
-        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
-        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval)
-            : this(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval, HubOptionsSetup.DefaultStreamBufferCapacity) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
-        /// </summary>
-        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
-        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
-        /// <param name="streamBufferCapacity">The buffer size for client upload streams</param>
-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
+        /// <param name="contextOptions">The options to configure the HubConnectionContext.</param>
+        public HubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
         {
+            _keepAliveInterval = contextOptions.KeepAliveInterval.Ticks;
+            _clientTimeoutInterval = contextOptions.ClientTimeoutInterval.Ticks;
+            _streamBufferCapacity = contextOptions.StreamBufferCapacity;
+
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
-            _keepAliveInterval = keepAliveInterval.Ticks;
-            _clientTimeoutInterval = clientTimeoutInterval.Ticks;
-            _streamBufferCapacity = streamBufferCapacity;
+
+            HubCallerContext = new DefaultHubCallerContext(this);
         }
 
         internal StreamTracker StreamTracker
@@ -94,6 +76,8 @@ namespace Microsoft.AspNetCore.SignalR
                 return _streamTracker;
             }
         }
+
+        internal HubCallerContext HubCallerContext { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

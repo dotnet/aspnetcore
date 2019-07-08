@@ -4,8 +4,8 @@
 // This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
 // tslint:disable:no-floating-promises
 
-import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@aspnet/signalr";
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
+import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
@@ -457,11 +457,12 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? new Array(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+                        ? "aGVsbG8="
                         : new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f]),
                     DateTime: protocol.name === "json"
                         ? "2002-04-01T10:20:15Z"
                         : new Date(Date.UTC(2002, 3, 1, 10, 20, 15)), // Apr 1, 2002, 10:20:15am UTC
+                    Guid: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03, 0xff],
                     String: "Hello, World!",
                 };
@@ -499,11 +500,12 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? new Array(0x1, 0x2, 0x3)
+                        ? "AQID"
                         : new Uint8Array([0x1, 0x2, 0x3]),
                     DateTime: protocol.name === "json"
                         ? "2000-01-01T00:00:00Z"
                         : new Date(Date.UTC(2000, 0, 1)),
+                    Guid: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03],
                     String: "hello world",
                 };
@@ -747,6 +749,36 @@ describe("hubConnection", () => {
                     done();
                 }
             });
+        });
+
+        it("can change url in reconnecting state", async (done) => {
+            try {
+                const reconnectingPromise = new PromiseSource();
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withAutomaticReconnect()
+                    .build();
+
+                hubConnection.onreconnecting(() => {
+                    hubConnection.baseUrl = "http://example123.com";
+                    reconnectingPromise.resolve();
+                });
+
+                await hubConnection.start();
+
+                // Induce reconnect
+                (hubConnection as any).serverTimeout();
+
+                await reconnectingPromise;
+
+                expect(hubConnection.baseUrl).toBe("http://example123.com");
+
+                await hubConnection.stop();
+
+                done();
+            } catch (err) {
+                fail(err);
+                done();
+            }
         });
     });
 

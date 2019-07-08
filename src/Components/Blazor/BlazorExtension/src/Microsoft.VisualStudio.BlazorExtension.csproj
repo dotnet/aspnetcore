@@ -1,14 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
 
     <!-- Use the same experimental hive as Roslyn and Razor. This makes it easy to mix private builds. -->
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
-
-    <!-- Required to run the project localy -->
-    <StartAction>Program</StartAction>
-    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log</StartArguments>
 
     <!--
       Mark the VSIX as a per-computer install (not-per-user). Putting a component "in the box"
@@ -18,7 +14,7 @@
     <ExtensionInstallationFolder>Microsoft\Blazor</ExtensionInstallationFolder>
 
     <!-- This should be set as true if we're ever building the VSIX for inclusion by the VS installer. -->
-    <IsProductComponent Condition="'$(IsProductComponent)'==''">false</IsProductComponent>
+    <IsProductComponent>false</IsProductComponent>
 
     <!-- Update the VSToolsPath to ensure VSIX builds -->
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -28,7 +24,7 @@
     <IsPackable>false</IsPackable>
     <UseCodebase>true</UseCodebase>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
-    <DeployExtension Condition="'$(CI)' == 'true'">false</DeployExtension>
+    <DeployProjectOutput Condition="'$(ContinuousIntegrationBuild)' == 'true'">false</DeployProjectOutput>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
@@ -40,30 +36,6 @@
 
     BEGIN INTERESTING STUFF
   -->
-  <PropertyGroup>
-    <!--
-      Following VS convention of using the VS release # as a convention for the vsix version.
-
-      VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
-      is used by our build system.
-    -->
-    <VsixVersionPrefix>16.0</VsixVersionPrefix>
-    <VsixVersionSuffix Condition="'$(OfficialBuild)'!='true'">424242.424242</VsixVersionSuffix>
-    <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
-    <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
-
-    <InformationalVersion>$(VsixVersion)</InformationalVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Output the VSIX to the artifacts directory. This will allow it to be picked up for code-sign -->
-    <TargetVSIXContainer>$(VisualStudioSetupOutputPath)$(MSBuildProjectName).vsix</TargetVSIXContainer>
-  </PropertyGroup>
-
-  <!--
-    Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
-  -->
-  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
 
   <PropertyGroup>
     <!--
@@ -80,7 +52,7 @@
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
 
-  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems">
+  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems" Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">
     <ItemGroup>
       <_TemplatePackage Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg" />
     </ItemGroup>
@@ -125,12 +97,12 @@
     <ProjectReference
       Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj"
       ReferenceOutputAssembly="false"
-      Targets="Pack" />
+      Private="false"
+      Targets="Build;Pack" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.7.27703" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.9.3032" />
     <PackageReference Include="StreamJsonRpc" Version="1.5.43" />
   </ItemGroup>
 
@@ -154,4 +126,20 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- These need to be set after Sdk.targets because $(VersionSuffixDateStamp) is empty before Sdk.targets is evaluated. -->
+  <PropertyGroup>
+    <!--
+      Following VS convention of using the VS release # as a convention for the vsix version.
+
+      VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
+      is used by our build system.
+    -->
+    <VsixVersion Condition="'$(VersionSuffixDateStamp)' != ''">16.0.$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</VsixVersion>
+    <!-- For local development, set this 42 so its always higher than officil builds. -->
+    <VsixVersion Condition="'$(VersionSuffixDateStamp)' == ''">42.42.42.4242424</VsixVersion>
+    <InformationalVersion>$(VsixVersion)</InformationalVersion>
+  </PropertyGroup>
 </Project>

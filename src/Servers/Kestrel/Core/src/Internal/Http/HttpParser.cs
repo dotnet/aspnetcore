@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -174,149 +175,128 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
-        public unsafe bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
+        public unsafe bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
         {
-            consumed = buffer.Start;
-            examined = buffer.End;
-            consumedBytes = 0;
-
-            var bufferEnd = buffer.End;
-
-            var reader = new SequenceReader<byte>(buffer);
-            var start = default(SequenceReader<byte>);
-            var done = false;
-
-            try
+            while (!reader.End)
             {
-                while (!reader.End)
+                var span = reader.UnreadSpan;
+                while (span.Length > 0)
                 {
-                    var span = reader.CurrentSpan;
-                    var remaining = span.Length - reader.CurrentSpanIndex;
+                    var ch1 = (byte)0;
+                    var ch2 = (byte)0;
+                    var readAhead = 0;
 
-                    fixed (byte* pBuffer = span)
+                    // Fast path, we're still looking at the same span
+                    if (span.Length >= 2)
                     {
-                        while (remaining > 0)
+                        ch1 = span[0];
+                        ch2 = span[1];
+                    }
+                    else if (reader.TryRead(out ch1)) // Possibly split across spans
+                    {
+                        // Note if we read ahead by 1 or 2 bytes
+                        readAhead = (reader.TryRead(out ch2)) ? 2 : 1;
+                    }
+
+                    if (ch1 == ByteCR)
+                    {
+                        // Check for final CRLF.
+                        if (ch2 == ByteLF)
                         {
-                            var index = reader.CurrentSpanIndex;
-                            byte ch1;
-                            byte ch2;
-                            var readAhead = false;
-                            var readSecond = true;
-
-                            // Fast path, we're still looking at the same span
-                            if (remaining >= 2)
+                            // If we got 2 bytes from the span directly so skip ahead 2 so that
+                            // the reader's state matches what we expect
+                            if (readAhead == 0)
                             {
-                                ch1 = pBuffer[index];
-                                ch2 = pBuffer[index + 1];
-                            }
-                            else
-                            {
-                                // Store the reader before we look ahead 2 bytes (probably straddling
-                                // spans)
-                                start = reader;
-
-                                // Possibly split across spans
-                                reader.TryRead(out ch1);
-                                readSecond = reader.TryRead(out ch2);
-
-                                readAhead = true;
+                                reader.Advance(2);
                             }
 
-                            if (ch1 == ByteCR)
+                            // Double CRLF found, so end of headers.
+                            handler.OnHeadersComplete();
+                            return true;
+                        }
+                        else if (readAhead == 1)
+                        {
+                            // Didn't read 2 bytes, reset the reader so we don't consume anything
+                            reader.Rewind(1);
+                            return false;
+                        }
+
+                        Debug.Assert(readAhead == 0 || readAhead == 2);
+                        // Headers don't end in CRLF line.
+                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
+                    }
+
+                    var length = 0;
+                    // We only need to look for the end if we didn't read ahead; otherwise there isn't enough in
+                    // in the span to contain a header.
+                    if (readAhead == 0)
+                    {
+                        length = span.IndexOf(ByteLF) + 1;
+                        if (length > 0)
+                        {
+                            // Potentially found the end, or an invalid header.
+                            fixed (byte* pHeader = span)
                             {
-                                // Check for final CRLF.
-                                if (!readSecond)
-                                {
-                                    // Reset the reader so we don't consume anything
-                                    reader = start;
-                                    return false;
-                                }
-                                else if (ch2 == ByteLF)
-                                {
-                                    // If we got 2 bytes from the span directly so skip ahead 2 so that
-                                    // the reader's state matches what we expect
-                                    if (!readAhead)
-                                    {
-                                        reader.Advance(2);
-                                    }
-
-                                    done = true;
-                                    handler.OnHeadersComplete();
-                                    return true;
-                                }
-
-                                // Headers don't end in CRLF line.
-                                BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
-                            }
-
-                            // We moved the reader so look ahead 2 bytes so reset both the reader
-                            // and the index
-                            if (readAhead)
-                            {
-                                reader = start;
-                                index = reader.CurrentSpanIndex;
-                            }
-
-                            var endIndex = new Span<byte>(pBuffer + index, remaining).IndexOf(ByteLF);
-                            var length = 0;
-
-                            if (endIndex != -1)
-                            {
-                                length = endIndex + 1;
-                                var pHeader = pBuffer + index;
-
                                 TakeSingleHeader(pHeader, length, handler);
                             }
-                            else
-                            {
-                                var current = reader.Position;
-                                var currentSlice = buffer.Slice(current, bufferEnd);
-
-                                var lineEndPosition = currentSlice.PositionOf(ByteLF);
-                                // Split buffers
-                                if (lineEndPosition == null)
-                                {
-                                    // Not there
-                                    return false;
-                                }
-
-                                var lineEnd = lineEndPosition.Value;
-
-                                // Make sure LF is included in lineEnd
-                                lineEnd = buffer.GetPosition(1, lineEnd);
-                                var headerSpan = buffer.Slice(current, lineEnd).ToSpan();
-                                length = headerSpan.Length;
-
-                                fixed (byte* pHeader = headerSpan)
-                                {
-                                    TakeSingleHeader(pHeader, length, handler);
-                                }
-
-                                // We're going to the next span after this since we know we crossed spans here
-                                // so mark the remaining as equal to the headerSpan so that we end up at 0
-                                // on the next iteration
-                                remaining = length;
-                            }
-
-                            // Skip the reader forward past the header line
+                            // Read the header sucessfully, skip the reader forward past the header line.
                             reader.Advance(length);
-                            remaining -= length;
+                            span = span.Slice(length);
                         }
                     }
-                }
 
-                return false;
+                    // End not found in current span
+                    if (length <= 0)
+                    {
+                        // We moved the reader to look ahead 2 bytes so rewind the reader
+                        if (readAhead > 0)
+                        {
+                            reader.Rewind(readAhead);
+                        }
+
+                        length = ParseMultiSpanHeader(handler, ref reader);
+                        if (length < 0)
+                        {
+                            // Not there
+                            return false;
+                        }
+
+                        reader.Advance(length);
+                        // As we crossed spans set the current span to default
+                        // so we move to the next span on the next iteration
+                        span = default;
+                    }
+                }
             }
-            finally
+
+            return false;
+        }
+
+        private unsafe int ParseMultiSpanHeader(TRequestHandler handler, ref SequenceReader<byte> reader)
+        {
+            var buffer = reader.Sequence;
+            var currentSlice = buffer.Slice(reader.Position, reader.Remaining);
+            var lineEndPosition = currentSlice.PositionOf(ByteLF);
+            // Split buffers
+            if (lineEndPosition == null)
             {
-                consumed = reader.Position;
-                consumedBytes = (int)reader.Consumed;
-
-                if (done)
-                {
-                    examined = consumed;
-                }
+                // Not there
+                return -1;
             }
+
+            var lineEnd = lineEndPosition.Value;
+
+            // Make sure LF is included in lineEnd
+            lineEnd = buffer.GetPosition(1, lineEnd);
+            var headerSpan = buffer.Slice(reader.Position, lineEnd).ToSpan();
+            var length = headerSpan.Length;
+
+            fixed (byte* pHeader = headerSpan)
+            {
+                TakeSingleHeader(pHeader, length, handler);
+            }
+
+            return length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -339,7 +319,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (index == length || sawWhitespace)
             {
-                RejectRequestHeader(headerLine, length);
+                // Set to -1 to indicate invalid.
+                index = -1;
             }
 
             return index;
@@ -352,17 +333,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var valueEnd = length - 3;
             var nameEnd = FindEndOfName(headerLine, length);
 
-            // Header name is empty
-            if (nameEnd == 0)
-            {
-                RejectRequestHeader(headerLine, length);
-            }
-
-            if (headerLine[valueEnd + 2] != ByteLF)
-            {
-                RejectRequestHeader(headerLine, length);
-            }
-            if (headerLine[valueEnd + 1] != ByteCR)
+            // Header name is empty, invalid, or doesn't end in CRLF
+            if (nameEnd <= 0 || headerLine[valueEnd + 2] != ByteLF || headerLine[valueEnd + 1] != ByteCR)
             {
                 RejectRequestHeader(headerLine, length);
             }

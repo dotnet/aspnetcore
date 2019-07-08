@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -49,9 +51,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         };
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendStreamItems)));
-#if NETCOREAPP3_0
         private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendIAsyncEnumerableStreamItems)));
-#endif
+
         // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly IRetryPolicy _reconnectPolicy;
+        private readonly EndPoint _endPoint;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
         // Holds all mutable state other than user-defined handlers and settable properties.
@@ -173,6 +175,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="reconnectPolicy">
@@ -182,8 +185,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
         /// </remarks>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
-            : this(connectionFactory, protocol, serviceProvider, loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, EndPoint endPoint, IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IRetryPolicy reconnectPolicy)
+            : this(connectionFactory, protocol, endPoint, serviceProvider, loggerFactory)
         {
             _reconnectPolicy = reconnectPolicy;
         }
@@ -193,27 +196,22 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
         /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
+        /// <param name="endPoint">The <see cref="EndPoint"/> to connect to.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> containing the services provided to this <see cref="HubConnection"/> instance.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <remarks>
         /// The <see cref="IServiceProvider"/> used to initialize the connection will be disposed when the connection is disposed.
         /// </remarks>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
-            : this(connectionFactory, protocol, loggerFactory)
-        {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HubConnection"/> class.
-        /// </summary>
-        /// <param name="connectionFactory">The <see cref="IConnectionFactory" /> used to create a connection each time <see cref="StartAsync" /> is called.</param>
-        /// <param name="protocol">The <see cref="IHubProtocol" /> used by the connection.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public HubConnection(IConnectionFactory connectionFactory, IHubProtocol protocol, ILoggerFactory loggerFactory)
+        public HubConnection(IConnectionFactory connectionFactory,
+                             IHubProtocol protocol,
+                             EndPoint endPoint,
+                             IServiceProvider serviceProvider,
+                             ILoggerFactory loggerFactory)
         {
             _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            _endPoint = endPoint ?? throw new ArgumentException(nameof(endPoint));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
@@ -425,7 +423,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Starting(_logger);
 
             // Start the connection
-            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cancellationToken);
+            var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken);
             var startingConnectionState = new ConnectionState(connection, this);
 
             // From here on, if an error occurs we need to shut down the connection because
@@ -451,9 +449,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Started(_logger);
         }
 
-        private Task CloseAsync(ConnectionContext connection)
+        private ValueTask CloseAsync(ConnectionContext connection)
         {
-            return _connectionFactory.DisposeAsync(connection);
+            return connection.DisposeAsync();
         }
 
         // This method does both Dispose and Start, the 'disposing' flag indicates which.
@@ -522,7 +520,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-#if NETCOREAPP3_0
         /// <summary>
         /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
         /// </summary>
@@ -559,7 +556,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 cts.Dispose();
             }
         }
-#endif
 
         private async Task<ChannelReader<object>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
@@ -630,7 +626,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             for (var i = 0; i < args.Length; i++)
             {
-                if (ReflectionHelper.IsStreamingType(args[i].GetType()))
+                if (args[i] != null && ReflectionHelper.IsStreamingType(args[i].GetType()))
                 {
                     if (readers == null)
                     {
@@ -674,7 +670,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // For each stream that needs to be sent, run a "send items" task in the background.
                 // This reads from the channel, attaches streamId, and sends to server.
                 // A single background thread here quickly gets messy.
-#if NETCOREAPP3_0
                 if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
                 {
                     _ = _sendIAsyncStreamItemsMethod
@@ -682,7 +677,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
                     continue;
                 }
-#endif
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
                     .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cancellationToken });
@@ -707,7 +701,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return CommonStreaming(connectionState, streamId, token, ReadChannelStream);
         }
 
-#if NETCOREAPP3_0
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
         private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
         {
@@ -724,7 +717,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return CommonStreaming(connectionState, streamId, token, ReadAsyncEnumerableStream);
         }
-#endif
 
         private async Task CommonStreaming(ConnectionState connectionState, string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
         {
@@ -1445,7 +1437,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private OperationCanceledException GetOperationCanceledException(string message, Exception innerException, CancellationToken cancellationToken)
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
             return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else
             return new OperationCanceledException(message, innerException);
@@ -1942,12 +1934,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return _connectionLock.Wait(0);
             }
 
+            // Don't call this method in a try/finally that releases the lock since we're also potentially releasing the connection lock here.
             public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                await WaitConnectionLockAsync();
+                await WaitConnectionLockAsync(methodName);
 
                 if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
                 {
+                    ReleaseConnectionLock(methodName);
                     throw new InvalidOperationException($"The '{methodName}' method cannot be called if the connection is not active");
                 }
 

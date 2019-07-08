@@ -8,14 +8,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitPrerenderer : IComponentPrerenderer
     {
         private static object CircuitHostKey = new object();
-        private static object NavigationStatusKey = new object();
+        private static object CancellationStatusKey = new object();
 
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _registry;
@@ -29,15 +28,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task<ComponentPrerenderResult> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
             var context = prerenderingContext.Context;
-            var navigationStatus = GetOrCreateNavigationStatus(context);
-            if (navigationStatus.Navigated)
+            var cancellationStatus = GetOrCreateCancellationStatus(context);
+            if (cancellationStatus.Canceled)
             {
                 // Avoid creating a circuit host if other component earlier in the pipeline already triggered
-                // a navigation request. Instead rendre nothing
+                // cancellation (e.g., by navigating or throwing). Instead render nothing.
                 return new ComponentPrerenderResult(Array.Empty<string>());
             }
-            var circuitHost = GetOrCreateCircuitHost(context, navigationStatus);
-            ComponentRenderedText renderResult = default;
+            var circuitHost = GetOrCreateCircuitHost(context, cancellationStatus);
+            ComponentRenderedText renderResult;
             try
             {
                 renderResult = await circuitHost.PrerenderComponentAsync(
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // Cleanup the state as we won't need it any longer.
                 // Signal callbacks that we don't have to register the circuit.
-                await CleanupCircuitState(context, navigationStatus, circuitHost);
+                await CleanupCircuitState(context, cancellationStatus, circuitHost);
 
                 // Navigation was attempted during prerendering.
                 if (prerenderingContext.Context.Response.HasStarted)
@@ -63,6 +62,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 context.Response.Redirect(navigationException.Location);
                 return new ComponentPrerenderResult(Array.Empty<string>());
+            }
+            catch
+            {
+                // If prerendering any component fails, cancel prerendering entirely and dispose the DI scope
+                await CleanupCircuitState(context, cancellationStatus, circuitHost);
+                throw;
             }
 
             circuitHost.Descriptors.Add(new ComponentDescriptor
@@ -81,28 +86,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new ComponentPrerenderResult(result);
         }
 
-        private CircuitNavigationStatus GetOrCreateNavigationStatus(HttpContext context)
+        private PrerenderingCancellationStatus GetOrCreateCancellationStatus(HttpContext context)
         {
-            if (context.Items.TryGetValue(NavigationStatusKey, out var existingHost))
+            if (context.Items.TryGetValue(CancellationStatusKey, out var existingValue))
             {
-                return (CircuitNavigationStatus)existingHost;
+                return (PrerenderingCancellationStatus)existingValue;
             }
             else
             {
-                var navigationStatus = new CircuitNavigationStatus();
-                context.Items[NavigationStatusKey] = navigationStatus;
-                return navigationStatus;
+                var cancellationStatus = new PrerenderingCancellationStatus();
+                context.Items[CancellationStatusKey] = cancellationStatus;
+                return cancellationStatus;
             }
         }
 
-        private static async Task CleanupCircuitState(HttpContext context, CircuitNavigationStatus navigationStatus, CircuitHost circuitHost)
+        private static async Task CleanupCircuitState(HttpContext context, PrerenderingCancellationStatus cancellationStatus, CircuitHost circuitHost)
         {
-            navigationStatus.Navigated = true;
+            cancellationStatus.Canceled = true;
             context.Items.Remove(CircuitHostKey);
             await circuitHost.DisposeAsync();
         }
 
-        private CircuitHost GetOrCreateCircuitHost(HttpContext context, CircuitNavigationStatus navigationStatus)
+        private CircuitHost GetOrCreateCircuitHost(HttpContext context, PrerenderingCancellationStatus cancellationStatus)
         {
             if (context.Items.TryGetValue(CircuitHostKey, out var existingHost))
             {
@@ -120,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 context.Response.OnCompleted(() =>
                 {
                     result.UnhandledException -= CircuitHost_UnhandledException;
-                    if (!navigationStatus.Navigated)
+                    if (!cancellationStatus.Canceled)
                     {
                         _registry.RegisterDisconnectedCircuit(result);
                     }
@@ -164,9 +169,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return result;
         }
 
-        private class CircuitNavigationStatus
+        private class PrerenderingCancellationStatus
         {
-            public bool Navigated { get; set; }
+            public bool Canceled { get; set; }
         }
     }
 }

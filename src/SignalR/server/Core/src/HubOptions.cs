@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
         // for all available protocols.
 
         /// <summary>
-        /// Gets or sets the interval used by the server to timeout incoming handshake requests by clients. The default timeout is 15 seconds
+        /// Gets or sets the interval used by the server to timeout incoming handshake requests by clients. The default timeout is 15 seconds.
         /// </summary>
         public TimeSpan? HandshakeTimeout { get; set; } = null;
 

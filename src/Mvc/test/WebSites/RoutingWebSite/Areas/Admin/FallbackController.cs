@@ -14,7 +14,7 @@ namespace RoutingWebSite.Areas.Admin
         }
 
         [HttpPost]
-        public ActionResult Index(int x)
+        public ActionResult Index(int x = 0)
         {
             return Content("Hello from fallback controller POST: " + Url.Action());
         }

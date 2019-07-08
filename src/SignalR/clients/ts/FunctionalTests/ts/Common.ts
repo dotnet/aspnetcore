@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr";
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
+import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;

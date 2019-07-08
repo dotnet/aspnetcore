@@ -2,18 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Pipelines;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -30,9 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly ISystemClock _systemClock;
         private readonly TimeoutControl _timeoutControl;
 
-        private IList<IAdaptedConnection> _adaptedConnections;
-        private IDuplexPipe _adaptedTransport;
-
         private readonly object _protocolSelectionLock = new object();
         private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
         private IRequestProcessor _requestProcessor;
@@ -46,134 +37,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _timeoutControl = new TimeoutControl(this);
         }
 
-        public string ConnectionId => _context.ConnectionId;
-        public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
-        public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
-
-        private MemoryPool<byte> MemoryPool => _context.MemoryPool;
-
-        // Internal for testing
-        internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
-        (
-            pool: MemoryPool,
-            readerScheduler: _context.ServiceContext.Scheduler,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            useSynchronizationContext: false,
-            minimumSegmentSize: MemoryPool.GetMinimumSegmentSize()
-        );
-
-        internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
-        (
-            pool: MemoryPool,
-            readerScheduler: PipeScheduler.Inline,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
-            resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
-            useSynchronizationContext: false,
-            minimumSegmentSize: MemoryPool.GetMinimumSegmentSize()
-        );
-
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
             try
             {
-                AdaptedPipeline adaptedPipeline = null;
-                var adaptedPipelineTask = Task.CompletedTask;
+                // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
+                _timeoutControl.Initialize(_systemClock.UtcNowTicks);
 
-                // _adaptedTransport must be set prior to wiring up callbacks
-                // to allow the connection to be aborted prior to protocol selection.
-                _adaptedTransport = _context.Transport;
+                IRequestProcessor requestProcessor = null;
 
-                if (_context.ConnectionAdapters.Count > 0)
+                var httpConnectionContext = new HttpConnectionContext
                 {
-                    adaptedPipeline = new AdaptedPipeline(_adaptedTransport,
-                                                          new Pipe(AdaptedInputPipeOptions),
-                                                          new Pipe(AdaptedOutputPipeOptions),
-                                                          Log,
-                                                          MemoryPool.GetMinimumAllocSize());
+                    ConnectionId = _context.ConnectionId,
+                    ConnectionFeatures = _context.ConnectionFeatures,
+                    MemoryPool = _context.MemoryPool,
+                    LocalEndPoint = _context.LocalEndPoint,
+                    RemoteEndPoint = _context.RemoteEndPoint,
+                    ServiceContext = _context.ServiceContext,
+                    ConnectionContext = _context.ConnectionContext,
+                    TimeoutControl = _timeoutControl,
+                    Transport = _context.Transport
+                };
 
-                    _adaptedTransport = adaptedPipeline;
+                switch (SelectProtocol())
+                {
+                    case HttpProtocols.Http1:
+                        // _http1Connection must be initialized before adding the connection to the connection manager
+                        requestProcessor = _http1Connection = new Http1Connection(httpConnectionContext);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
+                    case HttpProtocols.Http2:
+                        // _http2Connection must be initialized before yielding control to the transport thread,
+                        // to prevent a race condition where _http2Connection.Abort() is called just as
+                        // _http2Connection is about to be initialized.
+                        requestProcessor = new Http2Connection(httpConnectionContext);
+                        _protocolSelectionState = ProtocolSelectionState.Selected;
+                        break;
+                    case HttpProtocols.None:
+                        // An error was already logged in SelectProtocol(), but we should close the connection.
+                        Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
+                        break;
+                    default:
+                        // SelectProtocol() only returns Http1, Http2 or None.
+                        throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
                 }
 
-                // This feature should never be null in Kestrel
-                var connectionHeartbeatFeature = _context.ConnectionFeatures.Get<IConnectionHeartbeatFeature>();
+                _requestProcessor = requestProcessor;
 
-                Debug.Assert(connectionHeartbeatFeature != null, nameof(IConnectionHeartbeatFeature) + " is missing!");
-
-                connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
-
-                var connectionLifetimeNotificationFeature = _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>();
-
-                Debug.Assert(connectionLifetimeNotificationFeature != null, nameof(IConnectionLifetimeNotificationFeature) + " is missing!");
-
-                using (connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this))
+                if (requestProcessor != null)
                 {
-                    // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
-                    _timeoutControl.Initialize(_systemClock.UtcNowTicks);
+                    var connectionHeartbeatFeature = _context.ConnectionFeatures.Get<IConnectionHeartbeatFeature>();
+                    var connectionLifetimeNotificationFeature = _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>();
 
-                    _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(_timeoutControl);
+                    // These features should never be null in Kestrel itself, if this middleware is ever refactored to run outside of kestrel,
+                    // we'll need to handle these missing.
+                    Debug.Assert(connectionHeartbeatFeature != null, nameof(IConnectionHeartbeatFeature) + " is missing!");
+                    Debug.Assert(connectionLifetimeNotificationFeature != null, nameof(IConnectionLifetimeNotificationFeature) + " is missing!");
 
-                    if (adaptedPipeline != null)
-                    {
-                        // Stream can be null here and run async will close the connection in that case
-                        var stream = await ApplyConnectionAdaptersAsync();
-                        adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
-                    }
+                    // Register the various callbacks once we're going to start processing requests
 
-                    IRequestProcessor requestProcessor = null;
+                    // The heart beat for various timeouts
+                    connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
-                    lock (_protocolSelectionLock)
-                    {
-                        // Ensure that the connection hasn't already been stopped.
-                        if (_protocolSelectionState == ProtocolSelectionState.Initializing)
-                        {
-                            var derivedContext = CreateDerivedContext(_adaptedTransport);
+                    // Register for graceful shutdown of the server
+                    using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this);
 
-                            switch (SelectProtocol())
-                            {
-                                case HttpProtocols.Http1:
-                                    // _http1Connection must be initialized before adding the connection to the connection manager
-                                    requestProcessor = _http1Connection = new Http1Connection(derivedContext);
-                                    _protocolSelectionState = ProtocolSelectionState.Selected;
-                                    break;
-                                case HttpProtocols.Http2:
-                                    // _http2Connection must be initialized before yielding control to the transport thread,
-                                    // to prevent a race condition where _http2Connection.Abort() is called just as
-                                    // _http2Connection is about to be initialized.
-                                    requestProcessor = new Http2Connection(derivedContext);
-                                    _protocolSelectionState = ProtocolSelectionState.Selected;
-                                    break;
-                                case HttpProtocols.None:
-                                    // An error was already logged in SelectProtocol(), but we should close the connection.
-                                    Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
-                                    break;
-                                default:
-                                    // SelectProtocol() only returns Http1, Http2 or None.
-                                    throw new NotSupportedException($"{nameof(SelectProtocol)} returned something other than Http1, Http2 or None.");
-                            }
+                    // Register for connection close
+                    using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state).OnConnectionClosed(), this);
 
-                            _requestProcessor = requestProcessor;
-                        }
-                    }
-
-                    _context.Transport.Input.OnWriterCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
-
-                    _context.Transport.Output.OnReaderCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
-                        this);
-
-                    if (requestProcessor != null)
-                    {
-                        await requestProcessor.ProcessRequestsAsync(httpApplication);
-                    }
-
-                    await adaptedPipelineTask;
+                    await requestProcessor.ProcessRequestsAsync(httpApplication);
                 }
             }
             catch (Exception ex)
@@ -182,8 +116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                DisposeAdaptedConnections();
-
                 if (_http1Connection?.IsUpgraded == true)
                 {
                     _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
@@ -199,119 +131,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _protocolSelectionState = ProtocolSelectionState.Selected;
         }
 
-        private HttpConnectionContext CreateDerivedContext(IDuplexPipe transport)
-        {
-            return new HttpConnectionContext
-            {
-                ConnectionId = _context.ConnectionId,
-                ConnectionFeatures = _context.ConnectionFeatures,
-                MemoryPool = _context.MemoryPool,
-                LocalEndPoint = _context.LocalEndPoint,
-                RemoteEndPoint = _context.RemoteEndPoint,
-                ServiceContext = _context.ServiceContext,
-                ConnectionContext = _context.ConnectionContext,
-                TimeoutControl = _timeoutControl,
-                Transport = transport
-            };
-        }
-
         private void StopProcessingNextRequest()
         {
+            ProtocolSelectionState previousState;
             lock (_protocolSelectionLock)
             {
+                previousState = _protocolSelectionState;
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
-                        _requestProcessor.StopProcessingNextRequest();
-                        break;
                     case ProtocolSelectionState.Aborted:
                         break;
                 }
             }
+
+            switch (previousState)
+            {
+                case ProtocolSelectionState.Initializing:
+                    _context.ConnectionContext.Abort(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.StopProcessingNextRequest();
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
+            }
         }
 
-        private void OnInputOrOutputCompleted()
+        private void OnConnectionClosed()
         {
+            ProtocolSelectionState previousState;
             lock (_protocolSelectionLock)
             {
+                previousState = _protocolSelectionState;
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        // OnReader/WriterCompleted callbacks are not wired until after leaving the Initializing state.
-                        Debug.Assert(false);
-
-                        CloseUninitializedConnection(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
-                        _requestProcessor.OnInputOrOutputCompleted();
-                        break;
                     case ProtocolSelectionState.Aborted:
                         break;
                 }
+            }
 
+            switch (previousState)
+            {
+                case ProtocolSelectionState.Initializing:
+                    // ConnectionClosed callback is not wired up until after leaving the Initializing state.
+                    Debug.Assert(false);
+
+                    _context.ConnectionContext.Abort(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.OnInputOrOutputCompleted();
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
             }
         }
 
         private void Abort(ConnectionAbortedException ex)
         {
+            ProtocolSelectionState previousState;
+
             lock (_protocolSelectionLock)
             {
-                switch (_protocolSelectionState)
-                {
-                    case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(ex);
-                        break;
-                    case ProtocolSelectionState.Selected:
-                        _requestProcessor.Abort(ex);
-                        break;
-                    case ProtocolSelectionState.Aborted:
-                        break;
-                }
-
+                previousState = _protocolSelectionState;
                 _protocolSelectionState = ProtocolSelectionState.Aborted;
             }
-        }
 
-        private async Task<Stream> ApplyConnectionAdaptersAsync()
-        {
-            var connectionAdapters = _context.ConnectionAdapters;
-            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
-            var adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, stream);
-            _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
-
-            try
+            switch (previousState)
             {
-                for (var i = 0; i < connectionAdapters.Count; i++)
-                {
-                    var adaptedConnection = await connectionAdapters[i].OnConnectionAsync(adapterContext);
-                    _adaptedConnections.Add(adaptedConnection);
-                    adapterContext = new ConnectionAdapterContext(_context.ConnectionContext, adaptedConnection.ConnectionStream);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(0, ex, $"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}.");
-
-                return null;
-            }
-
-            return adapterContext.ConnectionStream;
-        }
-
-        private void DisposeAdaptedConnections()
-        {
-            var adaptedConnections = _adaptedConnections;
-            if (adaptedConnections != null)
-            {
-                for (var i = adaptedConnections.Count - 1; i >= 0; i--)
-                {
-                    adaptedConnections[i].Dispose();
-                }
+                case ProtocolSelectionState.Initializing:
+                    _context.ConnectionContext.Abort(ex);
+                    break;
+                case ProtocolSelectionState.Selected:
+                    _requestProcessor.Abort(ex);
+                    break;
+                case ProtocolSelectionState.Aborted:
+                    break;
             }
         }
 
@@ -362,17 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
             var now = _systemClock.UtcNowUnsynchronized;
             _timeoutControl.Tick(now);
-            _requestProcessor?.Tick(now);
-        }
-
-        private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
-        {
-            Debug.Assert(_adaptedTransport != null);
-
-            _context.ConnectionContext.Abort(abortReason);
-
-            _adaptedTransport.Input.Complete();
-            _adaptedTransport.Output.Complete();
+            _requestProcessor.Tick(now);
         }
 
         public void OnTimeout(TimeoutReason reason)

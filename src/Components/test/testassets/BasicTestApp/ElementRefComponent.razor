@@ -17,9 +17,9 @@
 
 @if (_toggleCapturedElementPresence)
 {
-    <input id="capturedElement" @ref="_myInput" />
+    <input id="capturedElement" @ref="_myInput" @ref:suppressField />
 }
-<button @onclick="@MakeInteropCall">Click me</button>
+<button @onclick="MakeInteropCall">Click me</button>
 <label>
     <input type="checkbox" @bind="_toggleCapturedElementPresence" />
     Toggle input

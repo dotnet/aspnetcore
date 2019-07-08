@@ -12,7 +12,7 @@
     /// </summary>
     [Parameter] public RenderFragment ChildContent { get; private set; }
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
         AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
@@ -22,7 +22,7 @@
 
     private void OnAuthenticationStateChanged(Task<AuthenticationState> newAuthStateTask)
     {
-        Invoke(() =>
+        _ = InvokeAsync(() =>
         {
             _currentAuthenticationStateTask = newAuthStateTask;
             StateHasChanged();

@@ -4,7 +4,7 @@
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
@@ -20,10 +20,10 @@
         <?endif?>
 
         <PayloadGroup Id="PG_Resources">
-          <?foreach lcid in 2052;1028;1029;1031;3082;1036;1040;1041;1042;1045;1046;1049;1055?>
+            <?foreach lcid in 2052;1028;1029;1031;3082;1036;1040;1041;1042;1045;1046;1049;1055?>
             <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
-            <Payload Id="PL_Strings_$(var.lcid)" SourceFile="$(var.lcid)\Strings.wxl" Name="$(var.lcid)\Strings.wxl" Compressed="yes"/> 
-          <?endforeach?>
+            <Payload Id="PL_Strings_$(var.lcid)" SourceFile="$(var.lcid)\Strings.wxl" Name="$(var.lcid)\Strings.wxl" Compressed="yes"/>
+            <?endforeach?>
         </PayloadGroup>
 
         <!-- Customizations of the default BA -->

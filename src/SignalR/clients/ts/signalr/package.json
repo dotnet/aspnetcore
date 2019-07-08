@@ -1,5 +1,5 @@
 {
-  "name": "@aspnet/signalr",
+  "name": "@microsoft/signalr",
   "version": "3.0.0-dev",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
@@ -46,6 +46,7 @@
   ],
   "devDependencies": {
     "@types/eventsource": "^1.0.2",
+    "@types/jest": "^23.3.2",
     "@types/node": "^10.9.4",
     "@types/request": "^2.47.1",
     "es6-promise": "^4.2.2"

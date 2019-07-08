@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -140,6 +142,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [Authorize("test")]
         public void AuthMethod()
+        {
+        }
+
+        [Authorize("test")]
+        public void MultiParamAuthMethod(string s1, string s2)
         {
         }
 
@@ -661,6 +668,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return output.Reader;
         }
 
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerable(IDerivedParameterTestObject param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerable(DerivedParameterTestObjectBase param)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterInterfaceAsyncEnumerableWithCancellation(IDerivedParameterTestObject param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
+        public async IAsyncEnumerable<string> DerivedParameterBaseClassAsyncEnumerableWithCancellation(DerivedParameterTestObjectBase param, [EnumeratorCancellation] CancellationToken token)
+        {
+            await Task.Yield();
+            yield return param.Value;
+        }
+
         public class AsyncEnumerableImpl<T> : IAsyncEnumerable<T>
         {
             private readonly IAsyncEnumerable<T> _inner;
@@ -752,6 +783,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     return default;
                 }
             }
+        }
+
+        public interface IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public abstract class DerivedParameterTestObjectBase : IDerivedParameterTestObject
+        {
+            public string Value { get; set; }
+        }
+
+        public class DerivedParameterTestObject : DerivedParameterTestObjectBase { }
+
+        public class DerivedParameterKnownTypesBinder : ISerializationBinder
+        {
+            private static readonly IEnumerable<Type> _knownTypes = new List<Type>()
+            {
+                typeof(DerivedParameterTestObject)
+            };
+
+            public static ISerializationBinder Instance { get; } = new DerivedParameterKnownTypesBinder();
+
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                assemblyName = null;
+                typeName = serializedType.Name;
+            }
+
+            public Type BindToType(string assemblyName, string typeName) =>
+                _knownTypes.Single(type => type.Name == typeName);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,7 +7,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <EmbeddedResource Include="Microsoft.AspNetCore.TestHost.StaticWebAssets.xml" LogicalName="Microsoft.AspNetCore.StaticWebAssets.xml" />
     <Content Include="Microsoft.AspNetCore.TestHost.StaticWebAssets.xml" CopyToOutputDirectory="Always" />
   </ItemGroup>
 

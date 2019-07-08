@@ -1,6 +1,5 @@
 using System;
 using System.Net.WebSockets;
-using Microsoft.AspNetCore.WebSockets.Internal;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {

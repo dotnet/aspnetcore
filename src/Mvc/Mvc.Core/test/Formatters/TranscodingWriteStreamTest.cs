@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
             var stream = new MemoryStream();
 
             var transcodingStream = new TranscodingWriteStream(stream, targetEncoding);
-            await JsonSerializer.WriteAsync(model, model.GetType(), transcodingStream);
+            await JsonSerializer.SerializeAsync(transcodingStream, model, model.GetType());
             await transcodingStream.FlushAsync();
 
             var actual = targetEncoding.GetString(stream.ToArray());

@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public bool ShouldHandleExceptions { get; set; }
 
+        public Task NextRenderResultTask { get; set; } = Task.CompletedTask;
+
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
@@ -53,8 +55,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public new Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
-            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, args));
+        public Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
+            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, null, args));
+
+        public new Task DispatchEventAsync(int eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs args)
+            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, eventFieldInfo, args));
 
         private static Task UnwrapTask(Task task)
         {
@@ -109,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             // To test async UI updates, subclass TestRenderer and override UpdateDisplayAsync.
 
             OnUpdateDisplayComplete?.Invoke();
-            return Task.CompletedTask;
+            return NextRenderResultTask;
         }
     }
 }

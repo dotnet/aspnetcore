@@ -322,7 +322,13 @@ describe("HubConnectionBuilder", () => {
 
         let retryCount = 0;
         for (const delay of DEFAULT_RETRY_DELAYS_IN_MILLISECONDS) {
-            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+            const retryContext = {
+                previousRetryCount: retryCount++,
+                elapsedMilliseconds: 0,
+                retryReason: new Error(),
+            };
+
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContext)).toBe(delay);
         }
     });
 
@@ -333,23 +339,47 @@ describe("HubConnectionBuilder", () => {
 
         let retryCount = 0;
         for (const delay of customRetryDelays) {
-            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+            const retryContext = {
+                previousRetryCount: retryCount++,
+                elapsedMilliseconds: 0,
+                retryReason: new Error(),
+            };
+
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContext)).toBe(delay);
         }
 
-        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount, 0)).toBe(null);
+        const retryContextFinal = {
+            previousRetryCount: retryCount++,
+            elapsedMilliseconds: 0,
+            retryReason: new Error(),
+        };
+
+        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContextFinal)).toBe(null);
     });
 
-    it("withAutomaticReconnect uses a custom IReconnectPolicy when provided", () => {
+    it("withAutomaticReconnect uses a custom IRetryPolicy when provided", () => {
         const customRetryDelays = [127, 0, 0, 1];
         const builder = new HubConnectionBuilder()
             .withAutomaticReconnect(new DefaultReconnectPolicy(customRetryDelays));
 
         let retryCount = 0;
         for (const delay of customRetryDelays) {
-            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+            const retryContext = {
+                previousRetryCount: retryCount++,
+                elapsedMilliseconds: 0,
+                retryReason: new Error(),
+            };
+
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContext)).toBe(delay);
         }
 
-        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount, 0)).toBe(null);
+        const retryContextFinal = {
+            previousRetryCount: retryCount++,
+            elapsedMilliseconds: 0,
+            retryReason: new Error(),
+        };
+
+        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryContextFinal)).toBe(null);
     });
 });
 

@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
@@ -52,7 +54,7 @@
       DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot" />
     <Copy
       SourceFiles="@(_cookiesWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Cookies\wwwroot" />
+      DestinationFolder="$(PublishDir)\Cookies\wwwroot"  />
     <Copy
       SourceFiles="@(_customProviderFiles)"
       DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />
@@ -68,12 +70,13 @@
     <Copy
       SourceFiles="@(_staticFiles)"
       DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
+    
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode" />
   </Target>
 
 </Project>

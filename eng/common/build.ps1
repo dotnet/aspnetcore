@@ -134,7 +134,7 @@ try {
 }
 catch {
   Write-Host $_.ScriptStackTrace
-  Write-PipelineTaskError -Message $_
+  Write-PipelineTelemetryError -Category "InitializeToolset" -Message $_
   ExitWithExitCode 1
 }
 

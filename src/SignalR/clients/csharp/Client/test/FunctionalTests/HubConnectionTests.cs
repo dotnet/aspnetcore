@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var hubConnectionBuilder = new HubConnectionBuilder();
 
-            if (protocol != null)
-            {
-                hubConnectionBuilder.Services.AddSingleton(protocol);
-            }
+            hubConnectionBuilder.WithUrl(url + path);
+
+            protocol ??= new JsonHubProtocol();
+            hubConnectionBuilder.Services.AddSingleton(protocol);
 
             if (loggerFactory != null)
             {
@@ -57,20 +57,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 hubConnectionBuilder.WithAutomaticReconnect();
             }
 
+            transportType ??= HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents;
+
             var delegateConnectionFactory = new DelegateConnectionFactory(
-                GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
-                connection => ((HttpConnection)connection).DisposeAsync().AsTask());
+                GetHttpConnectionFactory(url, loggerFactory, path, transportType.Value, protocol.TransferFormat));
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             return hubConnectionBuilder.Build();
         }
 
-        private Func<TransferFormat, Task<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType)
+        private Func<EndPoint, ValueTask<ConnectionContext>> GetHttpConnectionFactory(string url, ILoggerFactory loggerFactory, string path, HttpTransportType transportType, TransferFormat transferFormat)
         {
-            return async format =>
+            return async endPoint =>
             {
-                var connection = new HttpConnection(new Uri(url + path), transportType, loggerFactory);
-                await connection.StartAsync(format);
+                var httpEndpoint = (UriEndPoint)endPoint;
+                var options = new HttpConnectionOptions { Url = httpEndpoint.Uri, Transports = transportType, DefaultTransferFormat = transferFormat };
+                var connection = new HttpConnection(options, loggerFactory);
+
+                await connection.StartAsync();
+
                 return connection;
             };
         }
@@ -125,6 +130,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).OrTimeout();
 
                     Assert.Equal(originalMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsList))]
+        public async Task CanSendNull(string protocolName)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.LongPolling, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), null).OrTimeout();
+
+                    Assert.Null(result);
                 }
                 catch (Exception ex)
                 {
@@ -770,7 +803,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2465", FlakyOn.All)]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
         public async Task CanCancelIAsyncEnumerableClientToServerUpload(string protocolName, HttpTransportType transportType, string path)
@@ -1044,8 +1076,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
-        public async Task ServerThrowsHubExceptionOnHubMethodArgumentCountMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
+        [MemberData(nameof(HubProtocolsList))]
+        public async Task ServerThrowsHubExceptionOnHubMethodArgumentCountMismatch(string hubProtocolName)
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
@@ -1056,7 +1088,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var hubProtocol = HubProtocols[hubProtocolName];
             using (StartServer<Startup>(out var server, ExpectedErrors))
             {
-                var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.LongPolling, hubProtocol, LoggerFactory);
                 try
                 {
                     await connection.StartAsync().OrTimeout();
@@ -1076,7 +1108,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory(Skip = "Will be fixed by https://github.com/dotnet/corefx/issues/36901")]
+        [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
@@ -1869,6 +1901,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 foreach (var path in new[] { "/authorizedhub", "/authorizedhub2" })
                 {
                     yield return new object[] { transport, path };
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> HubProtocolsList
+        {
+            get
+            {
+                foreach (var protocol in HubProtocols)
+                {
+                    yield return new object[] { protocol.Key };
                 }
             }
         }

@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8054", FlakyOn.AzP.Windows)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2489", FlakyOn.AzP.All)]
         [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (useConnectionAdapter)
                         {
-                            listenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
+                            listenOptions.UsePassThrough();
                         }
                     });
 

@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     public class UserOnlyTest : IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ApplicationBuilder _builder;
-        private const string DatabaseName = nameof(UserOnlyTest);
 
         public class TestUserDbContext : IdentityUserContext<IdentityUser>
         {
@@ -49,9 +48,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task EnsureStartupUsageWorks()
         {
             var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
@@ -68,9 +64,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task FindByEmailThrowsWithTwoUsersWithSameEmail()
         {
             var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

@@ -1,8 +1,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
-  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
-
   <PropertyGroup>
     <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
     <OutputPath>$(InstallersOutputPath)</OutputPath>

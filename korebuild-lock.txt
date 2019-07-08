@@ -1,2 +1,0 @@
-version:3.0.0-build-20190515.1
-commithash:ec244eafdc277b29813c81e19e9e9768cad8839a

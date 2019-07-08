@@ -37,13 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionResetEventId = 19;
         private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
+        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
@@ -506,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -543,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.Helix.All)]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -580,7 +577,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -622,7 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
         {
             // This needs a timeout.
@@ -713,7 +710,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ServerCanAbortConnectionAfterUnobservedClose(ListenOptions listenOptions)
         {
             const int connectionPausedEventId = 4;
@@ -798,7 +795,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 #if LIBUV
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1971", FlakyOn.Helix.All)]
 #endif
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
             var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

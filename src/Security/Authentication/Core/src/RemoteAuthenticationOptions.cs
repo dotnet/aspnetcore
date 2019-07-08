@@ -3,7 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 

@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.ResponseCaching;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 

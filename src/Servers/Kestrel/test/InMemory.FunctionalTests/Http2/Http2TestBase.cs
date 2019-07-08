@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected static readonly byte[] _noData = new byte[0];
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool<byte> _memoryPool = MemoryPoolFactory.Create();
+        private readonly MemoryPool<byte> _memoryPool = SlabMemoryPoolFactory.Create();
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -145,12 +145,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _largeHeadersApplication;
         protected readonly RequestDelegate _waitForAbortApplication;
         protected readonly RequestDelegate _waitForAbortFlushingApplication;
-        protected readonly RequestDelegate _waitForAbortWithDataApplication;
         protected readonly RequestDelegate _readRateApplication;
         protected readonly RequestDelegate _echoMethod;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
         protected readonly RequestDelegate _appAbort;
+        protected readonly RequestDelegate _appReset;
 
         internal TestServiceContext _serviceContext;
         private Timer _timer;
@@ -321,28 +321,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
             };
 
-            _waitForAbortWithDataApplication = async context =>
-            {
-                var streamIdFeature = context.Features.Get<IHttp2StreamIdFeature>();
-                var sem = new SemaphoreSlim(0);
-
-                context.RequestAborted.Register(() =>
-                {
-                    lock (_abortedStreamIdsLock)
-                    {
-                        _abortedStreamIds.Add(streamIdFeature.StreamId);
-                    }
-
-                    sem.Release();
-                });
-
-                await sem.WaitAsync().DefaultTimeout();
-
-                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
-            };
-
             _readRateApplication = async context =>
             {
                 var expectedBytes = int.Parse(context.Request.Path.Value.Substring(1));
@@ -388,6 +366,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _appAbort = context =>
             {
                 context.Abort();
+                return Task.CompletedTask;
+            };
+
+            _appReset = context =>
+            {
+                var resetFeature = context.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(resetFeature);
+                resetFeature.Reset((int)Http2ErrorCode.CANCEL);
                 return Task.CompletedTask;
             };
         }
@@ -458,7 +444,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 CreateConnection();
             }
 
-            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
+            var connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
+
+            async Task CompletePipeOnTaskCompletion()
+            {
+                try
+                {
+                    await connectionTask;
+                }
+                finally
+                {
+                    _pair.Transport.Input.Complete();
+                    _pair.Transport.Output.Complete();
+                }
+            }
+
+            _connectionTask = CompletePipeOnTaskCompletion();
 
             await SendPreambleAsync().ConfigureAwait(false);
             await SendSettingsAsync();

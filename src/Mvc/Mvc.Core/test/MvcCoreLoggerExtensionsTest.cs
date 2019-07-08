@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -279,6 +281,37 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(
                 "Execution plan of result filters (in the following order): " +
                 $"{resultFilter.GetType()}, {asyncResultFilter.GetType()}, {orderedResultFilter.GetType()} (Order: -100)",
+                write.State.ToString());
+        }
+
+        [Fact]
+        public void NoFormatter_LogsListOfContentTypes()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var mediaTypes = new MediaTypeCollection
+            {
+                "application/problem+json",
+                "application/problem+xml",
+            };
+
+            var httpContext = Mock.Of<HttpContext>();
+            var context = new Mock<OutputFormatterCanWriteContext>(httpContext);
+
+            context.SetupGet(x => x.ContentType).Returns("application/json");
+
+            // Act
+            logger.NoFormatter(context.Object, mediaTypes);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            Assert.Equal(
+                "No output formatter was found for content types " +
+                "'application/problem+json, application/problem+xml, application/json'" +
+                " to write the response.",
                 write.State.ToString());
         }
 

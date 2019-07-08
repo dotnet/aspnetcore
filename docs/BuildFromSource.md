@@ -11,7 +11,7 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 Building ASP.NET Core on Windows requires:
 
-* Windows 10
+* Windows 10, version 1803 or newer
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Visual Studio 2019. <https://visualstudio.com>
     * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
@@ -94,10 +94,6 @@ The cause of this problem is that the solution you are using does not include th
 2. Update the solution to include the missing project. You can either do this one by one using `dotnet sln`
    ```
    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
-   ```
-   Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
-   ```
-   ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
    ```
 
 ## Building with Visual Studio Code
@@ -182,7 +178,6 @@ Common properties include:
 
 Property                 | Description
 -------------------------|-------------------------------------------------------------------------------------------------------------
-BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
 TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
 TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).

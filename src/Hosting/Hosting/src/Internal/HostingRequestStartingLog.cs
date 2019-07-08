@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class HostingRequestStartingLog : IReadOnlyList<KeyValuePair<string, object>>
     {

@@ -58,4 +58,7 @@
   <String Id="FilesInUseDontCloseRadioButton">不關閉應用程式，需要重新啟動(&amp;D)</String>
   <String Id="FilesInUseOkButton">確定(&amp;O)</String>
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
+
+  <String Id="Welcome">歡迎使用 [WixBundle] 安裝程式。</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;授權條款&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隱私權聲明&lt;/a&gt;。</String>
 </WixLocalization>

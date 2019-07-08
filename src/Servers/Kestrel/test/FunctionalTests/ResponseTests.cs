@@ -33,13 +33,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     {
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
+        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Fact]
@@ -139,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
             var connectionClosed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -183,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ThrowsOnWriteWithRequestAbortedTokenAfterRequestIsAborted(ListenOptions listenOptions)
         {
             // This should match _maxBytesPreCompleted in SocketOutput
@@ -247,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task WritingToConnectionAfterUnobservedCloseTriggersRequestAbortedToken(ListenOptions listenOptions)
         {
             const int connectionPausedEventId = 4;
@@ -343,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1972", FlakyOn.All)]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
             const int connectionResetEventId = 19;
@@ -416,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
         {
             // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.
@@ -424,7 +421,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             // There's not guarantee that the app even gets invoked in this test. The connection reset can be observed
             // as early as accept.
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            var testServiceContext = new TestServiceContext(LoggerFactory);
+            using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
             {
                 for (var i = 0; i < numConnections; i++)
                 {
@@ -588,13 +586,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             testContext.InitializeHeartbeat();
 
-            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                ConnectionAdapters =
-                {
-                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = certificate })
-                }
-            };
+                listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = certificate });
+            }
 
             using (var server = new TestServer(async context =>
             {
@@ -621,7 +616,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await aborted.Task.DefaultTimeout();
                 }
-            }, testContext, listenOptions))
+            }, testContext, ConfigureListenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -811,6 +806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Fact]
         [Flaky("https://github.com/dotnet/corefx/issues/30691", FlakyOn.AzP.Windows)]
+        [CollectDump]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value

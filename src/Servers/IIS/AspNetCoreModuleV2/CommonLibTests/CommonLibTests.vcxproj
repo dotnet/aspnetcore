@@ -24,6 +24,8 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <IsTestProject>true</IsTestProject>
+    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -43,7 +45,6 @@
     <ClCompile Include="ConfigUtilityTests.cpp" />
     <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
-    <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="StandardOutputRedirectionTest.cpp" />
@@ -184,7 +185,4 @@
       </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
-  <PropertyGroup>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
 </Project>

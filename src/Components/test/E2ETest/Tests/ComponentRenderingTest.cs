@@ -617,6 +617,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
         }
 
+        [Fact]
+        public void CanPatchRenderTreeToMatchLatestDOMState()
+        {
+            var appElement = MountTestComponent<MovingCheckboxesComponent>();
+            var incompleteItemsSelector = By.CssSelector(".incomplete-items li");
+            var completeItemsSelector = By.CssSelector(".complete-items li");
+            WaitUntilExists(incompleteItemsSelector);
+
+            // Mark first item as done; observe the remaining incomplete item appears unchecked
+            // because the diff algoritm explicitly unchecks it
+            appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
+            Browser.True(() =>
+            {
+                var incompleteLIs = appElement.FindElements(incompleteItemsSelector);
+                return incompleteLIs.Count == 1
+                    && !incompleteLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
+            });
+
+            // Mark first done item as not done; observe the remaining complete item appears checked
+            // because the diff algoritm explicitly re-checks it
+            appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
+            Browser.True(() =>
+            {
+                var completeLIs = appElement.FindElements(completeItemsSelector);
+                return completeLIs.Count == 2
+                    && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
+            });
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

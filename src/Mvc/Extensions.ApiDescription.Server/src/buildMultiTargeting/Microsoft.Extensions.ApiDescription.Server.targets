@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' ">true</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocumentsOnBuild
+        Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == '' ">$(OpenApiGenerateDocuments)</OpenApiGenerateDocumentsOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGenerateDocuments" />
+  </ItemGroup>
+
+  <Target Name="GenerateOpenApiDocuments">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="GenerateOpenApiDocuments"
+        Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+        RemoveProperties="RuntimeIdentifier" />
+  </Target>
+
+  <Target Name="_GenerateOpenApiDocuments"
+      AfterTargets="Build"
+      Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' "
+      DependsOnTargets="GenerateOpenApiDocuments" />
+
+  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+      <_Temporary Include="$(TargetFrameworks)" Exclude="netcoreapp1.0;netcoreapp1.1;netcoreapp2.0" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_Temporary>@(_Temporary)</_Temporary>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="OpenApiGetDocuments"
+        Condition=" '$(_Temporary)' != '' "
+        Properties="TargetFramework=$(_Temporary.Split(';')[0])"
+        RemoveProperties="RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_OpenApiProjectDocuments" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_Temporary />
+    </PropertyGroup>
+  </Target>
+</Project>

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="hubOptions">Hub specific options used to initialize hubs. These options override the global options.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userIdProvider">The user ID provider used to get the user ID from a hub connection.</param>
-        /// <param name="dispatcher">The hub dispatcher used to dispatch incoming messages to hubs.</param>
+        /// <param name="serviceScopeFactory">The service scope factory.</param>
         /// <remarks>This class is typically created via dependency injection.</remarks>
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
@@ -47,10 +48,8 @@ namespace Microsoft.AspNetCore.SignalR
                                     IOptions<HubOptions<THub>> hubOptions,
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
-#pragma warning disable PUB0001 // Pubternal type in public API
-                                    HubDispatcher<THub> dispatcher
-#pragma warning restore PUB0001
-                                    )
+                                    IServiceScopeFactory serviceScopeFactory
+        )
         {
             _protocolResolver = protocolResolver;
             _lifetimeManager = lifetimeManager;
@@ -59,31 +58,42 @@ namespace Microsoft.AspNetCore.SignalR
             _globalHubOptions = globalHubOptions.Value;
             _logger = loggerFactory.CreateLogger<HubConnectionHandler<THub>>();
             _userIdProvider = userIdProvider;
-            _dispatcher = dispatcher;
 
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
             _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
+
+            _dispatcher = new DefaultHubDispatcher<THub>(
+                serviceScopeFactory,
+                new HubContext<THub>(lifetimeManager),
+                hubOptions,
+                globalHubOptions,
+                new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
         }
 
         /// <inheritdoc />
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
-            // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
-            var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
-            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval;
-            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
-            var streamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity;
-            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
+            // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup when they were explicitly set to null.
 
-            if (supportedProtocols != null && supportedProtocols.Count == 0)
+            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
+            if (supportedProtocols == null || supportedProtocols.Count == 0)
             {
                 throw new InvalidOperationException("There are no supported protocols");
             }
 
+            var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
+
+            var contextOptions = new HubConnectionContextOptions()
+            {
+                KeepAliveInterval = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval,
+                ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
+                StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
+            };
+
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory, clientTimeout, streamBufferCapacity);
+            var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
 
             var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
             if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))

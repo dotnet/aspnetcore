@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
+            var reader = new Utf8JsonReader(payload, isFinalBlock: true, state: default);
 
             reader.CheckRead();
             reader.EnsureObjectStart();
@@ -133,13 +133,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.TextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
+                    if (reader.ValueTextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                     {
                         // a handshake response does not have a type
                         // check the incoming message was not any other type of message
                         throw new InvalidDataException("Expected a handshake response from the server.");
                     }
-                    else if (reader.TextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
+                    else if (reader.ValueTextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         error = reader.ReadAsString(ErrorPropertyName);
                     }
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
+            var reader = new Utf8JsonReader(payload, isFinalBlock: true, state: default);
 
             reader.CheckRead();
             reader.EnsureObjectStart();
@@ -188,11 +188,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.TextEquals(ProtocolPropertyNameBytes.EncodedUtf8Bytes))
+                    if (reader.ValueTextEquals(ProtocolPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         protocol = reader.ReadAsString(ProtocolPropertyName);
                     }
-                    else if (reader.TextEquals(ProtocolVersionPropertyNameBytes.EncodedUtf8Bytes))
+                    else if (reader.ValueTextEquals(ProtocolVersionPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyName);
                     }

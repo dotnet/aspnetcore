@@ -366,6 +366,20 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        public async override ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                if (_rentedBuffer != null)
+                {
+                    _bytePool.Return(_rentedBuffer);
+                }
+
+                await _buffer.DisposeAsync();
+            }
+        }
+
         private void ThrowIfDisposed()
         {
             if (_disposed)

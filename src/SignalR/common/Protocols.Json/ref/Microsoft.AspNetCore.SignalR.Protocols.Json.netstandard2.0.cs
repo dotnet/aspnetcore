@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.SignalR
     public partial class JsonHubProtocolOptions
     {
         public JsonHubProtocolOptions() { }
-        public System.Text.Json.Serialization.JsonSerializerOptions PayloadSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Text.Json.JsonSerializerOptions PayloadSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.AspNetCore.SignalR.Protocol

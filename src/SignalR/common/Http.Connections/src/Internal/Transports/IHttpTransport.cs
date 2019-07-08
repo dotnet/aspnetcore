@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public interface IHttpTransport
+    internal interface IHttpTransport
     {
         /// <summary>
         /// Executes the transport

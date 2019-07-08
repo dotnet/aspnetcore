@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// </summary>
     internal sealed class Http1UpgradeMessageBody : Http1MessageBody
     {
-        public bool _completed;
         public Http1UpgradeMessageBody(Http1Connection context)
             : base(context)
         {
@@ -77,6 +76,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override Task StopAsync()
         {
             return Task.CompletedTask;
+        }
+
+        public override bool TryReadInternal(out ReadResult readResult)
+        {
+            return _context.Input.TryRead(out readResult);
+        }
+
+        public override ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
+        {
+            return _context.Input.ReadAsync(cancellationToken);
         }
     }
 }

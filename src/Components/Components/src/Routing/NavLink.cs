@@ -3,42 +3,47 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    // NOTE: This could be implemented in a more performant way by iterating through
-    // the ParameterCollection only once (instead of multiple TryGetValue calls), and
-    // avoiding allocating a dictionary in the case where there are no additional params.
-    // However the intention here is to get a sense of what more high-level coding patterns
-    // will exist and what APIs are needed to support them. Later in the project when we
-    // have more examples of components implemented in pure C# (not Razor) we could change
-    // this one to the more low-level perf-sensitive implementation.
-
     /// <summary>
     /// A component that renders an anchor tag, automatically toggling its 'active'
     /// class based on whether its 'href' matches the current URI.
     /// </summary>
-    public class NavLink : IComponent, IDisposable
+    public class NavLink : ComponentBase, IDisposable
     {
         private const string DefaultActiveClass = "active";
 
-        private RenderHandle _renderHandle;
         private bool _isActive;
-
-        private RenderFragment _childContent;
-        private string _cssClass;
         private string _hrefAbsolute;
-        private IReadOnlyDictionary<string, object> _allAttributes;
+        private string _class;
 
         /// <summary>
-        /// Gets or sets the CSS class name applied to the NavLink when the 
+        /// Gets or sets the CSS class name applied to the NavLink when the
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
         public string ActiveClass { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be added to the generated
+        /// <c>a</c> element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)]
+        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the computed CSS class based on whether or not the link is active.
+        /// </summary>
+        protected string CssClass { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the child content of the component.
+        /// </summary>
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
@@ -49,30 +54,32 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Inject] private IUriHelper UriHelper { get; set; }
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        protected override void OnInitialized()
         {
-            _renderHandle = renderHandle;
-
             // We'll consider re-rendering on each location change
             UriHelper.OnLocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterCollection parameters)
+        protected override void OnParametersSet()
         {
-            // Capture the parameters we want to do special things with, plus all as a dictionary
-            parameters.TryGetValue(RenderTreeBuilder.ChildContent, out _childContent);
-            parameters.TryGetValue("class", out _cssClass);
-            parameters.TryGetValue("href", out string href);
-            ActiveClass = parameters.GetValueOrDefault(nameof(ActiveClass), DefaultActiveClass);
-            Match = parameters.GetValueOrDefault(nameof(Match), NavLinkMatch.Prefix);
-            _allAttributes = parameters.ToDictionary();
+            // Update computed state
+            var href = (string)null;
+            if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
+            {
+                href = Convert.ToString(obj);
+            }
 
-            // Update computed state and render
             _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = ShouldMatch(UriHelper.GetAbsoluteUri());
-            _renderHandle.Render(Render);
-            return Task.CompletedTask;
+
+            _class = (string)null;
+            if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
+            {
+                _class = Convert.ToString(obj);
+            }
+
+            UpdateCssClass();
         }
 
         /// <inheritdoc />
@@ -80,6 +87,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
             UriHelper.OnLocationChanged -= OnLocationChanged;
+        }
+
+        private void UpdateCssClass()
+        {
+            CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
@@ -90,7 +102,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
-                _renderHandle.Render(Render);
+                UpdateCssClass();
+                StateHasChanged();
             }
         }
 
@@ -137,22 +150,13 @@ namespace Microsoft.AspNetCore.Components.Routing
             return false;
         }
 
-        private void Render(RenderTreeBuilder builder)
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "a");
 
-            // Set class attribute
-            builder.AddAttribute(0, "class",
-                CombineWithSpace(_cssClass, _isActive ? ActiveClass : null));
-
-            // Pass through all other attributes unchanged
-            foreach (var kvp in _allAttributes.Where(kvp => kvp.Key != "class" && kvp.Key != nameof(RenderTreeBuilder.ChildContent)))
-            {
-                builder.AddAttribute(0, kvp.Key, kvp.Value);
-            }
-
-            // Pass through any child content unchanged
-            builder.AddContent(1, _childContent);
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "class", CssClass);
+            builder.AddContent(3, ChildContent);
 
             builder.CloseElement();
         }

@@ -1,16 +1,15 @@
 @inject IUriHelper UriHelper
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
-<button @onclick="@Navigate">Navigate</button>
+<button @onclick="Navigate">Navigate</button>
 
 <span id="test-info">@UrlLocation</span>
 
 @code{
     string UrlLocation;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
-        base.OnInit();
         UrlLocation = UriHelper.GetAbsoluteUri();
         UriHelper.OnLocationChanged += (_, __) =>
         {

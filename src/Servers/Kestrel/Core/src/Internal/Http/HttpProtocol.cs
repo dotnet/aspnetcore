@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
-        protected BodyControl bodyControl;
+        protected BodyControl _bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -210,6 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool RequestTrailersAvailable { get; set; }
         public Stream RequestBody { get; set; }
         public PipeReader RequestBodyPipeReader { get; set; }
+        public HttpResponseTrailers ResponseTrailers { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -287,7 +288,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasResponseStarted => _requestProcessingStatus >= RequestProcessingStatus.HeadersCommitted;
 
-        public bool HasFlushedHeaders => _requestProcessingStatus == RequestProcessingStatus.HeadersFlushed;
+        public bool HasFlushedHeaders => _requestProcessingStatus >= RequestProcessingStatus.HeadersFlushed;
+
+        public bool HasResponseCompleted => _requestProcessingStatus == RequestProcessingStatus.ResponseCompleted;
 
         protected HttpRequestHeaders HttpRequestHeaders { get; }
 
@@ -312,17 +315,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void InitializeBodyControl(MessageBody messageBody)
         {
-            if (bodyControl == null)
+            if (_bodyControl == null)
             {
-                bodyControl = new BodyControl(bodyControl: this, this);
+                _bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = bodyControl.Start(messageBody);
+            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = _bodyControl.Start(messageBody);
             _requestStreamInternal = RequestBody;
             _responseStreamInternal = ResponseBody;
         }
-
-        public void StopBodies() => bodyControl.Stop();
 
         // For testing
         internal void ResetState()
@@ -494,7 +495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            bodyControl?.Abort(abortReason);
+            _bodyControl?.Abort(abortReason);
         }
 
         // Prevents the RequestAborted token from firing for the duration of the request.
@@ -632,9 +633,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Run the application code for this request
                     await application.ProcessRequestAsync(context);
 
-                    if (!_connectionAborted)
+                    // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                    // already failed. If an OnStarting callback throws we can go through
+                    // our normal error handling in ProduceEnd.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
                     {
-                        VerifyResponseContentLength();
+                        await FireOnStarting();
+                    }
+
+                    if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
+                    {
+                        ReportApplicationError(lengthException);
                     }
                 }
                 catch (BadHttpRequestException ex)
@@ -652,18 +662,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 KestrelEventSource.Log.RequestStop(this);
 
-                // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                // already failed. If an OnStarting callback throws we can go through
-                // our normal error handling in ProduceEnd.
-                // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
-                {
-                    await FireOnStarting();
-                }
-
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                StopBodies();
+                try
+                {
+                    await _bodyControl.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
+                    // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
+                    // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
+                    ReportApplicationError(ex);
+                }
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
@@ -898,7 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void VerifyResponseContentLength()
+        protected bool VerifyResponseContentLength(out Exception ex)
         {
             var responseHeaders = HttpResponseHeaders;
 
@@ -915,9 +926,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _keepAlive = false;
                 }
 
-                ReportApplicationError(new InvalidOperationException(
-                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value)));
+                ex = new InvalidOperationException(
+                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value));
+                return false;
             }
+
+            ex = null;
+            return true;
         }
 
         public void ProduceContinue()
@@ -1012,6 +1027,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task ProduceEnd()
         {
+            if (HasResponseCompleted)
+            {
+                return Task.CompletedTask;
+            }
+
             if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
@@ -1045,12 +1065,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteSuffix()
         {
-            // _autoChunk should be checked after we are sure ProduceStart() has been called
-            // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk || _httpVersion == Http.HttpVersion.Http2)
             {
-                return WriteSuffixAwaited();
+                // For the same reason we call CheckLastWrite() in Content-Length responses.
+                PreventRequestAbortedCancellation();
             }
+
+            var writeTask = Output.WriteStreamSuffixAsync();
+
+            if (!writeTask.IsCompletedSuccessfully)
+            {
+                return WriteSuffixAwaited(writeTask);
+            }
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
             {
@@ -1062,23 +1090,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
 
-            if (!HasFlushedHeaders)
-            {
-                _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
-                return FlushAsyncInternal();
-            }
-
             return Task.CompletedTask;
         }
 
-        private async Task WriteSuffixAwaited()
+        private async Task WriteSuffixAwaited(ValueTask<FlushResult> writeTask)
         {
-            // For the same reason we call CheckLastWrite() in Content-Length responses.
-            PreventRequestAbortedCancellation();
-
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
 
-            await Output.WriteStreamSuffixAsync();
+            await writeTask;
+
+            _requestProcessingStatus = RequestProcessingStatus.ResponseCompleted;
 
             if (_keepAlive)
             {
@@ -1244,6 +1265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = HttpResponseHeaders;
             responseHeaders.Reset();
+            ResponseTrailers?.Reset();
             var dateHeaderValues = DateHeaderValueManager.GetDateHeaderValues();
 
             responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
@@ -1390,11 +1412,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public void Complete(Exception ex)
+        public Task CompleteAsync(Exception exception = null)
         {
-            if (ex != null)
+            if (exception != null)
             {
-                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", ex);
+                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", exception);
                 ReportApplicationError(wrappedException);
 
                 if (HasResponseStarted)
@@ -1403,7 +1425,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            Output.Complete();
+            // Finalize headers
+            if (!HasResponseStarted)
+            {
+                var onStartingTask = FireOnStarting();
+                if (!onStartingTask.IsCompletedSuccessfully)
+                {
+                    return CompleteAsyncAwaited(onStartingTask);
+                }
+            }
+
+            // Flush headers, body, trailers...
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    // Try to throw this exception from CompleteAsync() instead of CompleteAsyncAwaited() if possible,
+                    // so it can be observed by BodyWriter.Complete(). If this isn't possible because an
+                    // async OnStarting callback hadn't yet run, it's OK, since the Exception will be observed with
+                    // the call to _bodyControl.StopAsync() in ProcessRequests().
+                    throw lengthException;
+                }
+
+                return ProduceEnd();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task CompleteAsyncAwaited(Task onStartingTask)
+        {
+            await onStartingTask;
+
+            if (!HasResponseCompleted)
+            {
+                if (!VerifyResponseContentLength(out var lengthException))
+                {
+                    throw lengthException;
+                }
+
+                await ProduceEnd();
+            }
         }
 
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

@@ -11,18 +11,25 @@
   <ItemGroup>
     <KnownFrameworkReference
       Update="Microsoft.NETCore.App"
-      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
-      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
-      TargetingPackVersion="${MicrosoftNETCoreAppPackageVersion}" />
+      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppRefPackageVersion}" />
 
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
-      TargetingPackName="Microsoft.AspNetCore.App.Ref"
       TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}"
-      RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
+  </ItemGroup>
+
+  <!-- This can be removed after we update our build to use .NET Core Preivew7 SDK or newer. (Needs https://github.com/dotnet/core-sdk/pull/2401) -->
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update="Microsoft.NETCore.App"
+      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
+      AppHostPackNamePattern=""
+      AppHostRuntimeIdentifiers="" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">

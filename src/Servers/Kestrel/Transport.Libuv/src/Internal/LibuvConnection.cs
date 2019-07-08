@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private MemoryHandle _bufferHandle;
         private Task _processingTask;
+        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _connectionClosed;
 
         public LibuvConnection(UvStreamHandle socket,
                                ILibuvTrace log,
@@ -135,21 +137,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // We're done with the socket now
                     _socket.Dispose();
 
-                    // Fire the connection closed token and wait for it to complete
-                    var waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    // Ensure this always fires
+                    FireConnectionClosed();
 
-                    ThreadPool.UnsafeQueueUserWorkItem(state =>
-                    {
-                        (var connection, var tcs) = state;
-
-                        connection.CancelConnectionClosedToken();
-
-                        tcs.TrySetResult(null);
-                    },
-                    (this, waitForConnectionClosedTcs),
-                    preferLocal: false);
-
-                    await waitForConnectionClosedTcs.Task;
+                    await _waitForConnectionClosedTcs.Task;
                 }
             }
             catch (Exception e)
@@ -241,9 +232,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     error = LogAndWrapReadError(uvError);
                 }
 
+                FireConnectionClosed();
+
                 // Complete after aborting the connection
                 Input.Complete(error);
             }
+        }
+
+        private void FireConnectionClosed()
+        {
+            // Guard against scheduling this multiple times
+            if (_connectionClosed)
+            {
+                return;
+            }
+
+            _connectionClosed = true;
+
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            {
+                state.CancelConnectionClosedToken();
+
+                state._waitForConnectionClosedTcs.TrySetResult(null);
+            },
+            this,
+            preferLocal: false);
         }
 
         private async Task ApplyBackpressureAsync(ValueTask<FlushResult> flushTask)

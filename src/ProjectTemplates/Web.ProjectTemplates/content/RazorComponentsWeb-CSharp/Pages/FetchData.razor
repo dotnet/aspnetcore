@@ -1,4 +1,4 @@
-@page "/fetchdata"
+﻿@page "/fetchdata"
 @using RazorComponentsWeb_CSharp.Data
 @inject WeatherForecastService ForecastService
 
@@ -38,7 +38,7 @@ else
 @code {
     WeatherForecast[] forecasts;
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
     }

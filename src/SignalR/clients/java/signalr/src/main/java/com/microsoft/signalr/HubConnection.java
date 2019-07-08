@@ -29,7 +29,7 @@ public class HubConnection {
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
-    private final String baseUrl;
+    private String baseUrl;
     private Transport transport;
     private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
@@ -41,7 +41,8 @@ public class HubConnection {
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private Single<String> redirectAccessTokenProvider;
-    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers;
+    private final Map<String, String> localHeaders = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
     private String stopError;
@@ -147,10 +148,7 @@ public class HubConnection {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
         }
 
-        if (headers != null) {
-            this.headers.putAll(headers);
-        }
-
+        this.headers = headers;
         this.skipNegotiate = skipNegotiate;
 
         this.callback = (payload) -> {
@@ -255,7 +253,7 @@ public class HubConnection {
 
     private Single<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
-        request.addHeaders(this.headers);
+        request.addHeaders(this.localHeaders);
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
             if (response.getStatusCode() != 200) {
@@ -274,7 +272,7 @@ public class HubConnection {
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
                 String token = this.redirectAccessTokenProvider.blockingGet();
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
 
             return negotiateResponse;
@@ -290,6 +288,27 @@ public class HubConnection {
         return hubConnectionState;
     }
 
+    // For testing only
+    String getBaseUrl() {
+        return this.baseUrl;
+    }
+
+    /**
+     * Sets a new url for the HubConnection.
+     * @param url The url to connect to.
+     */
+    public void setBaseUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            throw new IllegalArgumentException("The HubConnection url must be a valid url.");
+        }
+
+        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+            throw new IllegalStateException("The HubConnection must be in the disconnected state to change the url.");
+        }
+
+        this.baseUrl = url;
+    }
+
     /**
      * Starts a connection to the server.
      *
@@ -303,9 +322,13 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
+        if (headers != null) {
+            this.localHeaders.putAll(headers);
+        }
+
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
-                this.headers.put("Authorization", "Bearer " + token);
+                this.localHeaders.put("Authorization", "Bearer " + token);
             }
             tokenCompletable.onComplete();
         });
@@ -326,10 +349,10 @@ public class HubConnection {
                 Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient, tokenProvider);
+                        transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
                         break;
                     default:
-                        transport = new WebSocketTransport(headers, httpClient);
+                        transport = new WebSocketTransport(localHeaders, httpClient);
                 }
             }
 
@@ -493,7 +516,7 @@ public class HubConnection {
             redirectAccessTokenProvider = null;
             connectionId = null;
             transportEnum = TransportEnum.ALL;
-            this.headers.remove("Authorization");
+            this.localHeaders.clear();
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -554,6 +577,10 @@ public class HubConnection {
     }
 
     Object[] checkUploadStream(Object[] args, List<String> streamIds) {
+        if (args == null) {
+            return new Object[] { null };
+        }
+
         List<Object> params = new ArrayList<>(Arrays.asList(args));
         for (Object arg: args) {
             if (arg instanceof Observable) {
@@ -566,6 +593,38 @@ public class HubConnection {
         }
 
         return params.toArray();
+    }
+
+
+    /**
+     * Invokes a hub method on the server using the specified method name and arguments.
+     *
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @return A Completable that indicates when the invocation has completed.
+     */
+    @SuppressWarnings("unchecked")
+    public Completable invoke(String method, Object... args) {
+        if (hubConnectionState != HubConnectionState.CONNECTED) {
+            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+        }
+
+        String id = connectionState.getNextInvocationId();
+
+        CompletableSubject subject = CompletableSubject.create();
+        InvocationRequest irq = new InvocationRequest(null, id);
+        connectionState.addInvocation(irq);
+
+        Subject<Object> pendingCall = irq.getPendingCall();
+
+        pendingCall.subscribe(result -> subject.onComplete(),
+                error -> subject.onError(error),
+                () -> subject.onComplete());
+
+        // Make sure the actual send is after setting up the callbacks otherwise there is a race
+        // where the map doesn't have the callbacks yet when the response is returned
+        sendInvocationMessage(method, args, id, false);
+        return subject;
     }
 
     /**

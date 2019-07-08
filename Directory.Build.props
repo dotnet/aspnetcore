@@ -1,65 +1,54 @@
 ﻿<Project>
-  <Import Project="version.props" />
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
 
-  <!--
-    These imports look funny.
-    Eventually they will be replaced by a simplified import that brings in
-    the entire Arcade SDK. For now, we're moving onto Arcade one piece at a time.
-  -->
-  <Import Project="../tools/DefaultVersions.Generated.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="eng\Versions.props" />
-  <Import Project="../tools/Compiler.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(UsingToolMicrosoftNetCompilers)' == 'true'"/>
+  <!-- Defines project type conventions. -->
+  <PropertyGroup>
+    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
+
+    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
+    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
+
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
+    <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition="'$(IsSpecificationTestProject)' != 'true' and ( $(MSBuildProjectName.EndsWith('Tests')) or $(MSBuildProjectName.EndsWith('.Test')) or $(MSBuildProjectName.EndsWith('.FunctionalTest')) )">true</IsUnitTestProject>
+    <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
+    <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
+    <IsShipping Condition="'$(IsSampleProject)' == 'true' or '$(IsTestAssetProject)' == 'true' or '$(IsBenchmarkProject)' == 'true' or '$(IsUnitTestProject)' == 'true'">false</IsShipping>
+  </PropertyGroup>
+
+  <Import Project="eng\FlakyTests.BeforeArcade.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\FlakyTests.AfterArcade.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
-    <Authors>Microsoft</Authors>
-    <Company>Microsoft Corporation.</Company>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <NeutralLanguage>en-US</NeutralLanguage>
-
-    <!-- Package settings -->
-
-    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
-    <PackageLicenseType>Apache-2.0</PackageLicenseType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
     <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Serviceable>true</Serviceable>
+    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
-    <IncludeSource>false</IncludeSource>
     <IncludeSymbols>true</IncludeSymbols>
 
     <DefaultNetCoreTargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</DefaultNetCoreTargetFramework>
-
-    <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
-    <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
-
-    <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
-    <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
-    <!--
-      Archives and installers using this prefix are intended for internal-use only.
-      For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
-      into their own installers.
-    -->
-    <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
 
   <!-- Warnings and errors -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!--
-      Suppress NuGet warning about upcoming deprecation of PackageLicenseUrl. When embedding licenses are supported,
-      replace PackageLicenseUrl with PackageLicenseExpression.
-    -->
-    <NoWarn>$(NoWarn);NU5125</NoWarn>
-    <!-- Suppress NuGet warnings about using SemVer 2.0. -->
-    <NoWarn>$(NoWarn);NU5105</NoWarn>
     <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
@@ -68,35 +57,44 @@
 
   <!-- Source code settings -->
   <PropertyGroup>
-    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
     <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <!-- Additional assembly attributes are already configured to include the source revision ID. -->
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
-    <!-- These project types are disabled because the presence of a PackageReference causes issues for NuGet. -->
-    <DisableSourceLink Condition="'$(MSBuildProjectExtension)' == '.debproj' OR '$(MSBuildProjectExtension)' == '.rpmproj'">true</DisableSourceLink>
+    <!-- Disable source link on local builds for faster local builds. -->
+    <EnableSourceLink Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(OfficialBuildId)' == ''">false</EnableSourceLink>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DisableSourceLink)' != 'true'">
-    <!-- See https://github.com/dotnet/sourcelink -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
-    <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="$(MicrosoftSourceLinkVstsGitPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
-  </ItemGroup>
+  <PropertyGroup>
+    <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
+    <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
+
+    <NETCoreAppFrameworkIdentifier>.NETCoreApp</NETCoreAppFrameworkIdentifier>
+    <NETCoreAppFramework>netcoreapp$(AspNetCoreMajorMinorVersion)</NETCoreAppFramework>
+    <AspNetCoreAppFrameworkBrandName>ASP.NET Core $(AspNetCoreMajorMinorVersion)</AspNetCoreAppFrameworkBrandName>
+
+    <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
+    <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
+    <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
+
+    <!-- Used to only produce targeting pack installers/packages once per major.minor. -->
+    <IsTargetingPackBuilding Condition="'$(IsServicingBuild)' == 'true' AND '$(DotNetBuildFromSource)' != 'true'">false</IsTargetingPackBuilding>
+
+    <!--
+      Archives and installers using this prefix are intended for internal-use only.
+      For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
+      into their own installers.
+    -->
+    <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(DisablePubternalApiCheck)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'">
-    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
+    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <PlatformName Condition=" '$(PlatformName)' == '' ">$(Platform)</PlatformName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
@@ -119,77 +117,32 @@
     <!-- Make error messages clickable in VS Code's console -->
     <GenerateFullPaths Condition="'$(VSCODE_CWD)' != '' OR '$(TERM_PROGRAM)' == 'vscode'">true</GenerateFullPaths>
 
-    <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-
     <!-- Fixes a common error in targets implementing a NoBuild mode. -->
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
-
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
-
-  <Import Project="build\sources.props" />
 
   <!-- Artifacts layout -->
   <PropertyGroup>
-    <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
-    <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
-    <ArtifactsBinDir>$(ArtifactsDir)bin\</ArtifactsBinDir>
-    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
-    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
-    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
-    <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
+    <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>
   </PropertyGroup>
 
   <!-- Ensure these output paths exist. -->
   <ItemGroup>
-    <CreateDirectory Include="$(ArtifactsShippingPackagesDir)" />
-    <CreateDirectory Include="$(ArtifactsNonShippingPackagesDir)" />
     <CreateDirectory Include="$(InstallersOutputPath)" />
     <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <OutDirName Condition=" '$(OutDirName)' == '' ">$(MSBuildProjectName)</OutDirName>
-
-    <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>
-    <OutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseOutputPath)$(Configuration)\</OutputPath>
-    <OutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
-
-    <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)$(OutDirName)\'))</BaseIntermediateOutputPath>
-    <IntermediateOutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
-    <IntermediateOutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
-
   <!-- The location of the local installation of the .NET Core shared framework. -->
   <PropertyGroup>
-    <LocalDotNetRoot Condition="'$(TargetOSName)' == 'win'">$(RepoRoot).dotnet\$(TargetArchitecture)\</LocalDotNetRoot>
-    <LocalDotNetRoot Condition="'$(TargetOSName)' != 'win'">$(RepoRoot).dotnet\</LocalDotNetRoot>
+    <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
     <!-- Override the SDK default and point to local .dotnet folder. -->
     <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
-  <!-- Defines project type conventions. -->
-  <PropertyGroup>
-    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
-
-    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
-    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
-    <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
-    <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
-    <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
-    <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-
-  </PropertyGroup>
-
-  <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+  <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>
-    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!--
       Disable deterministic source paths in test assets and samples.
       In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths

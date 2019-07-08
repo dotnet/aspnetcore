@@ -14,13 +14,13 @@
 <h2>Form with onsubmit handler</h2>
 
 <form action="about:blank" @onsubmit=@(() => { })>
-    <button id="form-1-button" @onclick=@HandleClick>Click me</button>
+    <button id="form-1-button" @onclick=HandleClick>Click me</button>
 </form>
 
 <h2>Form without onsubmit handler</h2>
 
 <form action="about:blank">
-    <button id="form-2-button" @onclick=@HandleClick>Click me</button>
+    <button id="form-2-button" @onclick=HandleClick>Click me</button>
 </form>
 
 @if (didHandleEvent)

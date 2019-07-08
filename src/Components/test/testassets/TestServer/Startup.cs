@@ -1,10 +1,7 @@
 using BasicTestApp;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,7 +25,12 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor()
+                .AddCircuitOptions(o =>
+                {
+                    var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
+                    o.JSInteropDetailedErrors = detailedErrors;
+                });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             services.AddAuthorization(options =>
@@ -63,6 +65,7 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
+                subdirApp.UseStaticFiles();
                 subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
                 subdirApp.UseRouting();
@@ -72,14 +75,6 @@ namespace TestServer
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
                     endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });
-            });
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-                endpoints.MapRazorPages();
             });
 
             // Separately, mount a prerendered server-side Blazor app on /prerendered
@@ -93,6 +88,14 @@ namespace TestServer
                     endpoints.MapFallbackToPage("/PrerenderedHost");
                     endpoints.MapBlazorHub();
                 });
+            });
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
         }
     }

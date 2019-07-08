@@ -9,11 +9,11 @@ namespace Microsoft.AspNetCore.Analyzers
     public partial class StartupAnalzyer : DiagnosticAnalyzer
     {
         internal readonly static DiagnosticDescriptor UnsupportedUseMvcWithEndpointRouting = new DiagnosticDescriptor(
-            "MVC1005",
-            "Cannot use UseMvc with Endpoint Routing.",
-            "Using '{0}' to configure MVC is not supported while using Endpoint Routing. To continue using '{0}', please set 'MvcOptions.EnableEndpointRounting = false' inside '{1}'.",
-            "Usage",
-            DiagnosticSeverity.Warning,
+            "MVC1005", 
+            "Cannot use UseMvc with Endpoint Routing.", 
+            "Using '{0}' to configure MVC is not supported while using Endpoint Routing. To continue using '{0}', please set 'MvcOptions.EnableEndpointRouting = false' inside '{1}'.",
+            "Usage", 
+            DiagnosticSeverity.Warning, 
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/YJggeFn");
 

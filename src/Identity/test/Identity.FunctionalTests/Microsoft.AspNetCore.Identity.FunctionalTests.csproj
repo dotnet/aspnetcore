@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-  </PropertyGroup>
+    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <SkipHelixArm>true</SkipHelixArm>
+   </PropertyGroup>
 
   <ItemGroup>
+    
     <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
     <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
   </ItemGroup>
@@ -46,7 +49,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode" />
   </Target>
 
 </Project>

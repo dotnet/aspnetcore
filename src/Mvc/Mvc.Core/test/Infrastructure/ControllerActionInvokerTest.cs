@@ -1567,7 +1567,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
-                NullLoggerFactory.Instance));
+                NullLoggerFactory.Instance,
+                options));
 
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = services.BuildServiceProvider();

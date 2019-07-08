@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             ConnectionManager httpConnectionManager,
             Mock<IKestrelTrace> trace)
         {
-            var mock = new Mock<TransportConnection>() { CallBase = true };
+            var mock = new Mock<DefaultConnectionContext>() { CallBase = true };
             mock.Setup(m => m.ConnectionId).Returns(connectionId);
             var httpConnection = new KestrelConnection(mock.Object, Mock.Of<ILogger>());
 

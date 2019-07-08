@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -27,8 +26,6 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public const string ActionFilter = "Action Filter";
         private static readonly string[] _noFilters = new[] { "None" };
-
-        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
@@ -73,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly Action<ILogger, string, Exception> _localRedirectResultExecuting;
 
         private static readonly Action<ILogger, string, Exception> _objectResultExecuting;
-        private static readonly Action<ILogger, string, Exception> _noFormatter;
+        private static readonly Action<ILogger, IEnumerable<string>, Exception> _noFormatter;
         private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
         private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
         private static readonly Action<ILogger, Exception> _noAcceptForNegotiation;
@@ -300,10 +297,10 @@ namespace Microsoft.AspNetCore.Mvc
                 new EventId(1, "LocalRedirectResultExecuting"),
                 "Executing LocalRedirectResult, redirecting to {Destination}.");
 
-            _noFormatter = LoggerMessage.Define<string>(
+            _noFormatter = LoggerMessage.Define<IEnumerable<string>>(
                 LogLevel.Warning,
                 new EventId(1, "NoFormatter"),
-                "No output formatter was found for content type '{ContentType}' to write the response.");
+                "No output formatter was found for content types '{ContentTypes}' to write the response.");
 
             _objectResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -1017,11 +1014,19 @@ namespace Microsoft.AspNetCore.Mvc
 
         public static void NoFormatter(
             this ILogger logger,
-            OutputFormatterCanWriteContext formatterContext)
+            OutputFormatterCanWriteContext context,
+            MediaTypeCollection contentTypes)
         {
             if (logger.IsEnabled(LogLevel.Warning))
             {
-                _noFormatter(logger, Convert.ToString(formatterContext.ContentType), null);
+                var considered = new List<string>(contentTypes);
+
+                if (context.ContentType.HasValue)
+                {
+                    considered.Add(Convert.ToString(context.ContentType));
+                }
+
+                _noFormatter(logger, considered, null);
             }
         }
 

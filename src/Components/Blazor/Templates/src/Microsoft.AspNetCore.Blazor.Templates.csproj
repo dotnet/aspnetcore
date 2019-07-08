@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Templates.nuspec</NuspecFile>
@@ -6,8 +7,12 @@
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
-    <NoWarn>2008</NoWarn>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);2008</NoWarn>
     <Description>Templates for ASP.NET Core Blazor projects.</Description>
+    <PackageTags>aspnet;templates;blazor;spa</PackageTags>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
@@ -35,13 +40,17 @@
         <Properties>$(GeneratedContentProperties)</Properties>
       </GeneratedContent>
     </ItemGroup>
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="%(GeneratedContent.Identity)"
       Properties="%(GeneratedContent.Properties)"
       OutputPath="%(GeneratedContent.OutputPath)">
 
       <Output TaskParameter="OutputPath" ItemName="FileWrites" />
       <Output TaskParameter="OutputPath" ItemName="Content" />
-    </Sdk_GenerateFileFromTemplate>
+    </GenerateFileFromTemplate>
   </Target>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <!-- Override SDK targets. This project does not produce a .dll. -->
+  <Target Name="CoreCompile" />
+  <Target Name="GetTargetPath" />
 </Project>

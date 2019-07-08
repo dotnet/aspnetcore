@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
         private Task _processingTask;
+        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _connectionClosed;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
@@ -98,22 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 _receiver.Dispose();
                 _sender.Dispose();
-
-                // Fire the connection closed token and wait for it to complete
-                var waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                ThreadPool.UnsafeQueueUserWorkItem(state =>
-                {
-                    (var connection, var tcs) = state;
-
-                    connection.CancelConnectionClosedToken();
-
-                    tcs.TrySetResult(null);
-                },
-                (this, waitForConnectionClosedTcs),
-                preferLocal: false);
-
-                await waitForConnectionClosedTcs.Task;
             }
             catch (Exception ex)
             {
@@ -187,6 +173,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
                 Input.Complete(_shutdownReason ?? error);
+
+                FireConnectionClosed();
+
+                await _waitForConnectionClosedTcs.Task;
             }
         }
 
@@ -305,6 +295,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     break;
                 }
             }
+        }
+
+        private void FireConnectionClosed()
+        {
+            // Guard against scheduling this multiple times
+            if (_connectionClosed)
+            {
+                return;
+            }
+
+            _connectionClosed = true;
+
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            {
+                state.CancelConnectionClosedToken();
+
+                state._waitForConnectionClosedTcs.TrySetResult(null);
+            },
+            this,
+            preferLocal: false);
         }
 
         private void Shutdown(Exception shutdownReason)

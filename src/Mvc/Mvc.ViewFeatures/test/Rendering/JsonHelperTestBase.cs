@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         protected abstract IJsonHelper GetJsonHelper();
 
         [Fact]
-        public void Serialize_EscapesHtmlByDefault()
+        public virtual void Serialize_EscapesHtmlByDefault()
         {
             // Arrange
             var helper = GetJsonHelper();

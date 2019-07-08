@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -872,6 +873,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     It.IsAny<string>(),
                     It.Is<InvalidOperationException>(ex =>
                         ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+        }
+
+        [Fact]
+        public async Task WhenAppWritesLessThanContentLengthCompleteThrowsAndErrorLogged()
+        {
+            InvalidOperationException completeEx = null;
+
+            var logTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
+                .Callback<string, string, Exception>((connectionId, requestId, ex) =>
+                {
+                    logTcs.SetResult(null);
+                });
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 13;
+                await httpContext.Response.WriteAsync("hello, world");
+
+                completeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.Complete());
+
+            }, new TestServiceContext(LoggerFactory, mockTrace.Object)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    // Don't use ReceiveEnd here, otherwise the FIN might
+                    // abort the request before the server checks the
+                    // response content length, in which case the check
+                    // will be skipped.
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 13",
+                        "",
+                        "hello, world");
+
+                    // Wait for error message to be logged.
+                    await logTcs.Task.DefaultTimeout();
+
+                    // The server should close the connection in this situation.
+                    await connection.WaitForConnectionClose();
+                }
+            }
+
+            mockTrace.Verify(trace =>
+                trace.ApplicationError(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.Is<InvalidOperationException>(ex =>
+                        ex.Message.Equals($"Response Content-Length mismatch: too few bytes written (12 of 13).", StringComparison.Ordinal))));
+
+            Assert.NotNull(completeEx);
         }
 
         [Fact]
@@ -2481,18 +2542,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2408", FlakyOn.AzP.All)]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
-            // Ensure the response doesn't get flush before the abort is observed by scheduling inline.
-            var testContext = new TestServiceContext(LoggerFactory)
-            {
-                Scheduler = PipeScheduler.Inline
-            };
+            var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(httpContext =>
             {
-                httpContext.Features.Get<IConnectionLifetimeFeature>().Abort();
-                return Task.CompletedTask;
+                var feature = httpContext.Features.Get<IConnectionLifetimeFeature>();
+                feature.Abort();
+
+                // Ensure the response doesn't get flush before the abort is observed.
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                feature.ConnectionClosed.Register(() => tcs.TrySetResult(null));
+
+                return tcs.Task;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -2841,9 +2905,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var expectedString = new string('a', expectedLength);
             await using (var server = new TestServer(async httpContext =>
             {
-                httpContext.Response.Headers["Content-Length"] = new[] { expectedLength.ToString() };
+                httpContext.Response.ContentLength = expectedLength;
                 await httpContext.Response.WriteAsync(expectedString);
                 Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        $"Content-Length: {expectedLength}",
+                        "",
+                        expectedString);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UnflushedContentLengthResponseIsFlushedAutomatically()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedLength = 100000;
+            var expectedString = new string('a', expectedLength);
+
+            void WriteStringWithoutFlushing(PipeWriter writer, string content)
+            {
+                var encoder = Encoding.ASCII.GetEncoder();
+                var encodedLength = Encoding.ASCII.GetByteCount(expectedString);
+                var source = expectedString.AsSpan();
+                var completed = false;
+
+                while (!completed)
+                {
+                    encoder.Convert(source, writer.GetSpan(), flush: source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                    writer.Advance(bytesUsed);
+                    source = source.Slice(charsUsed);
+                }
+            }
+
+            await using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = expectedLength;
+
+                WriteStringWithoutFlushing(httpContext.Response.BodyWriter, expectedString);
+
+                Assert.False(httpContext.Response.HasStarted);
+                return Task.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -3424,12 +3537,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoNotThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoesThrow()
         {
+            InvalidOperationException writeEx = null;
+
             await using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.BodyWriter.Complete();
-                await httpContext.Response.WriteAsync("test");
+                writeEx = await Assert.ThrowsAsync<InvalidOperationException>(() => httpContext.Response.WriteAsync("test"));
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3439,16 +3554,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "",
                         "");
+
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "0",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
             }
+
+            Assert.NotNull(writeEx);
         }
 
         [Fact]
@@ -3817,19 +3933,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow()
+        public async Task ResponseCompleteGetMemoryDoesThrow()
         {
-            await using (var server = new TestServer(async httpContext =>
+            InvalidOperationException writeEx = null;
+
+            await using (var server = new TestServer(httpContext =>
             {
-
                 httpContext.Response.BodyWriter.Complete();
-                for (var i = 0; i < 5; i++)
-                {
-                    var memory = httpContext.Response.BodyWriter.GetMemory(); // Shouldn't throw
-                    httpContext.Response.BodyWriter.Advance(memory.Length);
-                }
 
-                await Task.CompletedTask;
+                writeEx = Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.GetMemory());
+
+                return Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3842,13 +3956,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "0",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
             }
+
+            Assert.NotNull(writeEx);
         }
 
         [Fact]

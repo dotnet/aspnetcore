@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public class ServerSentEventsTransport : IHttpTransport
+    internal class ServerSentEventsTransport : IHttpTransport
     {
         private readonly PipeReader _application;
         private readonly string _connectionId;

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -12,7 +12,7 @@
     <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpHeaders.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpProtocol.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Core\src\Internal\Infrastructure\HttpUtilities.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelRoot)..\Connections.Abstractions\src\TransportConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">

@@ -2,12 +2,9 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr@file:../signalr":
-  version "3.0.0-dev"
-  dependencies:
-    eventsource "^1.0.7"
-    request "^2.88.0"
-    ws "^6.0.0"
+"@microsoft/signalr@link:../signalr":
+  version "0.0.0"
+  uid ""
 
 "@types/bl@*":
   version "0.8.31"

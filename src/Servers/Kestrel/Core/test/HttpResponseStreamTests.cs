@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pipeWriter = new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
             var stream = new HttpResponseStream(Mock.Of<IHttpBodyControlFeature>(), pipeWriter);
             pipeWriter.StartAcceptingWrites();
-            pipeWriter.StopAcceptingWrites();
+            pipeWriter.StopAcceptingWritesAsync();
             var ex = Assert.Throws<ObjectDisposedException>(() => { stream.WriteAsync(new byte[1], 0, 1); });
             Assert.Contains(CoreStrings.WritingToResponseBodyAfterResponseCompleted, ex.Message);
         }

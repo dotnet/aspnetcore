@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
@@ -59,14 +59,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var writeStream = GetWriteStream(httpContext, selectedEncoding);
             try
             {
-                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, SerializerOptions);
+                // context.ObjectType reflects the declared model type when specified.
+                // For polymorphic scenarios where the user declares a return type, but returns a derived type,
+                // we want to serialize all the properties on the derived type. This keeps parity with
+                // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
+                var objectType = context.Object?.GetType() ?? context.ObjectType;
+                await JsonSerializer.SerializeAsync(writeStream, context.Object, objectType, SerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally
             {
                 if (writeStream is TranscodingWriteStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
         }

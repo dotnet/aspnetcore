@@ -7,18 +7,12 @@
 
 <div id="duplicate-on-element-override">
     <DuplicateAttributesOnElementChildComponent
-        BoolAttributeBefore="true"
-        StringAttributeBefore="original-text"
         UnmatchedValues="@elementValues"
         BoolAttributeAfter="false"
         StringAttributeAfter="other-text" />
 </div>
 
 @functions {
-    void SomeMethod()
-    {
-    }
-
     Dictionary<string, object> elementValues = new Dictionary<string, object>()
     {
         { "bool",  true },

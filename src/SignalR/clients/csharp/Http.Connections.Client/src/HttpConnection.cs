@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
-#if !NETCOREAPP3_0
-        private static readonly Version Windows8Version = new Version(6, 2);
-#endif
 
         private readonly ILogger _logger;
 
@@ -132,6 +129,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
+            if (httpConnectionOptions == null)
+            {
+                throw new ArgumentNullException(nameof(httpConnectionOptions));
+            }
+
             if (httpConnectionOptions.Url == null)
             {
                 throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
@@ -171,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            return StartAsync(TransferFormat.Binary, cancellationToken);
+            return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
         }
 
         /// <summary>
@@ -586,20 +588,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (!isWindows)
+            try
             {
-                // Assume other OSes have websockets
+                new ClientWebSocket().Dispose();
                 return true;
             }
-            else
+            catch
             {
-                // Windows 8 and above has websockets
-                return Environment.OSVersion.Version >= Windows8Version;
+                return false;
             }
 #endif
         }

@@ -8,7 +8,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -1831,7 +1830,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10", entry.RawValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoCollectionData()
         {
             // Arrange
@@ -1880,7 +1879,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Single(entry.Errors);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11813")]
         public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoData()
         {
             // Arrange

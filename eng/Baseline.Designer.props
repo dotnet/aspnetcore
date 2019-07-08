@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.2.4</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.2.5</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -77,11 +77,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
-    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
-    <BaselinePackageVersion>2.2.4</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
@@ -221,27 +222,27 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
-    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.4, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.4, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.5, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
-    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[2.2.5, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
@@ -326,11 +327,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.513, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.SystemWeb-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.SystemWeb' ">
@@ -581,14 +582,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.UI-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Identity" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
@@ -657,7 +658,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -755,7 +756,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.RazorPages-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.RazorPages' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.RazorPages' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="[2.2.0, )" />
@@ -1127,19 +1128,19 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
-    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+    <BaselinePackageVersion>1.1.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Redis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' ">
-    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+    <BaselinePackageVersion>1.1.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
     <BaselinePackageReference Include="StackExchange.Redis.StrongName" Version="[1.2.6, )" />
   </ItemGroup>
@@ -1163,13 +1164,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' ">
-    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+    <BaselinePackageVersion>1.1.5</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
-    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.513, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' ">

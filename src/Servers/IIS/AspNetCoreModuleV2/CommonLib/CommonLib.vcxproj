@@ -196,6 +196,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorContext.h" />
     <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="BindingInformation.h" />
@@ -245,7 +246,6 @@
     <ClCompile Include="file_utility.cpp" />
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
-    <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="HostFxr.cpp" />
     <ClCompile Include="HostFxrResolver.cpp" />
     <ClCompile Include="HostFxrResolutionResult.cpp" />

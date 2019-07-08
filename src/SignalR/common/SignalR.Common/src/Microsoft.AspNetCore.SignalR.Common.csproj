@@ -36,4 +36,9 @@
     <SuppressBaselineReference Include="System.Buffers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Common.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests.Utils" />
+  </ItemGroup>
+
 </Project>

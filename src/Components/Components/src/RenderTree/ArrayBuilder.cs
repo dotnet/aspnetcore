@@ -107,6 +107,25 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// Inserts the item at the specified index, moving the contents of the subsequent entries along by one.
+        /// </summary>
+        /// <param name="insertAtIndex">The index at which the value is to be inserted.</param>
+        /// <param name="value">The value to insert.</param>
+        public void InsertExpensive(int insertAtIndex, T value)
+        {
+            // Same expansion logic as elsewhere
+            if (_itemsInUse == _items.Length)
+            {
+                SetCapacity(_items.Length * 2, preserveContents: true);
+            }
+
+            Array.Copy(_items, insertAtIndex, _items, insertAtIndex + 1, _itemsInUse - insertAtIndex);
+            _itemsInUse++;
+
+            _items[insertAtIndex] = value;
+        }
+
+        /// <summary>
         /// Marks the array as empty, also shrinking the underlying storage if it was
         /// not being used to near its full capacity.
         /// </summary>
@@ -133,13 +152,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new ArrayRange<T>(_items, _itemsInUse);
 
         /// <summary>
-        /// Produces an <see cref="ArraySegment{T}"/> structure describing the selected contents.
+        /// Produces an <see cref="ArrayBuilderSegment{T}"/> structure describing the selected contents.
         /// </summary>
         /// <param name="fromIndexInclusive">The index of the first item in the segment.</param>
         /// <param name="toIndexExclusive">One plus the index of the last item in the segment.</param>
         /// <returns>The <see cref="ArraySegment{T}"/>.</returns>
-        public ArraySegment<T> ToSegment(int fromIndexInclusive, int toIndexExclusive)
-            => new ArraySegment<T>(_items, fromIndexInclusive, toIndexExclusive - fromIndexInclusive);
+        public ArrayBuilderSegment<T> ToSegment(int fromIndexInclusive, int toIndexExclusive)
+            => new ArrayBuilderSegment<T>(this, fromIndexInclusive, toIndexExclusive - fromIndexInclusive);
 
         private void SetCapacity(int desiredCapacity, bool preserveContents)
         {

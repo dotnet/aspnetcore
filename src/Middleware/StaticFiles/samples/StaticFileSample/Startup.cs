@@ -17,8 +17,6 @@ namespace StaticFilesSample
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment host)
         {
-            Console.WriteLine("webroot: " + host.WebRootPath);
-
             app.UseResponseCompression();
 
             app.UseFileServer(new FileServerOptions
@@ -37,6 +35,7 @@ namespace StaticFilesSample
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseKestrel()
+                // .UseHttpSys()
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();

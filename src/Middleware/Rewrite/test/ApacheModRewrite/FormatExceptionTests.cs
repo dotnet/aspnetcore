@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite

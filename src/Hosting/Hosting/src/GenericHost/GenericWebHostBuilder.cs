@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
@@ -74,8 +74,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     // Store and forward any startup errors
                     options.HostingStartupExceptions = _hostingStartupErrors;
                 });
-
-                services.AddHostedService<GenericWebHostService>();
 
                 // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
                 // We need to flow this differently

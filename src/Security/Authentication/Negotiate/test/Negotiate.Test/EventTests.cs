@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnChallenge_Fires()
         {
             var eventInvoked = false;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task OnChallenge_Handled()
         {
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnAuthenticationFailed_Fires()
         {
             var eventInvoked = false;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -85,6 +87,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 SendAsync(server, "/404", new TestConnection(), "Negotiate InvalidBlob"));
@@ -95,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Fact]
         public async Task OnAuthenticationFailed_Handled()
         {
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -108,6 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate InvalidBlob");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
@@ -118,7 +122,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnAuthenticated_FiresOncePerRequest()
         {
             var callCount = 0;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.PersistKerberosCredentials = true;
                 options.Events = new NegotiateEvents()
@@ -134,6 +138,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var testConnection = new TestConnection();
             await KerberosStage1And2Auth(server, testConnection);
@@ -147,7 +152,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnAuthenticated_Success_Continues()
         {
             var callCount = 0;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -159,6 +164,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             await KerberosStage1And2Auth(server, new TestConnection());
             Assert.Equal(1, callCount);
@@ -168,7 +174,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnAuthenticated_NoResult_SuppresesCredentials()
         {
             var callCount = 0;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -180,6 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection(), "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
@@ -191,7 +198,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task OnAuthenticated_Fail_SuppresesCredentials()
         {
             var callCount = 0;
-            var server = await CreateServerAsync(options =>
+            using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
@@ -203,6 +210,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     }
                 };
             });
+            var server = host.GetTestServer();
 
             var result = await SendAsync(server, "/Authenticate", new TestConnection(), "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
@@ -230,7 +238,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
-        private static async Task<TestServer> CreateServerAsync(Action<NegotiateOptions> configureOptions = null)
+        private static async Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
         {
             var builder = new HostBuilder()
                 .ConfigureServices(services => services
@@ -249,11 +257,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseEndpoints(ConfigureEndpoints);
-                    });                
+                    });
                 });
 
-            var server = (await builder.StartAsync()).GetTestServer();
-            return server;
+            return await builder.StartAsync();
         }
 
         private static void ConfigureEndpoints(IEndpointRouteBuilder builder)

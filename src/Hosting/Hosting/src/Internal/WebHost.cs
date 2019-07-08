@@ -21,10 +21,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.StackTrace.Sources;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHost : IWebHost, IAsyncDisposable
     {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private IServiceProvider _applicationServices;
         private ExceptionDispatchInfo _applicationServicesException;
-        private ILogger _logger;
+        private ILogger _logger =  NullLogger.Instance;
 
         private bool _stopped;
         private bool _startedServer;
@@ -148,6 +149,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _applicationLifetime = _applicationServices.GetRequiredService<ApplicationLifetime>();
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
+
+            // Fire IHostedService.Start
+            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
+
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
@@ -157,8 +162,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
 
-            // Fire IHostedService.Start
-            await _hostedServiceExecutor.StartAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.Started();
 
@@ -317,7 +320,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             _stopped = true;
 
-            _logger?.Shutdown();
+            _logger.Shutdown();
 
             var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
             if (!cancellationToken.CanBeCanceled)
@@ -338,7 +341,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             // Fire the IHostedService.Stop
-            if (_hostedServiceExecutor != null && _startedServer)
+            if (_hostedServiceExecutor != null)
             {
                 await _hostedServiceExecutor.StopAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -364,7 +367,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
                 catch (Exception ex)
                 {
-                    _logger?.ServerShutdownException(ex);
+                    _logger.ServerShutdownException(ex);
                 }
             }
 

@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             else
             {
-                return Task.FromException(scopeException);
+                return Task.FromException(scopeException!);
             }
 
             static async Task Awaited(ResourceInvoker invoker, Task task, IDisposable? scope)
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception ex)
             {
-                // Wrap non task-wrapped exceptions in a Task, 
+                // Wrap non task-wrapped exceptions in a Task,
                 // as this isn't done automatically since the method is not async.
                 return Task.FromException(ex);
             }
@@ -997,7 +997,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception ex)
             {
-                // Wrap non task-wrapped exceptions in a Task, 
+                // Wrap non task-wrapped exceptions in a Task,
                 // as this isn't done automatically since the method is not async.
                 return Task.FromException(ex);
             }
@@ -1045,7 +1045,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception ex)
             {
-                // Wrap non task-wrapped exceptions in a Task, 
+                // Wrap non task-wrapped exceptions in a Task,
                 // as this isn't done automatically since the method is not async.
                 return Task.FromException(ex);
             }
@@ -1083,7 +1083,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception ex)
             {
-                // Wrap non task-wrapped exceptions in a Task, 
+                // Wrap non task-wrapped exceptions in a Task,
                 // as this isn't done automatically since the method is not async.
                 return Task.FromException(ex);
             }

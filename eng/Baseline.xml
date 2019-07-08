@@ -1,10 +1,10 @@
-<!--
+﻿<!--
 
 This file contains a list of all the packages and their versions which were released in the last servicing
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.4">
+<Baseline Version="2.2.5">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -12,8 +12,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="2.2.0-preview-35687" />
   <Package Id="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.1" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.4" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.5" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />
@@ -30,8 +30,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authorization.Policy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.2" />
-  <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.2.2" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.5" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.CookiePolicy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cors" Version="2.2.0" />
@@ -42,7 +42,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.2.0" />
@@ -66,7 +66,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Identity.UI" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Identity.UI" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Identity" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.JsonPatch" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Localization.Routing" Version="2.2.0" />
@@ -75,7 +75,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Mvc.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
@@ -83,7 +83,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
@@ -115,10 +115,10 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.SignalR.Common" Version="1.1.0" />
   <Package Id="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
   <Package Id="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="1.1.0" />
-  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.1.0" />
-  <Package Id="Microsoft.AspNetCore.SignalR.Redis" Version="1.1.0" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.1.5" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Redis" Version="1.1.5" />
   <Package Id="Microsoft.AspNetCore.SignalR.Specification.Tests" Version="1.1.0" />
-  <Package Id="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="1.1.0" />
+  <Package Id="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="1.1.5" />
   <Package Id="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
   <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.2.0" />

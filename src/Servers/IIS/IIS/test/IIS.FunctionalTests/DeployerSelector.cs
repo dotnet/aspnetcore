@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     public static class DeployerSelector
     {
         public static ServerType ServerType => ServerType.IIS;
-        public static bool IsForwardsCompatibilityTest => false;
+        public static bool IsNewShimTest => false;
         public static bool HasNewShim => true;
         public static bool HasNewHandler => true;
     }

@@ -39,11 +39,9 @@
 
     <!--
       If 'true' (the default), build projects referenced in @(OpenApiProjectReference) items before retrieving that
-      project's Open API documents list (or generating code). Recommend setting this to 'false' when the referenced
-      projects do not share target framework values (avoiding build errors and / or warnings).
-
-      If 'false', ensure the referenced projects build before this one in the solution or through other means. IDEs may
-      be confused about the project dependency graph in this case.
+      project's Open API documents list (or generating code). If 'false', ensure the referenced projects build before
+      this one in the solution or through other means. IDEs may be confused about the project dependency graph in this
+      case.
     -->
     <OpenApiBuildReferencedProjects
         Condition="'$(OpenApiBuildReferencedProjects)' == ''">true</OpenApiBuildReferencedProjects>
@@ -56,6 +54,14 @@
     <OpenApiCodeDirectory
         Condition="'$(OpenApiCodeDirectory)' == ''">$(BaseIntermediateOutputPath)</OpenApiCodeDirectory>
   </PropertyGroup>
+
+  <!--
+    Well-known metadata of the code generator item groups.
+  -->
+  <ItemGroup>
+    <AvailableItemName Include="OpenApiReference" />
+    <AvailableItemName Include="OpenApiProjectReference" />
+  </ItemGroup>
 
   <!--
     Well-known metadata of the code generator item groups.

@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  + $" --output \"{publishDirectory.FullName}\""
                                  + $" --framework {deploymentParameters.TargetFramework}"
                                  + $" --configuration {deploymentParameters.Configuration}"
+                                 // avoids triggering builds of dependencies of the test app which could cause issues like https://github.com/dotnet/arcade/issues/2941
+                                 + $" --no-dependencies"
                                  + $" /p:TargetArchitecture={deploymentParameters.RuntimeArchitecture}"
                                  + " --no-restore";
 

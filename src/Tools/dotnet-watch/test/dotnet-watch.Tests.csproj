@@ -22,10 +22,6 @@
       <_Parameter1>TestSettings:RestoreSources</_Parameter1>
       <_Parameter2>$(RestoreSources)</_Parameter2>
     </AssemblyAttribute>
-     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>TestSettings:RuntimeFrameworkVersion</_Parameter1>
-      <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">

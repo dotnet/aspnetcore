@@ -14,9 +14,15 @@ namespace Microsoft.AspNetCore.TestHost
         public static System.Net.Http.HttpClient GetTestClient(this Microsoft.Extensions.Hosting.IHost host) { throw null; }
         public static Microsoft.AspNetCore.TestHost.TestServer GetTestServer(this Microsoft.Extensions.Hosting.IHost host) { throw null; }
     }
+    public partial class HttpResetTestException : System.Exception
+    {
+        public HttpResetTestException(int errorCode) { }
+        public int ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class RequestBuilder
     {
         public RequestBuilder(Microsoft.AspNetCore.TestHost.TestServer server, string path) { }
+        public Microsoft.AspNetCore.TestHost.TestServer TestServer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.TestHost.RequestBuilder AddHeader(string name, string value) { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder And(System.Action<System.Net.Http.HttpRequestMessage> configure) { throw null; }
         public System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> GetAsync() { throw null; }
@@ -25,15 +31,16 @@ namespace Microsoft.AspNetCore.TestHost
     }
     public partial class TestServer : Microsoft.AspNetCore.Hosting.Server.IServer, System.IDisposable
     {
-        public TestServer() { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
-        public TestServer(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
+        public TestServer(System.IServiceProvider services) { }
+        public TestServer(System.IServiceProvider services, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Hosting.IWebHost Host { get { throw null; } }
         public bool PreserveExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.IServiceProvider Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Net.Http.HttpClient CreateClient() { throw null; }
         public System.Net.Http.HttpMessageHandler CreateHandler() { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder CreateRequest(string path) { throw null; }

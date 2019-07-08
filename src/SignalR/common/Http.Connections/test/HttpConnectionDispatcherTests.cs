@@ -10,17 +10,15 @@ using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -1344,6 +1342,55 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     var transferFormatFeature = connection.Features.Get<ITransferFormatFeature>();
                     Assert.Equal(expectedTransferFormats.Value, transferFormatFeature.SupportedFormats);
                 }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task LongPollingKeepsWindowsIdentityBetweenRequests()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddSingleton<TestConnectionHandler>();
+                services.AddLogging();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+
+                var builder = new ConnectionBuilder(sp);
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                var windowsIdentity = WindowsIdentity.GetAnonymous();
+                context.User = new WindowsPrincipal(windowsIdentity);
+
+                // would get stuck if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                var currentUser = connection.User;
+
+                var connectionHandlerTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().OrTimeout();
+                await connectionHandlerTask.OrTimeout();
+
+                // This is the important check
+                Assert.Same(currentUser, connection.User);
+
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             }
         }
 

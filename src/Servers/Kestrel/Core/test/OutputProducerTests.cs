@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public OutputProducerTests()
         {
-            _memoryPool = MemoryPoolFactory.Create();
+            _memoryPool = SlabMemoryPoolFactory.Create();
         }
 
         public void Dispose()
@@ -47,9 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
 
-                Assert.True(socketOutput.Pipe.Reader.TryRead(out var result));
-                Assert.True(result.IsCompleted);
-                Assert.True(result.Buffer.IsEmpty);
+                Assert.False(socketOutput.Pipe.Reader.TryRead(out var result));
+
+                socketOutput.Pipe.Writer.Complete();
+                socketOutput.Pipe.Reader.Complete();
             }
         }
 

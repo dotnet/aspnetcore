@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc
             options.Filters.Add(new UnsupportedContentTypeFilter());
 
             // Set up default input formatters.
-            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value));
+            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value, _loggerFactory.CreateLogger<SystemTextJsonInputFormatter>()));
 
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());

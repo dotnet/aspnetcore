@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <Description>Single Page Application templates for ASP.NET Core
-
-    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <PackageId>Microsoft.DotNet.Web.Spa.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <Description>Single Page Application templates for ASP.NET Core</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
@@ -16,7 +15,7 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
-      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -28,7 +27,6 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
   </ItemGroup>
-
 
   <ItemGroup>
     <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.csproj" />

@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Name>AspNetCoreModuleV2IISExpress</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
     <OutputType>Package</OutputType>
     <OutputName>ancm_iis_express_$(Platform)_en_v2</OutputName>
@@ -54,7 +54,6 @@
   </ItemGroup>
 
   <Target Name="CopyBuildOutputToArtifactDirectory"
-          Condition=" '$(IsProductInstaller)' == 'true' "
           AfterTargets="Build">
     <ItemGroup>
       <BuildContentForAncm Include="$(ArtifactsBinDir)AspNetCore\$(TempPlatform)\$(Configuration)\*" />
@@ -66,5 +65,8 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />
-  <Import Project="..\build\versions.props" />
+
+  <PropertyGroup>
+    <PackageFileName>$(TargetName)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
 </Project>

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var tcs = new TaskCompletionSource<object>();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => tcs.Task);
 
-            var connection = new Mock<TransportConnection> { CallBase = true }.Object;
+            var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
 
             _ = dispatcher.Execute(new KestrelConnection(connection, Mock.Of<ILogger>()));
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceContext = new TestServiceContext();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
 
-            var connection = new Mock<TransportConnection> { CallBase = true }.Object;
+            var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
             var kestrelConnection = new KestrelConnection(connection, Mock.Of<ILogger>());
             var completeFeature = kestrelConnection.TransportConnection.Features.Get<IConnectionCompleteFeature>();
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceContext = new TestServiceContext();
             var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
 
-            var connection = new Mock<TransportConnection> { CallBase = true }.Object;
+            var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
             var mockLogger = new Mock<ILogger>();
             var kestrelConnection = new KestrelConnection(connection, mockLogger.Object);

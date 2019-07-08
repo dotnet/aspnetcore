@@ -80,7 +80,7 @@ namespace NativeIISSample
 
                 foreach (var varName in IISServerVarNames)
                 {
-                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
+                    await context.Response.WriteAsync(varName + ": " + context.GetServerVariable(varName) + Environment.NewLine);
                 }
 
                 await context.Response.WriteAsync(Environment.NewLine);

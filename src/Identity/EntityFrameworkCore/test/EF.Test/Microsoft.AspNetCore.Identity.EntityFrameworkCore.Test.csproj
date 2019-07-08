@@ -1,10 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-
-    <!-- These tests are broken in Azure Pipelines right now due to deadlocks in EFCore on machines with few CPU cores. -->
-    <SkipTests Condition=" '$(BUILD_REASON)' == 'PullRequest' ">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>

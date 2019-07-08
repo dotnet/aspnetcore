@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.UrlActions;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

@@ -113,6 +113,10 @@ namespace Templates.Test.SpaTemplateTest
                     aspNetProcess.VisitInBrowser(browser);
                     TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
                 }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
+                }
             }
 
             if (usesAuth)
@@ -134,6 +138,10 @@ namespace Templates.Test.SpaTemplateTest
                     var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.publish");
                     aspNetProcess.VisitInBrowser(browser);
                     TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
+                }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
                 }
             }
         }

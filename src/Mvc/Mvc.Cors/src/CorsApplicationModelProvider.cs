@@ -97,15 +97,22 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
         private static void ConfigureCorsActionConstraint(ActionModel actionModel)
         {
-            for (var i = 0; i < actionModel.Selectors.Count; i++)
-            {
-                var selectorModel = actionModel.Selectors[i];
+            var selectors = actionModel.Selectors;
+            // Read interface .Count once rather than per iteration
+            var selectorsCount = selectors.Count;
 
-                for (var j = 0; j < selectorModel.ActionConstraints.Count; j++)
+            for (var i = 0; i < selectorsCount; i++)
+            {
+                var selectorModel = selectors[i];
+
+                var actionConstraints = selectorModel.ActionConstraints;
+                // Read interface .Count once rather than per iteration
+                var actionConstraintsCount = actionConstraints.Count;
+                for (var j = 0; j < actionConstraintsCount; j++)
                 {
-                    if (selectorModel.ActionConstraints[j] is HttpMethodActionConstraint httpConstraint)
+                    if (actionConstraints[j] is HttpMethodActionConstraint httpConstraint)
                     {
-                        selectorModel.ActionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
+                        actionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
                     }
                 }
             }
@@ -131,11 +138,14 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
                     foreach (var selector in action.Selectors)
                     {
-                        for (var i = 0; i < selector.EndpointMetadata.Count; i++)
+                        var metadata = selector.EndpointMetadata;
+                        // Read interface .Count once rather than per iteration
+                        var metadataCount = metadata.Count;
+                        for (var i = 0; i < metadataCount; i++)
                         {
-                            if (selector.EndpointMetadata[i] is HttpMethodMetadata httpMethodMetadata)
+                            if (metadata[i] is HttpMethodMetadata httpMethodMetadata)
                             {
-                                selector.EndpointMetadata[i] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, acceptCorsPreflight: true);
+                                metadata[i] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, acceptCorsPreflight: true);
                             }
                         }
                     }

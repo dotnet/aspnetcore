@@ -61,11 +61,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.FunctionalTests", "IIS\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Tests", "IIS\test\IIS.Tests\IIS.Tests.csproj", "{C0310D84-BC2F-4B2E-870E-D35044DB3E3E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "IIS\test\Common.Tests\Common.Tests.csproj", "{D17B7B35-5361-4A50-B499-E03E5C3CC095}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Common.TestLib", "IIS\test\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj", "{D17B7B35-5361-4A50-B499-E03E5C3CC095}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.BackwardsCompatibility.FunctionalTests", "IIS\test\IIS.BackwardsCompatibility.FunctionalTests\IIS.BackwardsCompatibility.FunctionalTests.csproj", "{582B07BC-73F4-4689-8557-B039298BD82C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.NewHandler.FunctionalTests", "IIS\test\IIS.NewHandler.FunctionalTests\IIS.NewHandler.FunctionalTests.csproj", "{582B07BC-73F4-4689-8557-B039298BD82C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.ForwardsCompatibility.FunctionalTests", "IIS\test\IIS.ForwardsCompatibility.FunctionalTests\IIS.ForwardsCompatibility.FunctionalTests.csproj", "{D1EA5D99-28FD-4197-81DE-17098846B38B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.NewShim.FunctionalTests", "IIS\test\IIS.NewShim.FunctionalTests\IIS.NewShim.FunctionalTests.csproj", "{D1EA5D99-28FD-4197-81DE-17098846B38B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestTasks", "IIS\test\testassets\TestTasks\TestTasks.csproj", "{2DD1269D-131C-4531-BB0D-7BE0EF8E56D0}"
 EndProject

@@ -110,7 +110,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
                 action: compiled,
                 routes: Array.Empty<ConventionalRouteEntry>(),
-                conventions: Array.Empty<Action<EndpointBuilder>>());
+                conventions: Array.Empty<Action<EndpointBuilder>>(),
+                createInertEndpoints: false);
 
             // In some test scenarios there's no route so the endpoint isn't created. This is fine because
             // it won't happen for real.

@@ -11,13 +11,13 @@
 @if (_toggleCapturedComponentPresence)
 {
     <div id="child-component">
-        <CounterComponent @ref="_myChildCounter" />
+        <CounterComponent @ref="_myChildCounter" @ref:suppressField />
     </div>
 }
 
 <fieldset>
     <legend>External controls</legend>
-    <button id="reset-child" @onclick="@ResetChildCounter">Reset</button>
+    <button id="reset-child" @onclick="ResetChildCounter">Reset</button>
     <label>
         <input id="toggle-child" type="checkbox" @bind="_toggleCapturedComponentPresence" />
         Toggle counter presence

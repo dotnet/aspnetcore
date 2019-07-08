@@ -1,20 +1,46 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-  <!-- Workaround https://github.com/Microsoft/msbuild/issues/4150 -->
-  <!-- Evaluate this import here so we can override WixTargetsPath before wix.targets is imported -->
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
-    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
-    <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition=" '$(MSBuildProjectExtension)' == '.wixproj' " />
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
-    <!-- Suppress double-import in eng/targets/Wix.Common.props -->
-    <_ProjectExtensionsWereImported>true</_ProjectExtensionsWereImported>
-    <WixTargetsPath>$(WixInstallPath)\wix2010.targets</WixTargetsPath>
+  <PropertyGroup>
+    <!-- Reset this to the Microsoft.NET.Sdk default to workaround Arcade's defaults, which sets IsPackable=false by default. -->
+    <IsPackable />
+
+    <!-- Ensure symbols type is 'portable'. Arcade attempts to embed symbols in local and CI builds. -->
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <!-- Workaround https://developercommunity.visualstudio.com/content/problem/434385/vs2019-preview-2-targetframeworkversion-or-platfor.html -->
+  <!--
+    Workaround for error when running build.cmd from subfolders. It appears RepoRoot is not set correctly.
+    C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets(523,5): error : File 'C:\src\aspnet\AspNetCore\src\..NuGet.config' does not exist.
+  -->
   <PropertyGroup>
-    <VCToolsVersion Condition = "'$(VCToolsVersion)' == ''" >14.16.27023</VCToolsVersion>
+    <RestoreConfigFile>$(RepoRoot)NuGet.config</RestoreConfigFile>
+  </PropertyGroup>
+
+  <!--
+    Required to restore the RoslynTools.ModifyVsixManifest package.
+    This isn't auto-detected by Arcade like other feeds are.
+  -->
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+
+  <!-- Prevent pdb2pdb.exe from running because it is currently causing build failures in Blazor. -->
+  <PropertyGroup>
+    <PublishWindowsPdb>false</PublishWindowsPdb>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Xunit output is piped into a file anyways, so color codes aren't useful. -->
+    <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) -nocolor</TestRunnerAdditionalArguments>
+  </PropertyGroup>
+
+  <!-- Workaround https://github.com/dotnet/roslyn/issues/27975 -->
+  <PropertyGroup>
+    <!-- We use the compiler toolset that comes from NuGet Packages rather than the SDK built-in.
+    This one sets UseSharedCompilation to false by default. -->
+    <UseSharedCompilation>true</UseSharedCompilation>
   </PropertyGroup>
 </Project>

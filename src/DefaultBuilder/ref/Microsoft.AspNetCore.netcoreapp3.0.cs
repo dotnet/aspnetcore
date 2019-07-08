@@ -3,10 +3,6 @@
 
 namespace Microsoft.AspNetCore
 {
-    public static partial class StaticWebAssetsWebHostBuilderExtensions
-    {
-        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStaticWebAssets(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
-    }
     public static partial class WebHost
     {
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder CreateDefaultBuilder() { throw null; }

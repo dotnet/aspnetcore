@@ -43,8 +43,10 @@ function LogError {
 try {
     if ($ci) {
         # Install dotnet.exe
-        & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
+        & $repoRoot/restore.cmd -ci -NoBuildNodeJS
     }
+
+    . "$repoRoot/activate.ps1"
 
     #
     # Duplicate .csproj files can cause issues with a shared build output folder
@@ -55,7 +57,7 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
-        | ? { $_.FullName -notmatch 'submodules' } `
+        | ? { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } `
         | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
         | % {
             $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -122,10 +124,6 @@ try {
             -filepath "$repoRoot\eng\Versions.props"
     }
 
-    #
-    # Solutions
-    #
-
     Write-Host "Checking that solutions are up to date"
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
@@ -164,17 +162,13 @@ try {
     }
 
     Write-Host "Re-generating package baselines"
-    $dotnet = 'dotnet'
-    if ($ci) {
-        $dotnet = "$repoRoot/.dotnet/x64/dotnet.exe"
-    }
     Invoke-Block {
-        & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
+        & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
-    Write-Host "Re-generating Browser.JS files"
+    Write-Host "Re-generating Web.JS files"
     Invoke-Block {
-        & $dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
+        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
     }
 
     Write-Host "Run git diff to check for pending changes"

@@ -18,6 +18,7 @@ If you want to download the latest daily build and use it in a project, then you
           <add key="entityframeworkcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json" />
           <add key="aspnetcore-tooling" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json" />
           <add key="aspnetcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json" />
+          <add key="aspnet-blazor" value="https://dotnetfeed.blob.core.windows.net/aspnet-blazor/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

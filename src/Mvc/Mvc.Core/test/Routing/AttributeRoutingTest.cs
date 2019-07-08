@@ -37,8 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 "Error: The route parameter name 'a/dkfk' is invalid. Route parameter names must be non-empty and " +
                 "cannot contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, " +
                 "and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, " +
-                "and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate";
+                "and can occur only at the start of the parameter. (Parameter 'routeTemplate')";
 
             var services = CreateServices(action);
 

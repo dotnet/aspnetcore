@@ -67,8 +67,65 @@
         },
         {
           "condition": "(NoAuth)",
+          "rename": {
+            "Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+          },
           "exclude": [
-            "Shared/LoginDisplay.razor"
+            "Shared/LoginDisplay.*.razor",
+            "Shared/MainLayout.Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!NoAuth)",
+          "rename": {
+            "Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Shared/MainLayout.NoAuth.razor"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Shared/LoginDisplay.IndividualLocalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(IndividualB2CAuth)",
+          "rename": {
+            "Shared/LoginDisplay.IndividualB2CAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(OrganizationalAuth)",
+          "rename": {
+            "Shared/LoginDisplay.OrganizationalAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.WindowsAuth.razor"
+          ]
+        },
+        {
+          "condition": "(WindowsAuth)",
+          "rename": {
+            "Shared/LoginDisplay.WindowsAuth.razor": "Shared/LoginDisplay.razor"
+          },
+          "exclude": [
+            "Shared/LoginDisplay.IndividualLocalAuth.razor",
+            "Shared/LoginDisplay.IndividualB2CAuth.razor",
+            "Shared/LoginDisplay.OrganizationalAuth.razor"
           ]
         }
       ]

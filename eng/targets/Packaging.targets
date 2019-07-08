@@ -11,9 +11,10 @@
   <Target Name="_GetPackageVersionInfo" DependsOnTargets="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
-      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)" Condition="'$(IsPackable)' == 'true'">
+      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
         <PackageId>$(PackageId)</PackageId>
-        <PackageVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</PackageVersion>
+        <PackageVersion>$(PackageVersion)</PackageVersion>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
         <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
       </_ProjectPathWithVersion>
     </ItemGroup>

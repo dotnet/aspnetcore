@@ -1,10 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- Used for generating stable upgrade codes for bundles -->
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
-    <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
-    <BundleVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(FileRevisionVersion)</BundleVersion>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
@@ -28,11 +24,8 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);files=$(MSBuildThisFileDirectory)files</DefineConstants>
-    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
     <DefineConstants>$(DefineConstants);Culture=$(Cultures)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);PackageVersion=$(PackageVersion)</DefineConstants>
+    <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
 </Project>

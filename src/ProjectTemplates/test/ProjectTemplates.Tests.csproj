@@ -116,12 +116,12 @@
 
     <Message Importance="high" Text="Created directory %(_CreatedDirectories.Identity)" />
 
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.targets.in"
       Properties="TemplateTestsPropsPath=$(TestTemplateTestsProps)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
 
-    <Sdk_GenerateFileFromTemplate
+    <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
       Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />

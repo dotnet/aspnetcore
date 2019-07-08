@@ -4,10 +4,12 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -16,13 +18,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private readonly ILogger<SystemTextJsonInputFormatter> _logger;
+
         /// <summary>
         /// Initializes a new instance of <see cref="SystemTextJsonInputFormatter"/>.
         /// </summary>
         /// <param name="options">The <see cref="JsonOptions"/>.</param>
-        public SystemTextJsonInputFormatter(JsonOptions options)
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        public SystemTextJsonInputFormatter(
+            JsonOptions options,
+            ILogger<SystemTextJsonInputFormatter> logger)
         {
             SerializerOptions = options.JsonSerializerOptions;
+            _logger = logger;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -65,13 +73,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object model;
             try
             {
-                model = await JsonSerializer.ReadAsync(inputStream, context.ModelType, SerializerOptions);
+                model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
+            }
+            catch (JsonException jsonException)
+            {
+                var path = jsonException.Path;
+
+                var formatterException = new InputFormatterException(jsonException.Message, jsonException);
+
+                context.ModelState.TryAddModelError(path, formatterException, context.Metadata);
+
+                Log.JsonInputException(_logger, jsonException);
+
+                return InputFormatterResult.Failure();
             }
             finally
             {
                 if (inputStream is TranscodingReadStream transcoding)
                 {
-                    transcoding.Dispose();
+                    await transcoding.DisposeAsync();
                 }
             }
 
@@ -85,6 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             else
             {
+                Log.JsonInputSuccess(_logger, context.ModelType);
                 return InputFormatterResult.Success(model);
             }
         }
@@ -97,6 +118,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             return new TranscodingReadStream(httpContext.Request.Body, encoding);
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
+            private static readonly Action<ILogger, string, Exception> _jsonInputSuccess;
+
+            static Log()
+            {
+                _jsonInputFormatterException = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    new EventId(1, "SystemTextJsonInputException"),
+                    "JSON input formatter threw an exception: {Message}");
+                _jsonInputSuccess = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    new EventId(2, "SystemTextJsonInputSuccess"),
+                    "JSON input formatter succeeded, deserializing to type '{TypeName}'");
+            }
+
+            public static void JsonInputException(ILogger logger, Exception exception) 
+                => _jsonInputFormatterException(logger, exception.Message, exception);
+
+            public static void JsonInputSuccess(ILogger logger, Type modelType)
+                => _jsonInputSuccess(logger, modelType.FullName, null);
         }
     }
 }

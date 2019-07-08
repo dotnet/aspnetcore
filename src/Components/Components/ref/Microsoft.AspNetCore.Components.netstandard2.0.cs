@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange")]
     public static partial class BindAttributes
     {
@@ -53,24 +54,8 @@ namespace Microsoft.AspNetCore.Components
         public static string GetEventHandlerValue<T>(string value) where T : Microsoft.AspNetCore.Components.UIEventArgs { throw null; }
         public static string GetValue(System.DateTime value, string format) { throw null; }
         public static T GetValue<T>(T value) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<bool> setter, bool existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<System.DateTime> setter, System.DateTime existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<System.DateTime> setter, System.DateTime existingValue, string format) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<decimal> setter, decimal existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<double> setter, double existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<int> setter, int existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<long> setter, long existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<bool?> setter, bool? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<decimal?> setter, decimal? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<double?> setter, double? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<int?> setter, int? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<long?> setter, long? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float?> setter, float? existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float> setter, float existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<string> setter, string existingValue) { throw null; }
-        public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler<T>(System.Action<T> setter, T existingValue) { throw null; }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
         public CascadingParameterAttribute() { }
@@ -80,15 +65,15 @@ namespace Microsoft.AspNetCore.Components
     {
         public ComponentBase() { }
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected System.Threading.Tasks.Task Invoke(System.Action workItem) { throw null; }
+        protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
         protected virtual void OnAfterRender() { }
         protected virtual System.Threading.Tasks.Task OnAfterRenderAsync() { throw null; }
-        protected virtual void OnInit() { }
-        protected virtual System.Threading.Tasks.Task OnInitAsync() { throw null; }
+        protected virtual void OnInitialized() { }
+        protected virtual System.Threading.Tasks.Task OnInitializedAsync() { throw null; }
         protected virtual void OnParametersSet() { }
         protected virtual System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
         public virtual System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
@@ -142,27 +127,26 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Action<T> callback) { throw null; }
         public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
         public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback) { throw null; }
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public string Create<T>(object receiver, string callback) { throw null; }
     }
     public static partial class EventCallbackFactoryBinderExtensions
     {
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool> setter, bool existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, string format) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal> setter, decimal existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double> setter, double existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int> setter, int existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long> setter, long existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool?> setter, bool? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal?> setter, decimal? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double?> setter, double? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int?> setter, int? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long?> setter, long? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string> setter, string existingValue) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue) where T : struct, System.Enum { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool> setter, bool existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal> setter, decimal existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double> setter, double existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int> setter, int existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long> setter, long existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool?> setter, bool? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal?> setter, decimal? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double?> setter, double? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int?> setter, int? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long?> setter, long? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string> setter, string existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
     }
     public static partial class EventCallbackFactoryUIEventArgsExtensions
     {
@@ -192,9 +176,9 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIWheelEventArgs> Create(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Func<Microsoft.AspNetCore.Components.UIWheelEventArgs, System.Threading.Tasks.Task> callback) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct EventCallbackWorkItem
+    public readonly partial struct EventCallbackWorkItem
     {
-        private object _dummy;
+        private readonly object _dummy;
         public static readonly Microsoft.AspNetCore.Components.EventCallbackWorkItem Empty;
         public EventCallbackWorkItem(System.MulticastDelegate @delegate) { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
@@ -203,6 +187,7 @@ namespace Microsoft.AspNetCore.Components
     public readonly partial struct EventCallback<T>
     {
         private readonly object _dummy;
+        public static readonly Microsoft.AspNetCore.Components.EventCallback<T> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(T arg) { throw null; }
@@ -308,18 +293,6 @@ namespace Microsoft.AspNetCore.Components
     public static partial class EventHandlers
     {
     }
-    public static partial class HttpClientJsonExtensions
-    {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<T> GetJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri) { throw null; }
-        public static System.Threading.Tasks.Task PostJsonAsync(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
-        public static System.Threading.Tasks.Task<T> PostJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
-        public static System.Threading.Tasks.Task PutJsonAsync(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
-        public static System.Threading.Tasks.Task<T> PutJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
-        public static System.Threading.Tasks.Task SendJsonAsync(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<T> SendJsonAsync<T>(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
-    }
     public partial interface IComponent
     {
         void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
@@ -329,6 +302,13 @@ namespace Microsoft.AspNetCore.Components
     {
         bool IsConnected { get; }
     }
+    public partial interface IDispatcher
+    {
+        System.Threading.Tasks.Task InvokeAsync(System.Action workItem);
+        System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem);
+        System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> workItem);
+        System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<TResult> workItem);
+    }
     public partial interface IHandleAfterRender
     {
         System.Threading.Tasks.Task OnAfterRenderAsync();
@@ -337,8 +317,8 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false)]
-    public partial class InjectAttribute : System.Attribute
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
+    public sealed partial class InjectAttribute : System.Attribute
     {
         public InjectAttribute() { }
     }
@@ -375,7 +355,7 @@ namespace Microsoft.AspNetCore.Components
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
@@ -414,12 +394,12 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public bool IsInitialized { get { throw null; } }
-        public System.Threading.Tasks.Task Invoke(System.Action workItem) { throw null; }
+        public System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
-    public partial class RouteAttribute : System.Attribute
+    public sealed partial class RouteAttribute : System.Attribute
     {
         public RouteAttribute(string template) { }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -443,21 +423,10 @@ namespace Microsoft.AspNetCore.Components
         public string Kind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIDragEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIDragEventArgs : Microsoft.AspNetCore.Components.UIMouseEventArgs
     {
         public UIDragEventArgs() { }
-        public bool AltKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long Button { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long Buttons { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ClientX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ClientY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool CtrlKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Components.DataTransfer DataTransfer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool MetaKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool ShiftKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UIErrorEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
     {
@@ -520,13 +489,13 @@ namespace Microsoft.AspNetCore.Components
         public bool AltKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Button { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Buttons { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ClientX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ClientY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ClientX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ClientY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool CtrlKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool MetaKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ShiftKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UIPointerEventArgs : Microsoft.AspNetCore.Components.UIMouseEventArgs
@@ -563,13 +532,13 @@ namespace Microsoft.AspNetCore.Components
     public partial class UITouchPoint
     {
         public UITouchPoint() { }
-        public long ClientX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ClientY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ClientX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ClientY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long PageX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long PageY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double PageX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double PageY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public double ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UIWheelEventArgs : Microsoft.AspNetCore.Components.UIMouseEventArgs
     {
@@ -675,7 +644,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 namespace Microsoft.AspNetCore.Components.Layouts
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
-    public partial class LayoutAttribute : System.Attribute
+    public sealed partial class LayoutAttribute : System.Attribute
     {
         public LayoutAttribute(System.Type layoutType) { }
         public System.Type LayoutType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -697,21 +666,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IEnumerable<string> Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public partial class EventFieldInfo
+    {
+        public EventFieldInfo() { }
+        public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public object FieldValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     public partial class HtmlRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
     {
-        public HtmlRenderer(System.IServiceProvider serviceProvider, System.Func<string, string> htmlEncoder, Microsoft.AspNetCore.Components.Rendering.IDispatcher dispatcher) : base (default(System.IServiceProvider)) { }
+        public HtmlRenderer(System.IServiceProvider serviceProvider, System.Func<string, string> htmlEncoder, Microsoft.AspNetCore.Components.IDispatcher dispatcher) : base (default(System.IServiceProvider)) { }
         protected override void HandleException(System.Exception exception) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterCollection initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch) { throw null; }
-    }
-    public partial interface IDispatcher
-    {
-        System.Threading.Tasks.Task Invoke(System.Action action);
-        System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> asyncAction);
-        System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> asyncFunction);
-        System.Threading.Tasks.Task<TResult> Invoke<TResult>(System.Func<TResult> function);
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderBatch
@@ -725,17 +693,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
     public abstract partial class Renderer : System.IDisposable
     {
         public Renderer(System.IServiceProvider serviceProvider) { }
-        public Renderer(System.IServiceProvider serviceProvider, Microsoft.AspNetCore.Components.Rendering.IDispatcher dispatcher) { }
+        public Renderer(System.IServiceProvider serviceProvider, Microsoft.AspNetCore.Components.IDispatcher dispatcher) { }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
-        public static Microsoft.AspNetCore.Components.Rendering.IDispatcher CreateDefaultDispatcher() { throw null; }
-        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public static Microsoft.AspNetCore.Components.IDispatcher CreateDefaultDispatcher() { throw null; }
+        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo fieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
         protected Microsoft.AspNetCore.Components.IComponent InstantiateComponent(System.Type componentType) { throw null; }
-        public virtual System.Threading.Tasks.Task Invoke(System.Action workItem) { throw null; }
+        public virtual System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         public virtual System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -745,6 +713,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
 }
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ArrayBuilderSegment<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public T[] Array { get { throw null; } }
+        public int Count { get { throw null; } }
+        public T this[int index] { get { throw null; } }
+        public int Offset { get { throw null; } }
+        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ArrayRange<T>
     {
@@ -776,7 +756,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
-        public void AddMultipleAttributes<T>(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> attributes) { }
+        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
@@ -785,12 +765,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
         public void OpenElement(int sequence, string elementName) { }
         public void SetKey(object value) { }
+        public void SetUpdatesAttributeName(string updatesAttributeName) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
     {
         public readonly int ComponentId;
-        public readonly System.ArraySegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
+        public readonly Microsoft.AspNetCore.Components.RenderTree.ArrayBuilderSegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly partial struct RenderTreeEdit

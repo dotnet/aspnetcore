@@ -7,5 +7,6 @@
     <Compile Include="Microsoft.AspNetCore.Authentication.Negotiate.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Authentication"  />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions"  />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions"  />
   </ItemGroup>
 </Project>

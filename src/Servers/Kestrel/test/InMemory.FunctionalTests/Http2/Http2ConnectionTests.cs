@@ -3603,7 +3603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             // Send a blocked request
-            var tcs = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             task = tcs.Task;
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
 
@@ -3835,6 +3835,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, headers, endStream: false);
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
+
+            // These would be refused if the cool-down period had expired
+            switch (finalFrameType)
+            {
+                case Http2FrameType.DATA:
+                    await SendDataAsync(1, new byte[100], endStream: true);
+                    break;
+                case Http2FrameType.WINDOW_UPDATE:
+                    await SendWindowUpdateAsync(1, 1024);
+                    break;
+                case Http2FrameType.HEADERS:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                case Http2FrameType.CONTINUATION:
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+                    break;
+                default:
+                    throw new NotImplementedException(finalFrameType.ToString());
+            }
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Theory]
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        [InlineData((int)(Http2FrameType.CONTINUATION))]
+        public async Task ResetStream_ResetsAndDrainsRequest(int intFinalFrameType)
+        {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(_appReset);
+
+            await StartStreamAsync(1, headers, endStream: false);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.CANCEL, "The HTTP/2 stream was reset by the application with error code CANCEL.");
 
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)

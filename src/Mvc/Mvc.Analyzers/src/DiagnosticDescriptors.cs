@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             new DiagnosticDescriptor(
                 "MVC1006",
                 "Methods containing TagHelpers must be async and return Task.",
-                "The method contains a TagHelper and therefore must be async and return a Task.",
+                "The method contains a TagHelper and therefore must be async and return a Task. For instance, usage of ~/ typically results in a TagHelper and requires an async Task returning parent method.",
                 "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);

@@ -445,7 +445,7 @@ namespace Test
 
             // Act
             var component = CompileToComponent(@"
-<p @onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+<p @onmouseover=""OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 

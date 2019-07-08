@@ -1,10 +1,10 @@
 @using Microsoft.JSInterop
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
-@using System.Text.Json.Serialization
+@using System.Text.Json
 @inject IJSRuntime JSRuntime
 
-<button id="btn-interop" @onclick="@InvokeInteropAsync">Invoke interop!</button>
+<button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
 
 <div>
     <h1>Invocations</h1>
@@ -91,7 +91,7 @@
         var invocations = new Dictionary<string, string>();
         foreach (var interopResult in JavaScriptInterop.Invocations)
         {
-            var interopResultValue = JsonSerializer.ToString(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
+            var interopResultValue = JsonSerializer.Serialize(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
             invocations[interopResult.Key] = interopResultValue;
         }
 

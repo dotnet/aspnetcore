@@ -61,10 +61,6 @@ namespace Templates.Test
                 PageUrls.PrivacyFullUrl
             };
 
-            if (languageOverride == null)
-            {
-                menuLinks = menuLinks.Append(PageUrls.PrivacyFullUrl);
-            }
             var footerLinks = new string[] { PageUrls.PrivacyFullUrl };
 
             var pages = new List<Page>
@@ -141,7 +137,6 @@ namespace Templates.Test
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -153,7 +148,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.DocsUrl,
                         PageUrls.PrivacyUrl
@@ -168,7 +162,6 @@ namespace Templates.Test
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
                         PageUrls.PrivacyUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl
                     }
                 },
@@ -180,7 +173,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.ForgotPassword,
                         PageUrls.RegisterUrl,
@@ -195,7 +187,6 @@ namespace Templates.Test
                         PageUrls.RegisterUrl,
                         PageUrls.LoginUrl,
                         PageUrls.HomeUrl,
-                        PageUrls.PrivacyUrl,
                         PageUrls.PrivacyUrl,
                         PageUrls.ExternalArticle,
                         PageUrls.PrivacyUrl

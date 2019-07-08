@@ -68,8 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnded()
         {
-            Input.Complete();
-
             TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
 
             // Prevent RequestAborted from firing. Free up unneeded feature references.
@@ -133,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SendTimeoutResponse();
         }
 
-        public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public void ParseRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -153,10 +151,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case RequestProcessingStatus.ParsingRequestLine:
                     if (TakeStartLine(buffer, out consumed, out examined))
                     {
-                        buffer = buffer.Slice(consumed, buffer.End);
-
-                        _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-                        goto case RequestProcessingStatus.ParsingHeaders;
+                        TrimAndParseHeaders(buffer, ref consumed, out examined);
+                        return;
                     }
                     else
                     {
@@ -169,52 +165,116 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
             }
+
+            void TrimAndParseHeaders(in ReadOnlySequence<byte> buffer, ref SequencePosition consumed, out SequencePosition examined)
+            {
+                var trimmedBuffer = buffer.Slice(consumed, buffer.End);
+                _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+
+                if (TakeMessageHeaders(trimmedBuffer, trailers: false, out consumed, out examined))
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                }
+            }
         }
 
-        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
-        {
-            var overLength = false;
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
-            {
-                buffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
-                overLength = true;
-            }
-
-            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
-            if (!result && overLength)
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
-            }
-
-            return result;
-        }
-
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
             {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
-
-                // If we sliced it means the current buffer bigger than what we're
-                // allowed to look at
-                overLength = true;
+                // Input oversize, cap amount checked
+                return TrimAndTakeStartLine(buffer, out consumed, out examined);
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), buffer, out consumed, out examined, out var consumedBytes);
-            _remainingRequestHeadersBytesAllowed -= consumedBytes;
+            return _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
 
-            if (!result && overLength)
+            bool TrimAndTakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                var trimmedBuffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
+
+                if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), trimmedBuffer, out consumed, out examined))
+                {
+                    // We read the maximum allowed but didn't complete the start line.
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+                }
+
+                return true;
             }
-            if (result)
+        }
+
+        public bool TakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+        {
+            // Make sure the buffer is limited
+            if (buffer.Length > _remainingRequestHeadersBytesAllowed)
             {
-                TimeoutControl.CancelTimeout();
+                // Input oversize, cap amount checked
+                return TrimAndTakeMessageHeaders(buffer, trailers, out consumed, out examined);
             }
 
-            return result;
+            var reader = new SequenceReader<byte>(buffer);
+            var result = false;
+            try
+            {
+                result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                if (result)
+                {
+                    TimeoutControl.CancelTimeout();
+                }
+
+                return result;
+            }
+            finally
+            {
+                consumed = reader.Position;
+                _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                if (result)
+                {
+                    examined = consumed;
+                }
+                else
+                {
+                    examined = buffer.End;
+                }
+            }
+
+            bool TrimAndTakeMessageHeaders(in ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
+            {
+                var trimmedBuffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+
+                var reader = new SequenceReader<byte>(trimmedBuffer);
+                var result = false;
+                try
+                {
+                    result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+
+                    if (!result)
+                    {
+                        // We read the maximum allowed but didn't complete the headers.
+                        BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                    }
+
+                    TimeoutControl.CancelTimeout();
+
+                    return result;
+                }
+                finally
+                {
+                    consumed = reader.Position;
+                    _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+                    if (result)
+                    {
+                        examined = consumed;
+                    }
+                    else
+                    {
+                        examined = trimmedBuffer.End;
+                    }
+                }
+            }
         }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)

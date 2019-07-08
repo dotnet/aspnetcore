@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {

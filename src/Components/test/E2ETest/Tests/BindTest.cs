@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -63,6 +64,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var boundValue = Browser.FindElement(By.Id("textbox-initially-populated-value"));
             var mirrorValue = Browser.FindElement(By.Id("textbox-initially-populated-mirror"));
             var setNullButton = Browser.FindElement(By.Id("textbox-initially-populated-setnull"));
+            Assert.Equal("Hello", target.GetAttribute("value"));
+            Assert.Equal("Hello", boundValue.Text);
+            Assert.Equal("Hello", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("Changed value\t");
+            Browser.Equal("Changed value", () => boundValue.Text);
+            Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
+
+            // Remove the value altogether
+            setNullButton.Click();
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextbox_WithBindSuffixInitiallyPopulated()
+        {
+            var target = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated"));
+            var boundValue = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-value"));
+            var mirrorValue = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-mirror"));
+            var setNullButton = Browser.FindElement(By.Id("bind-with-suffix-textbox-initially-populated-setnull"));
             Assert.Equal("Hello", target.GetAttribute("value"));
             Assert.Equal("Hello", boundValue.Text);
             Assert.Equal("Hello", mirrorValue.GetAttribute("value"));
@@ -190,6 +215,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanBindSelectToMarkup()
+        {
+            var target = new SelectElement(Browser.FindElement(By.Id("select-markup-box")));
+            var boundValue = Browser.FindElement(By.Id("select-markup-box-value"));
+            Assert.Equal("Second choice", target.SelectedOption.Text);
+            Assert.Equal("Second", boundValue.Text);
+
+            // Modify target; verify value is updated
+            target.SelectByText("Third choice");
+            Browser.Equal("Third", () => boundValue.Text);
+        }
+
+        [Fact]
         public void CanBindTextboxInt()
         {
             var target = Browser.FindElement(By.Id("textbox-int"));
@@ -199,14 +237,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("-42", boundValue.Text);
             Assert.Equal("-42", mirrorValue.GetAttribute("value"));
 
-            // Modify target; value is not updated because it's not convertable.
+            // Clear target; value resets to zero
             target.Clear();
-            Browser.Equal("-42", () => boundValue.Text);
-            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
-            target.SendKeys("42\t");
-            Browser.Equal("42", () => boundValue.Text);
+            // Leading zeros are not preserved
+            target.SendKeys("42");
+            Browser.Equal("042", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal("42", () => target.GetAttribute("value"));
+            Assert.Equal("42", boundValue.Text);
             Assert.Equal("42", mirrorValue.GetAttribute("value"));
         }
 
@@ -253,14 +296,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3000000000", boundValue.Text);
             Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
 
-            // Modify target; value is not updated because it's not convertable.
+            // Clear target; value resets to zero
             target.Clear();
-            Browser.Equal("3000000000", () => boundValue.Text);
-            Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Backspace);
             target.SendKeys("-3000000000\t");
-            Browser.Equal("-3000000000", () => boundValue.Text);
+            Browser.Equal("-3000000000", () => target.GetAttribute("value"));
+            Assert.Equal("-3000000000", boundValue.Text);
             Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
         }
 
@@ -307,14 +353,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3.141", boundValue.Text);
             Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
 
-            // Modify target; value is not updated because it's not convertable.
+            // Clear target; value resets to zero
             target.Clear();
-            Browser.Equal("3.141", () => boundValue.Text);
-            Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Backspace);
             target.SendKeys("-3.141\t");
-            Browser.Equal("-3.141", () => boundValue.Text);
+            Browser.Equal("-3.141", () => target.GetAttribute("value"));
+            Assert.Equal("-3.141", boundValue.Text);
             Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
         }
 
@@ -361,12 +410,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3.14159265359", boundValue.Text);
             Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
 
-            // Modify target; value is not updated because it's not convertable.
+            // Clear target; value resets to default
             target.Clear();
-            Browser.Equal("3.14159265359", () => boundValue.Text);
-            Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Backspace);
             target.SendKeys("-3.14159265359\t");
             Browser.Equal("-3.14159265359", () => boundValue.Text);
             Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
@@ -374,8 +425,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Double shouldn't preserve trailing zeros
             target.Clear();
+            target.SendKeys(Keys.Backspace);
             target.SendKeys("0.010\t");
-            Browser.Equal("0.01", () => boundValue.Text);
+            Browser.Equal("0.01", () => target.GetAttribute("value"));
+            Assert.Equal("0.01", boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
         }
 
@@ -429,10 +482,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("0.0000000000000000000000000001", boundValue.Text);
             Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
 
-            // Modify target; value is not updated because it's not convertable.
+            // Clear textbox; value updates to zero because that's the default
             target.Clear();
-            Browser.Equal("0.0000000000000000000000000001", () => boundValue.Text);
-            Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Decimal should preserve trailing zeros
@@ -493,18 +547,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
 
-            // Modify target to something invalid - the invalid value is preserved in the input, the other displays
-            // don't change and still have the last value valid.
-            target.SendKeys("A\t");
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys("2A");
+            Assert.Equal("0.012A", target.GetAttribute("value"));
+            target.SendKeys("\t");
             Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
-            Assert.Equal("0.01A", target.GetAttribute("value"));
+            Assert.Equal("0.01", target.GetAttribute("value"));
 
-            // Modify target to something valid.
+            // Continue editing with valid inputs
             target.SendKeys(Keys.Backspace);
-            target.SendKeys("1\t");
-            Browser.Equal("0.011", () => boundValue.Text);
-            Assert.Equal("0.011", mirrorValue.GetAttribute("value"));
+            target.SendKeys("2\t");
+            Browser.Equal("0.02", () => boundValue.Text);
+            Assert.Equal("0.02", mirrorValue.GetAttribute("value"));
         }
 
         // This tests what happens you put invalid (unconvertable) input in. This is separate from the
@@ -525,18 +581,64 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
 
-            // Modify target to something invalid - the invalid value is preserved in the input, the other displays
-            // don't change and still have the last value valid.
-            target.SendKeys("A\t");
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys("2A");
+            Assert.Equal("0.012A", target.GetAttribute("value"));
+            target.SendKeys("\t");
             Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
-            Assert.Equal("0.01A", target.GetAttribute("value"));
+            Assert.Equal("0.01", target.GetAttribute("value"));
 
-            // Modify target to something valid.
+            // Continue editing with valid inputs
             target.SendKeys(Keys.Backspace);
-            target.SendKeys("1\t");
-            Browser.Equal("0.011", () => boundValue.Text);
-            Assert.Equal("0.011", mirrorValue.GetAttribute("value"));
+            target.SendKeys("2\t");
+            Browser.Equal("0.02", () => boundValue.Text);
+            Assert.Equal("0.02", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxGenericInt()
+        {
+            var target = Browser.FindElement(By.Id("textbox-generic-int"));
+            var boundValue = Browser.FindElement(By.Id("textbox-generic-int-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-generic-int-mirror"));
+            Assert.Equal("-42", target.GetAttribute("value"));
+            Assert.Equal("-42", boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Clear target; value resets to zero
+            target.Clear();
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("42\t");
+            Browser.Equal("42", () => boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxGenericGuid()
+        {
+            var target = Browser.FindElement(By.Id("textbox-generic-guid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-generic-guid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-generic-guid-mirror"));
+            Assert.Equal("00000000-0000-0000-0000-000000000000", target.GetAttribute("value"));
+            Assert.Equal("00000000-0000-0000-0000-000000000000", boundValue.Text);
+            Assert.Equal("00000000-0000-0000-0000-000000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; value is not updated because it's not convertable.
+            target.Clear();
+            Browser.Equal("00000000-0000-0000-0000-000000000000", () => boundValue.Text);
+            Assert.Equal("00000000-0000-0000-0000-000000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var newValue = Guid.NewGuid().ToString();
+            target.SendKeys(newValue + "\t");
+            Browser.Equal(newValue, () => boundValue.Text);
+            Assert.Equal(newValue, mirrorValue.GetAttribute("value"));
         }
     }
 }

@@ -61,7 +61,11 @@ namespace PackageBaselineGenerator
             var sourceRepository = new SourceRepository(packageSource, providers);
             if (_update.HasValue())
             {
-                return await RunUpdateAsync(inputPath, input, sourceRepository);
+                var updateResult = await RunUpdateAsync(inputPath, input, sourceRepository);
+                if (updateResult != 0)
+                {
+                    return updateResult;
+                }
             }
 
             var feedType = await sourceRepository.GetFeedType(CancellationToken.None);

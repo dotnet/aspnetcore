@@ -3,6 +3,7 @@
 
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
+import { RetryContext } from "../src/IRetryPolicy";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 
 import { VerifyLogger } from "./Common";
@@ -46,15 +47,17 @@ describe("auto reconnect", () => {
 
             let lastRetryCount = -1;
             let lastElapsedMs = -1;
+            let retryReason = null;
             let onreconnectingCount = 0;
             let onreconnectedCount = 0;
             let closeCount = 0;
 
             const connection = new TestConnection();
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
-                    nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number) {
-                        lastRetryCount = previousRetryCount;
-                        lastElapsedMs = elapsedMilliseconds;
+                    nextRetryDelayInMilliseconds(retryContext: RetryContext) {
+                        lastRetryCount = retryContext.previousRetryCount;
+                        lastElapsedMs = retryContext.elapsedMilliseconds;
+                        retryReason = retryContext.retryReason;
                         nextRetryDelayCalledPromise.resolve();
                         return 0;
                     },
@@ -81,8 +84,11 @@ describe("auto reconnect", () => {
                 return promise;
             };
 
+            const oncloseError = new Error("Connection lost");
+            const continueRetryingError = new Error("Reconnect attempt failed");
+
             // Typically this would be called by the transport
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError);
 
             await nextRetryDelayCalledPromise;
             nextRetryDelayCalledPromise = new PromiseSource();
@@ -90,17 +96,19 @@ describe("auto reconnect", () => {
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
             expect(lastElapsedMs).toBe(0);
+            expect(retryReason).toBe(oncloseError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
 
             // Make sure the the Promise is "handled" immediately upon rejection or else this test fails.
             continueRetryingPromise.catch(() => { });
-            continueRetryingPromise.reject(new Error("Reconnect attempt failed"));
+            continueRetryingPromise.reject(continueRetryingError);
             await nextRetryDelayCalledPromise;
 
             expect(lastRetryCount).toBe(1);
             expect(lastElapsedMs).toBeGreaterThanOrEqual(0);
+            expect(retryReason).toBe(continueRetryingError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
@@ -133,18 +141,20 @@ describe("auto reconnect", () => {
 
             let lastRetryCount = -1;
             let lastElapsedMs = -1;
+            let retryReason = null;
             let onreconnectingCount = 0;
             let onreconnectedCount = 0;
             let closeCount = 0;
 
             const connection = new TestConnection();
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
-                    nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number) {
-                        lastRetryCount = previousRetryCount;
-                        lastElapsedMs = elapsedMilliseconds;
+                    nextRetryDelayInMilliseconds(retryContext: RetryContext) {
+                        lastRetryCount = retryContext.previousRetryCount;
+                        lastElapsedMs = retryContext.elapsedMilliseconds;
+                        retryReason = retryContext.retryReason;
                         nextRetryDelayCalledPromise.resolve();
 
-                        return previousRetryCount === 0 ? 0 : null;
+                        return retryContext.previousRetryCount === 0 ? 0 : null;
                     },
                 });
 
@@ -163,12 +173,15 @@ describe("auto reconnect", () => {
 
             await hubConnection.start();
 
+            const oncloseError = new Error("Connection lost");
+            const startError = new Error("Reconnect attempt failed");
+
             connection.start = () => {
-                return Promise.reject("Reconnect attempt failed");
+                throw startError;
             };
 
             // Typically this would be called by the transport
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError);
 
             await nextRetryDelayCalledPromise;
             nextRetryDelayCalledPromise = new PromiseSource();
@@ -176,6 +189,7 @@ describe("auto reconnect", () => {
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
             expect(lastElapsedMs).toBe(0);
+            expect(retryReason).toBe(oncloseError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
@@ -185,6 +199,7 @@ describe("auto reconnect", () => {
             expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
             expect(lastRetryCount).toBe(1);
             expect(lastElapsedMs).toBeGreaterThanOrEqual(0);
+            expect(retryReason).toBe(startError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(1);
@@ -198,15 +213,17 @@ describe("auto reconnect", () => {
 
             let lastRetryCount = -1;
             let lastElapsedMs = -1;
+            let retryReason = null;
             let onreconnectingCount = 0;
             let onreconnectedCount = 0;
             let closeCount = 0;
 
             const connection = new TestConnection();
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
-                    nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number) {
-                        lastRetryCount = previousRetryCount;
-                        lastElapsedMs = elapsedMilliseconds;
+                    nextRetryDelayInMilliseconds(retryContext: RetryContext) {
+                        lastRetryCount = retryContext.previousRetryCount;
+                        lastElapsedMs = retryContext.elapsedMilliseconds;
+                        retryReason = retryContext.retryReason;
                         nextRetryDelayCalledPromise.resolve();
                         return 0;
                     },
@@ -227,8 +244,11 @@ describe("auto reconnect", () => {
 
             await hubConnection.start();
 
+            const oncloseError = new Error("Connection lost 1");
+            const oncloseError2 = new Error("Connection lost 2");
+
             // Typically this would be called by the transport
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError);
 
             await nextRetryDelayCalledPromise;
             nextRetryDelayCalledPromise = new PromiseSource();
@@ -236,6 +256,7 @@ describe("auto reconnect", () => {
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
             expect(lastElapsedMs).toBe(0);
+            expect(retryReason).toBe(oncloseError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
@@ -250,13 +271,14 @@ describe("auto reconnect", () => {
             expect(onreconnectedCount).toBe(1);
             expect(closeCount).toBe(0);
 
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError2);
 
             await nextRetryDelayCalledPromise;
 
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
             expect(lastElapsedMs).toBe(0);
+            expect(retryReason).toBe(oncloseError2);
             expect(onreconnectingCount).toBe(2);
             expect(onreconnectedCount).toBe(1);
             expect(closeCount).toBe(0);
@@ -362,6 +384,7 @@ describe("auto reconnect", () => {
             let nextRetryDelayCalledPromise = new PromiseSource();
 
             let lastRetryCount = 0;
+            let retryReason = null;
             let onreconnectingCount = 0;
             let onreconnectedCount = 0;
             let closeCount = 0;
@@ -369,8 +392,9 @@ describe("auto reconnect", () => {
             // Disable autoHandshake in TestConnection
             const connection = new TestConnection(false);
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
-                    nextRetryDelayInMilliseconds(previousRetryCount: number) {
-                        lastRetryCount = previousRetryCount;
+                    nextRetryDelayInMilliseconds(retryContext: RetryContext) {
+                        lastRetryCount = retryContext.previousRetryCount;
+                        retryReason = retryContext.retryReason;
                         nextRetryDelayCalledPromise.resolve();
                         return 0;
                     },
@@ -400,14 +424,18 @@ describe("auto reconnect", () => {
                 return Promise.resolve();
             };
 
+            const oncloseError = new Error("Connection lost 1");
+            const oncloseError2 = new Error("Connection lost 2");
+
             // Typically this would be called by the transport
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError);
 
             await nextRetryDelayCalledPromise;
             nextRetryDelayCalledPromise = new PromiseSource();
 
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
+            expect(retryReason).toBe(oncloseError);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
@@ -416,12 +444,13 @@ describe("auto reconnect", () => {
             replacedStartCalledPromise = new PromiseSource();
 
             // Fail underlying connection during reconnect during handshake
-            connection.onclose!(new Error("Connection lost"));
+            connection.onclose!(oncloseError2);
 
             await nextRetryDelayCalledPromise;
 
             expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(1);
+            expect(retryReason).toBe(oncloseError2);
             expect(onreconnectingCount).toBe(1);
             expect(onreconnectedCount).toBe(0);
             expect(closeCount).toBe(0);
@@ -461,8 +490,8 @@ describe("auto reconnect", () => {
             // Disable autoHandshake in TestConnection
             const connection = new TestConnection(false);
             const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
-                    nextRetryDelayInMilliseconds(previousRetryCount: number) {
-                        lastRetryCount = previousRetryCount;
+                    nextRetryDelayInMilliseconds(retryContext: RetryContext) {
+                        lastRetryCount = retryContext.previousRetryCount;
                         nextRetryDelayCalledPromise.resolve();
                         return 0;
                     },

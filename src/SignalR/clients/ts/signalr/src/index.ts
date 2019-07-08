@@ -21,4 +21,4 @@ export { IStreamSubscriber, IStreamResult, ISubscription } from "./Stream";
 export { NullLogger } from "./Loggers";
 export { JsonHubProtocol } from "./JsonHubProtocol";
 export { Subject } from "./Subject";
-export { IReconnectPolicy } from "./IReconnectPolicy";
+export { IRetryPolicy, RetryContext } from "./IRetryPolicy";

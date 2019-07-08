@@ -2,11 +2,11 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
-  <Import Project="Product.props" />
-
   <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
+    <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
     <Name>AspNetCoreSharedFramework</Name>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <OutputName>$(Name)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <EmbedCab>no</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
@@ -15,10 +15,13 @@
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
     <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
+    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\SharedFramework\SharedFrameworkPackage.nuspec</ToolsetInstallerNuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -71,4 +74,28 @@
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <PackageFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+    <PropertyGroup>
+      <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
+      <CabFullPath>$(InstallersOutputPath)$(Cabinet)</CabFullPath>
+    </PropertyGroup>
+      <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ProductNameShort)' ^
+                      '$(MsiFullPath)' ^
+                      '$(CabFullPath)' ^
+                      '$(ToolsetInstallerNuspecFile)' ^
+                      '$(ArtifactsNonShippingPackagesDir)' ^
+                      '$(Platform)' ^
+                      '$(PackageVersion)' ^
+                      '$(RepoRoot)' ^
+                      '$(AspNetCoreMajorVersion)' ^
+                      '$(AspNetCoreMinorVersion)'" />
+  </Target>
 </Project>

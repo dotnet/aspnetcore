@@ -65,6 +65,28 @@ namespace Microsoft.AspNetCore.Identity
             _rng = options.Rng;
         }
 
+#if NETSTANDARD2_0
+        // Compares two byte arrays for equality. The method is specifically written so that the loop is not optimized.
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static bool ByteArraysEqual(byte[] a, byte[] b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+            if (a == null || b == null || a.Length != b.Length)
+            {
+                return false;
+            }
+            var areSame = true;
+            for (var i = 0; i < a.Length; i++)
+            {
+                areSame &= (a[i] == b[i]);
+            }
+            return areSame;
+        }
+#endif
+
         /// <summary>
         /// Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
         /// </summary>
@@ -222,7 +244,13 @@ namespace Microsoft.AspNetCore.Identity
 
             // Hash the incoming password and verify it
             byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+#if NETSTANDARD2_0
+            return ByteArraysEqual(actualSubkey, expectedSubkey);
+#elif NETCOREAPP3_0
             return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+#else
+#error Update target frameworks
+#endif
         }
 
         private static bool VerifyHashedPasswordV3(byte[] hashedPassword, string password, out int iterCount)
@@ -255,7 +283,13 @@ namespace Microsoft.AspNetCore.Identity
 
                 // Hash the incoming password and verify it
                 byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, prf, iterCount, subkeyLength);
+#if NETSTANDARD2_0
+                return ByteArraysEqual(actualSubkey, expectedSubkey);
+#elif NETCOREAPP3_0
                 return CryptographicOperations.FixedTimeEquals(actualSubkey, expectedSubkey);
+#else
+#error Update target frameworks
+#endif
             }
             catch
             {

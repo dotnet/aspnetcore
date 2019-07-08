@@ -56,6 +56,10 @@ namespace Templates.Test
                     aspNetProcess.VisitInBrowser(Browser);
                     TestBasicNavigation();
                 }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
+                }
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -69,6 +73,10 @@ namespace Templates.Test
                 {
                     aspNetProcess.VisitInBrowser(Browser);
                     TestBasicNavigation();
+                }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
                 }
             }
         }
@@ -106,7 +114,12 @@ namespace Templates.Test
                     aspNetProcess.VisitInBrowser(Browser);
                     TestBasicNavigation();
                 }
+                else
+                {
+                    BrowserFixture.EnforceSupportedConfigurations();
+                }
             }
+
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {

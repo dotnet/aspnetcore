@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -33,12 +32,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override Matcher Build()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider()));
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var selector = new DefaultEndpointSelector();
 

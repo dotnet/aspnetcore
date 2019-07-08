@@ -5,7 +5,7 @@ import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } 
 import { IConnection } from "./IConnection";
 import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
-import { IReconnectPolicy } from "./IReconnectPolicy";
+import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
 import { Arg } from "./Utils";
@@ -32,7 +32,7 @@ export class HubConnection {
     private readonly cachedPingMessage: string | ArrayBuffer;
     private readonly connection: IConnection;
     private readonly logger: ILogger;
-    private readonly reconnectPolicy?: IReconnectPolicy;
+    private readonly reconnectPolicy?: IRetryPolicy;
     private protocol: IHubProtocol;
     private handshakeProtocol: HandshakeProtocol;
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
@@ -81,11 +81,11 @@ export class HubConnection {
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
     // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
     // public parameter-less constructor.
-    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IReconnectPolicy): HubConnection {
+    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy): HubConnection {
         return new HubConnection(connection, logger, protocol, reconnectPolicy);
     }
 
-    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IReconnectPolicy) {
+    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
@@ -125,6 +125,28 @@ export class HubConnection {
      */
     get connectionId(): string | null {
         return this.connection ? (this.connection.connectionId || null) : null;
+    }
+
+    /** Indicates the url of the {@link HubConnection} to the server. */
+    get baseUrl(): string {
+        return this.connection.baseUrl || "";
+    }
+
+    /**
+     * Sets a new url for the HubConnection. Note that the url can only be changed when the connection is in either the Disconnected or
+     * Reconnecting states.
+     * @param {string} url The url to connect to.
+     */
+    set baseUrl(url: string) {
+        if (this.connectionState !== HubConnectionState.Disconnected && this.connectionState !== HubConnectionState.Reconnecting) {
+            throw new Error("The HubConnection must be in the Disconnected or Reconnecting state to change the url.");
+        }
+
+        if (!url) {
+            throw new Error("The HubConnection url must be a valid url.");
+        }
+
+        this.connection.baseUrl = url;
     }
 
     /** Starts the connection.
@@ -428,11 +450,11 @@ export class HubConnection {
 
     /** Removes the specified handler for the specified hub method.
      *
-     * You must pass the exact same Function instance as was previously passed to {@link @aspnet/signalr.HubConnection.on}. Passing a different instance (even if the function
+     * You must pass the exact same Function instance as was previously passed to {@link @microsoft/signalr.HubConnection.on}. Passing a different instance (even if the function
      * body is the same) will not remove the handler.
      *
      * @param {string} methodName The name of the method to remove handlers for.
-     * @param {Function} method The handler to remove. This must be the same Function instance as the one passed to {@link @aspnet/signalr.HubConnection.on}.
+     * @param {Function} method The handler to remove. This must be the same Function instance as the one passed to {@link @microsoft/signalr.HubConnection.on}.
      */
     public off(methodName: string, method: (...args: any[]) => void): void;
     public off(methodName: string, method?: (...args: any[]) => void): void {
@@ -666,11 +688,12 @@ export class HubConnection {
     private async reconnect(error?: Error) {
         const reconnectStartTime = Date.now();
         let previousReconnectAttempts = 0;
+        let retryError = error !== undefined ? error : new Error("Attempting to reconnect due to a unknown error.");
 
-        let nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0);
+        let nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
 
         if (nextRetryDelay === null) {
-            this.logger.log(LogLevel.Debug, "Connection not reconnecting because the IReconnectPolicy returned null on the first reconnect attempt.");
+            this.logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
             this.completeClose(error);
             return;
         }
@@ -732,9 +755,10 @@ export class HubConnection {
                     this.logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
                     return;
                 }
-            }
 
-            nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime);
+                retryError = e instanceof Error ? e : new Error(e.toString());
+                nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
+            }
         }
 
         this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${Date.now() - reconnectStartTime} ms and ${previousReconnectAttempts} failed attempts. Connection disconnecting.`);
@@ -742,11 +766,15 @@ export class HubConnection {
         this.completeClose();
     }
 
-    private getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number) {
+    private getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number, retryReason: Error) {
         try {
-            return this.reconnectPolicy!.nextRetryDelayInMilliseconds(previousRetryCount, elapsedMilliseconds);
+            return this.reconnectPolicy!.nextRetryDelayInMilliseconds({
+                elapsedMilliseconds,
+                previousRetryCount,
+                retryReason,
+            });
         } catch (e) {
-            this.logger.log(LogLevel.Error, `IReconnectPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
+            this.logger.log(LogLevel.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
             return null;
         }
     }

@@ -12,8 +12,8 @@
     @foreach (var item in todoItems.Where(item => !item.IsDone))
     {
         <li @key="@item.Id" class="@($"item-{item.Id}")">
-            <input type="checkbox" @bind="@item.IsDone"/>
-            <input type="text" @bind="@item.Text" @oninput="@Shuffle" />
+            <input type="checkbox" @bind="item.IsDone"/>
+            <input type="text" @bind="item.Text" @oninput="Shuffle" />
         </li>
     }
 </ul>
@@ -24,8 +24,8 @@
     @foreach (var item in todoItems.Where(item => item.IsDone))
     {
         <li @key="@item.Id" class="@($"item-{item.Id}")">
-            <input type="checkbox" @bind="@item.IsDone" />
-            <input type="text" @bind="@item.Text" @oninput="@Shuffle" />
+            <input type="checkbox" @bind="item.IsDone" />
+            <input type="text" @bind="item.Text" @oninput="Shuffle" />
         </li>
     }
 </ul>

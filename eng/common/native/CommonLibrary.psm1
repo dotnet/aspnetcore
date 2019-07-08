@@ -209,7 +209,7 @@ function New-ScriptShim {
       Remove-Item (Join-Path $ShimDirectory "$ShimName.exe")
     }
 
-    Invoke-Expression "$ShimDirectory\WinShimmer\winshimmer.exe $ShimName $ToolFilePath $ShimDirectory"
+    & "$ShimDirectory\WinShimmer\winshimmer.exe" $ShimName $ToolFilePath $ShimDirectory
     return $True
   }
   catch {

@@ -16,7 +16,7 @@
 /src/Middleware/                @tratcher @anurse
 /src/ProjectTemplates/          @ryanbrandenburg
 /src/Security/                  @tratcher @anurse
-/src/Servers/                   @tratcher @jkotalik @anurse
+/src/Servers/                   @tratcher @jkotalik @anurse @halter73
 /src/Middleware/Rewrite         @jkotalik @anurse
 /src/Middleware/HttpsPolicy     @jkotalik @anurse
 /src/SignalR/                   @mikaelm12 @BrennanConroy @halter73 @anurse

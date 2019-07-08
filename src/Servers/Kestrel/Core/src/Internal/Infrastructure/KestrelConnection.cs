@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Logger = logger;
             TransportConnection = connectionContext;
 
-            // Set a connection id if the transport didn't set one
-            TransportConnection.ConnectionId ??= CorrelationIdGenerator.GetNextId();
             connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
             connectionContext.Features.Set<IConnectionCompleteFeature>(this);
             connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);

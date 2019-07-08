@@ -205,9 +205,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[ \"abc\", \"xyz\"]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,\"\",{\"1\":1,\"2\":2}]}", "Invocation provides 3 argument(s) but target expects 2.")]
         [InlineData("{\"type\":1,\"arguments\":[1,\"\",{\"1\":1,\"2\":2}]},\"invocationId\":\"42\",\"target\":\"foo\"", "Invocation provides 3 argument(s) but target expects 2.")]
-        // Both of these should be fixed by https://github.com/dotnet/corefx/issues/36901
-        // [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[1]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
-        // [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
+        [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[1]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
+        [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         public void ArgumentBindingErrors(string input, string expectedMessage)
         {
             input = Frame(input);
@@ -217,6 +216,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
             var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);
             Assert.Equal(expectedMessage, bindingFailure.BindingFailure.SourceException.Message);
+        }
+
+        [Theory]
+        [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[[}]}")]
+        public void InvalidNestingWhileBindingTypesFails(string input)
+        {
+            input = Frame(input);
+
+            var binder = new TestBinder(paramTypes: new[] { typeof(int[]) }, returnType: null);
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+            var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+            Assert.Equal("Error reading JSON.", ex.Message);
         }
 
         [Theory]

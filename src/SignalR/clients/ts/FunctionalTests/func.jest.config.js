@@ -4,7 +4,7 @@
 module.exports = {
     transformIgnorePatterns: [
         // We reference the ESM output from tests and don't want to run them through jest as it won't understand the syntax
-        ".*/node_modules/(?!@aspnet)"
+        ".*/node_modules/(?!@microsoft)"
     ],
     globals: {
         "ts-jest": {
@@ -27,7 +27,7 @@ module.exports = {
     testRegex: "(Tests)\\.(jsx?|tsx?)$",
     moduleNameMapper: {
         "^ts-jest$": "<rootDir>/../common/node_modules/ts-jest",
-        "^@aspnet/signalr$": "<rootDir>/../signalr/dist/cjs/index.js"
+        "^@microsoft/signalr$": "<rootDir>/../signalr/dist/cjs/index.js"
     },
     moduleFileExtensions: [
         "ts",

@@ -207,10 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter)
         {
-            var serviceContext = new TestServiceContext(LoggerFactory)
-            {
-                ExpectedConnectionMiddlewareCount = 1
-            };
+            var serviceContext = new TestServiceContext(LoggerFactory);
 
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>

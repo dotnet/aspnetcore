@@ -1,17 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="..\..\build\assets.props" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageId>$(MSBuildProjectName).$(TargetRuntimeIdentifier)</PackageId>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <IsPackable>$(PackNativeAssets)</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
     <BuildOutputTargetFolder>runtimes/$(TargetRuntimeIdentifier)/native/</BuildOutputTargetFolder>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <DebugType>none</DebugType>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
       AddPackNativeComponents
     </TargetsForTfmSpecificBuildOutput>
-    <PackageId>$(MSBuildProjectName).$(TargetRuntimeIdentifier)</PackageId>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(VCTargetsPath)' != ''">
@@ -22,16 +29,17 @@
   <Target Name="AddPackNativeComponents" AfterTargets="_CalculateInputsOutputsForPack" Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(PackNativeAssets)' == 'true'">
     <ItemGroup>
       <!-- RunShimComponents is based on the current runtime (NativePlatform) which should be the same as TargetRuntimeIdentifier -->
-      <BuiltProjectOutputGroupOutput Remove="@(BuiltProjectOutputGroupOutput)" />
-      <DebugSymbolsProjectOutputGroupOutput Remove="@(DebugSymbolsProjectOutputGroupOutput)" />
       <BuiltProjectOutputGroupOutput Include="%(RunShimComponents.DllLocation)" />
       <BuiltProjectOutputGroupOutput Include="%(RunShimComponents.PdbLocation)" />
-      
+
       <NuGetPackInput Include="@(BuiltProjectOutputGroupOutput)" />
     </ItemGroup>
   </Target>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <!-- This project does not produce a binary. Disable the compiler. -->
-  <Target Name="Compile" />
-  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" />
+  <ItemGroup>
+    <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
+  </ItemGroup>
 </Project>

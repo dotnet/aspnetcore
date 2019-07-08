@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.AspNetCore.Http.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {

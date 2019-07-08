@@ -20,7 +20,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "Microsoft.NET.Sdk.Worker isn't available yet")]
+        [Fact]
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);
@@ -38,14 +38,14 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var aspNetProcess = Project.StartBuiltProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = Project.StartPublishedProjectAsync(hasListeningUri: false))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,

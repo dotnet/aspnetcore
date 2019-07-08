@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
@@ -50,10 +50,18 @@
     <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework/%(Filename)%(Extension)" />
+  <PropertyGroup>
+    <!--
+      We check in the Release / Production build of blazor.*.js, but not the Debug builds. Consequently the former is always available to embed, the latter is only available
+      if Web.JS was built locally. Use the Debug build when available and building in Debug configuration.
+    -->
+    <BlazorServerJSFile>..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
+    <BlazorServerJSFile Condition="'$(Configuration)' == 'Debug' AND Exists('..\..\Web.JS\dist\Debug\blazor.server.js')">..\..\Web.JS\dist\Debug\blazor.server.js</BlazorServerJSFile>
+  </PropertyGroup>
 
-    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
+  <ItemGroup>
+    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
   </ItemGroup>
 
 </Project>

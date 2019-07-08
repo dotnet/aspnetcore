@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     internal class DynamicControllerEndpointSelector : IDisposable
     {
         private readonly ControllerActionEndpointDataSource _dataSource;
-        private readonly DataSourceDependentCache<ActionSelectionTable<RouteEndpoint>> _cache;
+        private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
 
         public DynamicControllerEndpointSelector(ControllerActionEndpointDataSource dataSource)
         {
@@ -22,12 +22,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             _dataSource = dataSource;
-            _cache = new DataSourceDependentCache<ActionSelectionTable<RouteEndpoint>>(dataSource, Initialize);
+
+            _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
         }
 
-        private ActionSelectionTable<RouteEndpoint> Table => _cache.EnsureInitialized();
+        private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
 
-        public IReadOnlyList<RouteEndpoint> SelectEndpoints(RouteValueDictionary values)
+        public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
         {
             if (values == null)
             {
@@ -38,10 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var matches = table.Select(values);
             return matches;
         }
-
-        private static ActionSelectionTable<RouteEndpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
+        private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
         {
-            return ActionSelectionTable<RouteEndpoint>.Create(endpoints);
+            return ActionSelectionTable<Endpoint>.Create(endpoints);
         }
 
         public void Dispose()

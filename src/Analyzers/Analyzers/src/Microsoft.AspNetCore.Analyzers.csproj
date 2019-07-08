@@ -21,26 +21,9 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
-
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        description=$(Description);
-        tags=$(PackageTags.Replace(';', ' '));
-        licenseUrl=$(PackageLicenseUrl);
-        projectUrl=$(PackageProjectUrl);
-        iconUrl=$(PackageIconUrl);
-        repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(SourceRevisionId);
-        copyright=$(Copyright);
-
-        OutputBinary=$(OutputPath)$(AssemblyName).dll;
-        OutputSymbol=$(OutputPath)$(AssemblyName).pdb;
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+  </ItemGroup>
 
 </Project>

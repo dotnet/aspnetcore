@@ -62,13 +62,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="authenticationSchemes">The authentication scheme to use when signing out the user.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
         public SignOutResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
-        {
-            if (authenticationSchemes == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationSchemes));
-            }
-
-            AuthenticationSchemes = authenticationSchemes;
+        {         
+            AuthenticationSchemes = authenticationSchemes ?? throw new ArgumentNullException(nameof(authenticationSchemes));
             Properties = properties;
         }
 

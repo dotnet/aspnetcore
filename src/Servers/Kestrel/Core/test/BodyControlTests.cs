@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
-            bodyControl.Stop();
+            await bodyControl.StopAsync();
 
             Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition()));
             Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()));
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
-            bodyControl.Stop();
+            await bodyControl.StopAsync();
 
             Assert.Throws<ObjectDisposedException>(() => responsePipe.Advance(1));
             Assert.Throws<ObjectDisposedException>(() => responsePipe.CancelPendingFlush());

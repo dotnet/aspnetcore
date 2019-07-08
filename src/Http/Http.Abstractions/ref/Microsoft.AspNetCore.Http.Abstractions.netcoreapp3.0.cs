@@ -474,58 +474,6 @@ namespace Microsoft.AspNetCore.Http.Features
         Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get; set; }
     }
 }
-namespace Microsoft.AspNetCore.Http.Internal
-{
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct HeaderSegment : System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>
-    {
-        private readonly object _dummy;
-        public HeaderSegment(Microsoft.Extensions.Primitives.StringSegment formatting, Microsoft.Extensions.Primitives.StringSegment data) { throw null; }
-        public Microsoft.Extensions.Primitives.StringSegment Data { get { throw null; } }
-        public Microsoft.Extensions.Primitives.StringSegment Formatting { get { throw null; } }
-        public bool Equals(Microsoft.AspNetCore.Http.Internal.HeaderSegment other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
-        public override int GetHashCode() { throw null; }
-        public static bool operator ==(Microsoft.AspNetCore.Http.Internal.HeaderSegment left, Microsoft.AspNetCore.Http.Internal.HeaderSegment right) { throw null; }
-        public static bool operator !=(Microsoft.AspNetCore.Http.Internal.HeaderSegment left, Microsoft.AspNetCore.Http.Internal.HeaderSegment right) { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct HeaderSegmentCollection : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>, System.Collections.IEnumerable, System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection>
-    {
-        private readonly object _dummy;
-        public HeaderSegmentCollection(Microsoft.Extensions.Primitives.StringValues headers) { throw null; }
-        public bool Equals(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
-        public Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection.Enumerator GetEnumerator() { throw null; }
-        public override int GetHashCode() { throw null; }
-        public static bool operator ==(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection left, Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection right) { throw null; }
-        public static bool operator !=(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection left, Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection right) { throw null; }
-        System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public Enumerator(Microsoft.Extensions.Primitives.StringValues headers) { throw null; }
-            public Microsoft.AspNetCore.Http.Internal.HeaderSegment Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
-    }
-    public static partial class ParsingHelpers
-    {
-        public static void AppendHeaderJoined(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, params string[] values) { }
-        public static void AppendHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues values) { }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeader(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeaderSplit(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static void SetHeaderJoined(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues value) { }
-        public static void SetHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues? values) { }
-    }
-}
 namespace Microsoft.AspNetCore.Routing
 {
     public partial class RouteValueDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IDictionary<string, object>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyDictionary<string, object>, System.Collections.IEnumerable

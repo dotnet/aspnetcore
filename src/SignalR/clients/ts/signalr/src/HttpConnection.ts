@@ -53,7 +53,6 @@ export class HttpConnection implements IConnection {
     // connectionStarted is tracked independently from connectionState, so we can check if the
     // connection ever did successfully transition from connecting to connected before disconnecting.
     private connectionStarted: boolean;
-    private readonly baseUrl: string;
     private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
@@ -66,6 +65,7 @@ export class HttpConnection implements IConnection {
     private sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
+    public baseUrl: string;
     public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((e?: Error) => void) | null;
@@ -190,15 +190,19 @@ export class HttpConnection implements IConnection {
             // This exception is returned to the user as a rejected Promise from the start method.
         }
 
+        if (this.sendQueue) {
+            try {
+                await this.sendQueue.stop();
+            } catch (e) {
+                this.logger.log(LogLevel.Error, `TransportSendQueue.stop() threw error '${e}'.`);
+            }
+            this.sendQueue = undefined;
+        }
+
         // The transport's onclose will trigger stopConnection which will run our onclose event.
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
         if (this.transport) {
-            if (this.sendQueue) {
-                this.sendQueue.stop();
-                this.sendQueue = undefined;
-            }
-
             try {
                 await this.transport.stop();
             } catch (e) {
@@ -348,26 +352,33 @@ export class HttpConnection implements IConnection {
         const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
         for (const endpoint of transports) {
-            try {
-                const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
-                if (typeof transport === "number") {
-                    this.transport = this.constructTransport(transport);
-                    if (!negotiateResponse.connectionId) {
+            const transportOrError = this.resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
+            if (transportOrError instanceof Error) {
+                // Store the error and continue, we don't want to cause a re-negotiate in these cases
+                transportExceptions.push(`${endpoint.transport} failed: ${transportOrError}`);
+            } else if (this.isITransport(transportOrError)) {
+                this.transport = transportOrError;
+                if (!negotiateResponse.connectionId) {
+                    try {
                         negotiateResponse = await this.getNegotiationResponse(url);
-                        connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                    } catch (ex) {
+                        return Promise.reject(ex);
                     }
+                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                }
+                try {
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
-                }
-            } catch (ex) {
-                this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
-                negotiateResponse.connectionId = undefined;
-                transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
+                } catch (ex) {
+                    this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
+                    negotiateResponse.connectionId = undefined;
+                    transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
 
-                if (this.connectionState !== ConnectionState.Connecting) {
-                    const message = "Failed to select transport before stop() was called.";
-                    this.logger.log(LogLevel.Debug, message);
-                    return Promise.reject(new Error(message));
+                    if (this.connectionState !== ConnectionState.Connecting) {
+                        const message = "Failed to select transport before stop() was called.";
+                        this.logger.log(LogLevel.Debug, message);
+                        return Promise.reject(new Error(message));
+                    }
                 }
             }
         }
@@ -378,7 +389,7 @@ export class HttpConnection implements IConnection {
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
-    private constructTransport(transport: HttpTransportType) {
+    private constructTransport(transport: HttpTransportType): ITransport {
         switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this.options.WebSocket) {
@@ -397,32 +408,36 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private resolveTransport(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): HttpTransportType | null {
+    private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this.logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
+            return new Error(`Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
         } else {
-            const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
             if (transportMatches(requestedTransport, transport)) {
+                const transferFormats = endpoint.transferFormats.map((s) => TransferFormat[s]);
                 if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
                     if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
                         (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
                         this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
-                        throw new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
+                        return new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
                     } else {
                         this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
-                        return transport;
+                        try {
+                            return this.constructTransport(transport);
+                        } catch (ex) {
+                            return ex;
+                        }
                     }
                 } else {
                     this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
-                    throw new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
+                    return new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
                 }
             } else {
                 this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
-                throw new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
+                return new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
             }
         }
-        return null;
     }
 
     private isITransport(transport: any): transport is ITransport {
@@ -516,24 +531,28 @@ export class TransportSendQueue {
     private buffer: any[] = [];
     private sendBufferedData: PromiseSource;
     private executing: boolean = true;
-    private transportResult: PromiseSource;
+    private transportResult?: PromiseSource;
+    private sendLoopPromise: Promise<void>;
 
     constructor(private readonly transport: ITransport) {
         this.sendBufferedData = new PromiseSource();
         this.transportResult = new PromiseSource();
 
-        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
-        this.sendLoop().then(() => {}, (_) => {});
+        this.sendLoopPromise = this.sendLoop();
     }
 
     public send(data: string | ArrayBuffer): Promise<void> {
         this.bufferData(data);
+        if (!this.transportResult) {
+            this.transportResult = new PromiseSource();
+        }
         return this.transportResult.promise;
     }
 
-    public stop(): void {
+    public stop(): Promise<void> {
         this.executing = false;
         this.sendBufferedData.resolve();
+        return this.sendLoopPromise;
     }
 
     private bufferData(data: string | ArrayBuffer): void {
@@ -550,14 +569,17 @@ export class TransportSendQueue {
             await this.sendBufferedData.promise;
 
             if (!this.executing) {
-                // Did we stop?
+                if (this.transportResult) {
+                    this.transportResult.reject("Connection stopped.");
+                }
+
                 break;
             }
 
             this.sendBufferedData = new PromiseSource();
 
-            const transportResult = this.transportResult;
-            this.transportResult = new PromiseSource();
+            const transportResult = this.transportResult!;
+            this.transportResult = undefined;
 
             const data = typeof(this.buffer[0]) === "string" ?
                 this.buffer.join("") :

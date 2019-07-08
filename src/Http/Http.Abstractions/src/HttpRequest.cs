@@ -99,14 +99,15 @@ namespace Microsoft.AspNetCore.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestBody Stream.
+        /// Gets or sets the request body <see cref="Stream"/>.
         /// </summary>
-        /// <returns>The RequestBody Stream.</returns>
+        /// <value>The request body <see cref="Stream"/>.</value>
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets the request body pipe <see cref="PipeReader"/>.
+        /// Gets the request body <see cref="PipeReader"/>.
         /// </summary>
+        /// <value>The request body <see cref="PipeReader"/>.</value>
         public virtual PipeReader BodyReader { get => throw new NotImplementedException();  }
 
         /// <summary>

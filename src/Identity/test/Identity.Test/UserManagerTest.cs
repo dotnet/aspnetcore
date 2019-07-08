@@ -979,7 +979,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorBlocksCreate()
         {
-            // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
             manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>(true));
@@ -990,7 +989,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public async Task PasswordValidatorWithoutErrorsBlocksCreate()
         {
-            // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
             manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>());

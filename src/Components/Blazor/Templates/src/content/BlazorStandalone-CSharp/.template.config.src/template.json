@@ -44,12 +44,6 @@
       "type": "bind",
       "binding": "HostIdentifier"
     },
-    "IncludeCustomRestoreSourcesSymbol": {
-      "type": "parameter",
-      "datatype": "bool",
-      "description": "If set, includes restore sources for the Blazor MyGet feed.",
-      "defaultValue": "${IncludeCustomRestoreSources}"
-    },
     "TemplateBlazorVersionSymbol": {
       "type": "parameter",
       "datatype": "string",

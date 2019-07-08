@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     internal class DynamicPageEndpointSelector : IDisposable
     {
         private readonly PageActionEndpointDataSource _dataSource;
-        private readonly DataSourceDependentCache<ActionSelectionTable<RouteEndpoint>> _cache;
+        private readonly DataSourceDependentCache<ActionSelectionTable<Endpoint>> _cache;
 
         public DynamicPageEndpointSelector(PageActionEndpointDataSource dataSource)
         {
@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             _dataSource = dataSource;
-            _cache = new DataSourceDependentCache<ActionSelectionTable<RouteEndpoint>>(dataSource, Initialize);
+            _cache = new DataSourceDependentCache<ActionSelectionTable<Endpoint>>(dataSource, Initialize);
         }
 
-        private ActionSelectionTable<RouteEndpoint> Table => _cache.EnsureInitialized();
+        private ActionSelectionTable<Endpoint> Table => _cache.EnsureInitialized();
 
-        public IReadOnlyList<RouteEndpoint> SelectEndpoints(RouteValueDictionary values)
+        public IReadOnlyList<Endpoint> SelectEndpoints(RouteValueDictionary values)
         {
             if (values == null)
             {
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return matches;
         }
 
-        private static ActionSelectionTable<RouteEndpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
+        private static ActionSelectionTable<Endpoint> Initialize(IReadOnlyList<Endpoint> endpoints)
         {
-            return ActionSelectionTable<RouteEndpoint>.Create(endpoints);
+            return ActionSelectionTable<Endpoint>.Create(endpoints);
         }
 
         public void Dispose()
