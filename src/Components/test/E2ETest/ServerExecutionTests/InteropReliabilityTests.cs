@@ -1,32 +1,36 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using BasicTestApp;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Hosting;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
 {
-    public class InteropReliabilityTests : BasicTestAppTestBase
+    public class InteropReliabilityTests : ServerTestBase<AspNetSiteServerFixture>
     {
         private const int DefaultLatencyTimeout = 500;
 
         public InteropReliabilityTests(
             BrowserFixture browserFixture,
-            ToggleExecutionModeServerFixture<Program> serverFixture,
+            AspNetSiteServerFixture serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture,
-                  serverFixture.WithServerExecution().WithAdditionalArguments(new string[] { "--" + WebHostDefaults.DetailedErrorsKey, "true" }),
-                  output)
+            : base(browserFixture, serverFixture, output)
         {
+            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
+        }
+
+        public BlazorClient Client { get; set; } = new BlazorClient();
+
+        public override Task InitializeAsync()
+        {
+            // Do nothing.
+            return Task.CompletedTask;
         }
 
         [Fact]
@@ -37,31 +41,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027WriteAllText\\u0027 on assembly \\u0027System.IO.FileSystem\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "System.IO.FileSystem",
                 "WriteAllText",
@@ -69,9 +53,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -82,31 +68,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027ComponentsApp.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "ComponentsApp.Server",
                 "MadeUpMethod",
@@ -114,9 +80,10 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            // Assert
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -127,31 +94,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "NotifyLocationChanged",
@@ -159,9 +106,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new[] { _serverFixture.RootUri }));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -172,31 +121,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "",
                 "NotifyLocationChanged",
@@ -204,9 +133,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -217,31 +148,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "",
@@ -249,9 +160,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact(Skip = "Pending changes from extensions")]
@@ -260,31 +173,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             // Arrange
             var expectedDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "ComponentsApp.Server",
                 "CreateInformation",
@@ -294,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await Task.Delay(DefaultLatencyTimeout);
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedDotNetObjectRef));
 
-            client.InvokeDotNetMethod(
+            Client.InvokeDotNetMethod(
                 "1",
                 null,
                 "Reverse",
@@ -302,9 +195,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
 
-            client.InvokeDotNetMethod(
+            Client.InvokeDotNetMethod(
                 "1",
                 null,
                 "Reverse",
@@ -314,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await Task.Delay(5000);
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -326,31 +221,10 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027ComponentsApp.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            Client.InvokeDotNetMethod(
                 "1",
                 "ComponentsApp.Server",
                 "CreateImportant",
@@ -358,12 +232,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, element =>
-            {
-                return (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedImportantDotNetObjectRef) == element;
-            });
 
-            client.InvokeDotNetMethod(
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedImportantDotNetObjectRef));
+
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "ComponentsApp.Server",
                 "ReceiveTrivial",
@@ -371,9 +244,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(new object[] { new { __dotNetObject = 1 } }));
 
             await Task.Delay(DefaultLatencyTimeout);
+
+            // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -381,40 +256,19 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
         {
             // Arrange
             var expectedError = "An exception occurred executing JS interop: The JSON value could not be converted to System.Int32. Path: $ | LineNumber: 0 | BytePositionInLine: 3.. See InnerException for more details.";
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            var jsInteropTriggered = client.PrepareForNextBatch();
-            await client.ClickAsync("triggerjsinterop");
+            // Act
+            var jsInteropTriggered = Client.PrepareForNextBatch();
+            await Client.ClickAsync("triggerjsinterop");
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, element =>
-            {
-                return (4, "sendMalformedCallbackReturn", null) == element;
-            });
+            Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
 
-            var invalidJSInteropResponse = client.PrepareForNextBatch();
-            client.InvokeDotNetMethod(
+            var invalidJSInteropResponse = Client.PrepareForNextBatch();
+            Client.InvokeDotNetMethod(
                 0,
                 "Microsoft.JSInterop",
                 "DotNetDispatcher.EndInvoke",
@@ -423,10 +277,10 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
 
             await invalidJSInteropResponse;
             var text = Assert.Single(
-                client.FindElementById("errormessage").Children.OfType<TextNode>(),
+                Client.FindElementById("errormessage").Children.OfType<TextNode>(),
                 e => expectedError == e.TextContent);
 
-            await ValidateClientKeepsWorking(client, batches);
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
@@ -437,31 +291,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "false," +
                 "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
 
-            var client = new BlazorClient();
-            var interopCalls = new List<(int, string, string)>();
-            client.JSInterop += CaptureInterop;
-            var batches = new List<(int, int, byte[])>();
-            client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
 
-            void CaptureInterop(int arg1, string arg2, string arg3)
-            {
-                interopCalls.Add((arg1, arg2, arg3));
-            }
-
-            var rootUri = _serverFixture.RootUri;
-            var initialRender = client.PrepareForNextBatch();
-            Assert.True(await client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
-            Assert.Single(batches);
-
-            var selectComponentRender = client.PrepareForNextBatch();
-            await client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
-            Assert.Equal(2, batches.Count);
-
-            // Assert
-            client.InvokeDotNetMethod(
+            // Act
+            Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "NotifyLocationChanged",
@@ -469,23 +303,47 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 "[ \"invalidPayload\"}");
 
             await Task.Delay(DefaultLatencyTimeout);
-            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
-            await ValidateClientKeepsWorking(client, batches);
+            // Assert
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
+            await ValidateClientKeepsWorking(Client, batches);
         }
 
-        private Task ValidateClientKeepsWorking(BlazorClient client, List<(int, int, byte[])> batches) =>
-            ValidateClientKeepsWorking(client, () => batches.Count);
+        private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>
+            ValidateClientKeepsWorking(Client, () => batches.Count);
 
-        private async Task ValidateClientKeepsWorking(BlazorClient client, Func<int> countAccessor)
+        private async Task ValidateClientKeepsWorking(BlazorClient Client, Func<int> countAccessor)
         {
             var currentBatches = countAccessor();
-            var nextClickRendered = client.PrepareForNextBatch();
-            await client.ClickAsync("thecounter");
+            var nextClickRendered = Client.PrepareForNextBatch();
+            await Client.ClickAsync("thecounter");
             await nextClickRendered;
 
             Assert.Equal(currentBatches + 1, countAccessor());
         }
 
+        private async Task GoToTestComponent(List<(int, int, byte[])> batches)
+        {
+            var rootUri = _serverFixture.RootUri;
+            var initialRender = Client.PrepareForNextBatch();
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
+
+            await initialRender;
+            Assert.Single(batches);
+
+            var selectComponentRender = Client.PrepareForNextBatch();
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
+            await selectComponentRender;
+            Assert.Equal(2, batches.Count);
+        }
+
+        private (List<(int, string, string)>, List<(int, int, byte[])>) ConfigureClient()
+        {
+            var interopCalls = new List<(int, string, string)>();
+            Client.JSInterop += (int arg1, string arg2, string arg3) => interopCalls.Add((arg1, arg2, arg3));
+            var batches = new List<(int, int, byte[])>();
+            Client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            return (interopCalls, batches);
+        }
     }
 }
