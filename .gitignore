@@ -13,6 +13,7 @@ BenchmarkDotNet.Artifacts/
 .gradle/
 src/SignalR/clients/**/dist/
 modules/
+packages/
 
 # File extensions
 *.aps
