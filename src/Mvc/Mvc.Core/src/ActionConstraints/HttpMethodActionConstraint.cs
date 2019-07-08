@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
     /// support. The <see cref="HttpMethodActionConstraint" /> can be used to determine
     /// the set of HTTP methods supported by an action.
     /// </summary>
-    public sealed class HttpMethodActionConstraint : IActionConstraint
+    public class HttpMethodActionConstraint : IActionConstraint
     {
         /// <summary>
         /// The <see cref="IActionConstraint.Order" /> value used by <see cref="HttpMethodActionConstraint" />.
@@ -57,9 +57,11 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// </summary>
         public IEnumerable<string> HttpMethods => _httpMethods;
 
-        int IActionConstraint.Order => HttpMethodConstraintOrder;
+        /// <inheritdoc />
+        public int Order => HttpMethodConstraintOrder;
 
-        bool IActionConstraint.Accept(ActionConstraintContext context)
+        /// <inheritdoc />
+        public virtual bool Accept(ActionConstraintContext context)
         {
             if (context == null)
             {

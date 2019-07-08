@@ -1270,13 +1270,13 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         public bool Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext context) { throw null; }
         public abstract bool IsValidForRequest(Microsoft.AspNetCore.Routing.RouteContext routeContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor action);
     }
-    public sealed partial class HttpMethodActionConstraint : Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint, Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata
+    public partial class HttpMethodActionConstraint : Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint, Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata
     {
         public static readonly int HttpMethodConstraintOrder;
         public HttpMethodActionConstraint(System.Collections.Generic.IEnumerable<string> httpMethods) { }
         public System.Collections.Generic.IEnumerable<string> HttpMethods { get { throw null; } }
         public int Order { get { throw null; } }
-        public bool Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext context) { throw null; }
+        public virtual bool Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext context) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
