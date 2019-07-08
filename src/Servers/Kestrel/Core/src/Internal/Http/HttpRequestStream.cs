@@ -3,11 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -15,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private readonly HttpRequestPipeReader _pipeReader;
         private readonly IHttpBodyControlFeature _bodyControl;
+        private AsyncEnumerableReader _asyncReader;
 
         public HttpRequestStream(IHttpBodyControlFeature bodyControl, HttpRequestPipeReader pipeReader)
         {
@@ -44,12 +47,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
-            return ReadAsyncWrapper(destination, cancellationToken);
+            try
+            {
+                return ReadAsyncInternal(destination, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return ReadAsyncWrapper(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            try
+            {
+                return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -127,23 +144,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return tcs.Task;
         }
 
-        private ValueTask<int> ReadAsyncWrapper(Memory<byte> destination, CancellationToken cancellationToken)
+        private ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {
+            if (_asyncReader?.InProgress ?? false)
+            {
+                // Throw if there are overlapping reads; throwing unwrapped as it suggests last read was not awaited 
+                // so we surface it directly rather than wrapped in a Task (as this one will likely also not be awaited).
+                throw new InvalidOperationException("Concurrent reads are not supported; await the " + nameof(ValueTask<int>) + " before starting next read.");
+            }
+
             try
             {
-                return ReadAsyncInternal(destination, cancellationToken);
+                while (true)
+                {
+                    if (!_pipeReader.TryRead(out var result))
+                    {
+                        break;
+                    }
+
+                    if (result.IsCanceled)
+                    {
+                        throw new OperationCanceledException("The read was canceled");
+                    }
+
+                    var readableBuffer = result.Buffer;
+                    var readableBufferLength = readableBuffer.Length;
+
+                    var consumed = readableBuffer.End;
+                    var actual = 0;
+                    try
+                    {
+                        if (readableBufferLength != 0)
+                        {
+                            actual = (int)Math.Min(readableBufferLength, buffer.Length);
+
+                            var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                            consumed = slice.End;
+                            slice.CopyTo(buffer.Span);
+
+                            return new ValueTask<int>(actual);
+                        }
+
+                        if (result.IsCompleted)
+                        {
+                            return new ValueTask<int>(0);
+                        }
+                    }
+                    finally
+                    {
+                        _pipeReader.AdvanceTo(consumed);
+                    }
+                }
             }
-            catch (ConnectionAbortedException ex)
+            catch (Exception ex)
             {
-                throw new TaskCanceledException("The request was aborted", ex);
+                return new ValueTask<int>(Task.FromException<int>(ex));
             }
+
+            var asyncReader = _asyncReader;
+            if (asyncReader is null)
+            {
+                _asyncReader = asyncReader = new AsyncEnumerableReader();
+                asyncReader.Initialize(ReadAsyncAwaited(asyncReader));
+            }
+
+            return asyncReader.ReadAsync(buffer, cancellationToken);
         }
 
-        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        private async IAsyncEnumerable<int> ReadAsyncAwaited(AsyncEnumerableReader reader)
         {
             while (true)
             {
-                var result = await _pipeReader.ReadAsync(cancellationToken);
+                var result = await _pipeReader.ReadAsync(reader.CancellationToken);
 
                 if (result.IsCanceled)
                 {
@@ -154,30 +226,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var readableBufferLength = readableBuffer.Length;
 
                 var consumed = readableBuffer.End;
+                var advanced = false;
                 try
                 {
                     if (readableBufferLength != 0)
                     {
-                        var actual = (int)Math.Min(readableBufferLength, buffer.Length);
+                        var actual = (int)Math.Min(readableBufferLength, reader.Buffer.Length);
 
                         var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
                         consumed = slice.End;
-                        slice.CopyTo(buffer.Span);
+                        slice.CopyTo(reader.Buffer.Span);
 
-                        return actual;
+                        // Finally blocks in enumerators aren't excuted prior to the yield return,
+                        // so we advance here
+                        advanced = true;
+                        _pipeReader.AdvanceTo(consumed);
+                        yield return actual;
                     }
-
-                    if (result.IsCompleted)
+                    else if (result.IsCompleted)
                     {
-                        return 0;
+                        // Finally blocks in enumerators aren't excuted prior to the yield return,
+                        // so we advance here
+                        advanced = true;
+                        _pipeReader.AdvanceTo(consumed);
+                        yield return 0;
                     }
                 }
                 finally
                 {
-                    _pipeReader.AdvanceTo(consumed);
+                    if (!advanced)
+                    {
+                        _pipeReader.AdvanceTo(consumed);
+                    }
                 }
             }
-         
         }
 
         /// <inheritdoc />
