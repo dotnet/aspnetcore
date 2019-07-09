@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void Unprotect_KeyNotFound_RefreshOnce_CanFindKey()
+        public void Unprotect_KeyNotFound_WontRefreshOnce_AfterTooLong()
         {
             // Arrange
             Guid notFoundKeyId = new Guid("654057ab-2491-4471-a72a-b3b114afda38");
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void Unprotect_KeyNotFound_WontRefreshOnce_AfterTooLong()
+        public void Unprotect_KeyNotFound_RefreshOnce_CanFindKey()
         {
             // Arrange
             Guid notFoundKeyId = new Guid("654057ab-2491-4471-a72a-b3b114afda38");
