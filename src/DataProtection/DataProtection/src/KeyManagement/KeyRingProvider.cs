@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             _defaultKeyResolver = defaultKeyResolver;
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
 
-            // We will automatically refresh any unknown keys for 5 minutes see https://github.com/aspnet/AspNetCore/issues/3975
-            AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(5);
+            // We will automatically refresh any unknown keys for 2 minutes see https://github.com/aspnet/AspNetCore/issues/3975
+            AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(2);
         }
 
         // for testing
