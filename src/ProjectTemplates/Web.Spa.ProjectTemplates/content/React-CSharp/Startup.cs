@@ -87,17 +87,20 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseRouting();
+
 #if (IndividualLocalAuth)
 
             app.UseAuthentication();
             app.UseIdentityServer();
 #endif
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+#if (IndividualB2CAuth || OrganizationalAuth)
+                endpoints.MapControllers();
+#endif
             });
 
             app.UseSpa(spa =>

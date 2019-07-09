@@ -55,12 +55,9 @@ namespace Company.WebApplication1
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-            });
+            app.UseRouting();
+
+            app.UseEndpoints();
 
             app.UseSpa(spa =>
             {
