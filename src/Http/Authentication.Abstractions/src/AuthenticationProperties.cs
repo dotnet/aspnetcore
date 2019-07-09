@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         internal const string RedirectUriKey = ".redirect";
         internal const string RefreshKey = ".refresh";
         internal const string UtcDateTimeFormat = "r";
+        internal const string ClaimsTransformedKey = ".claimsTransformed";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthenticationProperties"/> class.
@@ -99,6 +100,16 @@ namespace Microsoft.AspNetCore.Authentication
         {
             get => GetBool(RefreshKey);
             set => SetBool(RefreshKey, value);
+        }
+
+
+        /// <summary>
+        /// Gets or sets if claims have been transformed.
+        /// </summary>
+        public bool? ClaimsTransformed
+        {
+            get => GetBool(ClaimsTransformedKey);
+            set => SetBool(ClaimsTransformedKey, value);
         }
 
         /// <summary>

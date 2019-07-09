@@ -95,5 +95,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// If true, SignIn should throw if attempted with a ClaimsPrincipal.Identity.IsAuthenticated = false.
         /// </summary>
         public bool RequireAuthenticatedSignIn { get; set; } = true;
+
+        /// <summary>
+        /// If true, CLaims transformation should only be applied once.
+        /// </summary>
+        public bool ApplyClaimsTransformationOnce { get; set; } = true;
     }
 }

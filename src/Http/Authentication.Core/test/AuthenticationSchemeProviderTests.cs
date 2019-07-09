@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationSchemeProviderTests
     {

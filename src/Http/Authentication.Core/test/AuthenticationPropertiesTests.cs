@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -203,6 +203,24 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             props.AllowRefresh = false;
             Assert.False(props.AllowRefresh);
+            Assert.Equal("False", props.Items.First().Value);
+
+            props.Items.Clear();
+            Assert.Null(props.AllowRefresh);
+        }
+
+        [Fact]
+        public void ClaimsTransformed_Test()
+        {
+            var props = new AuthenticationProperties();
+            Assert.Null(props.ClaimsTransformed);
+
+            props.ClaimsTransformed = true;
+            Assert.True(props.ClaimsTransformed);
+            Assert.Equal("True", props.Items.First().Value);
+
+            props.ClaimsTransformed = false;
+            Assert.False(props.ClaimsTransformed);
             Assert.Equal("False", props.Items.First().Value);
 
             props.Items.Clear();

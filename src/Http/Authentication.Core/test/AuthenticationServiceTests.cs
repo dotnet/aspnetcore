@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationServiceTests
     {
@@ -25,6 +25,45 @@ namespace Microsoft.AspNetCore.Authentication
             await context.AuthenticateAsync("base");
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.AuthenticateAsync("missing"));
             Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
+        public async Task AuthenticateRunsClaimsTransformationOnceByDefault()
+        {
+            var transform = new RunOnce();
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            })
+                .AddSingleton<IClaimsTransformation>(transform)
+                .BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            // Base handler returns a result that already has applied claims transform
+            await context.AuthenticateAsync("base");
+            Assert.Equal(0, transform.Ran);
+        }
+
+        [Fact]
+        public async Task AuthenticateCanRunClaimsTransformationMoreThanOnce()
+        {
+            var transform = new RunOnce();
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+                o.ApplyClaimsTransformationOnce = false;
+            })
+                .AddSingleton<IClaimsTransformation>(transform)
+                .BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(1, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(2, transform.Ran);
         }
 
         [Fact]
@@ -219,12 +258,25 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ForbidAsync();
         }
 
+        private class RunOnce : IClaimsTransformation
+        {
+            public int Ran = 0;
+            public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+            {
+                Ran++;
+                return Task.FromResult(principal);
+            }
+        }
 
         private class BaseHandler : IAuthenticationHandler
         {
             public Task<AuthenticateResult> AuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return Task.FromResult(AuthenticateResult.Success(
+                    new AuthenticationTicket(
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")),
+                        new AuthenticationProperties() { ClaimsTransformed = true },
+                        "whatever")));
             }
 
             public Task ChallengeAsync(AuthenticationProperties properties)
