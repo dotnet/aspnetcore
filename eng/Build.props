@@ -103,6 +103,7 @@
 
         <NodeJsProjects Include="
                           $(RepoRoot)src\SignalR\**\*.npmproj;
+                          $(RepoRoot)src\Components\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
                         RestoreInParallel="false"
