@@ -305,6 +305,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Win32.SystemEvents" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
+    </Dependency>
     <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
@@ -314,6 +318,10 @@
       <Sha>a28176b5ec68b6da1472934fe9493790d1665cae</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
+    </Dependency>
+    <Dependency Name="System.Drawing.Common" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
     </Dependency>
@@ -370,6 +378,10 @@
       <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
     </Dependency>
     <Dependency Name="System.Threading.Channels" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
+    </Dependency>
+    <Dependency Name="System.Windows.Extensions" Version="4.6.0-preview8.19354.4" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>477abf147d8860fae35f975fddafb2711ee42bd4</Sha>
     </Dependency>

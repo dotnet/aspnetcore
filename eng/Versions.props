@@ -62,9 +62,11 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0-preview8.19354.4</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview8.19354.4</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview8.19354.4</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>4.6.0-preview8.19354.4</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview8.19354.4</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview6.19264.9</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview8.19354.4</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDrawingCommonPackageVersion>4.6.0-preview8.19354.4</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview8.19354.4</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview8.19354.4</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview8.19354.4</SystemNetWebSocketsWebSocketProtocolPackageVersion>
@@ -79,6 +81,7 @@
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview8.19354.4</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>4.6.0-preview8.19354.4</SystemTextJsonPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview8.19354.4</SystemThreadingChannelsPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>4.6.0-preview8.19354.4</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview8.19354.4</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Blazor -->
@@ -252,7 +255,6 @@
       https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
       https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json;
       https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json;
-      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://grpc.jfrog.io/grpc/api/nuget/v3/grpc-nuget-dev;
     </RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetPackageVersion.Contains('-')) ">
