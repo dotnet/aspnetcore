@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CannotAddEventHandlerAttributeAtRoot()
+        public void CannotDelegateAttributeAtRoot()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute(0, "name", eventInfo => { });
+                builder.AddAttribute(0, "name", new Action<UIEventArgs>(eventInfo => { }));
             });
         }
 
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenElement(0, "some element");
                 builder.AddContent(1, "hello");
-                builder.AddAttribute(2, "name", eventInfo => { });
+                builder.AddAttribute(2, "name", new Action<UIEventArgs>(eventInfo => { }));
             });
         }
 
