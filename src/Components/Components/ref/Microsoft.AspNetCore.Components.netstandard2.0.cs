@@ -325,6 +325,18 @@ namespace Microsoft.AspNetCore.Components
         System.Uri ToAbsoluteUri(string href);
         string ToBaseRelativePath(string baseUri, string locationAbsolute);
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+    public sealed partial class LayoutAttribute : System.Attribute
+    {
+        public LayoutAttribute(System.Type layoutType) { }
+        public System.Type LayoutType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public abstract partial class LayoutComponentBase : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected LayoutComponentBase() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        protected Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
     {
@@ -614,21 +626,6 @@ namespace Microsoft.AspNetCore.Components.Forms
     public sealed partial class ValidationStateChangedEventArgs
     {
         internal ValidationStateChangedEventArgs() { }
-    }
-}
-namespace Microsoft.AspNetCore.Components.Layouts
-{
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
-    public sealed partial class LayoutAttribute : System.Attribute
-    {
-        public LayoutAttribute(System.Type layoutType) { }
-        public System.Type LayoutType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public abstract partial class LayoutComponentBase : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        protected LayoutComponentBase() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        protected Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Components.Rendering
