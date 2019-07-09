@@ -22,7 +22,9 @@ Param(
   [string] $TsaCodebaseAdmin,                                                              # Optional: only needed if TsaOnboard is true; the aliases which are admins of the TSA codebase (e.g. DOMAIN\alias); TSA is the automated framework used to upload test results as bugs.
   [string] $TsaBugAreaPath,                                                                # Optional: only needed if TsaOnboard is true; the area path where TSA will file bugs in AzDO; TSA is the automated framework used to upload test results as bugs.
   [string] $TsaIterationPath,                                                              # Optional: only needed if TsaOnboard is true; the iteration path where TSA will file bugs in AzDO; TSA is the automated framework used to upload test results as bugs.
-  [string] $GuardianLoggerLevel="Standard"                                                 # Optional: the logger level for the Guardian CLI; options are Trace, Verbose, Standard, Warning, and Error
+  [string] $GuardianLoggerLevel="Standard",                                                # Optional: the logger level for the Guardian CLI; options are Trace, Verbose, Standard, Warning, and Error
+  [string[]] $CrScanAdditionalRunConfigParams,                                             # Optional: Additional Params to custom build a CredScan run config in the format @("xyz:abc","sdf:1")
+  [string[]] $PoliCheckAdditionalRunConfigParams                                           # Optional: Additional Params to custom build a Policheck run config in the format @("xyz:abc","sdf:1")
 )
 
 $ErrorActionPreference = "Stop"
@@ -69,10 +71,10 @@ if ($TsaOnboard) {
 }
 
 if ($ArtifactToolsList -and $ArtifactToolsList.Count -gt 0) {
-  & $(Join-Path $PSScriptRoot "run-sdl.ps1") -GuardianCliLocation $guardianCliLocation -WorkingDirectory $ArtifactsDirectory -TargetDirectory $ArtifactsDirectory -GdnFolder $gdnFolder -ToolsList $ArtifactToolsList -AzureDevOpsAccessToken $AzureDevOpsAccessToken -UpdateBaseline $UpdateBaseline -GuardianLoggerLevel $GuardianLoggerLevel
+  & $(Join-Path $PSScriptRoot "run-sdl.ps1") -GuardianCliLocation $guardianCliLocation -WorkingDirectory $ArtifactsDirectory -TargetDirectory $ArtifactsDirectory -GdnFolder $gdnFolder -ToolsList $ArtifactToolsList -AzureDevOpsAccessToken $AzureDevOpsAccessToken -UpdateBaseline $UpdateBaseline -GuardianLoggerLevel $GuardianLoggerLevel -CrScanAdditionalRunConfigParams $CrScanAdditionalRunConfigParams -PoliCheckAdditionalRunConfigParams $PoliCheckAdditionalRunConfigParams
 }
 if ($SourceToolsList -and $SourceToolsList.Count -gt 0) {
-  & $(Join-Path $PSScriptRoot "run-sdl.ps1") -GuardianCliLocation $guardianCliLocation -WorkingDirectory $ArtifactsDirectory -TargetDirectory $SourceDirectory -GdnFolder $gdnFolder -ToolsList $SourceToolsList -AzureDevOpsAccessToken $AzureDevOpsAccessToken -UpdateBaseline $UpdateBaseline -GuardianLoggerLevel $GuardianLoggerLevel
+  & $(Join-Path $PSScriptRoot "run-sdl.ps1") -GuardianCliLocation $guardianCliLocation -WorkingDirectory $ArtifactsDirectory -TargetDirectory $SourceDirectory -GdnFolder $gdnFolder -ToolsList $SourceToolsList -AzureDevOpsAccessToken $AzureDevOpsAccessToken -UpdateBaseline $UpdateBaseline -GuardianLoggerLevel $GuardianLoggerLevel -CrScanAdditionalRunConfigParams $CrScanAdditionalRunConfigParams -PoliCheckAdditionalRunConfigParams $PoliCheckAdditionalRunConfigParams
 }
 
 if ($UpdateBaseline) {
