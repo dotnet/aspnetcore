@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CannotDelegateAttributeAtRoot()
+        public void CannotAddDelegateAttributeAtRoot()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute(0, "name", new Action<UIEventArgs>(eventInfo => { }));
+                builder.AddAttribute(0, "name", new Action<string>(text => { }));
             });
         }
 
