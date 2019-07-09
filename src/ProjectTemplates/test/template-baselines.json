@@ -871,10 +871,26 @@
     }
   },
   "razorclasslib": {
-    "None": {
+    "ComponentsOnly": {
       "Template": "razorclasslib",
       "Arguments": "new razorclasslib",
       "Files": [
+        "content/background.png",
+        "content/exampleJsInterop.js",
+        "content/styles.css",
+        "Component1.razor",
+        "ExampleJsInterop.cs"
+      ]
+    },
+    "ComponentsAndViews": {
+      "Template": "razorclasslib",
+      "Arguments": "new razorclasslib --support-pages-and-views false",
+      "Files": [
+        "content/background.png",
+        "content/exampleJsInterop.js",
+        "content/styles.css",
+        "Component1.razor",
+        "ExampleJsInterop.cs",
         "Areas/MyFeature/Pages/Page1.cshtml",
         "Areas/MyFeature/Pages/Page1.cshtml.cs"
       ]

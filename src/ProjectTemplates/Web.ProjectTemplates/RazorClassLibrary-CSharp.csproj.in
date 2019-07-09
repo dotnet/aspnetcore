@@ -11,8 +11,9 @@
   <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebPackageVersion}" />
   </ItemGroup>
 
 </Project>

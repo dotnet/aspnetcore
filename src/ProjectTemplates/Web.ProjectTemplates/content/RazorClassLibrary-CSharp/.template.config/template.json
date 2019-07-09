@@ -22,12 +22,14 @@
   "preferNameDirectory": true,
   "sources": [
     {
-      "modifiers": [{
-        "condition": "(!SupportPagesAndViews)",
-        "exclude": [
-          "Areas/**"
-        ]
-      }]
+      "modifiers": [
+        {
+          "condition": "(!SupportPagesAndViews)",
+          "exclude": [
+            "Areas/**"
+          ]
+        }
+      ]
     }
   ],
   "symbols": {
@@ -56,7 +58,7 @@
     "SupportPagesAndViews": {
       "type": "parameter",
       "datatype": "bool",
-      "defaultValue": "true",
+      "defaultValue": "false",
       "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
     }
   },
