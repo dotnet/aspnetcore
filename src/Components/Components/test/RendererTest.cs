@@ -3373,9 +3373,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class NoOpRenderer : Renderer
         {
-            public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
+            public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             public new int AssignRootComponentId(IComponent component)
                 => base.AssignRootComponentId(component);

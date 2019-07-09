@@ -41,10 +41,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
-            Dispatcher dispatcher,
             HtmlEncoder encoder,
             ILogger logger)
-            : base(serviceProvider, loggerFactory, dispatcher, encoder.Encode)
+            : base(serviceProvider, loggerFactory, encoder.Encode)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
@@ -55,6 +54,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         }
 
         internal ConcurrentQueue<PendingRender> PendingRenderBatches = new ConcurrentQueue<PendingRender>();
+
+        public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
         public int Id { get; }
 

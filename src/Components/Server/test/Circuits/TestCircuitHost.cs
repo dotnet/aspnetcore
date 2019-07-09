@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IList<ComponentDescriptor> descriptors, Dispatcher dispatcher, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
-            : base(circuitId, scope, client, rendererRegistry, renderer, descriptors, dispatcher, jsRuntime, circuitHandlers, logger)
+        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+            : base(circuitId, scope, client, rendererRegistry, renderer, descriptors, jsRuntime, circuitHandlers, logger)
         {
         }
 
@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
             var renderRegistry = new RendererRegistry();
             var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()));
-            var dispatcher = Rendering.Renderer.CreateDefaultDispatcher();
 
             if (remoteRenderer == null)
             {
@@ -49,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new RendererRegistry(),
                     jsRuntime,
                     clientProxy,
-                    dispatcher,
                     HtmlEncoder.Default,
                     NullLogger.Instance);
             }
@@ -62,7 +60,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 renderRegistry,
                 remoteRenderer,
                 new List<ComponentDescriptor>(),
-                dispatcher,
                 jsRuntime,
                 handlers,
                 NullLogger<CircuitHost>.Instance);

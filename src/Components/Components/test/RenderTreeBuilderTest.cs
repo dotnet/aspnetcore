@@ -1795,9 +1795,12 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
+                Dispatcher = new RendererSynchronizationContextDispatcher();
             }
+
+            public override Dispatcher Dispatcher { get; }
 
             protected override void HandleException(Exception exception)
                 => throw new NotImplementedException();

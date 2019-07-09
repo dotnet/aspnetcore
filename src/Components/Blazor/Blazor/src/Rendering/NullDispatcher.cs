@@ -3,8 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+namespace Microsoft.AspNetCore.Blazor.Rendering
 {
     internal class NullDispatcher : Dispatcher
     {
@@ -15,13 +16,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         public override bool CheckAccess() => true;
-
-        // This will never fire, since we don't actually run background work.
-        public override event UnhandledExceptionEventHandler UnhandledException
-        {
-            add { }
-            remove { }
-        }
 
         public override Task InvokeAsync(Action workItem)
         {

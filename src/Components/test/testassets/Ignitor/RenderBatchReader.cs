@@ -289,9 +289,11 @@ namespace Ignitor
         public class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

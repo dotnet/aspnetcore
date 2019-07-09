@@ -13,9 +13,15 @@ namespace Microsoft.AspNetCore.Components
     public abstract class Dispatcher
     {
         /// <summary>
+        /// Creates a default instance of <see cref="Dispatcher"/>.
+        /// </summary>
+        /// <returns>A <see cref="Dispatcher"/> instance.</returns>
+        public static Dispatcher CreateDefault() => new RendererSynchronizationContextDispatcher();
+
+        /// <summary>
         /// Provides notifications of unhandled exceptions that occur within the dispatcher.
         /// </summary>
-        public abstract event UnhandledExceptionEventHandler UnhandledException;
+        internal event UnhandledExceptionEventHandler UnhandledException;
 
         /// <summary>
         /// Returns a value that determines whether using the dispatcher to invoke a work item is required
@@ -51,5 +57,19 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="workItem">The asynchronous function to execute.</param>
         /// <returns>A <see cref="Task{TResult}"/> that will be completed when the function has finished executing.</returns>
         public abstract Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem);
+
+        /// <summary>
+        /// Called to notify listeners of an unhandled exception.
+        /// </summary>
+        /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/>.</param>
+        protected void OnUnhandledException(UnhandledExceptionEventArgs e)
+        {
+            if (e is null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            UnhandledException?.Invoke(this, e);
+        }
     }
 }

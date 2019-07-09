@@ -18,13 +18,17 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
         }
 
-        public TestRenderer(Dispatcher dispatcher) : base(new TestServiceProvider(), NullLoggerFactory.Instance, dispatcher)
+        public TestRenderer(Dispatcher dispatcher) : base(new TestServiceProvider(), NullLoggerFactory.Instance)
         {
+            Dispatcher = dispatcher;
         }
 
-        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, NullLoggerFactory.Instance)
         {
+            Dispatcher = new RendererSynchronizationContextDispatcher();
         }
+
+        public override Dispatcher Dispatcher { get; }
 
         public Action OnExceptionHandled { get; set; }
 

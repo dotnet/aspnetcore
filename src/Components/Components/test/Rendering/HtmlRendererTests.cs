@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         protected override HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
         {
-            return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, Dispatcher, _encoder);
+            return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, _encoder);
         }
     }
 }

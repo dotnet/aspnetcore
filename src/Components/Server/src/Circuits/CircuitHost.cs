@@ -56,14 +56,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
             IList<ComponentDescriptor> descriptors,
-            Dispatcher dispatcher,
             RemoteJSRuntime jsRuntime,
             CircuitHandler[] circuitHandlers,
             ILogger logger)
         {
             CircuitId = circuitId;
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-            Dispatcher = dispatcher;
             Client = client;
             RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));

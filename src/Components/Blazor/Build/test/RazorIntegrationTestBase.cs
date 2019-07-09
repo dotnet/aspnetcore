@@ -442,9 +442,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, CreateDefaultDispatcher())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             public RenderTreeFrame[] LatestBatchReferenceFrames { get; private set; }
 

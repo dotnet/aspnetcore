@@ -14,18 +14,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public RendererSynchronizationContextDispatcher()
         {
             _context = new RendererSynchronizationContext();
-        }
-
-        public override event UnhandledExceptionEventHandler UnhandledException
-        {
-            add
+            _context.UnhandledException += (sender, e) =>
             {
-                _context.UnhandledException += value;
-            }
-            remove
-            {
-                _context.UnhandledException -= value;
-            }
+                OnUnhandledException(e);
+            };
         }
 
         public override bool CheckAccess() => SynchronizationContext.Current == _context;

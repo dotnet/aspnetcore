@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     public partial class WebAssemblyRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
     {
         public WebAssemblyRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
+        public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
         public System.Threading.Tasks.Task AddComponentAsync(System.Type componentType, string domElementSelector) { throw null; }
         public System.Threading.Tasks.Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         public override System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo eventFieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }

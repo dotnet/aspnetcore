@@ -88,9 +88,11 @@ namespace Microsoft.AspNetCore.Components.Performance
         private class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContextDispatcher())
+                : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

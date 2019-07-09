@@ -64,31 +64,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _componentFactory = new ComponentFactory(serviceProvider);
             _logger = loggerFactory.CreateLogger<Renderer>();
             _componentFactory = new ComponentFactory(serviceProvider);
-            Dispatcher = NullDispatcher.Instance;
-        }
-
-        /// <summary>
-        /// Constructs an instance of <see cref="Renderer"/>.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="dispatcher">The <see cref="Dispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
-        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Dispatcher dispatcher)
-            : this(serviceProvider, loggerFactory)
-        {
-            Dispatcher = dispatcher ?? NullDispatcher.Instance;
         }
 
         /// <summary>
         /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with this <see cref="Renderer" />.
         /// </summary>
-        public Dispatcher Dispatcher { get; }
-
-        /// <summary>
-        /// Creates an <see cref="Dispatcher"/> that can be used with one or more <see cref="Renderer"/>.
-        /// </summary>
-        /// <returns>The <see cref="Dispatcher"/>.</returns>
-        public static Dispatcher CreateDefaultDispatcher() => new RendererSynchronizationContextDispatcher();
+        public abstract Dispatcher Dispatcher { get; }
 
         /// <summary>
         /// Constructs a new component of the specified type.

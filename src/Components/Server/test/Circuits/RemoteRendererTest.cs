@@ -268,7 +268,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 new RendererRegistry(),
                 jsRuntime.Object,
                 circuitClientProxy,
-                Dispatcher,
                 HtmlEncoder.Default,
                 NullLogger.Instance);
         }
