@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -24,67 +23,6 @@ namespace Microsoft.AspNetCore.Components
             value == default ? null
             : (format == null ? value.ToString() : value.ToString(format));
 
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static string GetEventHandlerValue<T>(string value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
 
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static MulticastDelegate GetEventHandlerValue<T>(Action value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static MulticastDelegate GetEventHandlerValue<T>(Func<Task> value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static MulticastDelegate GetEventHandlerValue<T>(Action<T> value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static MulticastDelegate GetEventHandlerValue<T>(Func<T, Task> value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static EventCallback GetEventHandlerValue<T>(EventCallback value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
-
-        /// <summary>
-        /// Not intended to be used directly.
-        /// </summary>
-        public static EventCallback<T> GetEventHandlerValue<T>(EventCallback<T> value)
-            where T : UIEventArgs
-        {
-            return value;
-        }
     }
 }

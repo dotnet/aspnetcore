@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Ignitor
 {
@@ -288,7 +289,7 @@ namespace Ignitor
         public class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
             {
             }
 

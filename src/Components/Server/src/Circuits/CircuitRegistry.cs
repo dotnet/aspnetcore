@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "Unhandled exception disposing circuit host: {Message}");
 
                 _unhandledExceptionDisposingTokenSource = LoggerMessage.Define<string>(
-                    LogLevel.Trace,
+                    LogLevel.Debug,
                     EventIds.ExceptionDisposingTokenSource,
                     "Exception thrown when disposing token source: {Message}");
 

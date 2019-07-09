@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -441,7 +442,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, CreateDefaultDispatcher())
             {
             }
 

@@ -13,13 +13,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ComponentParametersShouldNotBePublicCodeFixProvider)), Shared]
-    public class ComponentParametersShouldNotBePublicCodeFixProvider : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ComponentParametersShouldBePublicCodeFixProvider)), Shared]
+    public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
     {
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_FixTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBePublic_FixTitle), Resources.ResourceManager, typeof(Resources));
 
         public override ImmutableArray<string> FixableDiagnosticIds
-            => ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id);
+            => ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldBePublic.Id);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -64,9 +64,24 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 return null;
             }
 
-            var publicModifier = node.Modifiers.FirstOrDefault(m => m.IsKind(SyntaxKind.PublicKeyword));
-            node = node.WithModifiers(
-                node.Modifiers.Remove(publicModifier));
+            var newModifiers = node.Modifiers;
+            for (var i = 0; i < node.Modifiers.Count; i++)
+            {
+                var modifier = node.Modifiers[i];
+                if (modifier.IsKind(SyntaxKind.PrivateKeyword) ||
+                    modifier.IsKind(SyntaxKind.ProtectedKeyword) ||
+                    modifier.IsKind(SyntaxKind.InternalKeyword) ||
+
+                    // We also remove public in case the user has written something totally backwards such as private public protected Foo
+                    modifier.IsKind(SyntaxKind.PublicKeyword))
+                {
+                    newModifiers = newModifiers.Remove(modifier);
+                }
+            }
+
+            var publicModifier = SyntaxFactory.Token(SyntaxKind.PublicKeyword);
+            newModifiers = newModifiers.Insert(0, publicModifier);
+            node = node.WithModifiers(newModifiers);
             return node;
         }
     }

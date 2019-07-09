@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -2207,7 +2208,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeRenderer : Renderer
         {
-            public FakeRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
+            public FakeRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
             {
             }
 
