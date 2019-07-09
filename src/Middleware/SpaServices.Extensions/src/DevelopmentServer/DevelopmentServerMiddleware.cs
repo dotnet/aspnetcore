@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             ISpaBuilder spaBuilder,
             string npmScriptName,
             string waitText,
+            Dictionary<string, string> extraArgs,
             string serverName = "App")
         {
             var sourcePath = spaBuilder.Options.SourcePath;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartDevServerAsync(sourcePath, npmScriptName, waitText, serverName, logger);
+            var portTask = StartDevServerAsync(sourcePath, npmScriptName, waitText, serverName, logger, extraArgs);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -73,17 +74,13 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             {
                 { "PORT", portNumber.ToString() }
             };
-            if (extraArgs == null)
-            {
-                extraArgs = new Dictionary<string, string>
-                {
-                    { "BROWSER", "None" }
-                };
-            }
-            var extraKeys = new HashSet<string>(extraArgs.Keys);
-            extraKeys.UnionWith(envVars.Keys);
+
+            waitText = waitText.Replace("$PORT", portNumber.ToString());
+
+            extraArgs = extraArgs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Replace("$PORT", portNumber.ToString()));
+
             var npmScriptRunner = new NpmScriptRunner(
-                sourcePath, npmScriptName, null, envVars);
+                sourcePath, npmScriptName, string.Join(" ", extraArgs.Select(x => x.Key + " " + x.Value).ToArray()), envVars);
             npmScriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))

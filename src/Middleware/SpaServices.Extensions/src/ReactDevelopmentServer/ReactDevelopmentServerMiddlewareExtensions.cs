@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
-            DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer(spaBuilder, npmScript, "Starting the development server", "create-react-app");
+            DevelopmentServerMiddlewareExtensions.UseDevelopmentServer(spaBuilder, npmScript, "Starting the development server", "create-react-app");
         }
     }
 }

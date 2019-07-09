@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
 {
@@ -27,7 +28,8 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             this ISpaBuilder spaBuilder,
             string npmScript,
             string waitText,
-            string serverName = "App")
+            string serverName = "App",
+            Dictionary<string, string> extraArgs = null)
         {
 
             if (string.IsNullOrEmpty(waitText))
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
                 throw new InvalidOperationException($"To use {nameof(UseDevelopmentServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
-            DevelopmentServerMiddleware.Attach(spaBuilder, npmScript, waitText, serverName);
+            DevelopmentServerMiddleware.Attach(spaBuilder, npmScript, waitText, extraArgs, serverName);
         }
     }
 }
