@@ -8,5 +8,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <ProjectReference Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" />
   </ItemGroup>
 </Project>
