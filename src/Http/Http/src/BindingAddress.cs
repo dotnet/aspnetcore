@@ -79,20 +79,12 @@ namespace Microsoft.AspNetCore.Http
 
             var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
 
-            int pathDelimiterStart;
-            int pathDelimiterEnd;
-            if (!isUnixPipe)
-            {
-                pathDelimiterStart = address.IndexOf("/", schemeDelimiterEnd, StringComparison.Ordinal);
-                pathDelimiterEnd = pathDelimiterStart;
-            }
-            else
-            {
-                pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length, StringComparison.Ordinal);
-                pathDelimiterEnd = pathDelimiterStart + ":".Length;
-            }
 
-            if (pathDelimiterStart < 0)
+
+            int pathDelimiterStart = address.IndexOf("/", schemeDelimiterEnd, StringComparison.Ordinal);
+            int pathDelimiterEnd = pathDelimiterStart;
+
+            if (isUnixPipe || pathDelimiterStart < 0)
             {
                 pathDelimiterStart = pathDelimiterEnd = address.Length;
             }
