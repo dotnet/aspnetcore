@@ -62,9 +62,11 @@
     <MicrosoftBclAsyncInterfacesPackageVersion>1.0.0-preview8.19358.6</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview8.19358.6</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview8.19358.6</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>4.6.0-preview8.19358.6</MicrosoftWin32SystemEventsPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview8.19358.6</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview6.19264.9</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview8.19358.6</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDrawingCommonPackageVersion>4.6.0-preview8.19358.6</SystemDrawingCommonPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview8.19358.6</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview8.19358.6</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview8.19358.6</SystemNetWebSocketsWebSocketProtocolPackageVersion>
@@ -79,6 +81,7 @@
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview8.19358.6</SystemTextEncodingsWebPackageVersion>
     <SystemTextJsonPackageVersion>4.6.0-preview8.19358.6</SystemTextJsonPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview8.19358.6</SystemThreadingChannelsPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>4.6.0-preview8.19358.6</SystemWindowsExtensionsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview8.19358.6</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Blazor -->
