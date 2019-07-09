@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
 {
-    public class ConfigureServices_BuildServiceProvider
+    public class MvcOptions_UseMvc
     {
         public void ConfigureServices(IServiceCollection services)
         {
