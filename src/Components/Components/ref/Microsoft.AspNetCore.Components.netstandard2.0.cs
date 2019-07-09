@@ -419,6 +419,8 @@ namespace Microsoft.AspNetCore.Components
     }
     public static partial class RuntimeHelpers
     {
+        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Action<T> callback, T value) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
         public static T TypeCheck<T>(T value) { throw null; }
     }
     public partial class UIChangeEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
