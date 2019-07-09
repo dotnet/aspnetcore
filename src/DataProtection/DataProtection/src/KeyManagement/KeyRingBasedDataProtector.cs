@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -240,8 +241,17 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 var requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
                 if (requestedEncryptor == null)
                 {
-                    _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
-                    throw Error.Common_KeyNotFound(keyIdFromPayload);
+                    if (_keyRingProvider is KeyRingProvider provider && provider.InAutoRefreshWindow())
+                    {
+                        currentKeyRing = provider.RefreshCurrentKeyRing();
+                        requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
+                    }
+
+                    if (requestedEncryptor == null)
+                    {
+                        _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                        throw Error.Common_KeyNotFound(keyIdFromPayload);
+                    }
                 }
 
                 // Do we need to notify the caller that he should reprotect the data?
