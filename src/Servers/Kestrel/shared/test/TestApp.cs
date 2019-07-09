@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Testing
             {
                 await request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
                 await response.StartAsync();
-                var memory = response.BodyPipe.GetMemory(buffer.Length);
+                var memory = response.BodyWriter.GetMemory(buffer.Length);
                 buffer.CopyTo(memory);
-                response.BodyPipe.Advance(buffer.Length);
-                await response.BodyPipe.FlushAsync();
+                response.BodyWriter.Advance(buffer.Length);
+                await response.BodyWriter.FlushAsync();
             }
         }
 
@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Testing
             response.Headers["Content-Length"] = bytes.Length.ToString();
             await response.StartAsync();
 
-            var memory = response.BodyPipe.GetMemory(bytes.Length);
+            var memory = response.BodyWriter.GetMemory(bytes.Length);
             bytes.CopyTo(memory);
-            response.BodyPipe.Advance(bytes.Length);
-            await response.BodyPipe.FlushAsync();
+            response.BodyWriter.Advance(bytes.Length);
+            await response.BodyWriter.FlushAsync();
         }
     }
 }

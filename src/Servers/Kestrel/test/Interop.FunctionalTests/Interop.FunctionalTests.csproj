@@ -6,6 +6,8 @@
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
     <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
     <SignAssembly>false</SignAssembly>
+    <!-- See: https://github.com/aspnet/AspNetCore/issues/7299 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

@@ -46,6 +46,48 @@ namespace Microsoft.AspNetCore.StaticFiles
         }
 
         [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => { services.AddSingleton(LoggerFactory); services.AddRouting(); })
+                .UseKestrel()
+                .UseWebRoot(AppContext.BaseDirectory)
+                .Configure(app =>
+                {
+                    // Routing first => static files noops
+                    app.UseRouting();
+
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint, this will make the default files noop.
+                        context.SetEndpoint(new Endpoint((c) =>
+                        {
+                            return context.Response.WriteAsync("Hi from endpoint.");
+                        },
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseStaticFiles();
+
+                    app.UseEndpoints(endpoints => {});
+                });
+
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
+            {
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                {
+                    var response = await client.GetAsync("TestDocument.txt");
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
+                }
+            }
+        }
+
+        [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
             var builder = new WebHostBuilder()

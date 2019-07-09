@@ -12,8 +12,7 @@ namespace VersioningWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc(ConfigureMvcOptions)
+            services.AddControllers(ConfigureMvcOptions)
                 .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
@@ -23,9 +22,10 @@ namespace VersioningWebSite
 
         public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

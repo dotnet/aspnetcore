@@ -10,9 +10,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
-    <Reference Include="Microsoft.AspNetCore.Components.Server" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore" />
   </ItemGroup>
 

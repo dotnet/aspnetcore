@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             if (protocol == null)
             {
-                protocol = httpContext.Request.Protocol;
+                protocol = httpContext.Request.Scheme;
             }
 
             if (host == null)
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             if (protocol == null)
             {
-                protocol = httpContext.Request.Protocol;
+                protocol = httpContext.Request.Scheme;
             }
 
             if (host == null)

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Identity.UI
     internal class IdentityDefaultUIConfigureOptions<TUser> :
         IPostConfigureOptions<RazorPagesOptions>,
         IPostConfigureOptions<StaticFileOptions>,
-        IPostConfigureOptions<CookieAuthenticationOptions> where TUser : class
+        IConfigureNamedOptions<CookieAuthenticationOptions> where TUser : class
     {
         private const string IdentityUIDefaultAreaName = "Identity";
 
@@ -72,7 +72,9 @@ namespace Microsoft.AspNetCore.Identity.UI
             options.FileProvider = new CompositeFileProvider(options.FileProvider, filesProvider);
         }
 
-        public void PostConfigure(string name, CookieAuthenticationOptions options)
+        public void Configure(CookieAuthenticationOptions options) { }
+
+        public void Configure(string name, CookieAuthenticationOptions options)
         {
             name = name ?? throw new ArgumentNullException(nameof(name));
             options = options ?? throw new ArgumentNullException(nameof(options));

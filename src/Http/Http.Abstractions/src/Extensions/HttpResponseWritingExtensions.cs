@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class HttpResponseWritingExtensions
     {
+        private const int UTF8MaxByteLength = 6;
+
         /// <summary>
         /// Writes the given text to the response body. UTF-8 encoding will be used.
         /// </summary>
@@ -73,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
 
             Write(response, text, encoding);
 
-            var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
+            var flushAsyncTask = response.BodyWriter.FlushAsync(cancellationToken);
             if (flushAsyncTask.IsCompletedSuccessfully)
             {
                 // Most implementations of ValueTask reset state in GetResult, so call it before returning a completed task.
@@ -88,14 +90,15 @@ namespace Microsoft.AspNetCore.Http
         {
             await startAsyncTask;
             Write(response, text, encoding);
-            await response.BodyPipe.FlushAsync(cancellationToken);
+            await response.BodyWriter.FlushAsync(cancellationToken);
         }
 
         private static void Write(this HttpResponse response, string text, Encoding encoding)
         {
-            var pipeWriter = response.BodyPipe;
+            var minimumByteSize = GetEncodingMaxByteSize(encoding);
+            var pipeWriter = response.BodyWriter;
             var encodedLength = encoding.GetByteCount(text);
-            var destination = pipeWriter.GetSpan(encodedLength);
+            var destination = pipeWriter.GetSpan(minimumByteSize);
 
             if (encodedLength <= destination.Length)
             {
@@ -105,11 +108,21 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
+                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength, minimumByteSize);
             }
         }
 
-        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
+        private static int GetEncodingMaxByteSize(Encoding encoding)
+        {
+            if (encoding == Encoding.UTF8)
+            {
+                return UTF8MaxByteLength;
+            }
+
+            return encoding.GetMaxByteCount(1);
+        }
+
+        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength, int minimumByteSize)
         {
             var encoder = encoding.GetEncoder();
             var source = text.AsSpan();
@@ -126,7 +139,7 @@ namespace Microsoft.AspNetCore.Http
                 writer.Advance(bytesUsed);
                 source = source.Slice(charsUsed);
 
-                destination = writer.GetSpan(encodedLength - totalBytesUsed);
+                destination = writer.GetSpan(minimumByteSize);
             }
         }
     }

@@ -1,51 +1,51 @@
-<Project DefaultTargets="Test">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
 
-  <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19073.6" />
+  <PropertyGroup>
+    <!--
+      When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
+      This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
+    -->
+    <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+  </PropertyGroup>
 
-  <Target Name="Gather" BeforeTargets="Test">
-    <ItemGroup>
-      <ProjectsToTest Include="$(ProjectsToTest)" />
-    </ItemGroup>
-    <MSBuild Projects="@(ProjectsToTest)"
-              Targets="CreateHelixPayload"
-              BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
-    </MSBuild>
-    <ItemGroup>
-      <HelixWorkItem Include="%(HelixPayload.TestName)">
-        <Command>%(HelixPayload.Command)</Command>
-        <PayloadDirectory>%(HelixPayload.Identity)</PayloadDirectory>
-        <Timeout>%(HelixPayload.TestTimeout)</Timeout>
-      </HelixWorkItem>
-    </ItemGroup>
-  </Target>
+  <Import Project="..\targets\Helix.Common.props" />
+  <Import Project="..\Build.props" />
+
+  <ItemGroup>
+    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
-    <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
-    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
-    <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">true</WaitForWorkItemCompletion>
-    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
-    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
-    <Creator>aspnetcore</Creator>
-
-    <HelixTargetQueues>
-      Windows.10.Amd64.ClientRS4.VS2017.Open;
-      OSX.1012.Amd64.Open;
-      Ubuntu.1810.Amd64.Open;
-      Ubuntu.1604.Amd64.Open;
-      Centos.7.Amd64.Open;
-      Debian.8.Amd64.Open;
-      Debian.9.Amd64.Open;
-      Redhat.7.Amd64.Open;
-      Fedora.27.Amd64.Open;
-      Fedora.28.Amd64.Open;      
-    </HelixTargetQueues>
-    <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
-    <!--  TODO: re-enable Ubuntu.1604.Arm64.Open; curl not found -->
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
   </PropertyGroup>
-</Project> 
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
+    <HelixType>ci</HelixType>
+    <Creator>aspnetcore</Creator>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(TargetArchitecture).$(SYSTEM_JOBATTEMPT)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' != 'true' ">
+    <HelixType>dev</HelixType>
+    <Creator>$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMddHHmm'))</HelixBuild>
+  </PropertyGroup>
+
+  <Target Name="Gather" BeforeTargets="Build">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+</Project>

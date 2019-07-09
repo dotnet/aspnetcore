@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             var routes = new List<RouteEntry>();
             foreach (var type in types)
             {
-                var routeAttributes = type.GetCustomAttributes<RouteAttribute>(); // Inherit: true?
+                // We're deliberately using inherit = false here.
+                //
+                // RouteAttribute is defined as non-inherited, because inheriting a route attribute always causes an
+                // ambiguity. You end up with two components (base class and derived class) with the same route.
+                var routeAttributes = type.GetCustomAttributes<RouteAttribute>(inherit: false);
+
                 foreach (var routeAttribute in routeAttributes)
                 {
                     var template = TemplateParser.ParseTemplate(routeAttribute.Template);

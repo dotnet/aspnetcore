@@ -971,7 +971,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void TryParseHandler_ParsesHandlerNames_InvalidData(string methodName)
         {
             // Act
-            var result = DefaultPageApplicationModelProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
+            var result = DefaultPageApplicationModelPartsProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
 
             // Assert
             Assert.False(result);
@@ -993,7 +993,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Arrange
 
             // Act
-            var result = DefaultPageApplicationModelProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
+            var result = DefaultPageApplicationModelPartsProvider.TryParseHandlerMethod(methodName, out var httpMethod, out var handler);
 
             // Assert
             Assert.True(result);
@@ -1169,9 +1169,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static DefaultPageApplicationModelProvider CreateProvider()
         {
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             return new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions()));
+                modelMetadataProvider,
+                Options.Create(new RazorPagesOptions()),
+                new DefaultPageApplicationModelPartsProvider(modelMetadataProvider));
         }
     }
 }

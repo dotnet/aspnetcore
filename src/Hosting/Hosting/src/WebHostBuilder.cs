@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -175,6 +174,10 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 host.Initialize();
 
+                // resolve configuration explicitly once to mark it as resolved within the
+                // service provider, ensuring it will be properly disposed with the provider
+                _ = host.Services.GetService<IConfiguration>();
+
                 var logger = host.Services.GetRequiredService<ILogger<WebHost>>();
 
                 // Warn about duplicate HostingStartupAssemblies
@@ -264,12 +267,13 @@ namespace Microsoft.AspNetCore.Hosting
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
-                .AddConfiguration(_config);
+                .AddConfiguration(_config, shouldDisposeConfiguration: true);
 
             _configureAppConfigurationBuilder?.Invoke(_context, builder);
 
             var configuration = builder.Build();
-            services.AddSingleton<IConfiguration>(configuration);
+            // register configuration as factory to make it dispose with the service provider
+            services.AddSingleton<IConfiguration>(_ => configuration);
             _context.Configuration = configuration;
 
             var listener = new DiagnosticListener("Microsoft.AspNetCore");

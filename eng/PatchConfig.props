@@ -33,4 +33,32 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.4' ">
+    <PackagesInPatch>
+      @aspnet/signalr;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.AspNetCoreModule;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
+      Microsoft.AspNetCore.Identity.UI;
+      java:signalr;
+      Microsoft.AspNetCore.SignalR.Protocols.MessagePack;
+      Microsoft.AspNetCore.SignalR.Redis;
+      Microsoft.AspNetCore.SignalR.StackExchangeRedis;
+      Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.AspNetCore.Mvc.RazorPages;
+      Microsoft.AspNetCore.AzureAppServicesIntegration;
+      Microsoft.AspNetCore.AzureAppServices.HostingStartup;
+      Microsoft.AspNetCore.AzureAppServices.SiteExtension;
+    </PackagesInPatch>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.6' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Api.Analyzers;
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

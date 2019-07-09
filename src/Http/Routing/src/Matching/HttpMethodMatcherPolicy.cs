@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// An <see cref="MatcherPolicy"/> that implements filtering and selection by
     /// the HTTP method of a request.
     /// </summary>
-    public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
+    public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
     {
         // Used in tests
         internal static readonly string OriginHeader = "Origin";
@@ -39,18 +41,34 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         public override int Order => -1000;
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        /// <param name="endpoints"></param>
-        /// <returns></returns>
-        public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
+            if (ContainsDynamicEndpoints(endpoints))
+            {
+                return false;
+            }
+
+            return AppliesToEndpointsCore(endpoints);
+        }
+
+        bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            // When the node contains dynamic endpoints we can't make any assumptions.
+            return ContainsDynamicEndpoints(endpoints);
+        }
+
+        private bool AppliesToEndpointsCore(IReadOnlyList<Endpoint> endpoints)
+        {
             for (var i = 0; i < endpoints.Count; i++)
             {
                 if (endpoints[i].Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Count > 0)
@@ -60,6 +78,100 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// For framework use only.
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <param name="candidates"></param>
+        /// <returns></returns>
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (candidates == null)
+            {
+                throw new ArgumentNullException(nameof(candidates));
+            }
+
+            // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to
+            // keep track of this beause we either need to keep track of the HTTP methods or keep track of the
+            // endpoints - both allocate.
+            //
+            // Those code only runs in the presence of dynamic endpoints anyway.
+            //
+            // We want to return a 405 iff we eliminated ALL of the currently valid endpoints due to HTTP method
+            // mismatch.
+            bool? needs405Endpoint = null;
+            HashSet<string> methods = null;
+
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                // We do this check first for consistency with how 405 is implemented for the graph version
+                // of this code. We still want to know if any endpoints in this set require an HTTP method
+                // even if those endpoints are already invalid - hence the null-check.
+                var metadata = candidates[i].Endpoint?.Metadata.GetMetadata<IHttpMethodMetadata>();
+                if (metadata == null || metadata.HttpMethods.Count == 0)
+                {
+                    // Can match any method.
+                    needs405Endpoint = false;
+                    continue;
+                }
+
+                // Saw a valid endpoint.
+                needs405Endpoint = needs405Endpoint ?? true;
+
+                if (!candidates.IsValidCandidate(i))
+                {
+                    continue;
+                }
+
+                var httpMethod = httpContext.Request.Method;
+                var headers = httpContext.Request.Headers;
+                if (metadata.AcceptCorsPreflight &&
+                    string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                    headers.ContainsKey(HeaderNames.Origin) &&
+                    headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                    !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+                {
+                    needs405Endpoint = false; // We don't return a 405 for a CORS preflight request when the endpoints accept CORS preflight.
+                    httpMethod = accessControlRequestMethod;
+                }
+
+                var matched = false;
+                for (var j = 0; j < metadata.HttpMethods.Count; j++)
+                {
+                    var candidateMethod = metadata.HttpMethods[j];
+                    if (!string.Equals(httpMethod, candidateMethod, StringComparison.OrdinalIgnoreCase))
+                    {
+                        methods = methods ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        methods.Add(candidateMethod);
+                        continue;
+                    }
+
+                    matched = true;
+                    needs405Endpoint = false;
+                    break;
+                }
+
+                if (!matched)
+                {
+                    candidates.SetValidity(i, false);
+                }
+            }
+
+            if (needs405Endpoint == true)
+            {
+                // We saw some endpoints coming in, and we eliminated them all.
+                httpContext.SetEndpoint(CreateRejectionEndpoint(methods.OrderBy(m => m, StringComparer.OrdinalIgnoreCase)));
+                httpContext.Request.RouteValues = null;
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -182,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // unlikely in a traditional MVC application. That's good.
             //
             // We don't bother returning a 405 when the CORS preflight method doesn't exist.
-            // The developer calling the API will see it as a CORS error, which is fine because 
+            // The developer calling the API will see it as a CORS error, which is fine because
             // there isn't an endpoint to check for a CORS policy.
             if (!edges.TryGetValue(new EdgeKey(AnyMethod, false), out var matches))
             {
@@ -274,7 +386,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     // Prevent ArgumentException from duplicate key if header already added, such as when the
                     // request is re-executed by an error handler (see https://github.com/aspnet/AspNetCore/issues/6415)
-                    context.Response.Headers["Allow"] = allow;
+                    context.Response.Headers[HeaderNames.Allow] = allow;
 
                     return Task.CompletedTask;
                 },
@@ -323,10 +435,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 int destination;
 
                 var httpMethod = httpContext.Request.Method;
+                var headers = httpContext.Request.Headers;
                 if (_supportsCorsPreflight &&
                     string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
-                    httpContext.Request.Headers.ContainsKey(OriginHeader) &&
-                    httpContext.Request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                    headers.ContainsKey(HeaderNames.Origin) &&
+                    headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     return _corsPreflightDestinations != null &&

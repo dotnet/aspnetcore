@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             = new ResourceManager("Microsoft.Extensions.ApiDescription.Tool.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The assembly to use.
+        /// The assembly path to use. Required.
         /// </summary>
         internal static string AssemblyDescription
         {
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// The assembly to use.
+        /// The assembly path to use. Required.
         /// </summary>
         internal static string FormatAssemblyDescription()
             => GetString("AssemblyDescription");
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => string.Format(CultureInfo.CurrentCulture, GetString("MissingOption"), p0);
 
         /// <summary>
-        /// Do not colorize output.
+        /// Do not colorize console output.
         /// </summary>
         internal static string NoColorDescription
         {
@@ -47,13 +47,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Do not colorize output.
+        /// Do not colorize console output.
         /// </summary>
         internal static string FormatNoColorDescription()
             => GetString("NoColorDescription");
 
         /// <summary>
-        /// The file to write the result to.
+        /// The directory where the document files should be written. Required.
         /// </summary>
         internal static string OutputDescription
         {
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// The file to write the result to.
+        /// The directory where the document files should be written. Required.
         /// </summary>
         internal static string FormatOutputDescription()
             => GetString("OutputDescription");
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => GetString("PrefixDescription");
 
         /// <summary>
-        /// Show verbose output.
+        /// Show verbose console output.
         /// </summary>
         internal static string VerboseDescription
         {
@@ -89,13 +89,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Show verbose output.
+        /// Show verbose console output.
         /// </summary>
         internal static string FormatVerboseDescription()
             => GetString("VerboseDescription");
 
         /// <summary>
-        /// Location from which inside man was copied (in the .NET Framework case) or loaded.
+        /// Location from which inside man was copied (in the .NET Framework case) or loaded. Required.
         /// </summary>
         internal static string ToolsDirectoryDescription
         {
@@ -103,108 +103,24 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Location from which inside man was copied (in the .NET Framework case) or loaded.
+        /// Location from which inside man was copied (in the .NET Framework case) or loaded. Required.
         /// </summary>
         internal static string FormatToolsDirectoryDescription()
             => GetString("ToolsDirectoryDescription");
 
         /// <summary>
-        /// The name of the method to invoke on the '--service' instance. Default value '{0}'.
+        /// Generating document named '{0}'.
         /// </summary>
-        internal static string MethodDescription
+        internal static string GeneratingDocument
         {
-            get => GetString("MethodDescription");
+            get => GetString("GeneratingDocument");
         }
 
         /// <summary>
-        /// The name of the method to invoke on the '--service' instance. Default value '{0}'.
+        /// Generating document named '{0}'.
         /// </summary>
-        internal static string FormatMethodDescription(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MethodDescription"), p0);
-
-        /// <summary>
-        /// The qualified name of the service type to retrieve from dependency injection. Default value '{0}'.
-        /// </summary>
-        internal static string ServiceDescription
-        {
-            get => GetString("ServiceDescription");
-        }
-
-        /// <summary>
-        /// The qualified name of the service type to retrieve from dependency injection. Default value '{0}'.
-        /// </summary>
-        internal static string FormatServiceDescription(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("ServiceDescription"), p0);
-
-        /// <summary>
-        /// The name of the document to pass to the '--method' method. Default value '{0}'.
-        /// </summary>
-        internal static string DocumentDescription
-        {
-            get => GetString("DocumentDescription");
-        }
-
-        /// <summary>
-        /// The name of the document to pass to the '--method' method. Default value '{0}'.
-        /// </summary>
-        internal static string FormatDocumentDescription(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DocumentDescription"), p0);
-
-        /// <summary>
-        /// Using document name '{0}'.
-        /// </summary>
-        internal static string UsingDocument
-        {
-            get => GetString("UsingDocument");
-        }
-
-        /// <summary>
-        /// Using document name '{0}'.
-        /// </summary>
-        internal static string FormatUsingDocument(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingDocument"), p0);
-
-        /// <summary>
-        /// Using method '{0}'.
-        /// </summary>
-        internal static string UsingMethod
-        {
-            get => GetString("UsingMethod");
-        }
-
-        /// <summary>
-        /// Using method '{0}'.
-        /// </summary>
-        internal static string FormatUsingMethod(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingMethod"), p0);
-
-        /// <summary>
-        /// Using service '{0}'.
-        /// </summary>
-        internal static string UsingService
-        {
-            get => GetString("UsingService");
-        }
-
-        /// <summary>
-        /// Using service '{0}'.
-        /// </summary>
-        internal static string FormatUsingService(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("UsingService"), p0);
-
-        /// <summary>
-        /// Method '{0}' of service '{1}' failed to generate document '{2}'.
-        /// </summary>
-        internal static string MethodInvocationFailed
-        {
-            get => GetString("MethodInvocationFailed");
-        }
-
-        /// <summary>
-        /// Method '{0}' of service '{1}' failed to generate document '{2}'.
-        /// </summary>
-        internal static string FormatMethodInvocationFailed(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MethodInvocationFailed"), p0, p1, p2);
+        internal static string FormatGeneratingDocument(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("GeneratingDocument"), p0);
 
         /// <summary>
         /// Assembly '{0}' does not contain an entry point.
@@ -235,7 +151,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => string.Format(CultureInfo.CurrentCulture, GetString("ServiceTypeNotFound"), p0);
 
         /// <summary>
-        /// Unable to find method named '{0}' in '{1}' implementation.
+        /// Method '{0}' not found in type '{1}' with expected signature.
         /// </summary>
         internal static string MethodNotFound
         {
@@ -243,13 +159,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Unable to find method named '{0}' in '{1}' implementation.
+        /// Method '{0}' not found in type '{1}' with expected signature.
         /// </summary>
         internal static string FormatMethodNotFound(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodNotFound"), p0, p1);
 
         /// <summary>
-        /// Unable to find service of type '{0}' in dependency injection container.
+        /// Unable to find service type '{0}' in dependency injection container.
         /// </summary>
         internal static string ServiceNotFound
         {
@@ -257,13 +173,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Unable to find service of type '{0}' in dependency injection container.
+        /// Unable to find service type '{0}' in dependency injection container.
         /// </summary>
         internal static string FormatServiceNotFound(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ServiceNotFound"), p0);
 
         /// <summary>
-        /// Method '{0}' of service '{1}' returned null. Must return a non-null '{2}'.
+        /// Method '{0}' of type '{1}' returned null. Must return a non-null '{2}'.
         /// </summary>
         internal static string MethodReturnedNull
         {
@@ -271,13 +187,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Method '{0}' of service '{1}' returned null. Must return a non-null '{2}'.
+        /// Method '{0}' of type '{1}' returned null. Must return a non-null '{2}'.
         /// </summary>
         internal static string FormatMethodReturnedNull(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodReturnedNull"), p0, p1, p2);
 
         /// <summary>
-        /// Method '{0}' of service '{1}' has unsupported return type '{2}'. Must return a '{3}'.
+        /// Method '{0}' of type '{1}' has unsupported return type '{2}'. Must return '{3}'.
         /// </summary>
         internal static string MethodReturnTypeUnsupported
         {
@@ -285,13 +201,13 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Method '{0}' of service '{1}' has unsupported return type '{2}'. Must return a '{3}'.
+        /// Method '{0}' of type '{1}' has unsupported return type '{2}'. Must return '{3}'.
         /// </summary>
         internal static string FormatMethodReturnTypeUnsupported(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodReturnTypeUnsupported"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Method '{0}' of service '{1}' timed out. Must complete execution within {2} minute.
+        /// Method '{0}' of type '{1}' timed out. Must complete execution within {2} minute.
         /// </summary>
         internal static string MethodTimedOut
         {
@@ -299,10 +215,122 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Method '{0}' of service '{1}' timed out. Must complete execution within {2} minute.
+        /// Method '{0}' of type '{1}' timed out. Must complete execution within {2} minute.
         /// </summary>
         internal static string FormatMethodTimedOut(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodTimedOut"), p0, p1, p2);
+
+        /// <summary>
+        /// Method '{0}' of type '{1}' is static. Must be an instance method.
+        /// </summary>
+        internal static string MethodIsStatic
+        {
+            get => GetString("MethodIsStatic");
+        }
+
+        /// <summary>
+        /// Method '{0}' of type '{1}' is static. Must be an instance method.
+        /// </summary>
+        internal static string FormatMethodIsStatic(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodIsStatic"), p0, p1);
+
+        /// <summary>
+        /// No method '{0}', '{1}' or '{2}' found in type '{3}' with expected signatures.
+        /// </summary>
+        internal static string MethodsNotFound
+        {
+            get => GetString("MethodsNotFound");
+        }
+
+        /// <summary>
+        /// No method '{0}', '{1}' or '{2}' found in type '{3}' with expected signatures.
+        /// </summary>
+        internal static string FormatMethodsNotFound(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodsNotFound"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Writing document named '{0}' to '{1}'.
+        /// </summary>
+        internal static string WritingDocument
+        {
+            get => GetString("WritingDocument");
+        }
+
+        /// <summary>
+        /// Writing document named '{0}' to '{1}'.
+        /// </summary>
+        internal static string FormatWritingDocument(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("WritingDocument"), p0, p1);
+
+        /// <summary>
+        /// Method '{0}' of type '{1}' wrote no content for document named '{2}'.
+        /// </summary>
+        internal static string MethodWroteNoContent
+        {
+            get => GetString("MethodWroteNoContent");
+        }
+
+        /// <summary>
+        /// Method '{0}' of type '{1}' wrote no content for document named '{2}'.
+        /// </summary>
+        internal static string FormatMethodWroteNoContent(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodWroteNoContent"), p0, p1, p2);
+
+        /// <summary>
+        /// GetDocument.Insider
+        /// </summary>
+        internal static string CommandFullName
+        {
+            get => GetString("CommandFullName");
+        }
+
+        /// <summary>
+        /// GetDocument.Insider
+        /// </summary>
+        internal static string FormatCommandFullName()
+            => GetString("CommandFullName");
+
+        /// <summary>
+        /// The path where the list of document files should be written. Required.
+        /// </summary>
+        internal static string FileListDescription
+        {
+            get => GetString("FileListDescription");
+        }
+
+        /// <summary>
+        /// The path where the list of document files should be written. Required.
+        /// </summary>
+        internal static string FormatFileListDescription()
+            => GetString("FileListDescription");
+
+        /// <summary>
+        /// The project name to use. Required.
+        /// </summary>
+        internal static string ProjectDescription
+        {
+            get => GetString("ProjectDescription");
+        }
+
+        /// <summary>
+        /// The project name to use. Required.
+        /// </summary>
+        internal static string FormatProjectDescription()
+            => GetString("ProjectDescription");
+
+        /// <summary>
+        /// Unable to resolve a non-null '{0}' implementation using method '{1}', '{2}' or '{3}' of type '{4}'.
+        /// </summary>
+        internal static string ServiceProviderNotFound
+        {
+            get => GetString("ServiceProviderNotFound");
+        }
+
+        /// <summary>
+        /// Unable to resolve a non-null '{0}' implementation using method '{1}', '{2}' or '{3}' of type '{4}'.
+        /// </summary>
+        internal static string FormatServiceProviderNotFound(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ServiceProviderNotFound"), p0, p1, p2, p3, p4);
 
         private static string GetString(string name, params string[] formatterNames)
         {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFrameworks>
@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.1" />
-    <!-- This suppresses errors about using PackageReference instead of Reference. For unclear reasons, this project has pinned dependencies. -->
+
     <PackageReference Update="@(PackageReference)" AllowExplicitReference="true" />
   </ItemGroup>
 
@@ -36,10 +36,7 @@
     These references are used when running on the Benchmarks Server.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <KnownFrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

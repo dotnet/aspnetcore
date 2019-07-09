@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -30,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
-        public TreeRouteBuilder(
+        internal TreeRouteBuilder(
             ILoggerFactory loggerFactory,
             ObjectPool<UriBuildingContext> objectPool,
             IInlineConstraintResolver constraintResolver)

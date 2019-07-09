@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -74,6 +75,106 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.True(openIdOptions.UseTokenLifetime);
             Assert.Equal("/signin-oidc", openIdOptions.CallbackPath);
             Assert.Equal(AzureADDefaults.CookieScheme, openIdOptions.SignInScheme);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADDefaults.CookieScheme);
+            Assert.Equal("/AzureAD/Account/SignIn/AzureAD", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/AzureAD/Account/SignOut/AzureAD", cookieAuthenticationOptions.LogoutPath);
+            Assert.Equal("/AzureAD/Account/AccessDenied", cookieAuthenticationOptions.AccessDeniedPath);
+            Assert.Equal(SameSiteMode.None, cookieAuthenticationOptions.Cookie.SameSite);
+        }
+
+        [Fact]
+        public void AddAzureAD_AllowsOverridingCookiesAndOpenIdConnectSettings()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddAzureAD(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com";
+                    o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "Common";
+                });
+
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, o =>
+            {
+                o.Authority = "https://overriden.com";
+            });
+
+            services.Configure<CookieAuthenticationOptions>(AzureADDefaults.CookieScheme, o =>
+            {
+                o.AccessDeniedPath = "/Overriden";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var openIdOptionsMonitor = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+            Assert.NotNull(openIdOptionsMonitor);
+            var openIdOptions = openIdOptionsMonitor.Get(AzureADDefaults.OpenIdScheme);
+            Assert.Equal("ClientId", openIdOptions.ClientId);
+            Assert.Equal($"https://overriden.com", openIdOptions.Authority);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADDefaults.CookieScheme);
+            Assert.Equal("/AzureAD/Account/SignIn/AzureAD", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/Overriden", cookieAuthenticationOptions.AccessDeniedPath);
+        }
+
+        [Fact]
+        public void AddAzureAD_RegisteringAddCookiesAndAddOpenIdConnectHasNoImpactOnAzureAAExtensions()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddOpenIdConnect()
+                .AddCookie()
+                .AddAzureAD(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com";
+                    o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "Common";
+                });
+
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, o =>
+            {
+                o.Authority = "https://overriden.com";
+            });
+
+            services.Configure<CookieAuthenticationOptions>(AzureADDefaults.CookieScheme, o =>
+            {
+                o.AccessDeniedPath = "/Overriden";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var openIdOptionsMonitor = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+            Assert.NotNull(openIdOptionsMonitor);
+            var openIdOptions = openIdOptionsMonitor.Get(AzureADDefaults.OpenIdScheme);
+            Assert.Equal("ClientId", openIdOptions.ClientId);
+            Assert.Equal($"https://overriden.com", openIdOptions.Authority);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADDefaults.CookieScheme);
+            Assert.Equal("/AzureAD/Account/SignIn/AzureAD", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/Overriden", cookieAuthenticationOptions.AccessDeniedPath);
         }
 
         [Fact]
@@ -146,6 +247,28 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureAD_ThrowsWhenInstanceIsNotSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureAD(o => { });
+
+            var provider = services.BuildServiceProvider();
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+
+            var expectedMessage = "The 'Instance' option must be provided.";
+
+            // Act & Assert
+            var exception = Assert.Throws<OptionsValidationException>(
+                () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
+
+            Assert.Contains(expectedMessage, exception.Failures);
+        }
+
+        [Fact]
         public void AddAzureADBearer_AddsAllAuthenticationHandlers()
         {
             // Arrange
@@ -198,6 +321,73 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureADBearer_CanOverrideJwtBearerOptionsConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddAzureADBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "TenantId";
+                });
+
+            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, o =>
+            {
+                o.Audience = "http://overriden.com";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("http://overriden.com", bearerOptions.Audience);
+            Assert.Equal($"https://login.microsoftonline.com/TenantId", bearerOptions.Authority);
+        }
+
+        [Fact]
+        public void AddAzureADBearer_RegisteringJwtBearerHasNoImpactOnAzureAAExtensions()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddJwtBearer()
+                .AddAzureADBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "TenantId";
+                });
+
+            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, o =>
+            {
+                o.Audience = "http://overriden.com";
+            });
+
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("http://overriden.com", bearerOptions.Audience);
+            Assert.Equal($"https://login.microsoftonline.com/TenantId", bearerOptions.Authority);
+        }
+
+        [Fact]
         public void AddAzureADBearer_ThrowsForDuplicatedSchemes()
         {
             // Arrange
@@ -240,6 +430,28 @@ namespace Microsoft.AspNetCore.Authentication
                 () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
 
             Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void AddAzureADBearer_ThrowsWhenInstanceIsNotSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureADBearer(o => { });
+
+            var provider = services.BuildServiceProvider();
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+
+            var expectedMessage = "The 'Instance' option must be provided.";
+
+            // Act & Assert
+            var exception = Assert.Throws<OptionsValidationException>(
+                () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
+
+            Assert.Contains(expectedMessage, exception.Failures);
         }
     }
 }

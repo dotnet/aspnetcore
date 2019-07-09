@@ -15,5 +15,8 @@
   <ItemGroup>
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="WebHostService.cs" />
+  </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
   </ItemGroup>
 
 </Project>

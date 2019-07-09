@@ -8,25 +8,22 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AppOfflineTests : IISFunctionalTestBase
     {
-        private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
-
-        private readonly PublishedSitesFixture _fixture;
-
-        public AppOfflineTests(PublishedSitesFixture fixture)
+        public AppOfflineTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]
@@ -66,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess, 502, "502.5")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed(HostingModel hostingModel, int statusCode, string content)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -81,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/IISIntegration/issues/933")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/3835")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);
@@ -98,50 +95,77 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6555")]
-        [RequiresIIS(IISCapability.ShutdownToken)]
-        public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
+        [ConditionalFact]
+        public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
         {
-            // This test often hits a race between debug logging and stdout redirection closing the handle
-            // we are fine having this race
-            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
+            // The goal of this test is to have multiple requests currently in progress
+            // and for app offline to be dropped. We expect that all requests are eventually drained
+            // and graceful shutdown occurs.
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+            // Send two requests that will hang until data is sent from the client.
+            var connectionList = new List<TestConnection>();
+
+            for (var i = 0; i < 2; i++)
             {
-                var deploymentResult = await DeployApp(HostingModel.InProcess);
+                var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+                await connection.Send(
+                    "POST /ReadAndCountRequestBody HTTP/1.1",
+                    "Content-Length: 1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
 
-                for (int i = 0; i < 10; i++)
-                {
-                    // send first request and add app_offline while app is starting
-                    var runningTask = AssertAppOffline(deploymentResult);
-
-                    // This test tries to hit a race where we drop app_offline file while
-                    // in process application is starting, application start takes at least 400ms
-                    // so we back off for 100ms to allow request to reach request handler
-                    // Test itself is racy and can result in two scenarios
-                    //    1. ANCM detects app_offline before it starts the request - if AssertAppOffline succeeds we've hit it
-                    //    2. Intended scenario where app starts and then shuts down
-                    // In first case we remove app_offline and try again
-                    await Task.Delay(RetryDelay);
-
-                    AddAppOffline(deploymentResult.ContentRoot);
-
-                    try
-                    {
-                        await runningTask.DefaultTimeout();
-
-                        // if AssertAppOffline succeeded ANCM have picked up app_offline before starting the app
-                        // try again
-                        RemoveAppOffline(deploymentResult.ContentRoot);
-                    }
-                    catch
-                    {
-                        deploymentResult.AssertWorkerProcessStop();
-                        return;
-                    }
-                }
-
-                Assert.True(false);
-
+                await connection.Receive(
+                  "HTTP/1.1 200 OK", "");
+                await connection.ReceiveHeaders();
+                await connection.Receive("1", $"{i + 1}");
+                connectionList.Add(connection);
             }
+
+            // Send a request that will end once app lifetime is triggered (ApplicationStopping cts).
+            var statusConnection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+
+            await statusConnection.Send(
+                "GET /WaitForAppToStartShuttingDown HTTP/1.1",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await statusConnection.Receive("HTTP/1.1 200 OK",
+                "");
+
+            await statusConnection.ReceiveHeaders();
+
+            // Receiving some data means we are currently waiting for IHostApplicationLifetime.
+            await statusConnection.Receive("5",
+                "test1",
+                "");
+
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            // Receive the rest of all open connections.
+            await statusConnection.Receive("5", "test2", "");
+
+            for (var i = 0; i < 2; i++)
+            {
+                await connectionList[i].Send("a", "");
+                await connectionList[i].Receive("", "4", "done");
+                connectionList[i].Dispose();
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
+
+            // Shutdown should be graceful here!
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                EventLogHelpers.InProcessShutdown(), Logger);
         }
 
         [ConditionalFact]
@@ -159,14 +183,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentResult = await AssertStarts(HostingModel.OutOfProcess);
 
-            // Repeat dropping file and restarting multiple times
-            for (int i = 0; i < 5; i++)
-            {
-                AddAppOffline(deploymentResult.ContentRoot);
-                await AssertAppOffline(deploymentResult);
-                RemoveAppOffline(deploymentResult.ContentRoot);
-                await AssertRunning(deploymentResult);
-            }
+            AddAppOffline(deploymentResult.ContentRoot);
+            await AssertAppOffline(deploymentResult);
+            RemoveAppOffline(deploymentResult.ContentRoot);
+            await AssertRunning(deploymentResult);
 
             AddAppOffline(deploymentResult.ContentRoot);
             await AssertAppOffline(deploymentResult);
@@ -192,12 +212,20 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7075", FlakyOn.All)]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
         {
             var deploymentResult = await AssertStarts(hostingModel);
 
-            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
+            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
+            {
                 var statusCode = (int)response.StatusCode;
+                // Test failure involves the stress load receiving a 400 Bad Request.
+                // We think it is due to IIS returning the 400 itself, but need to confirm the hypothesis.
+                if (statusCode == 400)
+                {
+                    Logger.LogError($"Status code was a bad request. Content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
+                }
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
             });
 
@@ -225,63 +253,5 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 }
             }
         }
-
-        private async Task<IISDeploymentResult> DeployApp(HostingModel hostingModel = HostingModel.InProcess)
-        {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
-
-            return await DeployAsync(deploymentParameters);
-        }
-
-        private void AddAppOffline(string appPath, string content = "The app is offline.")
-        {
-            File.WriteAllText(Path.Combine(appPath, "app_offline.htm"), content);
-        }
-
-        private void RemoveAppOffline(string appPath)
-        {
-            RetryHelper.RetryOperation(
-                () => File.Delete(Path.Combine(appPath, "app_offline.htm")),
-                e => Logger.LogError($"Failed to remove app_offline : {e.Message}"),
-                retryCount: 3,
-                retryDelayMilliseconds: RetryDelay.Milliseconds);
-        }
-
-        private async Task AssertAppOffline(IISDeploymentResult deploymentResult, string expectedResponse = "The app is offline.")
-        {
-            var response = await deploymentResult.HttpClient.RetryRequestAsync("HelloWorld", r => r.StatusCode == HttpStatusCode.ServiceUnavailable);
-            Assert.Equal(expectedResponse, await response.Content.ReadAsStringAsync());
-        }
-
-        private async Task<IISDeploymentResult> AssertStarts(HostingModel hostingModel)
-        {
-            var deploymentResult = await DeployApp(hostingModel);
-
-            await AssertRunning(deploymentResult);
-
-            return deploymentResult;
-        }
-
-        private static async Task AssertRunning(IISDeploymentResult deploymentResult)
-        {
-            var response = await deploymentResult.HttpClient.RetryRequestAsync("HelloWorld", r => r.IsSuccessStatusCode);
-            var responseText = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Hello World", responseText);
-        }
-
-        private void DeletePublishOutput(IISDeploymentResult deploymentResult)
-        {
-            foreach (var file in Directory.GetFiles(deploymentResult.ContentRoot, "*", SearchOption.AllDirectories))
-            {
-                // Out of process module dll is allowed to be locked
-                var name = Path.GetFileName(file);
-                if (name == "aspnetcore.dll" || name == "aspnetcorev2.dll" || name == "aspnetcorev2_outofprocess.dll")
-                {
-                    continue;
-                }
-                File.Delete(file);
-            }
-        }
-
     }
 }

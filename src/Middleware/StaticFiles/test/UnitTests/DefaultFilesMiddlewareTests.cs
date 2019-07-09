@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
@@ -69,6 +70,45 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateClient().GetAsync(requestUrl);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(requestUrl, await response.Content.ReadAsStringAsync()); // Should not be modified
+            }
+        }
+
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app =>
+                    {
+                        app.UseRouting();
+
+                        app.Use(next => context =>
+                        {
+                            // Assign an endpoint, this will make the default files noop.
+                            context.SetEndpoint(new Endpoint((c) =>
+                            {
+                                return context.Response.WriteAsync(context.Request.Path.Value);
+                            },
+                            new EndpointMetadataCollection(),
+                            "test"));
+
+                            return next(context);
+                        });
+
+                        app.UseDefaultFiles(new DefaultFilesOptions
+                        {
+                            RequestPath = new PathString(""),
+                            FileProvider = fileProvider
+                        });
+
+                        app.UseEndpoints(endpoints => {});
+                    },
+                    services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+
+                var response = await server.CreateRequest("/SubFolder/").GetAsync();
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("/SubFolder/", await response.Content.ReadAsStringAsync()); // Should not be modified
             }
         }
 
@@ -151,9 +191,8 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
                 // the url in the header of `Location: /xxx/xxx` should be encoded
-                var expectedURL = UriHelper.BuildRelative(baseUrl, requestUrl + "/", new QueryString(queryString), new FragmentString());
                 var actualURL = response.Headers.GetValues("Location").FirstOrDefault();
-                Assert.Equal(expectedURL, actualURL);
+                Assert.Equal("http://localhost" + baseUrl + new PathString(requestUrl + "/") + queryString, actualURL);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }

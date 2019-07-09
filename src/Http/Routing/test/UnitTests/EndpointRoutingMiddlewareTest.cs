@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -11,7 +13,6 @@ using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -36,20 +37,48 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public async Task Invoke_SkipsRouting_IfEndpointSet()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp"));
+
+            var middleware = CreateMiddleware();
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            var endpoint = httpContext.GetEndpoint();
+            Assert.NotNull(endpoint);
+            Assert.Equal("myapp", endpoint.DisplayName);
+        }
+
+        [Fact]
         public async Task Invoke_OnCall_WritesToConfiguredLogger()
         {
             // Arrange
             var expectedMessage = "Request matched endpoint 'Test endpoint'";
+            bool eventFired = false;
 
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<EndpointRoutingMiddleware>,
                 TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var listener = new DiagnosticListener("TestListener");
+
+            using var subscription = listener.Subscribe(new DelegateObserver(pair =>
+            {
+                eventFired = true;
+
+                Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMatched", pair.Key);
+                Assert.IsAssignableFrom<HttpContext>(pair.Value);
+            }));
 
             var httpContext = CreateHttpContext();
 
             var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
-            var middleware = CreateMiddleware(logger);
+            var middleware = CreateMiddleware(logger, listener: listener);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -58,6 +87,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(sink.Scopes);
             var write = Assert.Single(sink.Writes);
             Assert.Equal(expectedMessage, write.State?.ToString());
+            Assert.True(eventFired);
         }
 
         [Fact]
@@ -131,33 +161,57 @@ namespace Microsoft.AspNetCore.Routing
 
         private HttpContext CreateHttpContext()
         {
-            var context = new EndpointSelectorContext();
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new TestServiceProvider()
+            };
 
             return httpContext;
         }
 
         private EndpointRoutingMiddleware CreateMiddleware(
             Logger<EndpointRoutingMiddleware> logger = null,
-            MatcherFactory matcherFactory = null)
+            MatcherFactory matcherFactory = null,
+            DiagnosticListener listener = null,
+            RequestDelegate next = null)
         {
-            RequestDelegate next = (c) => Task.FromResult<object>(null);
-
-            logger = logger ?? new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
-            matcherFactory = matcherFactory ?? new TestMatcherFactory(true);
+            next ??= c => Task.CompletedTask;
+            logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
+            matcherFactory ??= new TestMatcherFactory(true);
+            listener ??= new DiagnosticListener("Microsoft.AspNetCore");
 
             var middleware = new EndpointRoutingMiddleware(
                 matcherFactory,
-                new DefaultEndpointDataSource(),
                 logger,
+                new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>()),
+                listener,
                 next);
 
             return middleware;
+        }
+
+        private class DelegateObserver : IObserver<KeyValuePair<string, object>>
+        {
+            private readonly Action<KeyValuePair<string, object>> _onNext;
+
+            public DelegateObserver(Action<KeyValuePair<string, object>> onNext)
+            {
+                _onNext = onNext;
+            }
+            public void OnCompleted()
+            {
+
+            }
+
+            public void OnError(Exception error)
+            {
+
+            }
+
+            public void OnNext(KeyValuePair<string, object> value)
+            {
+                _onNext(value);
+            }
         }
     }
 }

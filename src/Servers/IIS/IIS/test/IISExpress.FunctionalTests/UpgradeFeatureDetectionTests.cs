@@ -10,17 +10,15 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
     {
         private readonly string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
-        private readonly PublishedSitesFixture _fixture;
 
-        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture)
+        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
@@ -58,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string expected, HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
 
             if (disableWebSocket)
             {

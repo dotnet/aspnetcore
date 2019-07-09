@@ -9,6 +9,8 @@
 #include <optional>
 #include <string>
 
+#include "ErrorContext.h"
+
 #define READ_BUFFER_SIZE 4096
 
 class HostFxrResolver
@@ -23,7 +25,8 @@ public:
         const std::wstring              &applicationArguments,
         std::filesystem::path           &hostFxrDllPath,
         std::filesystem::path           &dotnetExePath,
-        std::vector<std::wstring>       &arguments
+        std::vector<std::wstring>       &arguments,
+        ErrorContext&                   errorContext
     );
 
     static

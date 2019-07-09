@@ -18,24 +18,13 @@
   },
   "sourceName": "GrpcService-CSharp",
   "preferNameDirectory": true,
-  "guids": [
-    "4C26868E-5E7C-458D-82E3-040509D0C71F",
-    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
-  ],
   "sources": [
     {
       "modifiers": [
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "GrpcService-CSharp.Server/Properties/launchSettings.json"
-          ]
-        },
-        {
-          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-          "exclude": [
-            "GrpcService-CSharp.sln"
+            "Properties/launchSettings.json"
           ]
         }
       ]
@@ -73,16 +62,7 @@
   },
   "primaryOutputs": [
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "GrpcService-CSharp.sln"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "GrpcService-CSharp.Server/GrpcService-CSharp.Server.csproj"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "GrpcService-CSharp.Client/GrpcService-CSharp.Client.csproj"
+      "path": "GrpcService-CSharp.csproj"
     }
   ],
   "defaultName": "GrpcService-CSharp1",

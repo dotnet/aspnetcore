@@ -39,9 +39,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value=""ParentValue"" />
-@functions {
+<MyComponent @bind-Value=""ParentValue"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -77,9 +76,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value=""ParentValue"" />
-@functions {
+<MyComponent @bind-Value=""ParentValue"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -115,9 +113,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
-@functions {
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -153,9 +150,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
-@functions {
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -187,9 +183,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<div bind=""@ParentValue"" />
-@functions {
+<div @bind=""@ParentValue"" />
+@code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
@@ -221,9 +216,8 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<div bind-value=""@ParentValue"" />
-@functions {
+<div @bind-value=""@ParentValue"" />
+@code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
@@ -257,17 +251,16 @@ namespace Test
 
             // Act
             var result = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
-<div bind-value=""@ParentValue"" />
-@functions {
+<div @bind-value=""@ParentValue"" />
+@code {
     public string ParentValue { get; set; } = ""hi"";
 }");
 
             // Assert
             var diagnostic = Assert.Single(result.Diagnostics);
-            Assert.Equal("BL9989", diagnostic.Id);
+            Assert.Equal("RZ9989", diagnostic.Id);
             Assert.Equal(
-                "The attribute 'bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
+                "The attribute '@bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
                 "Test.BindAttributes" + Environment.NewLine +
                 "Test.BindAttributes",
                 diagnostic.GetMessage());
@@ -278,9 +271,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input bind=""@ParentValue"" />
-@functions {
+<input @bind=""@ParentValue"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -300,9 +292,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind=""@CurrentDate"" format-value=""MM/dd/yyyy""/>
-@functions {
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
+@code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
@@ -323,9 +314,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind=""@CurrentDate"" format-value=""@Format""/>
-@functions {
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
+@code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
     public string Format { get; set; } = ""MM/dd/yyyy"";
@@ -348,9 +338,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind=""@ParentValue"" />
-@functions {
+<input type=""text"" @bind=""@ParentValue"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -371,9 +360,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""checkbox"" bind=""@Enabled"" />
-@functions {
+<input type=""checkbox"" @bind=""@Enabled"" />
+@code {
     public bool Enabled { get; set; }
 }");
 
@@ -393,9 +381,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-value-onchange=""@ParentValue"" />
-@functions {
+<input type=""text"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -416,9 +403,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-value-onchange=""@CurrentDate"" format-value=""MM/dd"" />
-@functions {
+<input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
+@code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
 
@@ -439,9 +425,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""@(""text"")"" bind-value-onchange=""@ParentValue"" visible />
-@functions {
+<input type=""@(""text"")"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" visible />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -463,9 +448,8 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input bind-value-onchange=""@ParentValue"" type=""text"" visible />
-@functions {
+<input @bind-value=""@ParentValue"" @bind-value:event=""onchange"" type=""text"" visible />
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -490,11 +474,10 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<div bind-value-onchange=""@ParentValue"">
+<div @bind-value=""@ParentValue"" @bind-value:event=""onchange"">
   <span>@(42.ToString())</span>
 </div>
-@functions {
+@code {
     public int ParentValue { get; set; } = 42;
 }");
 
@@ -507,10 +490,10 @@ namespace Test
                 frame => AssertFrame.Element(frame, "div", 7, 0),
                 frame => AssertFrame.Attribute(frame, "value", "42", 1),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "span", 2, 4),
                 frame => AssertFrame.Text(frame, "42", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]
@@ -518,15 +501,14 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-first-second-third=""Text"" />
-@functions {
+<input type=""text"" @bind-first-second-third=""Text"" />
+@code {
     public string Text { get; set; } = ""text"";
 }");
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
 
         [Fact]
@@ -534,15 +516,14 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-first-=""Text"" />
-@functions {
+<input type=""text"" @bind-first-=""Text"" />
+@code {
     public string Text { get; set; } = ""text"";
 }");
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
     }
 }

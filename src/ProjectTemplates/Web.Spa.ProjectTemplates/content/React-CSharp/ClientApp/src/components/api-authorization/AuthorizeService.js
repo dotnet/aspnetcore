@@ -1,4 +1,4 @@
-﻿import { UserManager, WebStorageStateStore } from 'oidc-client';
+import { UserManager, WebStorageStateStore } from 'oidc-client';
 import { ApplicationPaths, ApplicationName } from './ApiAuthorizationConstants';
 
 export class AuthorizeService {
@@ -6,6 +6,10 @@ export class AuthorizeService {
     _nextSubscriptionId = 0;
     _user = null;
     _isAuthenticated = false;
+
+    // By default pop ups are disabled because they don't work properly on Edge.
+    // If you want to enable pop up authentication simply set this flag to false.
+    _popUpDisabled = true;
 
     async isAuthenticated() {
         const user = await this.getUser();
@@ -47,6 +51,10 @@ export class AuthorizeService {
             console.log("Silent authentication error: ", silentError);
 
             try {
+                if (this._popUpDisabled) {
+                    throw new Error('Popup disabled. Change \'AuthorizeService.js:AuthorizeService._popupDisabled\' to false to enable it.')
+                }
+
                 const popUpUser = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
                 this.updateState(popUpUser);
                 return this.success(state);
@@ -54,8 +62,9 @@ export class AuthorizeService {
                 if (popUpError.message === "Popup window closed") {
                     // The user explicitly cancelled the login action by closing an opened popup.
                     return this.error("The user closed the window.");
+                } else if (!this._popUpDisabled) {
+                    console.log("Popup authentication error: ", popUpError);
                 }
-                console.log("Popup authentication error: ", popUpError);
 
                 // PopUps might be blocked by the user, fallback to redirect
                 try {
@@ -301,6 +310,11 @@ export class AuthorizeService {
         });
 
         this.userManager = new UserManager(settings);
+
+        this.userManager.events.addUserSignedOut(async () => {
+            await this.userManager.removeUser();
+            this.updateState(undefined);
+        });
     }
 
     static get instance() { return authService }

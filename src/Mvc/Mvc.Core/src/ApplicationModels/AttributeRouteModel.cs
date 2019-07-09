@@ -11,14 +11,24 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// A model for attribute routes.
+    /// </summary>
     public class AttributeRouteModel
     {
         private static readonly AttributeRouteModel _default = new AttributeRouteModel();
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AttributeRoute"/>.
+        /// </summary>
         public AttributeRouteModel()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="AttributeRoute"/> using the specified <paramref name="templateProvider"/>.
+        /// </summary>
+        /// <param name="templateProvider">The <see cref="IRouteTemplateProvider"/>.</param>
         public AttributeRouteModel(IRouteTemplateProvider templateProvider)
         {
             if (templateProvider == null)
@@ -32,6 +42,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Name = templateProvider.Name;
         }
 
+        /// <summary>
+        /// Copy constructor for <see cref="AttributeRoute"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="AttributeRouteModel"/> to copy.</param>
         public AttributeRouteModel(AttributeRouteModel other)
         {
             if (other == null)
@@ -47,12 +61,24 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             SuppressPathMatching = other.SuppressPathMatching;
         }
 
-        public IRouteTemplateProvider Attribute { get;}
+        /// <summary>
+        /// Gets the <see cref="IRouteTemplateProvider"/>.
+        /// </summary>
+        public IRouteTemplateProvider Attribute { get; }
 
+        /// <summary>
+        /// Gets or sets the attribute route template.
+        /// </summary>
         public string Template { get; set; }
 
+        /// <summary>
+        /// Gets or sets the route order.
+        /// </summary>
         public int? Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets the route name.
+        /// </summary>
         public string Name { get; set; }
 
         /// <summary>
@@ -65,6 +91,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public bool SuppressPathMatching { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines if this route template for this model overrides the route template at the parent scope.
+        /// </summary>
         public bool IsAbsoluteTemplate => Template != null && IsOverridePattern(Template);
 
         /// <summary>

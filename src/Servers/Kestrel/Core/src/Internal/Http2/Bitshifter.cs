@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     // Mimics BinaryPrimitives with oddly sized units
-    internal class Bitshifter
+    internal static class Bitshifter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ReadUInt24BigEndian(ReadOnlySpan<byte> source)

@@ -56,8 +56,7 @@ public:
     ExecuteApplication();
 
     HRESULT
-    LoadManagedApplication();
-
+    LoadManagedApplication(ErrorContext& errorContext);
 
     void
     QueueStop();
@@ -114,7 +113,8 @@ public:
         IHttpApplication& pHttpApplication,
         APPLICATION_PARAMETER* pParameters,
         DWORD nParameters,
-        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application);
+        std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+        ErrorContext& errorContext);
 
 private:
     struct ExecuteClrContext: std::enable_shared_from_this<ExecuteClrContext>
@@ -150,8 +150,6 @@ private:
     // The event that gets triggered when worker thread should exit
     HandleWrapper<NullHandleTraits> m_pShutdownEvent;
 
-    HandleWrapper<NullHandleTraits> m_pRequestDrainEvent;
-
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
     VOID*                           m_RequestHandlerContext;
@@ -162,13 +160,14 @@ private:
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
-    PFN_REQUESTS_DRAINED_HANDLER    m_RequestsDrainedHandler;
+    std::atomic<PFN_REQUESTS_DRAINED_HANDLER>    m_RequestsDrainedHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 
     std::atomic_bool                m_blockManagedCallbacks;
     bool                            m_Initialized;
     bool                            m_waitForShutdown;
+
     std::atomic<int>                m_requestCount;
 
     std::unique_ptr<InProcessOptions> m_pConfig;
@@ -187,6 +186,9 @@ private:
 
     void
     StopClr();
+
+    void
+    CallRequestsDrained();
 
     static
     void

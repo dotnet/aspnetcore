@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http
@@ -157,6 +157,12 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        // This property exists because of backwards compatibility.
+        // We send an anonymous object with an HttpContext property
+        // via DiagnosticSource in various events throughout the pipeline. Instead
+        // we just send the HttpContext to avoid extra allocations
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public HttpContext HttpContext => this;
 
         public override void Abort()
         {

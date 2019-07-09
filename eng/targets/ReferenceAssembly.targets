@@ -40,6 +40,7 @@
     <Exec Condition="'$(OS)' != 'Windows_NT'"
           Command="echo '$(ProjectListContentLines.Replace('\t','\\t'))' > $(_RefProjectFileOutputPath)" />
 
+    <Message Importance="High" Text="Generated $(_RefProjectFileOutputPath)" />
   </Target>
 
   <Target Name="_GenerateProjectSourceInner" Returns="@(ProjectListContent)" DependsOnTargets="Build" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
@@ -55,16 +56,17 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">$(ToolHostCmd) --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
+      <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
       <_GenAPICmd>$(_GenAPICommand)</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --lib-path "@(_ReferencePathDirectories)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --out "$(_RefSourceFileOutputPath)"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepositoryRoot)/eng/LicenseHeader.txt"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --exclude-api-list "$(RepositoryRoot)/eng/GenAPI.exclusions.txt"</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepoRoot)/eng/LicenseHeader.txt"</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICmd) --exclude-api-list "$(RepoRoot)/eng/GenAPI.exclusions.txt"</_GenAPICmd>
     </PropertyGroup>
 
     <MakeDir Directories="$(_RefSourceOutputPath)" />
+    <Message Importance="High" Text="Generating $(_RefSourceFileOutputPath)" />
     <Exec Command="$(_GenAPICmd)" />
 
     <ItemGroup>
@@ -74,10 +76,6 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ProjectListFile>$(MSBuildThisFileDirectory)..\eng\ProjectReferences.props</ProjectListFile>
-      <RefsTargetFramework>$(TargetFrameworks)</RefsTargetFramework>
-      <RefsTargetFramework Condition="'$(RefsTargetFramework)' == ''">$(TargetFramework)</RefsTargetFramework>
-
       <ReferencesContent>
       <![CDATA[
   <ItemGroup Condition="'%24(TargetFramework)' == '$(TargetFramework)'">

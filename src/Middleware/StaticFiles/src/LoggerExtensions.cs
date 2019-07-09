@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private static Action<ILogger, StringValues, string, Exception> _sendingFileRange;
         private static Action<ILogger, StringValues, string, Exception> _copyingFileRange;
         private static Action<ILogger, Exception> _writeCancelled;
+        private static Action<ILogger, Exception> _endpointMatched;
 
         static LoggerExtensions()
         {
@@ -75,6 +76,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 logLevel: LogLevel.Debug,
                 eventId: new EventId(14, "WriteCancelled"),
                 formatString: "The file transmission was cancelled");
+            _endpointMatched = LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(15, "EndpointMatched"),
+                formatString: "Static files was skipped as the request already matched an endpoint.");
         }
 
         public static void RequestMethodNotSupported(this ILogger logger, string method)
@@ -89,6 +94,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                 physicalPath = "N/A";
             }
             _fileServed(logger, virtualPath, physicalPath, null);
+        }
+
+        public static void EndpointMatched(this ILogger logger)
+        {
+            _endpointMatched(logger, null);
         }
 
         public static void PathMismatch(this ILogger logger, string path)

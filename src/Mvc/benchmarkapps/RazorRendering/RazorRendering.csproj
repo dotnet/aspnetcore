@@ -17,11 +17,8 @@
     These references are used when running on the Benchmarks Server.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <KnownFrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

@@ -15,14 +15,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvThread : PipeScheduler
+    internal class LibuvThread : PipeScheduler
     {
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network
         // otherwise it needs to wait till the next pass of the libuv loop
-        private readonly int _maxLoops = 8;
+        private readonly int _maxLoops;
 
-        private readonly LibuvTransport _transport;
+        private readonly LibuvFunctions _libuv;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly Thread _thread;
         private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -40,13 +40,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private Exception _closeError;
         private readonly ILibuvTrace _log;
 
-        public LibuvThread(LibuvTransport transport)
+        public LibuvThread(LibuvFunctions libuv, LibuvTransportContext libuvTransportContext, int maxLoops = 8)
+            : this(libuv, libuvTransportContext.AppLifetime, libuvTransportContext.Options.MemoryPoolFactory(), libuvTransportContext.Log, maxLoops)
         {
-            _transport = transport;
-            _appLifetime = transport.AppLifetime;
-            _log = transport.Log;
+        }
+
+        public LibuvThread(LibuvFunctions libuv, IHostApplicationLifetime appLifetime, MemoryPool<byte> pool, ILibuvTrace log, int maxLoops = 8)
+        {
+            _libuv = libuv;
+            _appLifetime = appLifetime;
+            _log = log;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
+            _maxLoops = maxLoops;
 
             _thread = new Thread(ThreadStart);
 #if !INNER_LOOP
@@ -60,15 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            MemoryPool = transport.TransportOptions.MemoryPoolFactory();
+            MemoryPool = pool;
             WriteReqPool = new WriteReqPool(this, _log);
-        }
-
-        // For testing
-        public LibuvThread(LibuvTransport transport, int maxLoops)
-            : this(transport)
-        {
-            _maxLoops = maxLoops;
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
@@ -113,13 +112,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Post(t => t.AllowStop());
                 if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                 {
+                    _log.LogWarning($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread, {nameof(AllowStop)}");
+
                     Post(t => t.OnStopRude());
                     if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                     {
+                        _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread, {nameof(OnStopRude)}.");
+
                         Post(t => t.OnStopImmediate());
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
-                            _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread.");
+                            _log.LogCritical($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread, {nameof(OnStopImmediate)}.");
                         }
                     }
                 }
@@ -253,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private void Walk(LibuvFunctions.uv_walk_cb callback, IntPtr arg)
         {
-            _transport.Libuv.walk(
+            _libuv.walk(
                 _loop,
                 callback,
                 arg
@@ -282,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 var tcs = (TaskCompletionSource<int>)parameter;
                 try
                 {
-                    _loop.Init(_transport.Libuv);
+                    _loop.Init(_libuv);
                     _post.Init(_loop, OnPost, EnqueueCloseHandle);
                     _initCompleted = true;
                     tcs.SetResult(0);

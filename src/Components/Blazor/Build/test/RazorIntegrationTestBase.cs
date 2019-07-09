@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         }
 
         public RazorIntegrationTestBase(ITestOutputHelper output)
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             LineEnding = "\n";
             NormalizeSourceLineEndings = true;
 
-            DefaultBaseNamespace = "Test"; // Matches the default working directory
+            DefaultRootNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
         }
 
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         internal virtual RazorConfiguration Configuration { get; }
 
-        internal virtual string DefaultBaseNamespace { get; }
+        internal virtual string DefaultRootNamespace { get; }
 
         internal virtual string DefaultFileName { get; }
 
@@ -119,6 +120,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             return RazorProjectEngine.Create(Configuration, FileSystem, b =>
             {
+                b.SetRootNamespace(DefaultRootNamespace);
+
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
@@ -344,7 +347,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var assemblyResult = CompileToAssembly(DefaultFileName, cshtmlSource);
 
-            var componentFullTypeName = $"{DefaultBaseNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
+            var componentFullTypeName = $"{DefaultRootNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
             return CompileToComponent(assemblyResult, componentFullTypeName);
         }
 
@@ -439,7 +442,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, CreateDefaultDispatcher())
             {
             }
 
@@ -450,12 +453,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             protected override void HandleException(Exception exception)
             {
-                throw new NotImplementedException();
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
-                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
                 return Task.CompletedTask;
             }
         }

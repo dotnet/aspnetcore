@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static readonly string ProtocolName = "json";
         private static readonly int ProtocolVersion = 1;
-        private static readonly int ProtocolMinorVersion = 0;
 
         /// <summary>
         /// Gets the serializer used to serialize invocation arguments and return values.
@@ -61,9 +60,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         /// <inheritdoc />
         public int Version => ProtocolVersion;
-
-        /// <inheritdoc />        
-        public int MinorVersion => ProtocolMinorVersion;
 
         /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Text;
@@ -172,7 +168,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                         if (reader.TokenType != JsonToken.StartArray)
                                         {
-                                            throw new InvalidDataException($"Expected '{ArgumentsPropertyName}' to be of type {JTokenType.Array}.");
+                                            throw new InvalidDataException($"Expected '{StreamIdsPropertyName}' to be of type {JTokenType.Array}.");
                                         }
 
                                         var newStreamIds = new List<string>();

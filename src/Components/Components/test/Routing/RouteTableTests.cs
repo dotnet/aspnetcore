@@ -12,6 +12,39 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouteTableTests
     {
         [Fact]
+        public void CanDiscoverRoute()
+        {
+            // Arrange & Act
+            var routes = RouteTable.Create(new[] { typeof(MyComponent), });
+
+            // Assert
+            Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
+        }
+
+        [Route("Test1")]
+        private class MyComponent : ComponentBase
+        {
+        }
+
+        [Fact]
+        public void CanDiscoverRoutes_WithInheritance()
+        {
+            // Arrange & Act
+            var routes = RouteTable.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+
+            // Assert
+            Assert.Collection(
+                routes.Routes.OrderBy(r => r.Template.TemplateText),
+                r => Assert.Equal("Test1", r.Template.TemplateText),
+                r => Assert.Equal("Test2", r.Template.TemplateText));
+        }
+
+        [Route("Test2")]
+        private class MyInheritedComponent : MyComponent
+        {
+        }
+
+        [Fact]
         public void CanMatchRootTemplate()
         {
             // Arrange
@@ -59,6 +92,20 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             // Arrange
             var routeTable = new TestRouteTableBuilder().AddRoute("/some/AWESOME/route/").Build();
             var context = new RouteContext("/Some/awesome/RouTe");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+        }
+
+        [Fact]
+        public void CanMatchEncodedSegments()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/some/ünicõdē/🛣/").Build();
+            var context = new RouteContext("/some/%C3%BCnic%C3%B5d%C4%93/%F0%9F%9B%A3");
 
             // Act
             routeTable.Route(context);
@@ -122,6 +169,9 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         [Theory]
         [InlineData("/value1", "value1")]
         [InlineData("/value2/", "value2")]
+        [InlineData("/d%C3%A9j%C3%A0%20vu", "déjà vu")]
+        [InlineData("/d%C3%A9j%C3%A0%20vu/", "déjà vu")]
+        [InlineData("/d%C3%A9j%C3%A0+vu", "déjà+vu")]
         public void CanMatchParameterTemplate(string path, string expectedValue)
         {
             // Arrange

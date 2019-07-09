@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpResponseControl
+    internal interface IHttpResponseControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);
@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
         ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
         void CancelPendingFlush();
-        void Complete(Exception exception = null);
+        Task CompleteAsync(Exception exception = null);
     }
 }

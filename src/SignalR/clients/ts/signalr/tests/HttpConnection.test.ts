@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpResponse } from "../src/HttpClient";
-import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
+import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 
@@ -12,6 +12,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
+import { TestTransport } from "./TestTransport";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -65,14 +66,10 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const negotiating = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => {
-                        negotiating.resolve();
-                        return defaultNegotiateResponse;
-                    }),
+                    .on("POST", () => defaultNegotiateResponse),
                 logger,
                 transport: {
                     connect() {
@@ -95,8 +92,9 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow("Cannot start a connection that is not in the 'Disconnected' state.");
+                    .toThrow("Cannot start an HttpConnection that is not in the 'Disconnected' state.");
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -146,8 +144,145 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            await connection.start(TransferFormat.Text);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("The connection was stopped during negotiation.");
+        },
+        "Failed to start the connection: Error: The connection was stopped during negotiation.");
+    });
+
+    it("cannot send with an un-started connection", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new HttpConnection("http://tempuri.org");
+
+            await expect(connection.send("LeBron James"))
+                .rejects
+                .toThrow("Cannot send data if the connection is not in the 'Connected' State.");
         });
+    });
+
+    it("sending before start doesn't throw synchronously", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new HttpConnection("http://tempuri.org");
+
+            try {
+                connection.send("test").catch((e) => {});
+            } catch (e) {
+                expect(false).toBe(true);
+            }
+
+        });
+    });
+
+    it("cannot be started if negotiate returns non 200 response", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => new HttpResponse(999))
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unexpected status code returned from negotiate 999");
+        },
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+    });
+
+    it("all transport failure errors get aggregated", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                WebSocket: false,
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+                transport: HttpTransportType.WebSockets,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+
+            expect(negotiateCount).toEqual(1);
+        },
+        "Failed to start the transport 'WebSockets': null",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+    });
+
+    it("negotiate called again when transport fails to start and falls back", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
+                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+                transport: HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+
+            expect(negotiateCount).toEqual(2);
+        },
+        "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
+        "Failed to start the transport 'ServerSentEvents': Error: Don't allow ServerSentEvents.",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: Error: Don't allow Websockets. ServerSentEvents failed: Error: Don't allow ServerSentEvents. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+    });
+
+    it("failed re-negotiate fails start", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            let negotiateCount: number = 0;
+            const options: IHttpConnectionOptions = {
+                EventSource: () => { throw new Error("Don't allow ServerSentEvents."); },
+                WebSocket: () => { throw new Error("Don't allow Websockets."); },
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () =>  {
+                        negotiateCount++;
+                        if (negotiateCount === 2) {
+                            throw new Error("negotiate failed");
+                        }
+                        return defaultNegotiateResponse;
+                    })
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("negotiate failed");
+
+            expect(negotiateCount).toEqual(2);
+        },
+        "Failed to start the transport 'WebSockets': Error: Don't allow Websockets.",
+        "Failed to complete negotiation with the server: Error: negotiate failed",
+        "Failed to start the connection: Error: negotiate failed");
     });
 
     it("can stop a non-started connection", async () => {
@@ -211,6 +346,7 @@ describe("HttpConnection", () => {
 
                 await startPromise;
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -240,7 +376,7 @@ describe("HttpConnection", () => {
 
                     expect(await negotiateUrl).toBe(expectedUrl);
 
-                    await expect(startPromise).rejects;
+                    await expect(startPromise).rejects.toThrow("We don't care how this turns out");
                 } finally {
                     await connection.stop();
                 }
@@ -276,8 +412,7 @@ describe("HttpConnection", () => {
                     .toThrow(`Unable to connect to the server with any of the available transports. ${negotiateResponse.availableTransports[0].transport} failed: Error: '${negotiateResponse.availableTransports[0].transport}' is disabled by the client.` +
                     ` ${negotiateResponse.availableTransports[1].transport} failed: Error: '${negotiateResponse.availableTransports[1].transport}' is disabled by the client.`);
             },
-            /Failed to start the connection: Error: Unable to connect to the server with any of the available transports. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client./,
-            /Failed to start the transport '[a-zA-Z]+': Error: '[a-zA-Z]+' is disabled by the client./);
+            /Failed to start the connection: Error: Unable to connect to the server with any of the available transports. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client. [a-zA-Z]+\b failed: Error: '[a-zA-Z]+\b' is disabled by the client./);
         });
 
         it(`cannot be started if server's only transport (${HttpTransportType[requestedTransport]}) is masked out by the transport option`, async () => {
@@ -316,8 +451,7 @@ describe("HttpConnection", () => {
                     expect(e.message).toBe(`Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
                 }
             },
-                `Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`,
-                `Failed to start the transport '${HttpTransportType[requestedTransport]}': Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
+            `Failed to start the connection: Error: Unable to connect to the server with any of the available transports. ${HttpTransportType[requestedTransport]} failed: Error: '${HttpTransportType[requestedTransport]}' is disabled by the client.`);
         });
     });
 
@@ -739,7 +873,7 @@ describe("HttpConnection", () => {
                 // Force TypeScript to let us call start incorrectly
                 const connection: any = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
 
-                expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
+                await expect(connection.start(42)).rejects.toThrow("Unknown transferFormat value: 42.");
             });
         });
 
@@ -775,5 +909,234 @@ describe("HttpConnection", () => {
             },
             "Failed to start the connection: Error: Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
         });
+    });
+});
+
+describe("TransportSendQueue", () => {
+    it("sends data when not currently sending", async () => {
+        const sendMock = jest.fn(() => Promise.resolve());
+        const transport = new TestTransport();
+        transport.send = sendMock;
+        const queue = new TransportSendQueue(transport);
+
+        const x = queue.send("Hello");
+        await x;
+
+        expect(sendMock.mock.calls.length).toBe(1);
+
+        const stop = queue.stop();
+        await stop;
+    });
+
+    it("sends buffered data on fail", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // This should get queued.
+        const second = queue.send("world");
+
+        promiseSource3.reject("Test error");
+        await expect(first).rejects.toBe("Test error");
+
+        await second;
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world");
+
+        await queue.stop();
+    });
+
+    it("rejects promise for buffered sends", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.reject("Test error"));
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // This should get queued.
+        const second = queue.send("world");
+
+        promiseSource3.resolve();
+
+        await first;
+        await expect(second).rejects.toBeDefined();
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world");
+
+        await queue.stop();
+    });
+
+    it ("concatenates string sends", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send("Hello");
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send("world");
+        const third = queue.send("!");
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual("Hello");
+        expect(sendMock.mock.calls[1][0]).toEqual("world!");
+
+        await queue.stop();
+    });
+
+    it ("concatenates buffered ArrayBuffer", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send(new Uint8Array([4, 5, 6]));
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send(new Uint8Array([7, 8, 10]));
+        const third = queue.send(new Uint8Array([12, 14]));
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
+
+        await queue.stop();
+    });
+
+    it ("throws if mixed data is queued", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send(new Uint8Array([4, 5, 6]));
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send(new Uint8Array([7, 8, 10]));
+        expect(() => queue.send("A string!")).toThrow();
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second]);
+        await queue.stop();
+    });
+
+    it ("rejects pending promises on stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const send = queue.send("Test");
+        await queue.stop();
+
+        await expect(send).rejects.toBe("Connection stopped.");
+    });
+
+    it ("prevents additional sends after stop", async () => {
+        const promiseSource = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource;
+            });
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        await queue.stop();
+        await expect(queue.send("test")).rejects.toBe("Connection stopped.");
     });
 });

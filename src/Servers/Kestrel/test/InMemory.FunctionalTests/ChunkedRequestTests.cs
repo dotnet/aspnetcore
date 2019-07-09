@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -42,15 +43,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var response = httpContext.Response;
             while (true)
             {
-                var readResult = await request.BodyPipe.ReadAsync();
+                var readResult = await request.BodyReader.ReadAsync();
                 if (readResult.IsCompleted)
                 {
                     break;
                 }
                 // Need to copy here.
-                await response.BodyPipe.WriteAsync(readResult.Buffer.ToArray());
+                await response.BodyWriter.WriteAsync(readResult.Buffer.ToArray());
 
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
             }
         }
 
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(App, testContext))
+            await using (var server = new TestServer(App, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(PipeApp, testContext))
+            await using (var server = new TestServer(PipeApp, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -127,9 +128,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task Http10KeepAliveTransferEncoding()
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(AppChunked, testContext))
+            await using (var server = new TestServer(AppChunked, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -162,8 +163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Goodbye");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -172,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
@@ -218,7 +217,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -228,25 +226,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var requestCount = 10;
             var requestsReceived = 0;
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
 
                 var buffer = new byte[200];
 
+                // The first request is chunked with no trailers.
+                if (requestsReceived == 0)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+                }
+                // The middle requests are chunked with trailers.
+                else if (requestsReceived < requestCount)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                }
+                // The last request is content-length with no trailers.
+                else
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));
+                }
+
                 while (await request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
                 {
                     ;// read to end
                 }
 
-                if (requestsReceived < requestCount)
+                Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+
+                // The first request is chunked with no trailers.
+                if (requestsReceived == 0)
                 {
-                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
+                // The middle requests are chunked with trailers.
+                else if (requestsReceived < requestCount)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(new string('a', requestsReceived), request.GetTrailer("X-Trailer-Header").ToString());
+                }
+                // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
 
                 requestsReceived++;
@@ -281,6 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "POST / HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
+                        "Trailer: X-Trailer-Header",
                         "",
                         "C",
                         $"HelloChunk{i:00}",
@@ -304,8 +344,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send(fullRequest);
                     await connection.Receive(expectedFullResponse);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -315,28 +353,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var requestCount = 10;
             var requestsReceived = 0;
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
 
+                // The first request is chunked with no trailers.
+                if (requestsReceived == 0)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+                }
+                // The middle requests are chunked with trailers.
+                else if (requestsReceived < requestCount)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                }
+                // The last request is content-length with no trailers.
+                else
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));
+                }
+
                 while (true)
                 {
-                    var result = await request.BodyPipe.ReadAsync();
-                    request.BodyPipe.AdvanceTo(result.Buffer.End);
+                    var result = await request.BodyReader.ReadAsync();
+                    request.BodyReader.AdvanceTo(result.Buffer.End);
                     if (result.IsCompleted)
                     {
                         break;
                     }
                 }
 
-                if (requestsReceived < requestCount)
+                Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+
+                // The first request is chunked with no trailers.
+                if (requestsReceived == 0)
                 {
-                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
+                // The middle requests are chunked with trailers.
+                else if (requestsReceived < requestCount)
+                {
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(new string('a', requestsReceived), request.GetTrailer("X-Trailer-Header").ToString());
+                }
+                // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
 
                 requestsReceived++;
@@ -371,6 +450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "POST / HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
+                        "Trailer: X-Trailer-Header",
                         "",
                         "C",
                         $"HelloChunk{i:00}",
@@ -394,8 +474,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send(fullRequest);
                     await connection.Receive(expectedFullResponse);
                 }
-
-                await server.StopAsync();
             }
         }
         [Fact]
@@ -411,7 +489,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 headerLine.Length + 2 +
                 trailingHeaderLine.Length + 1;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[128];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
@@ -439,7 +517,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -453,7 +530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             testContext.ServerOptions.Limits.MaxRequestHeaderCount = 2;
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var buffer = new byte[128];
                 while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) != 0) ; // read to end
@@ -481,7 +558,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -492,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var requestCount = 10;
             var requestsReceived = 0;
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
@@ -504,13 +580,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     ;// read to end
                 }
 
+                Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+
                 if (requestsReceived < requestCount)
                 {
-                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
-                }
-                else
-                {
-                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                    Assert.Equal(new string('a', requestsReceived), request.GetTrailer("X-Trailer-Header").ToString());
                 }
 
                 requestsReceived++;
@@ -568,7 +642,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send(fullRequest);
                     await connection.Receive(expectedFullResponse);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -576,7 +649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task InvalidLengthResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
@@ -620,7 +693,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task InvalidSizedDataResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
@@ -657,7 +730,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -666,7 +738,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ChunkedNotFinalTransferCodingResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            using (var server = new TestServer(httpContext =>
+            await using (var server = new TestServer(httpContext =>
             {
                 return Task.CompletedTask;
             }, testContext))
@@ -762,7 +834,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -773,7 +844,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var readStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var exTcs = new TaskCompletionSource<BadHttpRequestException>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var readTask = httpContext.Request.Body.CopyToAsync(Stream.Null);
                 readStartedTcs.SetResult(null);
@@ -810,8 +881,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     var badReqEx = await exTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
                     Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -821,19 +890,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var tcs = new TaskCompletionSource<object>();
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                var requestTask = httpContext.Request.BodyPipe.ReadAsync();
+                var requestTask = httpContext.Request.BodyReader.ReadAsync();
 
-                httpContext.Request.BodyPipe.CancelPendingRead();
+                httpContext.Request.BodyReader.CancelPendingRead();
 
                 Assert.True((await requestTask).IsCanceled);
 
@@ -841,7 +910,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -869,7 +938,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -878,23 +946,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 var request = httpContext.Request;
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete();
+                httpContext.Request.BodyReader.Complete();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyPipe.ReadAsync());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyReader.ReadAsync());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -925,6 +993,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ChunkedRequestCallCompleteDoesNotCauseException()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                var request = httpContext.Request;
+
+                // This read may receive all data, but what we care about
+                // is that ConsumeAsync is called and doesn't error. Calling
+                // TryRead before would always fail.
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
+
+                request.BodyReader.Complete();
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1",
+                        "H",
+                        "4",
+                        "ello",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    // start another request to make sure OnComsumeAsync is hit
+                    await connection.Send(
+                       "POST / HTTP/1.1",
+                       "Host:",
+                       "Transfer-Encoding: chunked",
+                       "",
+                       "0",
+                       "",
+                       "");
+                }
+            }
+
+            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
+        }
+
+        [Fact]
         public async Task ChunkedRequestCallCompleteWithExceptionCauses500()
         {
             var tcs = new TaskCompletionSource<object>();
@@ -937,14 +1061,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete(new Exception());
+                httpContext.Request.BodyReader.Complete(new Exception());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -968,7 +1092,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
     }

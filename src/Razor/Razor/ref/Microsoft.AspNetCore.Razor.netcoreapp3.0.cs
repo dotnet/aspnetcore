@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public enum HtmlAttributeValueStyle
     {
         DoubleQuotes = 0,
-        Minimized = 3,
-        NoQuotes = 2,
         SingleQuotes = 1,
+        NoQuotes = 2,
+        Minimized = 3,
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public sealed partial class HtmlTargetElementAttribute : System.Attribute
@@ -61,17 +61,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         void Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context);
         System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output);
     }
-    public partial class NullHtmlEncoder : System.Text.Encodings.Web.HtmlEncoder
+    public sealed partial class NullHtmlEncoder : System.Text.Encodings.Web.HtmlEncoder
     {
-        protected NullHtmlEncoder() { }
+        internal NullHtmlEncoder() { }
         public static new Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override int MaxOutputCharactersPerInputCharacter { get { throw null; } }
         public override void Encode(System.IO.TextWriter output, char[] value, int startIndex, int characterCount) { }
         public override void Encode(System.IO.TextWriter output, string value, int startIndex, int characterCount) { }
         public override string Encode(string value) { throw null; }
-        public unsafe override int FindFirstCharacterToEncode(char* text, int textLength) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public unsafe override int FindFirstCharacterToEncode(char* text, int textLength) { throw null; }
         public unsafe override bool TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten) { throw null; }
-        public override bool WillEncode(int unicodeScalar) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public override bool WillEncode(int unicodeScalar) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=false)]
     public sealed partial class OutputElementHintAttribute : System.Attribute
@@ -204,14 +204,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     }
     public enum TagMode
     {
-        SelfClosing = 1,
         StartTagAndEndTag = 0,
+        SelfClosing = 1,
         StartTagOnly = 2,
     }
     public enum TagStructure
     {
-        NormalOrSelfClosing = 1,
         Unspecified = 0,
+        NormalOrSelfClosing = 1,
         WithoutEndTag = 2,
     }
 }

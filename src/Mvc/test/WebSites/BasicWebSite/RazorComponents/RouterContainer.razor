@@ -1,5 +1,7 @@
-﻿Router component
-<Router 
-        AppAssembly="System.Reflection.Assembly.GetAssembly(typeof(RouterContainer))"
-        FallbackComponent="typeof(Fallback)">
+﻿@using Microsoft.AspNetCore.Components.Routing
+Router component
+<Router AppAssembly="System.Reflection.Assembly.GetAssembly(typeof(RouterContainer))">
+    <NotFoundContent>
+        <p>Route not found</p>
+    </NotFoundContent>
 </Router>

@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     public partial class TagHelperRunner
     {
         public TagHelperRunner() { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task RunAsync(Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext executionContext) { throw null; }
     }
     public partial class TagHelperScopeManager

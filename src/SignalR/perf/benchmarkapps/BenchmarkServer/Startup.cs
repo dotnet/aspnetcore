@@ -23,6 +23,7 @@ namespace BenchmarkServer
             {
                 o.EnableDetailedErrors = true;
             })
+            // TODO: Json vs NewtonsoftJson option
             .AddMessagePackProtocol();
 
             var redisConnectionString = _config["SignalRRedis"];
@@ -32,7 +33,7 @@ namespace BenchmarkServer
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSignalR(routes =>
             {

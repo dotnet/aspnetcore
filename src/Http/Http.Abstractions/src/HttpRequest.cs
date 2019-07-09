@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
@@ -98,15 +99,16 @@ namespace Microsoft.AspNetCore.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestBody Stream.
+        /// Gets or sets the request body <see cref="Stream"/>.
         /// </summary>
-        /// <returns>The RequestBody Stream.</returns>
+        /// <value>The request body <see cref="Stream"/>.</value>
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the request body pipe <see cref="PipeReader"/>.
+        /// Gets the request body <see cref="PipeReader"/>.
         /// </summary>
-        public abstract PipeReader BodyPipe { get; set; }
+        /// <value>The request body <see cref="PipeReader"/>.</value>
+        public virtual PipeReader BodyReader { get => throw new NotImplementedException();  }
 
         /// <summary>
         /// Checks the Content-Type header for form types.

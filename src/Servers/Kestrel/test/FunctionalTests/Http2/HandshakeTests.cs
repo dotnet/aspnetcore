@@ -19,9 +19,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Curl requires a custom install to support HTTP/2, see https://askubuntu.com/questions/884899/how-do-i-install-curl-with-http2-support")]
-    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public class HandshakeTests : LoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
@@ -30,17 +27,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         public HandshakeTests()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Client = new HttpClient(new HttpClientHandler
             {
-                // We don't want the default SocketsHttpHandler, it doesn't support HTTP/2 yet.
-                Client = new HttpClient(new WinHttpHandler
-                {
-                    ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                });
-            }
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            })
+            {
+                DefaultRequestVersion = new Version(2, 0),
+            };
         }
 
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
+        // Mac SslStream is missing ALPN support: https://github.com/dotnet/corefx/issues/30492
+        public void TlsAndHttp2NotSupportedOnMac()
+        {
+            var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
+            {
+                throw new NotImplementedException();
+            }, new TestServiceContext(LoggerFactory),
+            kestrelOptions =>
+            {
+                kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(_x509Certificate2);
+                });
+            }));
+
+            Assert.Equal("HTTP/2 over TLS is not supported on OSX due to missing ALPN support.", ex.Message);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
         {
             using (var server = new TestServer(context =>
@@ -69,6 +89,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2()
         {
             using (var server = new TestServer(context =>

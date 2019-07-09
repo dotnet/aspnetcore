@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
-        private static class Log
+        internal static class Log
         {
             private static readonly Action<ILogger, string, Exception> _connectionDisposed =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "ConnectionDisposed"), "Connection {TransportConnectionId} was disposed.");

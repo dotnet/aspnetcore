@@ -1,0 +1,22 @@
+﻿@page
+@model MvcSandbox.Pages.ComponentsModel
+@{ 
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MvcSandbox - Components</title>
+    <base href="~/" />
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.5/css/bootstrap.min.css" />
+    <link href="css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <app>@(await Html.RenderComponentAsync<MvcSandbox.Components.App>())</app>
+
+    <script src="_framework/components.server.js"></script>
+</body>
+</html>

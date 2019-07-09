@@ -46,7 +46,6 @@ namespace Company.WebApplication1
     #endif
 
             services.AddDefaultIdentity<ApplicationUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
@@ -55,8 +54,7 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc()
-                .AddNewtonsoftJson();
+            services.AddMvc(options => options.EnableEndpointRouting = false);
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

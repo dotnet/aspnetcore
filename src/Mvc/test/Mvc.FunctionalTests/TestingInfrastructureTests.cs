@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RazorPagesClassLibrary;
 using Xunit;
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public void TestingInfrastructure_CreateClientThrowsInvalidOperationForNonEntryPoint()
         {
-            var factory = new WebApplicationFactory<ClassLibraryStartup>();
+            using var factory = new WebApplicationFactory<ClassLibraryStartup>();
             var ex = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
             Assert.Equal($"The provided Type '{typeof(RazorPagesClassLibrary.ClassLibraryStartup).Name}' does not belong to an assembly with an entry point. A common cause for this error is providing a Type from a class library.",
                ex.Message);
@@ -122,13 +123,49 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task TestingInfrastructure_WorksWithGenericHost()
         {
-            var factory = new WebApplicationFactory<GenericHostWebSite.Program>()
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Program>()
                 .WithWebHostBuilder(builder =>
                     builder.ConfigureTestServices(s => s.AddSingleton<GenericHostWebSite.TestGenericService, OverridenGenericService>()));
 
             var response = await factory.CreateClient().GetStringAsync("Testing/Builder");
 
             Assert.Equal("GenericTest", response);
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingWebHostProgram()
+        {
+            using var factory = new WebApplicationFactory<BasicWebSite.Program>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingWebHostStartup()
+        {
+            using var factory = new WebApplicationFactory<BasicWebSite.Startup>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingGenericHostProgram()
+        {
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Program>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingGenericHostStartup()
+        {
+            using var factory = new WebApplicationFactory<GenericHostWebSite.Startup>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
         }
 
         private class OverridenService : TestService

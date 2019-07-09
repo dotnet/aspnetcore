@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -17,6 +18,11 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         private EditContext _previousEditContext;
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the created <c>ul</c> element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
 
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 
@@ -49,21 +55,20 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
-
             // As an optimization, only evaluate the messages enumerable once, and
             // only produce the enclosing <ul> if there's at least one message
             var messagesEnumerator = CurrentEditContext.GetValidationMessages().GetEnumerator();
             if (messagesEnumerator.MoveNext())
             {
                 builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+                builder.AddAttribute(2, "class", "validation-errors");
 
                 do
                 {
-                    builder.OpenElement(2, "li");
-                    builder.AddAttribute(3, "class", "validation-message");
-                    builder.AddContent(4, messagesEnumerator.Current);
+                    builder.OpenElement(3, "li");
+                    builder.AddAttribute(4, "class", "validation-message");
+                    builder.AddContent(5, messagesEnumerator.Current);
                     builder.CloseElement();
                 }
                 while (messagesEnumerator.MoveNext());

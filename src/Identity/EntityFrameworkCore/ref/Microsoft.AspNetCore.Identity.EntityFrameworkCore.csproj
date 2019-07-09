@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Identity"  />
     <Reference Include="Microsoft.Extensions.Identity.Stores"  />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational"  />
   </ItemGroup>

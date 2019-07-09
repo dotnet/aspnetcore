@@ -13,9 +13,17 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// An application model for controller actions.
+    /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ActionModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ActionModel"/>.
+        /// </summary>
+        /// <param name="actionMethod">The action <see cref="MethodInfo"/>.</param>
+        /// <param name="attributes">The attributes associated with the action.</param>
         public ActionModel(
             MethodInfo actionMethod,
             IReadOnlyList<object> attributes)
@@ -41,6 +49,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>();
         }
 
+        /// <summary>
+        /// Copy constructor for <see cref="ActionModel"/>.
+        /// </summary>
+        /// <param name="other">The <see cref="ActionModel"/> to copy.</param>
         public ActionModel(ActionModel other)
         {
             if (other == null)
@@ -67,8 +79,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
+        /// <summary>
+        /// Gets the action <see cref="MethodInfo"/>.
+        /// </summary>
         public MethodInfo ActionMethod { get; }
 
+        /// <summary>
+        /// Gets the action name.
+        /// </summary>
         public string ActionName { get; set; }
 
         /// <summary>
@@ -83,6 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        /// <summary>
+        /// Gets the attributes associated with the action.
+        /// </summary>
         public IReadOnlyList<object> Attributes { get; }
 
         /// <summary>
@@ -90,8 +111,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public ControllerModel Controller { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IFilterMetadata"/> instances associated with the action.
+        /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
+        /// <summary>
+        /// Gets the parameters associated with this action.
+        /// </summary>
         public IList<ParameterModel> Parameters { get; }
 
         /// <summary>
@@ -144,6 +171,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
+        /// <summary>
+        /// Gets the action display name.
+        /// </summary>
         public string DisplayName
         {
             get

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
-#if !NETCOREAPP3_0
-        private static readonly Version Windows8Version = new Version(6, 2);
-#endif
 
         private readonly ILogger _logger;
 
@@ -132,6 +129,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory)
         {
+            if (httpConnectionOptions == null)
+            {
+                throw new ArgumentNullException(nameof(httpConnectionOptions));
+            }
+
             if (httpConnectionOptions.Url == null)
             {
                 throw new ArgumentException("Options does not have a URL specified.", nameof(httpConnectionOptions));
@@ -171,7 +173,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// </remarks>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            return StartAsync(TransferFormat.Binary, cancellationToken);
+            return StartAsync(_httpConnectionOptions.DefaultTransferFormat, cancellationToken);
         }
 
         /// <summary>
@@ -188,11 +190,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         {
             using (_logger.BeginScope(_logScope))
             {
-                await StartAsyncCore(transferFormat).ForceAsync();
+                await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
             }
         }
 
-        private async Task StartAsyncCore(TransferFormat transferFormat)
+        private async Task StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -215,7 +217,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 Log.Starting(_logger);
 
-                await SelectAndStartTransport(transferFormat);
+                await SelectAndStartTransport(transferFormat, cancellationToken);
 
                 _started = true;
                 Log.Started(_logger);
@@ -234,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             using (_logger.BeginScope(_logScope))
             {
@@ -288,7 +290,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task SelectAndStartTransport(TransferFormat transferFormat)
+        private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             var uri = _httpConnectionOptions.Url;
             // Set the initial access token provider back to the original one from options
@@ -301,7 +303,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
                 {
                     Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat);
+                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken);
                 }
                 else
                 {
@@ -315,7 +317,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 do
                 {
-                    negotiationResponse = await GetNegotiationResponseAsync(uri);
+                    negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
 
                     if (negotiationResponse.Url != null)
                     {
@@ -379,12 +381,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             // The negotiation response gets cleared in the fallback scenario.
                             if (negotiationResponse == null)
                             {
-                                negotiationResponse = await GetNegotiationResponseAsync(uri);
+                                negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
                                 connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
-                            await StartTransport(connectUrl, transportType, transferFormat);
+                            await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
                             break;
                         }
                     }
@@ -414,7 +416,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger)
+        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
         {
             try
             {
@@ -436,7 +438,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     // rather than buffer the entire response. This gives a small perf boost.
                     // Note that it is important to dispose of the response when doing this to
                     // avoid leaving the connection open.
-                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
@@ -467,7 +469,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat)
+        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             // Construct the transport
             var transport = _transportFactory.CreateTransport(transportType);
@@ -475,7 +477,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // Start the transport, giving it one end of the pipe
             try
             {
-                await transport.StartAsync(connectUrl, transferFormat);
+                await transport.StartAsync(connectUrl, transferFormat, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -586,27 +588,25 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (!isWindows)
+            try
             {
-                // Assume other OSes have websockets
+                new ClientWebSocket().Dispose();
                 return true;
             }
-            else
+            catch
             {
-                // Windows 8 and above has websockets
-                return Environment.OSVersion.Version >= Windows8Version;
+                return false;
             }
 #endif
         }
 
-        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri)
+        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger);
+            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
             _connectionId = negotiationResponse.ConnectionId;
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;

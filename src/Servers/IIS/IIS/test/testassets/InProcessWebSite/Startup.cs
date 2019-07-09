@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +15,18 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS;
+using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
 namespace TestSite
 {
@@ -28,6 +35,141 @@ namespace TestSite
         public void Configure(IApplicationBuilder app)
         {
             TestStartup.Register(app, this);
+        }
+
+        public void ConfigureServices(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddResponseCompression();
+        }
+#if FORWARDCOMPAT
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
+
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().WebRootPath);
+#else
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().ContentRootPath);
+
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().WebRootPath);
+#endif
+
+        private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
+
+        private async Task BaseDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(AppContext.BaseDirectory);
+
+        private async Task ASPNETCORE_IIS_PHYSICAL_PATH(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
+
+        private async Task ServerAddresses(HttpContext ctx)
+        {
+            var serverAddresses = ctx.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
+            await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
+        }
+
+        private async Task ConsoleWrite(HttpContext ctx)
+        {
+            Console.WriteLine("TEST MESSAGE");
+
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private async Task ConsoleErrorWrite(HttpContext ctx)
+        {
+            Console.Error.WriteLine("TEST MESSAGE");
+
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        public async Task Auth(HttpContext ctx)
+        {
+            var authProvider = ctx.RequestServices.GetService<IAuthenticationSchemeProvider>();
+            var authScheme = (await authProvider.GetAllSchemesAsync()).SingleOrDefault();
+
+            await ctx.Response.WriteAsync(authScheme?.Name ?? "null");
+            if (ctx.User.Identity.Name != null)
+            {
+                await ctx.Response.WriteAsync(":" + ctx.User.Identity.Name);
+            }
+        }
+
+        public async Task GetClientCert(HttpContext context)
+        {
+            var clientCert = context.Connection.ClientCertificate;
+            await context.Response.WriteAsync(clientCert != null ? $"Enabled;{clientCert.GetCertHashString()}" : "Disabled");
+        }
+
+        private static int _waitingRequestCount;
+
+        public Task WaitForAbort(HttpContext context)
+        {
+            Interlocked.Increment(ref _waitingRequestCount);
+            try
+            {
+                context.RequestAborted.WaitHandle.WaitOne();
+                return Task.CompletedTask;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _waitingRequestCount);
+            }
+        }
+
+        public Task Abort(HttpContext context)
+        {
+            context.Abort();
+            return Task.CompletedTask;
+        }
+
+        public async Task WaitingRequestCount(HttpContext context)
+        {
+            await context.Response.WriteAsync(_waitingRequestCount.ToString());
+        }
+
+        public Task CreateFile(HttpContext context)
+        {
+#if FORWARDCOMPAT
+            var hostingEnv = context.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>();
+#else
+            var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
+#endif
+
+            if (context.Connection.LocalIpAddress == null || context.Connection.RemoteIpAddress == null)
+            {
+                throw new Exception("Failed to set local and remote ip addresses");
+            }
+
+            File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
+        }
+
+        public Task OverrideServer(HttpContext context)
+        {
+            context.Response.Headers["Server"] = "MyServer/7.8";
+            return Task.CompletedTask;
+        }
+
+        public void CompressedData(IApplicationBuilder builder)
+        {
+            builder.UseResponseCompression();
+            // write random bytes to check that compressed data is passed through
+            builder.Run(
+                async context =>
+                {
+                    context.Response.ContentType = "text/html";
+                    await context.Response.Body.WriteAsync(new byte[100], 0, 100);
+                });
+        }
+
+        [DllImport("kernel32.dll")]
+        static extern uint GetDllDirectory(uint nBufferLength, [Out] StringBuilder lpBuffer);
+
+        private async Task DllDirectory(HttpContext context)
+        {
+            var builder = new StringBuilder(1024);
+            GetDllDirectory(1024, builder);
+            await context.Response.WriteAsync(builder.ToString());
+        }
+
+        private async Task GetEnvironmentVariable(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable(ctx.Request.Query["name"].ToString()));
         }
 
         private async Task ServerVariable(HttpContext ctx)
@@ -286,6 +428,31 @@ namespace TestSite
             }
         }
 
+        private int _requestsInFlight = 0;
+        private async Task ReadAndCountRequestBody(HttpContext ctx)
+        {
+            Interlocked.Increment(ref _requestsInFlight);
+            await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+
+            var readBuffer = new byte[1];
+            await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
+
+            await ctx.Response.WriteAsync("done");
+            Interlocked.Decrement(ref _requestsInFlight);
+        }
+
+        private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("test1");
+#if FORWARDCOMPAT
+            var lifetime = ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+#else
+            var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
+#endif
+            lifetime.ApplicationStopping.WaitHandle.WaitOne();
+            await ctx.Response.WriteAsync("test2");
+        }
+
         private async Task ReadFullBody(HttpContext ctx)
         {
             await ReadRequestBody(ctx);
@@ -424,18 +591,6 @@ namespace TestSite
         private async Task ReadAndWriteCopyToAsync(HttpContext ctx)
         {
             await ctx.Request.Body.CopyToAsync(ctx.Response.Body);
-        }
-
-        private async Task UpgradeFeatureDetection(HttpContext ctx)
-        {
-            if (ctx.Features.Get<IHttpUpgradeFeature>() != null)
-            {
-                await ctx.Response.WriteAsync("Enabled");
-            }
-            else
-            {
-                await ctx.Response.WriteAsync("Disabled");
-            }
         }
 
         private async Task TestReadOffsetWorks(HttpContext ctx)
@@ -624,7 +779,7 @@ namespace TestSite
 
         private async Task LargeResponseFile(HttpContext ctx)
         {
-            var tempFile = Path.GetTempFileName();
+            var tempFile = System.IO.Path.GetTempFileName();
             var fileContent = new string('a', 200000);
             var fileStream = File.OpenWrite(tempFile);
 
@@ -656,7 +811,11 @@ namespace TestSite
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
+#if FORWARDCOMPAT
+            ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>().StopApplication();
+#else
             ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
+#endif
         }
 
         private async Task ShutdownStopAsync(HttpContext ctx)
@@ -675,13 +834,36 @@ namespace TestSite
             await server.StopAsync(cts.Token);
         }
 
+        private async Task StackSize(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(10000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private async Task StackSizeLarge(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(30000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private void RecursiveFunction(int i)
+        {
+            if (i == 0)
+            {
+                return;
+            }
+            RecursiveFunction(i - 1);
+        }
+
         private async Task GetServerVariableStress(HttpContext ctx)
         {
             // This test simulates the scenario where native Flush call is being
             // executed on background thread while request thread calls GetServerVariable
             // concurrent native calls may cause native object corruption
-
             var serverVariableFeature = ctx.Features.Get<IServerVariablesFeature>();
+
             await ctx.Response.WriteAsync("Response Begin");
             for (int i = 0; i < 1000; i++)
             {
@@ -698,5 +880,73 @@ namespace TestSite
 
         public Task HttpsHelloWorld(HttpContext ctx) =>
            ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
+
+                   public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
+
+        public Task Query(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
+
+        public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString() ?? "null");
+
+        public Task Anonymous(HttpContext context) => context.Response.WriteAsync("Anonymous?" + !context.User.Identity.IsAuthenticated);
+
+        public Task Restricted(HttpContext context)
+        {
+            if (context.User.Identity.IsAuthenticated)
+            {
+                Assert.IsType<WindowsPrincipal>(context.User);
+                return context.Response.WriteAsync(context.User.Identity.AuthenticationType);
+            }
+            else
+            {
+                return context.ChallengeAsync(IISDefaults.AuthenticationScheme);
+            }
+        }
+
+        public Task Forbidden(HttpContext context) => context.ForbidAsync(IISDefaults.AuthenticationScheme);
+
+        public Task RestrictedNTLM(HttpContext context)
+        {
+            if (string.Equals("NTLM", context.User.Identity.AuthenticationType, StringComparison.Ordinal))
+            {
+                return context.Response.WriteAsync("NTLM");
+            }
+            else
+            {
+                return context.ChallengeAsync(IISDefaults.AuthenticationScheme);
+            }
+        }
+
+        public Task UpgradeFeatureDetection(HttpContext context) =>
+            context.Response.WriteAsync(context.Features.Get<IHttpUpgradeFeature>() != null? "Enabled": "Disabled");
+
+        public Task CheckRequestHandlerVersion(HttpContext context)
+        {
+            // We need to check if the aspnetcorev2_outofprocess dll is loaded by iisexpress.exe
+            // As they aren't in the same process, we will try to delete the file and expect a file
+            // in use error
+            try
+            {
+                File.Delete(context.Request.Headers["ANCMRHPath"]);
+            }
+            catch(UnauthorizedAccessException)
+            {
+                // TODO calling delete on the file will succeed when running with IIS
+                return context.Response.WriteAsync("Hello World");
+            }
+
+            return context.Response.WriteAsync(context.Request.Headers["ANCMRHPath"]);
+        }
+
+        private async Task ProcessId(HttpContext context)
+        {
+            await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
+        }
+
+        public async Task HTTPS_PORT(HttpContext context)
+        {
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
+        }
     }
 }

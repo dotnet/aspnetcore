@@ -37,9 +37,19 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public void OnGet() { }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public abstract partial class ConfirmEmailChangeModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected ConfirmEmailChangeModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string email, string code) { throw null; }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class ConfirmEmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
@@ -103,6 +113,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
             public InputModel() { }
@@ -165,13 +176,23 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPost(string returnUrl = null) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public partial class RegisterConfirmationModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        public RegisterConfirmationModel() { }
+        public bool DisplayConfirmAccountLink { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string EmailConfirmationUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email) { throw null; }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected RegisterModel() { }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme> ExternalLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal.RegisterModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual void OnGet(string returnUrl = null) { }
+        public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
         public partial class InputModel
         {
@@ -283,6 +304,27 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         public virtual Microsoft.AspNetCore.Mvc.IActionResult OnGet() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
     }
+    public abstract partial class EmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected EmailModel() { }
+        public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
+        public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal.EmailModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool IsEmailConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
+        public partial class InputModel
+        {
+            public InputModel() { }
+            [System.ComponentModel.DataAnnotations.DisplayAttribute(Name="New email")]
+            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
+            [System.ComponentModel.DataAnnotations.RequiredAttribute]
+            public string NewEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        }
+    }
     public partial class EnableAuthenticatorModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         public EnableAuthenticatorModel() { }
@@ -334,19 +376,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         protected IndexModel() { }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal.IndexModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool IsEmailConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Username { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
             public InputModel() { }
-            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
-            [System.ComponentModel.DataAnnotations.RequiredAttribute]
-            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
             [System.ComponentModel.DataAnnotations.DisplayAttribute(Name="Phone number")]
             [System.ComponentModel.DataAnnotations.PhoneAttribute]
             public string PhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -357,6 +394,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         public static string ChangePassword { get { throw null; } }
         public static string DeletePersonalData { get { throw null; } }
         public static string DownloadPersonalData { get { throw null; } }
+        public static string Email { get { throw null; } }
         public static string ExternalLogins { get { throw null; } }
         public static string Index { get { throw null; } }
         public static string PersonalData { get { throw null; } }
@@ -364,6 +402,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         public static string ChangePasswordNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string DeletePersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string DownloadPersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
+        public static string EmailNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string ExternalLoginsNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string IndexNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string PageNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) { throw null; }
@@ -449,9 +488,19 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         public void OnGet() { }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public abstract partial class ConfirmEmailChangeModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected ConfirmEmailChangeModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string email, string code) { throw null; }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class ConfirmEmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
@@ -577,13 +626,23 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPost(string returnUrl = null) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
+    public partial class RegisterConfirmationModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        public RegisterConfirmationModel() { }
+        public bool DisplayConfirmAccountLink { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string EmailConfirmationUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string email) { throw null; }
+    }
+    [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected RegisterModel() { }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme> ExternalLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal.RegisterModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual void OnGet(string returnUrl = null) { }
+        public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
         public partial class InputModel
         {
@@ -695,6 +754,27 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         public virtual Microsoft.AspNetCore.Mvc.IActionResult OnGet() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
     }
+    public abstract partial class EmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
+    {
+        protected EmailModel() { }
+        public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
+        public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.EmailModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool IsEmailConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
+        public partial class InputModel
+        {
+            public InputModel() { }
+            [System.ComponentModel.DataAnnotations.DisplayAttribute(Name="New email")]
+            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
+            [System.ComponentModel.DataAnnotations.RequiredAttribute]
+            public string NewEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        }
+    }
     public partial class EnableAuthenticatorModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         public EnableAuthenticatorModel() { }
@@ -746,19 +826,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         protected IndexModel() { }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal.IndexModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool IsEmailConfirmed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Username { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
             public InputModel() { }
-            [System.ComponentModel.DataAnnotations.EmailAddressAttribute]
-            [System.ComponentModel.DataAnnotations.RequiredAttribute]
-            public string Email { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
             [System.ComponentModel.DataAnnotations.DisplayAttribute(Name="Phone number")]
             [System.ComponentModel.DataAnnotations.PhoneAttribute]
             public string PhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -769,6 +844,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         public static string ChangePassword { get { throw null; } }
         public static string DeletePersonalData { get { throw null; } }
         public static string DownloadPersonalData { get { throw null; } }
+        public static string Email { get { throw null; } }
         public static string ExternalLogins { get { throw null; } }
         public static string Index { get { throw null; } }
         public static string PersonalData { get { throw null; } }
@@ -776,6 +852,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         public static string ChangePasswordNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string DeletePersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string DownloadPersonalDataNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
+        public static string EmailNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string ExternalLoginsNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string IndexNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) { throw null; }
         public static string PageNavClass(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, string page) { throw null; }

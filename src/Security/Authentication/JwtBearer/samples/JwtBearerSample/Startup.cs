@@ -94,8 +94,8 @@ namespace JwtBearerSample
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
                         await response.StartAsync();
-                        Serialize(Todos, response.BodyPipe);
-                        await response.BodyPipe.FlushAsync();
+                        Serialize(Todos, response.BodyWriter);
+                        await response.BodyWriter.FlushAsync();
                     }
                 });
             });
@@ -103,7 +103,7 @@ namespace JwtBearerSample
 
         private void Serialize(IList<Todo> todos, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output);
+            using var writer = new Utf8JsonWriter(output);
             writer.WriteStartArray();
             foreach (var todo in todos)
             {

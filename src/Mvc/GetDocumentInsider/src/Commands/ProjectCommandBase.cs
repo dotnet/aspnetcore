@@ -9,13 +9,16 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
     {
         public CommandOption AssemblyPath { get; private set; }
 
+        public CommandOption ProjectName { get; private set; }
+
         public CommandOption ToolsDirectory { get; private set; }
 
         public override void Configure(CommandLineApplication command)
         {
             base.Configure(command);
 
-            AssemblyPath = command.Option("-a|--assembly <PATH>", Resources.AssemblyDescription);
+            AssemblyPath = command.Option("--assembly <PATH>", Resources.AssemblyDescription);
+            ProjectName = command.Option("--project <Name>", Resources.ProjectDescription);
             ToolsDirectory = command.Option("--tools-directory <PATH>", Resources.ToolsDirectoryDescription);
         }
 
@@ -26,6 +29,11 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             if (!AssemblyPath.HasValue())
             {
                 throw new CommandException(Resources.FormatMissingOption(AssemblyPath.LongName));
+            }
+
+            if (!ProjectName.HasValue())
+            {
+                throw new CommandException(Resources.FormatMissingOption(ProjectName.LongName));
             }
 
             if (!ToolsDirectory.HasValue())

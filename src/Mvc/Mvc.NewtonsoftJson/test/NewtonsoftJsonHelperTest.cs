@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -10,31 +11,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 {
-    public class NewtonsoftJsonHelperTest
+    public class NewtonsoftJsonHelperTest : JsonHelperTestBase
     {
-        [Fact]
-        public void Serialize_EscapesHtmlByDefault()
-        {
-            // Arrange
-            var options = new MvcNewtonsoftJsonOptions();
-            options.SerializerSettings.StringEscapeHandling = StringEscapeHandling.EscapeNonAscii;
-            var helper = new NewtonsoftJsonHelper(
-                Options.Create(options),
-                ArrayPool<char>.Shared);
-            var obj = new
-            {
-                HTML = "<b>John Doe</b>"
-            };
-            var expectedOutput = "{\"html\":\"\\u003cb\\u003eJohn Doe\\u003c/b\\u003e\"}";
-
-            // Act
-            var result = helper.Serialize(obj);
-
-            // Assert
-            var htmlString = Assert.IsType<HtmlString>(result);
-            Assert.Equal(expectedOutput, htmlString.ToString());
-        }
-
         [Fact]
         public void Serialize_MaintainsSettingsAndEscapesHtml()
         {
@@ -65,10 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         public void Serialize_UsesHtmlSafeVersionOfPassedInSettings()
         {
             // Arrange
-            var options = new MvcNewtonsoftJsonOptions();
-            var helper = new NewtonsoftJsonHelper(
-                Options.Create(options),
-                ArrayPool<char>.Shared);
+            var helper = GetJsonHelper();
             var obj = new
             {
                 FullHtml = "<b>John Doe</b>"
@@ -90,6 +65,34 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             // Assert
             var htmlString = Assert.IsType<HtmlString>(result);
             Assert.Equal(expectedOutput, htmlString.ToString());
+        }
+
+        [Fact]
+        public override void Serialize_WithNonAsciiChars()
+        {
+            // Arrange
+            var helper = GetJsonHelper();
+            var obj = new
+            {
+                HTML = $"Hello pingüino"
+            };
+            var expectedOutput = $"{{\"html\":\"{obj.HTML}\"}}";
+
+            // Act
+            var result = helper.Serialize(obj);
+
+            // Assert
+            var htmlString = Assert.IsType<HtmlString>(result);
+            Assert.Equal(expectedOutput, htmlString.ToString());
+        }
+
+        protected override IJsonHelper GetJsonHelper()
+        {
+            var options = new MvcNewtonsoftJsonOptions();
+            var helper = new NewtonsoftJsonHelper(
+                Options.Create(options),
+                ArrayPool<char>.Shared);
+            return helper;
         }
     }
 }

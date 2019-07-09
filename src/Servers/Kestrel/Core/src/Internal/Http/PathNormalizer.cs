@@ -1,15 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Connections.Abstractions;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public static class PathNormalizer
+    internal static class PathNormalizer
     {
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';
@@ -20,8 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (pathEncoded)
             {
                 // URI was encoded, unescape and then parse as UTF-8
-                // Disabling warning temporary
-                pathLength = UrlDecoder.DecodeInPlace(path);
+                pathLength = UrlDecoder.DecodeInPlace(path, isFormEncoding: false);
 
                 // Removing dot segments must be done after unescaping. From RFC 3986:
                 //
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // https://tools.ietf.org/html/rfc3986#section-2.2
                 pathLength = RemoveDotSegments(path.Slice(0, pathLength));
 
-                return GetUtf8String(path.Slice(0, pathLength));
+                return Encoding.UTF8.GetString(path.Slice(0, pathLength));
             }
 
             pathLength = RemoveDotSegments(path);
@@ -49,16 +48,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
-        }
-
-        private static unsafe string GetUtf8String(Span<byte> path)
-        {
-            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
-            // copy to an array
-            fixed (byte* pointer = path)
-            {
-                return Encoding.UTF8.GetString(pointer, path.Length);
-            }
         }
 
         // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4

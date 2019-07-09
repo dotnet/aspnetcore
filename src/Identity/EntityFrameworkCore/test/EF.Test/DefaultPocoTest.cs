@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     public class DefaultPocoTest : IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ApplicationBuilder _builder;
-        private const string DatabaseName = nameof(DefaultPocoTest);
 
         public DefaultPocoTest(ScratchDatabaseFixture fixture)
         {
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddDbContext<IdentityDbContext>(o =>
-                    o.UseSqlServer(fixture.ConnectionString)
+                    o.UseSqlite(fixture.Connection)
                         .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();
@@ -36,16 +35,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _builder = new ApplicationBuilder(provider);
 
             using(var scoped = provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            using (var db = scoped.ServiceProvider.GetRequiredService<IdentityDbContext>())
             {
-                db.Database.EnsureCreated();
+                scoped.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.EnsureCreated();
             }
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task EnsureStartupUsageWorks()
         {
             var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();

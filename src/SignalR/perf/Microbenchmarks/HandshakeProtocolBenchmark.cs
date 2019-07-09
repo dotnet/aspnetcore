@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var memoryBufferWriter = MemoryBufferWriter.Get();
             try
             {
-                HandshakeProtocol.WriteResponseMessage(new HandshakeResponseMessage(1), memoryBufferWriter);
+                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
                 result = memoryBufferWriter.ToArray();
             }
             finally

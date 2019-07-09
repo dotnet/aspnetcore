@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class GenericWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
     {
@@ -57,15 +57,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _builder.ConfigureServices((context, services) =>
             {
-                if (_hostingStartupWebHostBuilder != null)
-                {
-                    var webhostContext = GetWebHostBuilderContext(context);
-                    _hostingStartupWebHostBuilder.ConfigureServices(webhostContext, services);
-                }
-            });
-
-            _builder.ConfigureServices((context, services) =>
-            {
                 var webhostContext = GetWebHostBuilderContext(context);
                 var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
@@ -84,8 +75,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     options.HostingStartupExceptions = _hostingStartupErrors;
                 });
 
-                services.AddHostedService<GenericWebHostService>();
-
                 // REVIEW: This is bad since we don't own this type. Anybody could add one of these and it would mess things up
                 // We need to flow this differently
                 var listener = new DiagnosticListener("Microsoft.AspNetCore");
@@ -95,6 +84,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
+
+                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
@@ -268,7 +260,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
                     typeof(IHostBuilder).GetMethods().First(m => m.Name == nameof(IHostBuilder.ConfigureContainer))
                         .MakeGenericMethod(containerType)
-                        .Invoke(_builder, new object[] { configureCallback });
+                        .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
 
                 // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -303,13 +295,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             builder.Build(instance)(container);
         }
 
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             _builder.ConfigureServices((context, services) =>
             {
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
-                    options.ConfigureApplication = configure;
+                    var webhostBuilderContext = GetWebHostBuilderContext(context);
+                    options.ConfigureApplication = app => configure(webhostBuilderContext, app);
                 });
             });
 

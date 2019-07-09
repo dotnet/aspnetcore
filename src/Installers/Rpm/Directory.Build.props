@@ -1,0 +1,13 @@
+<!--
+  Common properties for building RPM installers.
+-->
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <!-- Output paths -->
+  <PropertyGroup>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+    <OutputPath>$(InstallersOutputPath)</OutputPath>
+  </PropertyGroup>
+
+</Project>

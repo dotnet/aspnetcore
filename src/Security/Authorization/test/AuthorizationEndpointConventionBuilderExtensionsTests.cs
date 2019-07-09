@@ -33,6 +33,25 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
+        public void RequireAuthorization_IAuthorizeData_Empty()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            builder.RequireAuthorization(Array.Empty<IAuthorizeData>());
+
+            // Assert
+            var convention = Assert.Single(builder.Conventions);
+
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            convention(endpointModel);
+
+            var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
+            Assert.Null(authMetadata.Policy);
+        }
+
+        [Fact]
         public void RequireAuthorization_PolicyName()
         {
             // Arrange
@@ -49,6 +68,25 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
             Assert.Equal("policy", authMetadata.Policy);
+        }
+
+        [Fact]
+        public void RequireAuthorization_PolicyName_Empty()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            builder.RequireAuthorization(Array.Empty<string>());
+
+            // Assert
+            var convention = Assert.Single(builder.Conventions);
+
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            convention(endpointModel);
+
+            var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
+            Assert.Null(authMetadata.Policy);
         }
 
         [Fact]
@@ -70,9 +108,23 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.Null(authMetadata.Policy);
         }
 
+        [Fact]
+        public void RequireAuthorization_ChainedCall()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            var chainedBuilder = builder.RequireAuthorization();
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
+        }
+
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
+            public bool TestProperty { get; } = true;
 
             public void Add(Action<EndpointBuilder> convention)
             {

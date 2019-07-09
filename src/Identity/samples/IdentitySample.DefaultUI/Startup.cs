@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using IdentitySample.DefaultUI.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,14 @@ using Microsoft.Extensions.Logging;
 
 namespace IdentitySample.DefaultUI
 {
+    public class BadDude : IUserConfirmation<ApplicationUser>
+    {
+        public Task<bool> IsConfirmedAsync(UserManager<ApplicationUser> manager, ApplicationUser user)
+        {
+            return Task.FromResult(false);
+        }
+    }
+
     public class Startup
     {
         public Startup(IWebHostEnvironment env)
@@ -35,9 +44,9 @@ namespace IdentitySample.DefaultUI
                     .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 
-            services.AddMvc();
+            services.AddMvc().AddNewtonsoftJson();
 
-            services.AddDefaultIdentity<ApplicationUser>()
+            services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
                  .AddRoles<IdentityRole>()
                  .AddEntityFrameworkStores<ApplicationDbContext>();
         }
@@ -58,13 +67,15 @@ namespace IdentitySample.DefaultUI
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

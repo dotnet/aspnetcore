@@ -9,15 +9,13 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     /// <summary>
     ///   http://tools.ietf.org/html/rfc2616#section-3.6.1
     /// </summary>
-    public class Http1ChunkedEncodingMessageBody : Http1MessageBody
+    internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     {
         // byte consts don't have a data type annotation so we pre-cast it
         private const byte ByteCR = (byte)'\r';
@@ -36,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context)
         {
             RequestKeepAlive = keepAlive;
-
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 
@@ -54,6 +51,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryRead(out ReadResult readResult)
         {
+            ThrowIfCompleted();
+
+            return TryReadInternal(out readResult);
+        }
+
+        public override bool TryReadInternal(out ReadResult readResult)
+        {
             TryStart();
 
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
@@ -68,7 +72,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return boolResult;
         }
 
-        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            ThrowIfCompleted();
+            return ReadAsyncInternal(cancellationToken);
+        }
+
+        public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
         {
             TryStart();
 
@@ -95,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception)
         {
-            _requestBodyPipe.Reader.Complete();
+            _completed = true;
             _context.ReportApplicationError(exception);
         }
 
@@ -210,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
+        private void Copy(in ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
             if (readableBuffer.IsSingleSegment)
             {
@@ -230,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pumpTask = PumpAsync();
         }
 
-        protected bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = default;
             examined = default;
@@ -302,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // _consumedBytes aren't tracked for trailer headers, since headers have separate limits.
             if (_mode == Mode.TrailerHeaders)
             {
-                if (_context.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (_context.TakeMessageHeaders(readableBuffer, trailers: true, out consumed, out examined))
                 {
                     _mode = Mode.Complete;
                 }
@@ -311,10 +321,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _mode == Mode.Complete;
         }
 
-        private void ParseChunkedPrefix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedPrefix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
-            examined = buffer.Start;
             var reader = new SequenceReader<byte>(buffer);
 
             if (!reader.TryRead(out var ch1) || !reader.TryRead(out var ch2))
@@ -322,6 +331,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 examined = reader.Position;
                 return;
             }
+
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
+            examined = reader.Position;
 
             var chunkSize = CalculateChunkSize(ch1, 0);
             ch1 = ch2;
@@ -345,10 +357,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
 
+                // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
+                examined = reader.Position;
+
                 if (ch1 == '\r' && ch2 == '\n')
                 {
                     consumed = reader.Position;
-                    examined = reader.Position;
 
                     AddAndCheckConsumedBytes(reader.Consumed);
                     _inputLength = chunkSize;
@@ -368,7 +382,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Chunk-extensions not currently parsed
             // Just drain the data
-            consumed = buffer.Start;
             examined = buffer.Start;
 
             do
@@ -417,7 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             } while (_mode == Mode.Extension);
         }
 
-        private void ReadChunkedData(ReadOnlySequence<byte> buffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ReadChunkedData(in ReadOnlySequence<byte> buffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             var actual = Math.Min(buffer.Length, _inputLength);
             consumed = buffer.GetPosition(actual);
@@ -434,10 +447,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void ParseChunkedSuffix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedSuffix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
-            examined = buffer.Start;
 
             if (buffer.Length < 2)
             {
@@ -447,10 +459,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var suffixBuffer = buffer.Slice(0, 2);
             var suffixSpan = suffixBuffer.ToSpan();
+
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedSuffix.
+            examined = suffixBuffer.End;
+
             if (suffixSpan[0] == '\r' && suffixSpan[1] == '\n')
             {
                 consumed = suffixBuffer.End;
-                examined = suffixBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Prefix;
             }
@@ -460,10 +475,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void ParseChunkedTrailer(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedTrailer(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
-            examined = buffer.Start;
 
             if (buffer.Length < 2)
             {
@@ -474,12 +488,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var trailerBuffer = buffer.Slice(0, 2);
             var trailerSpan = trailerBuffer.ToSpan();
 
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedTrailer.
+            examined = trailerBuffer.End;
+
             if (trailerSpan[0] == '\r' && trailerSpan[1] == '\n')
             {
                 consumed = trailerBuffer.End;
-                examined = trailerBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Complete;
+                // No trailers
+                _context.OnTrailersComplete();
             }
             else
             {
@@ -536,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize()
             ));
     }
 }

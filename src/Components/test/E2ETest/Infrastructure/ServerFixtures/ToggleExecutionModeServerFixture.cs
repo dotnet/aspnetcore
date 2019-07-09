@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
@@ -9,16 +10,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         : ServerFixture
     {
         public string PathBase { get; set; }
-        public bool UsingAspNetHost { get; private set; }
+
+        public ExecutionMode ExecutionMode { get; set; } = ExecutionMode.Client;
 
         private AspNetSiteServerFixture.BuildWebHost _buildWebHostMethod;
         private IDisposable _serverToDispose;
+
+        public List<string> AspNetFixtureAdditionalArguments { get; set; } = new List<string>();
 
         public void UseAspNetHost(AspNetSiteServerFixture.BuildWebHost buildWebHostMethod)
         {
             _buildWebHostMethod = buildWebHostMethod
                 ?? throw new ArgumentNullException(nameof(buildWebHostMethod));
-            UsingAspNetHost = true;
         }
 
         protected override string StartAndGetRootUri()
@@ -35,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             {
                 // Use specified ASP.NET host server
                 var underlying = new AspNetSiteServerFixture();
+                underlying.AdditionalArguments.AddRange(AspNetFixtureAdditionalArguments);
                 underlying.BuildWebHostMethod = _buildWebHostMethod;
                 _serverToDispose = underlying;
                 return underlying.RootUri.AbsoluteUri;
@@ -45,5 +49,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             _serverToDispose?.Dispose();
         }
+
+        internal ToggleExecutionModeServerFixture<TClientProgram> WithAdditionalArguments(string [] additionalArguments)
+        {
+            AspNetFixtureAdditionalArguments.AddRange(additionalArguments);
+            return this;
+        }
     }
+
+    public enum ExecutionMode { Client, Server }
 }

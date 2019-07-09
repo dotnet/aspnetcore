@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionManager
+    internal partial class HttpConnectionManager
     {
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _ = ExecuteTimerLoop();
         }
 
-        public bool TryGetConnection(string id, out HttpConnectionContext connection)
+        internal bool TryGetConnection(string id, out HttpConnectionContext connection)
         {
             connection = null;
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             return false;
         }
 
-        public HttpConnectionContext CreateConnection()
+        internal HttpConnectionContext CreateConnection()
         {
             return CreateConnection(PipeOptions.Default, PipeOptions.Default);
         }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
         /// </summary>
         /// <returns></returns>
-        public HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
+        internal HttpConnectionContext CreateConnection(PipeOptions transportPipeOptions, PipeOptions appPipeOptions)
         {
             var id = MakeNewConnectionId();
 
@@ -105,11 +105,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static string MakeNewConnectionId()
         {
-            // TODO: Use Span when WebEncoders implements Span methods https://github.com/aspnet/Home/issues/2966
             // 128 bit buffer / 8 bits per byte = 16 bytes
-            var buffer = new byte[16];
-            _keyGenerator.GetBytes(buffer);
+            Span<byte> buffer = stackalloc byte[16];
             // Generate the id with RNGCrypto because we want a cryptographically random id, which GUID is not
+            _keyGenerator.GetBytes(buffer);
             return WebEncoders.Base64UrlEncode(buffer);
         }
 
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     try
                     {
-                        await ScanAsync();
+                        Scan();
                     }
                     catch (Exception ex)
                     {
@@ -137,32 +136,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Log.HeartBeatEnded(_logger);
         }
 
-        public async Task ScanAsync()
+        public void Scan()
         {
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                HttpConnectionStatus status;
-                DateTimeOffset lastSeenUtc;
                 var connection = c.Value.Connection;
-
-                await connection.StateLock.WaitAsync();
-
-                try
-                {
-                    // Capture the connection state
-                    status = connection.Status;
-
-                    lastSeenUtc = connection.LastSeenUtc;
-                }
-                finally
-                {
-                    connection.StateLock.Release();
-                }
+                // Capture the connection state
+                var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > _disconnectTimeout.TotalSeconds)
+                if (!Debugger.IsAttached && lastSeenUtc.HasValue && (DateTimeOffset.UtcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
@@ -198,7 +183,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
         }
 
-        public async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
+        internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully)
         {
             try
             {

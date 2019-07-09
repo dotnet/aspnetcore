@@ -10,7 +10,7 @@ namespace FormatterWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.RespectBrowserAcceptHeader = true;
             })
@@ -19,9 +19,10 @@ namespace FormatterWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

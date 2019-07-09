@@ -4,12 +4,13 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class BodyControl
+    internal class BodyControl
     {
         private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
             = new ThrowingWasUpgradedWriteOnlyStream();
@@ -62,11 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public void Stop()
+        public Task StopAsync()
         {
             _requestReader.StopAcceptingReads();
             _emptyRequestReader.StopAcceptingReads();
-            _responseWriter.StopAcceptingWrites();
+            return _responseWriter.StopAcceptingWritesAsync();
         }
 
         public void Abort(Exception error)

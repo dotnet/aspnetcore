@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var ex = Assert.Throws<InvalidOperationException>(() => new HubConnectionBuilder().Build());
             Assert.Equal("Cannot create HubConnection instance. An IConnectionFactory was not configured.", ex.Message);
+        }
+
+        [Fact]
+        public void CannotCreateConnectionWithNoEndPoint()
+        {
+            var builder = new HubConnectionBuilder();
+            builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+            Assert.Equal("Cannot create HubConnection instance. An EndPoint was not configured.", ex.Message);
         }
 
         [Fact]
@@ -51,6 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var builder = new HubConnectionBuilder();
             builder.Services.AddSingleton<IConnectionFactory>(new HttpConnectionFactory(Options.Create(new HttpConnectionOptions()), NullLoggerFactory.Instance));
+            builder.WithUrl("http://example.com");
 
             Assert.NotNull(builder.Build());
 

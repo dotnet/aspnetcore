@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    [System.ObsoleteAttribute("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.Environments.", false)]
     public static partial class EnvironmentName
     {
         public static readonly string Development;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Hosting
         public HostingStartupAttribute(System.Type hostingStartupType) { }
         public System.Type HostingStartupType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    [System.ObsoleteAttribute("Use Microsoft.Extensions.Hosting.IHostApplicationLifetime instead.", false)]
+    [System.ObsoleteAttribute("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.IHostApplicationLifetime.", false)]
     public partial interface IApplicationLifetime
     {
         System.Threading.CancellationToken ApplicationStarted { get; }
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Hosting
         System.Threading.CancellationToken ApplicationStopping { get; }
         void StopApplication();
     }
-    [System.ObsoleteAttribute("Use IWebHostEnvironment instead.", false)]
+    [System.ObsoleteAttribute("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.AspNetCore.Hosting.IWebHostEnvironment.", false)]
     public partial interface IHostingEnvironment
     {
         string ApplicationName { get; set; }
@@ -63,6 +64,16 @@ namespace Microsoft.AspNetCore.Hosting
     {
         void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app);
         System.IServiceProvider ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services);
+    }
+    [System.ObsoleteAttribute]
+    public partial interface IStartupConfigureContainerFilter<TContainerBuilder>
+    {
+        System.Action<TContainerBuilder> ConfigureContainer(System.Action<TContainerBuilder> container);
+    }
+    [System.ObsoleteAttribute]
+    public partial interface IStartupConfigureServicesFilter
+    {
+        System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> next);
     }
     public partial interface IStartupFilter
     {
@@ -110,18 +121,8 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string ServerUrlsKey;
         public static readonly string ShutdownTimeoutKey;
         public static readonly string StartupAssemblyKey;
+        public static readonly string StaticWebAssetsKey;
         public static readonly string SuppressStatusMessagesKey;
         public static readonly string WebRootKey;
-    }
-}
-namespace Microsoft.AspNetCore.Hosting.Internal
-{
-    public partial interface IStartupConfigureContainerFilter<TContainerBuilder>
-    {
-        System.Action<TContainerBuilder> ConfigureContainer(System.Action<TContainerBuilder> container);
-    }
-    public partial interface IStartupConfigureServicesFilter
-    {
-        System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> next);
     }
 }

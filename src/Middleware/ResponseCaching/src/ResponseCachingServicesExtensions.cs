@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.ResponseCaching;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 
@@ -27,8 +26,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-            services.TryAddSingleton<IResponseCachingPolicyProvider, ResponseCachingPolicyProvider>();
-            services.TryAddSingleton<IResponseCachingKeyProvider, ResponseCachingKeyProvider>();
 
             return services;
         }

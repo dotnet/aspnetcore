@@ -7,15 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,8 +17,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
-    public class NewtonsoftJsonOutputFormatterTest
+    public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
     {
+        protected override TextOutputFormatter GetOutputFormatter()
+        {
+            return new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+        }
+
         [Fact]
         public void Creates_SerializerSettings_ByDefault()
         {
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Formatting = Formatting.Indented,
             };
             var expectedOutput = JsonConvert.SerializeObject(person, settings);
-            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared);
+            var jsonFormatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions());
 
             // Act
             await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
@@ -279,8 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var beforeMessage = "Hello World";
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
-            var before = new JValue(beforeMessage);
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
             var memStream = new MemoryStream();
             var outputFormatterContext = GetOutputFormatterContext(
                 beforeMessage,
@@ -299,197 +296,38 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(beforeMessage, afterMessage);
         }
 
-        public static TheoryData<string, string, bool> WriteCorrectCharacterEncoding
-        {
-            get
-            {
-                var data = new TheoryData<string, string, bool>
-                {
-                    { "This is a test 激光這兩個字是甚麼意思 string written using utf-8", "utf-8", true },
-                    { "This is a test 激光這兩個字是甚麼意思 string written using utf-16", "utf-16", true },
-                    { "This is a test 激光這兩個字是甚麼意思 string written using utf-32", "utf-32", false },
-                    { "This is a test æøå string written using iso-8859-1", "iso-8859-1", false },
-                };
-
-                return data;
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(WriteCorrectCharacterEncoding))]
-        public async Task WriteToStreamAsync_UsesCorrectCharacterEncoding(
-            string content,
-            string encodingAsString,
-            bool isDefaultEncoding)
-        {
-            // Arrange
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
-            var formattedContent = "\"" + content + "\"";
-            var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
-            var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
-            var expectedData = encoding.GetBytes(formattedContent);
-
-
-            var body = new MemoryStream();
-            var actionContext = GetActionContext(mediaType, body);
-
-            var outputFormatterContext = new OutputFormatterWriteContext(
-                actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
-                typeof(string),
-                content)
-            {
-                ContentType = new StringSegment(mediaType.ToString()),
-            };
-
-            // Act
-            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding(encodingAsString));
-
-            // Assert
-            var actualData = body.ToArray();
-            Assert.Equal(expectedData, actualData);
-        }
-
         [Fact]
-        public async Task ErrorDuringSerialization_DoesNotCloseTheBrackets()
+        public async Task WriteToStreamAsync_LargePayload_DoesNotPerformSynchronousWrites()
         {
             // Arrange
-            var expectedOutput = "{\"name\":\"Robert\"";
+            var model = Enumerable.Range(0, 1000).Select(p => new User { FullName = new string('a', 5000) });
+
+            var stream = new Mock<Stream> { CallBase = true };
+            stream.Setup(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+            stream.SetupGet(s => s.CanWrite).Returns(true);
+
+            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
             var outputFormatterContext = GetOutputFormatterContext(
-                new ModelWithSerializationError(),
-                typeof(ModelWithSerializationError));
-            var serializerSettings = JsonSerializerSettingsProvider.CreateSerializerSettings();
-            var jsonFormatter = new NewtonsoftJsonOutputFormatter(serializerSettings, ArrayPool<char>.Shared);
-
-            // Act
-            try
-            {
-                await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
-            }
-            catch (JsonSerializationException serializerException)
-            {
-                var expectedException = Assert.IsType<NotImplementedException>(serializerException.InnerException);
-                Assert.Equal("Property Age has not been implemented", expectedException.Message);
-            }
-
-            // Assert
-            var body = outputFormatterContext.HttpContext.Response.Body;
-
-            Assert.NotNull(body);
-            body.Position = 0;
-
-            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
-            Assert.Equal(expectedOutput, content);
-        }
-
-        [Theory]
-        [InlineData("application/json", false, "application/json")]
-        [InlineData("application/json", true, "application/json")]
-        [InlineData("application/xml", false, null)]
-        [InlineData("application/xml", true, null)]
-        [InlineData("application/*", false, "application/json")]
-        [InlineData("text/*", false, "text/json")]
-        [InlineData("custom/*", false, null)]
-        [InlineData("application/json;v=2", false, null)]
-        [InlineData("application/json;v=2", true, null)]
-        [InlineData("application/some.entity+json", false, null)]
-        [InlineData("application/some.entity+json", true, "application/some.entity+json")]
-        [InlineData("application/some.entity+json;v=2", true, "application/some.entity+json;v=2")]
-        [InlineData("application/some.entity+xml", true, null)]
-        public void CanWriteResult_ReturnsExpectedValueForMediaType(
-            string mediaType,
-            bool isServerDefined,
-            string expectedResult)
-        {
-            // Arrange
-            var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared);
-
-            var body = new MemoryStream();
-            var actionContext = GetActionContext(MediaTypeHeaderValue.Parse(mediaType), body);
-            var outputFormatterContext = new OutputFormatterWriteContext(
-                actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                model,
                 typeof(string),
-                new object())
-            {
-                ContentType = new StringSegment(mediaType),
-                ContentTypeIsServerDefined = isServerDefined,
-            };
+                "application/json; charset=utf-8",
+                stream.Object);
 
             // Act
-            var actualCanWriteValue = formatter.CanWriteResult(outputFormatterContext);
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
 
             // Assert
-            var expectedContentType = expectedResult ?? mediaType;
-            Assert.Equal(expectedResult != null, actualCanWriteValue);
-            Assert.Equal(new StringSegment(expectedContentType), outputFormatterContext.ContentType);
-        }
+            stream.Verify(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce());
 
-        private static Encoding CreateOrGetSupportedEncoding(
-            NewtonsoftJsonOutputFormatter formatter,
-            string encodingAsString,
-            bool isDefaultEncoding)
-        {
-            Encoding encoding = null;
-            if (isDefaultEncoding)
-            {
-                encoding = formatter.SupportedEncodings
-                               .First((e) => e.WebName.Equals(encodingAsString, StringComparison.OrdinalIgnoreCase));
-            }
-            else
-            {
-                encoding = Encoding.GetEncoding(encodingAsString);
-                formatter.SupportedEncodings.Add(encoding);
-            }
-
-            return encoding;
-        }
-
-        private static ILogger GetLogger()
-        {
-            return NullLogger.Instance;
-        }
-
-        private static OutputFormatterWriteContext GetOutputFormatterContext(
-            object outputValue,
-            Type outputType,
-            string contentType = "application/xml; charset=utf-8",
-            MemoryStream responseStream = null)
-        {
-            var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
-
-            var actionContext = GetActionContext(mediaTypeHeaderValue, responseStream);
-            return new OutputFormatterWriteContext(
-                actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
-                outputType,
-                outputValue)
-            {
-                ContentType = new StringSegment(contentType),
-            };
-        }
-
-        private static ActionContext GetActionContext(
-            MediaTypeHeaderValue contentType,
-            MemoryStream responseStream = null)
-        {
-            var request = new Mock<HttpRequest>();
-            var headers = new HeaderDictionary();
-            request.Setup(r => r.ContentType).Returns(contentType.ToString());
-            request.SetupGet(r => r.Headers).Returns(headers);
-            headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
-            var response = new Mock<HttpResponse>();
-            response.SetupGet(f => f.Body).Returns(responseStream ?? new MemoryStream());
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.Request).Returns(request.Object);
-            httpContext.SetupGet(c => c.Response).Returns(response.Object);
-            return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            stream.Verify(v => v.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
+            stream.Verify(v => v.Flush(), Times.Never());
         }
 
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
         {
             public TestableJsonOutputFormatter(JsonSerializerSettings serializerSettings)
-                : base(serializerSettings, ArrayPool<char>.Shared)
+                : base(serializerSettings, ArrayPool<char>.Shared, new MvcOptions())
             {
             }
 
@@ -522,18 +360,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             public int age { get; set; }
 
             public string FullName { get; set; }
-        }
-
-        private class ModelWithSerializationError
-        {
-            public string Name { get; } = "Robert";
-            public int Age
-            {
-                get
-                {
-                    throw new NotImplementedException($"Property {nameof(Age)} has not been implemented");
-                }
-            }
         }
     }
 }

@@ -1,7 +1,4 @@
 <Project>
-
-  <!-- Intentionally empty to isolate this when building in the context of another repository. -->
-  <Import Project="Wix.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+  <Import Project="Wix.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 </Project>

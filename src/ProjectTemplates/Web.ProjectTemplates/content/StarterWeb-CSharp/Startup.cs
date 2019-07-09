@@ -21,11 +21,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
@@ -54,13 +52,6 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
-
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
 #if (UseLocalDB)
@@ -70,8 +61,7 @@ namespace Company.WebApplication1
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
-            services.AddDefaultIdentity<IdentityUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -105,7 +95,7 @@ namespace Company.WebApplication1
                         context.HandleResponse(); // Suppress the exception
                          return Task.CompletedTask;
                     },
-                    // If your application needs to do authenticate single users, add your user validation below.
+                    // If your application needs to authenticate single users, add your user validation below.
                     //OnTokenValidated = context =>
                     //{
                     //    return myUserValidationLogic(context.Ticket.Principal);
@@ -117,19 +107,20 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-
 #if (OrganizationalAuth)
-            services.AddMvc(options =>
+
+            services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            })
-            .AddNewtonsoftJson();
+            });
 #else
-            services.AddMvc()
-                .AddNewtonsoftJson();
+            services.AddControllersWithViews();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+           services.AddRazorPages();
 #endif
         }
 
@@ -150,28 +141,28 @@ namespace Company.WebApplication1
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
 #else
             }
-
 #endif
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapControllerRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-                routes.MapRazorPages();
-            });
-
-            app.UseCookiePolicy();
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+#if (OrganizationalAuth || IndividualAuth)
+                endpoints.MapRazorPages();
+#endif
+            });
         }
     }
 }

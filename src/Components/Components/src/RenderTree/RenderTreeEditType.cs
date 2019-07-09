@@ -51,5 +51,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// should be updated.
         /// </summary>
         UpdateMarkup = 8,
+
+        /// <summary>
+        /// An entry in a sparse permutation list. That is, a list of old indices with
+        /// corresponding new indices, which altogether describe a valid permutation of
+        /// the children at the current edit position.
+        /// </summary>
+        PermutationListEntry = 9,
+
+        /// <summary>
+        /// Indicates that the preceding series of <see cref="PermutationListEntry"/> entries
+        /// is now complete.
+        /// </summary>
+        PermutationListEnd = 10,
     }
 }

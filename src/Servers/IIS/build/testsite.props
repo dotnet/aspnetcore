@@ -10,7 +10,6 @@
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
-    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'true'">false</AppendRuntimeIdentifierToOutputPath>
     <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
@@ -34,7 +33,8 @@
 
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
     <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/aspnet/AspNetCore/issues/7196 -->
-    <DotNetPath>$(RepositoryRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+    <DotNetPath>$(RepoRoot).dotnet\dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
   <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
@@ -81,7 +81,7 @@
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
-      <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
+      <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
@@ -90,14 +90,26 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PublishTestsAssets" AfterTargets="Build;Publish" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="PublishTestsAsset" DependsOnTargets="Publish" Returns="@(PublishedTestAsset)">
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <ItemGroup>
+      <PublishedTestAsset Include="$(TestAssetOutputName)-$(TestAssetProfile)" Path="$(PublishAbsoluteDir)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'" Returns="@(PublishedTestAsset)">
 
     <!--
       _InsidePublishTestsAssets is to avoid invoking this target recursively
       Platform;PlatformTarget removal is fix builds inside VS -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Publish"
+             Targets="PublishTestsAsset"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
+             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
   </Target>
 </Project>

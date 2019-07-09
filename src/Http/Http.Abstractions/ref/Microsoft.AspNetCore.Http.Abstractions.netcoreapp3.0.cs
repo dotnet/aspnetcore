@@ -87,6 +87,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Cors.Infrastructure
+{
+    public partial interface ICorsMetadata
+    {
+    }
+}
 namespace Microsoft.AspNetCore.Http
 {
     public abstract partial class ConnectionInfo
@@ -117,9 +123,9 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum CookieSecurePolicy
     {
+        SameAsRequest = 0,
         Always = 1,
         None = 2,
-        SameAsRequest = 0,
     }
     public partial class Endpoint
     {
@@ -128,6 +134,11 @@ namespace Microsoft.AspNetCore.Http
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Http.RequestDelegate RequestDelegate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override string ToString() { throw null; }
+    }
+    public static partial class EndpointHttpContextExtensions
+    {
+        public static Microsoft.AspNetCore.Http.Endpoint GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
     }
     public sealed partial class EndpointMetadataCollection : System.Collections.Generic.IEnumerable<object>, System.Collections.Generic.IReadOnlyCollection<object>, System.Collections.Generic.IReadOnlyList<object>, System.Collections.IEnumerable
     {
@@ -138,7 +149,7 @@ namespace Microsoft.AspNetCore.Http
         public object this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator GetEnumerator() { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public T GetMetadata<T>() where T : class { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IEnumerable<T> GetOrderedMetadata<T>() where T : class { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IReadOnlyList<T> GetOrderedMetadata<T>() where T : class { throw null; }
         System.Collections.Generic.IEnumerator<object> System.Collections.Generic.IEnumerable<System.Object>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -239,7 +250,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpRequest() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeReader BodyPipe { get; set; }
+        public virtual System.IO.Pipelines.PipeReader BodyReader { get { throw null; } }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get; set; }
@@ -263,7 +274,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpResponse() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeWriter BodyPipe { get; set; }
+        public virtual System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
@@ -279,7 +290,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract void Redirect(string location, bool permanent);
         public virtual void RegisterForDispose(System.IDisposable disposable) { }
         public virtual void RegisterForDisposeAsync(System.IAsyncDisposable disposable) { }
-        public abstract System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public virtual System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public static partial class HttpResponseWritingExtensions
     {
@@ -362,6 +373,13 @@ namespace Microsoft.AspNetCore.Http
         public string ToUriComponent() { throw null; }
     }
     public delegate System.Threading.Tasks.Task RequestDelegate(Microsoft.AspNetCore.Http.HttpContext context);
+    public static partial class RequestTrailerExtensions
+    {
+        public static bool CheckTrailersAvailable(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetDeclaredTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetTrailer(this Microsoft.AspNetCore.Http.HttpRequest request, string trailerName) { throw null; }
+        public static bool SupportsTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+    }
     public static partial class ResponseTrailerExtensions
     {
         public static void AppendTrailer(this Microsoft.AspNetCore.Http.HttpResponse response, string trailerName, Microsoft.Extensions.Primitives.StringValues trailerValues) { }
@@ -445,14 +463,6 @@ namespace Microsoft.AspNetCore.Http
         public abstract System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> AcceptWebSocketAsync(string subProtocol);
     }
 }
-namespace Microsoft.AspNetCore.Http.Endpoints
-{
-    public static partial class EndpointHttpContextExtensions
-    {
-        public static Microsoft.AspNetCore.Http.Endpoint GetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
-        public static void SetEndpoint(this Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.Endpoint endpoint) { }
-    }
-}
 namespace Microsoft.AspNetCore.Http.Features
 {
     public partial interface IEndpointFeature
@@ -462,58 +472,6 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IRouteValuesFeature
     {
         Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get; set; }
-    }
-}
-namespace Microsoft.AspNetCore.Http.Internal
-{
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct HeaderSegment : System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>
-    {
-        private readonly object _dummy;
-        public HeaderSegment(Microsoft.Extensions.Primitives.StringSegment formatting, Microsoft.Extensions.Primitives.StringSegment data) { throw null; }
-        public Microsoft.Extensions.Primitives.StringSegment Data { get { throw null; } }
-        public Microsoft.Extensions.Primitives.StringSegment Formatting { get { throw null; } }
-        public bool Equals(Microsoft.AspNetCore.Http.Internal.HeaderSegment other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
-        public override int GetHashCode() { throw null; }
-        public static bool operator ==(Microsoft.AspNetCore.Http.Internal.HeaderSegment left, Microsoft.AspNetCore.Http.Internal.HeaderSegment right) { throw null; }
-        public static bool operator !=(Microsoft.AspNetCore.Http.Internal.HeaderSegment left, Microsoft.AspNetCore.Http.Internal.HeaderSegment right) { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct HeaderSegmentCollection : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>, System.Collections.IEnumerable, System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection>
-    {
-        private readonly object _dummy;
-        public HeaderSegmentCollection(Microsoft.Extensions.Primitives.StringValues headers) { throw null; }
-        public bool Equals(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection other) { throw null; }
-        public override bool Equals(object obj) { throw null; }
-        public Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection.Enumerator GetEnumerator() { throw null; }
-        public override int GetHashCode() { throw null; }
-        public static bool operator ==(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection left, Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection right) { throw null; }
-        public static bool operator !=(Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection left, Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection right) { throw null; }
-        System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public Enumerator(Microsoft.Extensions.Primitives.StringValues headers) { throw null; }
-            public Microsoft.AspNetCore.Http.Internal.HeaderSegment Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
-    }
-    public static partial class ParsingHelpers
-    {
-        public static void AppendHeaderJoined(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, params string[] values) { }
-        public static void AppendHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues values) { }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeader(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeaderSplit(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static Microsoft.Extensions.Primitives.StringValues GetHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key) { throw null; }
-        public static void SetHeaderJoined(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues value) { }
-        public static void SetHeaderUnmodified(Microsoft.AspNetCore.Http.IHeaderDictionary headers, string key, Microsoft.Extensions.Primitives.StringValues? values) { }
     }
 }
 namespace Microsoft.AspNetCore.Routing

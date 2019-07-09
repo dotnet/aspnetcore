@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,17 +31,6 @@ namespace SignalRSamples
             })
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
-
-            services.AddCors(o =>
-            {
-                o.AddPolicy("Everything", p =>
-                {
-                    p.AllowAnyHeader()
-                     .AllowAnyMethod()
-                     .AllowAnyOrigin()
-                     .AllowCredentials();
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,19 +43,21 @@ namespace SignalRSamples
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors("Everything");
+            app.UseRouting();
 
-            app.UseRouting(routes =>
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<DynamicChat>("/dynamic");
-                routes.MapHub<Chat>("/default");
-                routes.MapHub<Streaming>("/streaming");
-                routes.MapHub<UploadHub>("/uploading");
-                routes.MapHub<HubTChat>("/hubT");
+                endpoints.MapHub<DynamicChat>("/dynamic");
+                endpoints.MapHub<Chat>("/default");
+                endpoints.MapHub<Streaming>("/streaming");
+                endpoints.MapHub<UploadHub>("/uploading");
+                endpoints.MapHub<HubTChat>("/hubT");
 
-                routes.MapConnectionHandler<MessagesConnectionHandler>("/chat");
+                endpoints.MapConnectionHandler<MessagesConnectionHandler>("/chat");
 
-                routes.MapGet("/deployment", context =>
+                endpoints.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -99,8 +89,6 @@ namespace SignalRSamples
                     return Task.CompletedTask;
                 });
             });
-
-            app.UseAuthorization();
         }
     }
 }

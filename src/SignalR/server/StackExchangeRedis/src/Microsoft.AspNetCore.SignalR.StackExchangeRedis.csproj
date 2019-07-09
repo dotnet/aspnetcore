@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
   </ItemGroup>
 
@@ -16,6 +16,11 @@
     <Reference Include="StackExchange.Redis" />
     <Reference Include="MessagePack" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
   </ItemGroup>
 
 </Project>

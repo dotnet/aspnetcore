@@ -1,18 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -33,11 +25,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseRouting();
             app.UseAuthentication();
 
-            app.UseSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<VersionHub>("/version");
+                endpoints.MapHub<VersionHub>("/version");
             });
         }
     }

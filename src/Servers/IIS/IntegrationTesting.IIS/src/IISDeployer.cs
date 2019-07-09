@@ -24,12 +24,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
 
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
-        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
+        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(100);
 
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
         private string _debugLogFile;
+        private bool _disposed;
 
         public Process HostProcess { get; set; }
 
@@ -45,6 +46,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public override void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             Dispose(gracefulShutdown: false);
         }
 
@@ -146,7 +153,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             try
             {
-
                 // Handle cases where debug file is redirected by test
                 var debugLogLocations = new List<string>();
                 if (IISDeploymentParameters.HandlerSettings.ContainsKey("debugFile"))
@@ -186,8 +192,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         return;
                     }
                 }
-
-                throw new InvalidOperationException($"Unable to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
             }
             finally
             {
@@ -211,11 +215,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 AddTemporaryAppHostConfig(contentRoot, port);
 
-                WaitUntilSiteStarted();
+                WaitUntilSiteStarted(contentRoot);
             }
         }
 
-        private void WaitUntilSiteStarted()
+        private void WaitUntilSiteStarted(string contentRoot)
         {
             ServiceController serviceController = new ServiceController("w3svc");
             Logger.LogInformation("W3SVC status " + serviceController.Status);
@@ -233,6 +237,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 var site = serverManager.Sites.Single();
                 var appPool = serverManager.ApplicationPools.Single();
+
+                var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
+                if (actualPath != contentRoot)
+                {
+                    throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
+                }
 
                 if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
                 {
@@ -420,6 +430,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             List<Exception> exceptions = null;
             var sw = Stopwatch.StartNew();
             int retryCount = 0;
+            var delay = _retryDelay;
 
             while (sw.Elapsed < _timeout)
             {
@@ -443,7 +454,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 }
 
                 retryCount++;
-                Thread.Sleep(_retryDelay);
+                Thread.Sleep(delay);
+                delay *= 1.5;
             }
 
             throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());

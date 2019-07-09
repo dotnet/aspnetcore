@@ -3,6 +3,8 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -18,15 +20,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageLoaderTest
     {
+        private readonly IOptions<RazorPagesOptions> RazorPagesOptions = Options.Create(new RazorPagesOptions { Conventions = new PageConventionCollection(Mock.Of<IServiceProvider>()) });
+        private readonly IActionDescriptorCollectionProvider ActionDescriptorCollectionProvider;
+
+        public DefaultPageLoaderTest()
+        {
+            var actionDescriptors = new ActionDescriptorCollection(Array.Empty<ActionDescriptor>(), 1);
+            ActionDescriptorCollectionProvider = Mock.Of<IActionDescriptorCollectionProvider>(v => v.ActionDescriptors == actionDescriptors);
+        }
+
         [Fact]
-        public void Load_InvokesApplicationModelProviders()
+        public async Task LoadAsync_InvokesApplicationModelProviders()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
 
             var compilerProvider = GetCompilerProvider();
 
-            var razorPagesOptions = Options.Create(new RazorPagesOptions());
             var mvcOptions = Options.Create(new MvcOptions());
             var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
 
@@ -77,14 +87,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
+                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
-                razorPagesOptions,
+                RazorPagesOptions,
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = await loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();
@@ -92,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public void Load_CreatesEndpoint_WithRoute()
+        public async Task LoadAsync_CreatesEndpoint_WithRoute()
         {
             // Arrange
             var descriptor = new PageActionDescriptor()
@@ -110,7 +121,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var compilerProvider = GetCompilerProvider();
 
-            var razorPagesOptions = Options.Create(new RazorPagesOptions());
             var mvcOptions = Options.Create(new MvcOptions());
             var endpointFactory = new ActionEndpointFactory(transformer.Object);
 
@@ -132,26 +142,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
+                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
-                razorPagesOptions,
+                RazorPagesOptions,
                 mvcOptions);
 
             // Act
-            var result = loader.Load(descriptor);
+            var result = await loader.LoadAsync(descriptor);
 
             // Assert
             Assert.NotNull(result.Endpoint);
         }
 
         [Fact]
-        public void Load_InvokesApplicationModelProviders_WithTheRightOrder()
+        public async Task LoadAsync_InvokesApplicationModelProviders_WithTheRightOrder()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
             var compilerProvider = GetCompilerProvider();
-            var razorPagesOptions = Options.Create(new RazorPagesOptions());
             var mvcOptions = Options.Create(new MvcOptions());
             var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
 
@@ -196,18 +206,138 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
 
             var loader = new DefaultPageLoader(
+                ActionDescriptorCollectionProvider,
                 providers,
                 compilerProvider,
                 endpointFactory,
-                razorPagesOptions,
+                RazorPagesOptions,
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = await loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();
             provider2.Verify();
+        }
+
+        [Fact]
+        public async Task LoadAsync_CachesResults()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+            };
+
+            var transformer = new Mock<RoutePatternTransformer>();
+            transformer
+                .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
+                .Returns<RoutePattern, object>((p, v) => p);
+
+            var compilerProvider = GetCompilerProvider();
+
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+
+            var provider = new Mock<IPageApplicationModelProvider>();
+
+            var pageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
+
+            provider.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Null(c.PageApplicationModel);
+                    c.PageApplicationModel = pageApplicationModel;
+                })
+                .Verifiable();
+
+            var providers = new[]
+            {
+                provider.Object,
+            };
+
+            var loader = new DefaultPageLoader(
+                ActionDescriptorCollectionProvider,
+                providers,
+                compilerProvider,
+                endpointFactory,
+                RazorPagesOptions,
+                mvcOptions);
+
+            // Act
+            var result1 = await loader.LoadAsync(descriptor);
+            var result2 = await loader.LoadAsync(descriptor);
+
+            // Assert
+            Assert.Same(result1, result2);
+        }
+
+        [Fact]
+        public async Task LoadAsync_UpdatesResults()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+            };
+
+            var transformer = new Mock<RoutePatternTransformer>();
+            transformer
+                .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
+                .Returns<RoutePattern, object>((p, v) => p);
+
+            var compilerProvider = GetCompilerProvider();
+
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+
+            var provider = new Mock<IPageApplicationModelProvider>();
+
+            var pageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
+
+            provider.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Null(c.PageApplicationModel);
+                    c.PageApplicationModel = pageApplicationModel;
+                })
+                .Verifiable();
+
+            var providers = new[]
+            {
+                provider.Object,
+            };
+
+            var descriptorCollection1 = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
+            var descriptorCollection2 = new ActionDescriptorCollection(new[] { descriptor }, version: 2);
+
+            var actionDescriptorCollectionProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorCollectionProvider
+                .SetupSequence(p => p.ActionDescriptors)
+                .Returns(descriptorCollection1)
+                .Returns(descriptorCollection2);
+
+            var loader = new DefaultPageLoader(
+                actionDescriptorCollectionProvider.Object,
+                providers,
+                compilerProvider,
+                endpointFactory,
+                RazorPagesOptions,
+                mvcOptions);
+
+            // Act
+            var result1 = await loader.LoadAsync(descriptor);
+            var result2 = await loader.LoadAsync(descriptor);
+
+            // Assert
+            Assert.NotSame(result1, result2);
         }
 
         [Fact]
@@ -224,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(model, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>())
             {
                 convention.Object,
             };
@@ -258,7 +388,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(model, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>())
             {
                 globalConvention.Object,
             };
@@ -290,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(handlerModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -317,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(handlerModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection { handlerModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { handlerModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -348,7 +478,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     m.Page.HandlerMethods.Remove(m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -379,7 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(parameterModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -410,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(parameterModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection { parameterModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { parameterModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -445,7 +575,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     model.Handler.Parameters.Remove(model);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -479,7 +609,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(propertyModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -510,7 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(propertyModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection { propertyModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { propertyModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -542,7 +672,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     model.Page.HandlerProperties.Remove(model);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection();
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -553,11 +683,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IViewCompilerProvider GetCompilerProvider()
         {
-            var descriptor = new CompiledViewDescriptor
-            {
-                Item = TestRazorCompiledItem.CreateForView(typeof(object), "/Views/Index.cshtml"),
-            };
-
+            var compiledItem = TestRazorCompiledItem.CreateForView(typeof(object), "/Views/Index.cshtml");
+            var descriptor = new CompiledViewDescriptor(compiledItem);
             var compiler = new Mock<IViewCompiler>();
             compiler.Setup(c => c.CompileAsync(It.IsAny<string>()))
                 .ReturnsAsync(descriptor);

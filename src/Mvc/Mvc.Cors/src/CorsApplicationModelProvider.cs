@@ -7,11 +7,19 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Cors
 {
     internal class CorsApplicationModelProvider : IApplicationModelProvider
     {
+        private readonly MvcOptions _mvcOptions;
+
+        public CorsApplicationModelProvider(IOptions<MvcOptions> mvcOptions)
+        {
+            _mvcOptions = mvcOptions.Value;
+        }
+
         public int Order => -1000 + 10;
 
         public void OnProvidersExecuted(ApplicationModelProviderContext context)
@@ -20,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
             // Intentionally empty.
         }
 
@@ -30,8 +39,21 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (_mvcOptions.EnableEndpointRouting)
+            {
+                // When doing endpoint routing, translate IEnableCorsAttribute to an HttpMethodMetadata with CORS enabled.
+                ConfigureCorsEndpointMetadata(context.Result);
+            }
+            else
+            {
+                ConfigureCorsFilters(context);
+            }
+        }
+
+        private static void ConfigureCorsFilters(ApplicationModelProviderContext context)
+        {
             var isCorsEnabledGlobally = context.Result.Filters.OfType<ICorsAuthorizationFilter>().Any() ||
-                context.Result.Filters.OfType<CorsAuthorizationFilterFactory>().Any();
+                            context.Result.Filters.OfType<CorsAuthorizationFilterFactory>().Any();
 
             foreach (var controllerModel in context.Result.Controllers)
             {
@@ -67,31 +89,65 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
                     if (isCorsEnabledGlobally || corsOnController || corsOnAction)
                     {
-                        UpdateActionToAcceptCorsPreflight(actionModel);
+                        ConfigureCorsActionConstraint(actionModel);
                     }
                 }
             }
         }
 
-        private static void UpdateActionToAcceptCorsPreflight(ActionModel actionModel)
+        private static void ConfigureCorsActionConstraint(ActionModel actionModel)
         {
-            for (var i = 0; i < actionModel.Selectors.Count; i++)
-            {
-                var selectorModel = actionModel.Selectors[i];
+            var selectors = actionModel.Selectors;
+            // Read interface .Count once rather than per iteration
+            var selectorsCount = selectors.Count;
 
-                for (var j = 0; j < selectorModel.ActionConstraints.Count; j++)
+            for (var i = 0; i < selectorsCount; i++)
+            {
+                var selectorModel = selectors[i];
+
+                var actionConstraints = selectorModel.ActionConstraints;
+                // Read interface .Count once rather than per iteration
+                var actionConstraintsCount = actionConstraints.Count;
+                for (var j = 0; j < actionConstraintsCount; j++)
                 {
-                    if (selectorModel.ActionConstraints[j] is HttpMethodActionConstraint httpConstraint)
+                    if (actionConstraints[j] is HttpMethodActionConstraint httpConstraint)
                     {
-                        selectorModel.ActionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
+                        actionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
                     }
                 }
+            }
+        }
 
-                for (int j = 0; j < selectorModel.EndpointMetadata.Count; j++)
+        private static void ConfigureCorsEndpointMetadata(ApplicationModel applicationModel)
+        {
+            foreach (var controller in applicationModel.Controllers)
+            {
+                var corsOnController = controller.Attributes.OfType<IDisableCorsAttribute>().Any() ||
+                    controller.Attributes.OfType<IEnableCorsAttribute>().Any();
+
+                foreach (var action in controller.Actions)
                 {
-                    if (selectorModel.EndpointMetadata[j] is HttpMethodMetadata httpMethodMetadata)
+                    var corsOnAction = action.Attributes.OfType<IDisableCorsAttribute>().Any() ||
+                        action.Attributes.OfType<IEnableCorsAttribute>().Any();
+
+                    if (!corsOnController && !corsOnAction)
                     {
-                        selectorModel.EndpointMetadata[j] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, true);
+                        // No CORS here.
+                        continue;
+                    }
+
+                    foreach (var selector in action.Selectors)
+                    {
+                        var metadata = selector.EndpointMetadata;
+                        // Read interface .Count once rather than per iteration
+                        var metadataCount = metadata.Count;
+                        for (var i = 0; i < metadataCount; i++)
+                        {
+                            if (metadata[i] is HttpMethodMetadata httpMethodMetadata)
+                            {
+                                metadata[i] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, acceptCorsPreflight: true);
+                            }
+                        }
                     }
                 }
             }

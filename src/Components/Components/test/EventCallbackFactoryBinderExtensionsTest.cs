@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -10,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
     public class EventCallbackFactoryBinderExtensionsTest
     {
         [Fact]
-        public async Task CreateBinder_ThrowsConversionException()
+        public async Task CreateBinder_SwallowsConversionException()
         {
             // Arrange
             var value = 17;
@@ -20,12 +23,78 @@ namespace Microsoft.AspNetCore.Components
             var binder = EventCallback.Factory.CreateBinder(component, setter, value);
 
             // Act
-            await Assert.ThrowsAsync<FormatException>(() =>
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+
+            Assert.Equal(17, value); // Setter not called
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_IfConverterThrows_ConvertsEmptyStringToDefault()
+        {
+            // Arrange
+            var value = 17;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = string.Empty, });
+
+            Assert.Equal(0, value); // Calls setter to apply default value for this type
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_ThrowsSetterException()
+        {
+            // Arrange
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => { throw new InvalidTimeZoneException(); };
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, 17);
+
+            // Act
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
             {
-                return binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+                return binder.InvokeAsync(new UIChangeEventArgs() { Value = "18", });
             });
 
-            Assert.Equal(17, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_BindsEmpty_DoesNotCallSetter()
+        {
+            // Arrange
+            var value = 17;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+
+            Assert.Equal(17, value); // Setter not called
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_BindsEmpty_CallsSetterForNullable()
+        {
+            // Arrange
+            var value = (int?)17;
+            var component = new EventCountingComponent();
+            Action<int?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "", });
+
+            Assert.Null(value); // Setter called
             Assert.Equal(1, component.Count);
         }
 
@@ -296,6 +365,25 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task CreateBinder_NullableEnum()
+        {
+            // Arrange
+            var value = (AttributeTargets?)AttributeTargets.All;
+            var component = new EventCountingComponent();
+            Action<AttributeTargets?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = AttributeTargets.Class;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
         public async Task CreateBinder_DateTime()
         {
             // Arrange
@@ -315,6 +403,26 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task CreateBinder_NullableDateTime()
+        {
+            // Arrange
+            var value = (DateTime?)DateTime.Now;
+            var component = new EventCountingComponent();
+            Action<DateTime?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        // For now format is only supported by this specific method.
+        [Fact]
         public async Task CreateBinder_DateTime_Format()
         {
             // Arrange
@@ -329,6 +437,119 @@ namespace Microsoft.AspNetCore.Components
 
             // Act
             await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        // This uses a type converter
+        [Fact]
+        public async Task CreateBinder_Guid()
+        {
+            // Arrange
+            var value = Guid.NewGuid();
+            var component = new EventCountingComponent();
+            Action<Guid> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = Guid.NewGuid();
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        // This uses a type converter
+        [Fact]
+        public async Task CreateBinder_NullableGuid()
+        {
+            // Arrange
+            var value = (Guid?)Guid.NewGuid();
+            var component = new EventCountingComponent();
+            Action<Guid?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = Guid.NewGuid();
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_CustomTypeConverter()
+        {
+            // Arrange
+            var value = new SecretMessage() {  Message = "A message", };
+            var component = new EventCountingComponent();
+            Action<SecretMessage> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new SecretMessage() { Message = "TypeConverter may be old, but it still works!", };
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue.Message, value.Message);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public void CreateBinder_GenericWithoutTypeConverter_Throws()
+        {
+            var value = new ClassWithoutTypeConverter();
+            var component = new EventCountingComponent();
+            Action<ClassWithoutTypeConverter> setter = (_) => value = _;
+
+            var ex = Assert.Throws<InvalidOperationException>(() => EventCallback.Factory.CreateBinder(component, setter, value));
+
+            Assert.Equal(
+                $"The type '{typeof(ClassWithoutTypeConverter).FullName}' does not have an associated TypeConverter that supports conversion from a string. " +
+                $"Apply 'TypeConverterAttribute' to the type to register a converter.",
+                ex.Message);
+        }
+
+        [Fact]
+        [ReplaceCulture("fr-FR", "fr-FR")]
+        public async Task CreateBinder_NumericType_WithCurrentCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, culture: null);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42 000,00", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NumericType_WithInvariantCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, CultureInfo.InvariantCulture);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42,000.00", });
 
             Assert.Equal(expectedValue, value);
             Assert.Equal(1, component.Count);
@@ -352,6 +573,43 @@ namespace Microsoft.AspNetCore.Components
             public Task SetParametersAsync(ParameterCollection parameters)
             {
                 throw new System.NotImplementedException();
+            }
+        }
+
+        private class ClassWithoutTypeConverter
+        {
+        }
+
+        [TypeConverter(typeof(SecretMessageTypeConverter))]
+        private class SecretMessage
+        {
+            public string Message { get; set; }
+
+            public override string ToString()
+            {
+                return Message;
+            }
+        }
+
+        private class SecretMessageTypeConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                if (sourceType == typeof(string))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            {
+                if (value is string message)
+                {
+                    return new SecretMessage() { Message = message, };
+                }
+
+                return null;
             }
         }
     }

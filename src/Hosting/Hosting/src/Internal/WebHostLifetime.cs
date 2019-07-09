@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting
 {
     internal class WebHostLifetime : IDisposable
     {
@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly string _shutdownMessage;
 
         private bool _disposed = false;
+        private bool _exitedGracefully = false;
 
         public WebHostLifetime(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
         {
@@ -22,6 +23,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             AppDomain.CurrentDomain.ProcessExit += ProcessExit;
             Console.CancelKeyPress += CancelKeyPress;
+        }
+
+        internal void SetExitedGracefully()
+        {
+            _exitedGracefully = true;
         }
 
         public void Dispose()
@@ -46,6 +52,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private void ProcessExit(object sender, EventArgs eventArgs)
         {
             Shutdown();
+            if (_exitedGracefully)
+            {
+                // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
+                // Suppress that since we shut down gracefully. https://github.com/aspnet/AspNetCore/issues/6526
+                Environment.ExitCode = 0;
+            }
         }
 
         private void Shutdown()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Components
@@ -11,9 +11,13 @@ namespace Microsoft.AspNetCore.Components
     /// <c>BindAttributes</c> and annotate it with the appropriate attributes.
     /// </remarks>
     
-    // Handles cases like <input bind="..." /> - this is a fallback and will be ignored
+    // Handles cases like <input @bind="..." /> - this is a fallback and will be ignored
     // when a specific type attribute is applied.
     [BindInputElement(null, null, "value", "onchange")]
+
+    // Handles cases like <input @bind-value="..." /> - this is a fallback and will be ignored
+    // when a specific type attribute is applied.
+    [BindInputElement(null, "value", "value", "onchange")]
 
     [BindInputElement("checkbox", null, "checked", "onchange")]
     [BindInputElement("text", null, "value", "onchange")]

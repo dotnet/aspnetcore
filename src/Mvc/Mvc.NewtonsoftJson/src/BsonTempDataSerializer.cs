@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private static readonly ConcurrentDictionary<Type, Func<JObject, object>> _dictionaryConverters =
             new ConcurrentDictionary<Type, Func<JObject, object>>();
 
-        private static readonly Dictionary<JTokenType, Type> _tokenTypeLookup = new Dictionary<JTokenType, Type>
+        private static readonly Dictionary<JTokenType, Type> _tokenTypeLookup = new Dictionary<JTokenType, Type>(8)
         {
             { JTokenType.String, typeof(string) },
             { JTokenType.Integer, typeof(int) },
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
             else
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
         }
 
@@ -164,6 +164,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 throw new InvalidOperationException(errorMessage);
             }
         }
+
+        public override bool CanSerializeType(Type type) => CanSerializeType(type, out _);
 
         private static bool CanSerializeType(Type typeToSerialize, out string errorMessage)
         {
@@ -208,6 +210,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
 
             actualType = actualType ?? typeToSerialize;
+            actualType = Nullable.GetUnderlyingType(actualType) ?? actualType;
+
             if (!IsSimpleType(actualType))
             {
                 errorMessage = Resources.FormatTempData_CannotSerializeType(

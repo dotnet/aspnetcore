@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -30,11 +30,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // Scratch data structure for understanding attribute diffs.
         public Dictionary<string, int> AttributeDiffSet { get; } = new Dictionary<string, int>();
 
-        public void Clear()
+        internal StackObjectPool<Dictionary<object, KeyedItemInfo>> KeyedItemInfoDictionaryPool { get; }
+            = new StackObjectPool<Dictionary<object, KeyedItemInfo>>(maxPreservedItems: 10, () => new Dictionary<object, KeyedItemInfo>());
+
+        public void ClearStateForCurrentBatch()
         {
+            // This method is used to reset the builder back to a default state so it can
+            // begin building the next batch. That means clearing all the tracked state, but
+            // *not* clearing ComponentRenderQueue because that may hold information about
+            // the next batch we want to build. We shouldn't ever need to clear
+            // ComponentRenderQueue explicitly, because it gets cleared as an aspect of
+            // processing the render queue.
+
             EditsBuffer.Clear();
             ReferenceFramesBuffer.Clear();
-            ComponentRenderQueue.Clear();
             UpdatedComponentDiffs.Clear();
             DisposedComponentIds.Clear();
             DisposedEventHandlerIds.Clear();

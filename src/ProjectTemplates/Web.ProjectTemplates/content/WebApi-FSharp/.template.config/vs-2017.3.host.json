@@ -10,7 +10,7 @@
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1014"
   },
-  "order": 200,
+  "order": 201,
   "icon": "vs-2017.3/WebAPI.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784882",
   "uiFilters": [ "oneaspnet" ],

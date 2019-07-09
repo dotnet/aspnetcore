@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Http;
 using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 

@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageActionInvokerProvider : IActionInvokerProvider
     {
-        private const string ViewStartFileName = "_ViewStart.cshtml";
-
-        private readonly IPageLoader _loader;
+        private readonly PageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
@@ -33,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly MvcOptions _mvcOptions;
-        private readonly HtmlHelperOptions _htmlHelperOptions;
+        private readonly MvcViewOptions _mvcViewOptions;
         private readonly IPageHandlerMethodSelector _selector;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger<PageActionInvoker> _logger;
@@ -43,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private volatile InnerCache _currentCache;
 
         public PageActionInvokerProvider(
-            IPageLoader loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelBinderFactory modelBinderFactory,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
-            IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
@@ -71,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                   modelBinderFactory,
                   tempDataFactory,
                   mvcOptions,
-                  htmlHelperOptions,
+                  mvcViewOptions,
                   selector,
                   diagnosticListener,
                   loggerFactory,
@@ -81,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         public PageActionInvokerProvider(
-            IPageLoader loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -92,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelBinderFactory modelBinderFactory,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
-            IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
@@ -111,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _mvcOptions = mvcOptions.Value;
-            _htmlHelperOptions = htmlHelperOptions.Value;
+            _mvcViewOptions = mvcViewOptions.Value;
             _selector = selector;
             _diagnosticListener = diagnosticListener;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
@@ -139,7 +137,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IFilterMetadata[] filters;
             if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
             {
-                actionContext.ActionDescriptor = _loader.Load(actionDescriptor);
+                CompiledPageActionDescriptor compiledPageActionDescriptor;
+                if (_mvcOptions.EnableEndpointRouting)
+                {
+                    // With endpoint routing, PageLoaderMatcherPolicy should have already produced a CompiledPageActionDescriptor.
+                    compiledPageActionDescriptor = (CompiledPageActionDescriptor)actionDescriptor;
+                }
+                else
+                {
+                    // With legacy routing, we're forced to perform a blocking call. The exceptation is that
+                    // in the most common case - build time views or successsively cached runtime views - this should finish synchronously.
+                    compiledPageActionDescriptor = _loader.LoadAsync(actionDescriptor).GetAwaiter().GetResult();
+                }
+
+                actionContext.ActionDescriptor = compiledPageActionDescriptor;
 
                 var filterFactoryResult = FilterFactory.GetAllFilters(_filterProviders, actionContext);
                 filters = filterFactoryResult.Filters;
@@ -203,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 cacheEntry,
                 _parameterBinder,
                 _tempDataFactory,
-                _htmlHelperOptions);
+                _mvcViewOptions.HtmlHelperOptions);
         }
 
         private PageActionInvokerCacheEntry CreateCacheEntry(
@@ -285,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private PageHandlerBinderDelegate[] GetHandlerBinders(CompiledPageActionDescriptor actionDescriptor)
         {
-            if (actionDescriptor.HandlerMethods == null ||actionDescriptor.HandlerMethods.Count == 0)
+            if (actionDescriptor.HandlerMethods == null || actionDescriptor.HandlerMethods.Count == 0)
             {
                 return Array.Empty<PageHandlerBinderDelegate>();
             }

@@ -4,8 +4,11 @@
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
 #include "requesthandler_config.h"
+#include "EventLog.h"
 
 extern bool g_fInProcessApplicationCreated;
+extern std::string g_errorPageContent;
+extern IHttpServer* g_pHttpServer;
 
 //
 // Initialization export
@@ -188,12 +191,13 @@ struct IISConfigurationData
     BOOL fBasicAuthEnabled;
     BOOL fAnonymousAuthEnable;
     BSTR pwzBindings;
+    DWORD maxRequestBodySize;
 };
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
 http_get_application_properties(
-    _In_ IISConfigurationData* pIISCofigurationData
+    _In_ IISConfigurationData* pIISConfigurationData
 )
 {
     auto pInProcessApplication = IN_PROCESS_APPLICATION::GetInstance();
@@ -204,15 +208,16 @@ http_get_application_properties(
 
     const auto& pConfiguration = pInProcessApplication->QueryConfig();
 
-    pIISCofigurationData->pInProcessApplication = pInProcessApplication;
-    pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());
-    pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationVirtualPath().c_str());
-    pIISCofigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
-    pIISCofigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
-    pIISCofigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
+    pIISConfigurationData->pInProcessApplication = pInProcessApplication;
+    pIISConfigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());
+    pIISConfigurationData->pwzVirtualApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationVirtualPath().c_str());
+    pIISConfigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
+    pIISConfigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
+    pIISConfigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
 
     auto const serverAddresses = BindingInformation::Format(pConfiguration.QueryBindings(), pInProcessApplication->QueryApplicationVirtualPath());
-    pIISCofigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
+    pIISConfigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
+    pIISConfigurationData->maxRequestBodySize = pInProcessApplication->QueryConfig().QueryMaxRequestBodySizeLimit();
     return S_OK;
 }
 
@@ -236,7 +241,7 @@ http_read_request_bytes(
     {
         return E_FAIL;
     }
-    IHttpRequest *pHttpRequest = (IHttpRequest*)pInProcessHandler->QueryHttpContext()->GetRequest();
+    IHttpRequest* pHttpRequest = (IHttpRequest*)pInProcessHandler->QueryHttpContext()->GetRequest();
 
     // Check if there is anything to read
     if (pHttpRequest->GetRemainingEntityBytes() > 0)
@@ -267,7 +272,7 @@ http_write_response_bytes(
     _In_ BOOL* pfCompletionExpected
 )
 {
-    IHttpResponse *pHttpResponse = (IHttpResponse*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    IHttpResponse* pHttpResponse = (IHttpResponse*)pInProcessHandler->QueryHttpContext()->GetResponse();
     BOOL fAsync = TRUE;
     BOOL fMoreData = TRUE;
     DWORD dwBytesSent = 0;
@@ -291,7 +296,7 @@ http_flush_response_bytes(
     _Out_ BOOL* pfCompletionExpected
 )
 {
-    IHttpResponse *pHttpResponse = (IHttpResponse*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    IHttpResponse* pHttpResponse = (IHttpResponse*)pInProcessHandler->QueryHttpContext()->GetResponse();
 
     BOOL fAsync = TRUE;
     DWORD dwBytesSent = 0;
@@ -316,7 +321,7 @@ http_websockets_read_bytes(
     _In_ BOOL* pfCompletionPending
 )
 {
-    IHttpRequest3 *pHttpRequest = (IHttpRequest3*)pInProcessHandler->QueryHttpContext()->GetRequest();
+    IHttpRequest3* pHttpRequest = (IHttpRequest3*)pInProcessHandler->QueryHttpContext()->GetRequest();
 
     BOOL fAsync = TRUE;
 
@@ -343,7 +348,7 @@ http_websockets_write_bytes(
     _In_ BOOL* pfCompletionExpected
 )
 {
-    IHttpResponse2 *pHttpResponse = (IHttpResponse2*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    IHttpResponse2* pHttpResponse = (IHttpResponse2*)pInProcessHandler->QueryHttpContext()->GetResponse();
 
     BOOL fAsync = TRUE;
     BOOL fMoreData = TRUE;
@@ -371,7 +376,7 @@ http_websockets_flush_bytes(
     _In_ BOOL* pfCompletionExpected
 )
 {
-    IHttpResponse2 *pHttpResponse = (IHttpResponse2*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    IHttpResponse2* pHttpResponse = (IHttpResponse2*)pInProcessHandler->QueryHttpContext()->GetResponse();
 
     BOOL fAsync = TRUE;
     BOOL fMoreData = TRUE;
@@ -502,6 +507,14 @@ set_main_handler(_In_ hostfxr_main_fn main)
     // Allow inprocess application to be recreated as we reuse the same CLR
     g_fInProcessApplicationCreated = false;
     IN_PROCESS_APPLICATION::SetMainCallback(main);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
+{
+    g_errorPageContent.resize(length);
+    memcpy(&g_errorPageContent[0], errorPageContent, length);
 }
 
 // End of export

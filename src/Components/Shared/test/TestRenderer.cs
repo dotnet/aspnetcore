@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
@@ -17,15 +18,19 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
         }
 
-        public TestRenderer(IDispatcher dispatcher) : base(new TestServiceProvider(), dispatcher)
+        public TestRenderer(IDispatcher dispatcher) : base(new TestServiceProvider(), NullLoggerFactory.Instance, dispatcher)
         {
         }
 
-        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, new RendererSynchronizationContext())
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, NullLoggerFactory.Instance, new RendererSynchronizationContext())
         {
         }
+
+        public Action OnExceptionHandled { get; set; }
 
         public Action<RenderBatch> OnUpdateDisplay { get; set; }
+
+        public Action OnUpdateDisplayComplete { get; set; }
 
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
@@ -33,6 +38,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public List<Exception> HandledExceptions { get; } = new List<Exception>();
 
         public bool ShouldHandleExceptions { get; set; }
+
+        public Task NextRenderResultTask { get; set; } = Task.CompletedTask;
 
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
@@ -49,8 +56,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public new Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
-            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, args));
+        public Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
+            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, null, args));
+
+        public new Task DispatchEventAsync(int eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs args)
+            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, eventFieldInfo, args));
 
         private static Task UnwrapTask(Task task)
         {
@@ -77,10 +87,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
             if (!ShouldHandleExceptions)
             {
-                throw exception;
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             HandledExceptions.Add(exception);
+            OnExceptionHandled?.Invoke();
         }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -97,12 +108,14 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             }
 
             // Clone other data, as underlying storage will get reused by later batches
-            capturedBatch.ReferenceFrames = renderBatch.ReferenceFrames.ToArray();
-            capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.ToList();
+            capturedBatch.ReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
+            capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.AsEnumerable().ToList();
 
             // This renderer updates the UI synchronously, like the WebAssembly one.
             // To test async UI updates, subclass TestRenderer and override UpdateDisplayAsync.
-            return Task.CompletedTask;
+
+            OnUpdateDisplayComplete?.Invoke();
+            return NextRenderResultTask;
         }
     }
 }

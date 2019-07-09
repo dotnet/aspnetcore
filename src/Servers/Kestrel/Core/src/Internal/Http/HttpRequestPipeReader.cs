@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// <summary>
     /// Default HttpRequest PipeReader implementation to be used by Kestrel.
     /// </summary>
-    public class HttpRequestPipeReader : PipeReader
+    internal sealed class HttpRequestPipeReader : PipeReader
     {
         private MessageBody _body;
         private HttpStreamState _state;

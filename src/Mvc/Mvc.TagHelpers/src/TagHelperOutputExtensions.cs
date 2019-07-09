@@ -321,13 +321,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagHelperOutput tagHelperOutput,
             TagHelperContext context)
         {
-            var existingAttribute = context.AllAttributes[allAttributeIndex];
+            var allAttributes = context.AllAttributes;
+            var existingAttribute = allAttributes[allAttributeIndex];
 
             // Move backwards through context.AllAttributes from the provided index until we find a familiar attribute
             // in tagHelperOutput where we can insert the copied value after the familiar one.
             for (var i = allAttributeIndex - 1; i >= 0; i--)
             {
-                var previousName = context.AllAttributes[i].Name;
+                var previousName = allAttributes[i].Name;
                 var index = IndexOfFirstMatch(previousName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
@@ -336,11 +337,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
             }
 
+            // Read interface .Count once rather than per iteration
+            var allAttributesCount = allAttributes.Count;
             // Move forward through context.AllAttributes from the provided index until we find a familiar attribute in
             // tagHelperOutput where we can insert the copied value.
-            for (var i = allAttributeIndex + 1; i < context.AllAttributes.Count; i++)
+            for (var i = allAttributeIndex + 1; i < allAttributesCount; i++)
             {
-                var nextName = context.AllAttributes[i].Name;
+                var nextName = allAttributes[i].Name;
                 var index = IndexOfFirstMatch(nextName, tagHelperOutput.Attributes);
                 if (index != -1)
                 {
@@ -355,7 +358,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private static int IndexOfFirstMatch(string name, TagHelperAttributeList attributes)
         {
-            for (var i = 0; i < attributes.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 if (string.Equals(name, attributes[i].Name, StringComparison.OrdinalIgnoreCase))
                 {

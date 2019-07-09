@@ -23,11 +23,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         IDisplayMetadataProvider,
         IValidationMetadataProvider
     {
+        // The [Nullable] attribute is synthesized by the compiler. It's best to just compare the type name.
+        private const string NullableAttributeFullTypeName = "System.Runtime.CompilerServices.NullableAttribute";
+        private const string NullableFlagsFieldName = "NullableFlags";
+
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly MvcOptions _options;
         private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
 
         public DataAnnotationsMetadataProvider(
-            IOptions<MvcDataAnnotationsLocalizationOptions> options,
+            MvcOptions options,
+            IOptions<MvcDataAnnotationsLocalizationOptions> localizationOptions,
             IStringLocalizerFactory stringLocalizerFactory)
         {
             if (options == null)
@@ -35,7 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _localizationOptions = options.Value;
+            if (localizationOptions == null)
+            {
+                throw new ArgumentNullException(nameof(localizationOptions));
+            }
+
+            _options = options;
+            _localizationOptions = localizationOptions.Value;
             _stringLocalizerFactory = stringLocalizerFactory;
         }
 
@@ -97,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
             else if (displayFormatAttribute != null && !displayFormatAttribute.HtmlEncode)
             {
-                displayMetadata.DataTypeName = DataType.Html.ToString();
+                displayMetadata.DataTypeName = nameof(DataType.Html);
             }
 
             var containerType = context.Key.ContainerType ?? context.Key.ModelType;
@@ -310,11 +322,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var attributes = new List<object>(context.Attributes.Count);
-
-            for (var i = 0; i < context.Attributes.Count; i++)
+            // Read interface .Count once rather than per iteration
+            var contextAttributes = context.Attributes;
+            var contextAttributesCount = contextAttributes.Count;
+            var attributes = new List<object>(contextAttributesCount);
+            
+            for (var i = 0; i < contextAttributesCount; i++)
             {
-                var attribute = context.Attributes[i];
+                var attribute = contextAttributes[i];
                 if (attribute is ValidationProviderAttribute validationProviderAttribute)
                 {
                     attributes.AddRange(validationProviderAttribute.GetValidationAttributes());
@@ -328,6 +343,29 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // RequiredAttribute marks a property as required by validation - this means that it
             // must have a non-null value on the model during validation.
             var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
+
+            // For non-nullable reference types, treat them as-if they had an implicit [Required].
+            // This allows the developer to specify [Required] to customize the error message, so
+            // if they already have [Required] then there's no need for us to do this check.
+            if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
+                requiredAttribute == null &&
+                !context.Key.ModelType.IsValueType &&
+
+                // Look specifically at attributes on the property/parameter. [Nullable] on
+                // the type has a different meaning.
+                IsNonNullable(context.ParameterAttributes ?? context.PropertyAttributes ?? Array.Empty<object>()))
+            {
+                // Since this behavior specifically relates to non-null-ness, we will use the non-default
+                // option to tolerate empty/whitespace strings. empty/whitespace INPUT will still result in
+                // a validation error by default because we convert empty/whitespace strings to null
+                // unless you say otherwise.
+                requiredAttribute = new RequiredAttribute()
+                {
+                    AllowEmptyStrings = true,
+                };
+                attributes.Add(requiredAttribute);
+            }
+
             if (requiredAttribute != null)
             {
                 context.ValidationMetadata.IsRequired = true;
@@ -379,6 +417,36 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             return string.Empty;
+        }
+
+        // Internal for testing
+        internal static bool IsNonNullable(IEnumerable<object> attributes)
+        {
+            // [Nullable] is compiler synthesized, comparing by name.
+            var nullableAttribute = attributes
+                .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal))
+                .FirstOrDefault();
+            if (nullableAttribute == null)
+            {
+                return false;
+            }
+
+            // We don't handle cases where generics and NNRT are used. This runs into a
+            // fundamental limitation of ModelMetadata - we use a single Type and Property/Parameter
+            // to look up the metadata. However when generics are involved and NNRT is in use
+            // the distance between the [Nullable] and member we're looking at is potentially
+            // unbounded.
+            //
+            // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
+            if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
+                field.GetValue(nullableAttribute) is byte[] flags &&
+                flags.Length >= 0 &&
+                flags[0] == 1) // First element is the property/parameter type.
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

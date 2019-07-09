@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,17 +8,13 @@
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+  <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\testassets\**\*.csproj">
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

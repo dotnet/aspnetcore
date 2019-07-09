@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// A bound event handler delegate.
     /// </summary>
-    public readonly struct EventCallback
+    public readonly struct EventCallback : IEventCallback
     {
         /// <summary>
         /// Gets a reference to the <see cref="EventCallbackFactory"/>.
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly EventCallbackFactory Factory = new EventCallbackFactory();
 
         /// <summary>
-        /// Gets an empty <see cref="EventCallback{T}"/>.
+        /// Gets an empty <see cref="EventCallback"/>.
         /// </summary>
         public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
 
@@ -60,13 +60,23 @@ namespace Microsoft.AspNetCore.Components
 
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
         }
+
+        object IEventCallback.UnpackForRenderTree()
+        {
+            return RequiresExplicitReceiver ? (object)this : Delegate;
+        }
     }
 
     /// <summary>
     /// A bound event handler delegate.
     /// </summary>
-    public readonly struct EventCallback<T>
+    public readonly struct EventCallback<T> : IEventCallback
     {
+        /// <summary>
+        /// Gets an empty <see cref="EventCallback{T}"/>.
+        /// </summary>
+        public static readonly EventCallback<T> Empty = new EventCallback<T>(null, (Action)(() => { }));
+
         internal readonly MulticastDelegate Delegate;
         internal readonly IHandleEvent Receiver;
 
@@ -86,7 +96,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public bool HasDelegate => Delegate != null;
 
-        // This is a hint to the runtime that Reciever is a different object than what
+        // This is a hint to the runtime that Receiver is a different object than what
         // Delegate.Target points to. This allows us to avoid boxing the command object
         // when building the render tree. See logic where this is used.
         internal bool RequiresExplicitReceiver => Receiver != null && !object.ReferenceEquals(Receiver, Delegate?.Target);
@@ -111,5 +121,18 @@ namespace Microsoft.AspNetCore.Components
         {
             return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
         }
+
+        object IEventCallback.UnpackForRenderTree()
+        {
+            return RequiresExplicitReceiver ? (object)AsUntyped() : Delegate;
+        }
+    }
+
+    // Used to understand boxed generic EventCallbacks
+    internal interface IEventCallback
+    {
+        bool HasDelegate { get; }
+
+        object UnpackForRenderTree();
     }
 }

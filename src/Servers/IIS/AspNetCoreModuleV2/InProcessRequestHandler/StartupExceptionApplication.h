@@ -13,34 +13,37 @@ public:
     StartupExceptionApplication(
         IHttpServer& pServer,
         IHttpApplication& pApplication,
-        HINSTANCE moduleInstance,
         BOOL disableLogs,
-        HRESULT hr)
+        HRESULT hr,
+        const std::string& errorPageContent,
+        USHORT statusCode,
+        USHORT subStatusCode,
+        const std::string& statusText)
         : m_disableLogs(disableLogs),
         m_HR(hr),
-        m_moduleInstance(moduleInstance),
+        m_error(errorPageContent),
+        m_statusCode(statusCode),
+        m_subStatusCode(subStatusCode),
+        m_statusText(std::move(statusText)),
         InProcessApplicationBase(pServer, pApplication)
     {
     }
 
     ~StartupExceptionApplication() = default;
 
-    HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
+    HRESULT CreateHandler(IHttpContext* pHttpContext, IREQUEST_HANDLER** pRequestHandler)
     {
-        *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
+        *pRequestHandler = new ServerErrorHandler(*pHttpContext, m_statusCode, m_subStatusCode, m_statusText, m_HR, m_disableLogs, m_error);
+
         return S_OK;
     }
 
-    std::string&
-        GetStaticHtml500Content()
-    {
-        return html500Page;
-    }
-
 private:
-    std::string html500Page;
+    std::string m_error;
     BOOL m_disableLogs;
     HRESULT m_HR;
-    HINSTANCE m_moduleInstance;
+    USHORT m_statusCode;
+    USHORT m_subStatusCode;
+    std::string m_statusText;
 };
 

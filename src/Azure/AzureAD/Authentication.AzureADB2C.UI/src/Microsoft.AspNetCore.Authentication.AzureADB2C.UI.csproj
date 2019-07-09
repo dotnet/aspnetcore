@@ -8,10 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
-
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
-    <RazorLangVersion>3.0</RazorLangVersion>
-    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

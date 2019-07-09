@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
         {
-            return Options.Create(new RazorPagesOptions());
+            return Options.Create(new RazorPagesOptions { Conventions = new PageConventionCollection(Mock.Of<IServiceProvider>()) });
         }
 
         private class TestPageRouteModelProvider : IPageRouteModelProvider

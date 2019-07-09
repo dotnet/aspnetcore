@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration for this middleware.</param>
-        public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options) 
+        public DirectoryBrowserMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DirectoryBrowserOptions> options)
             : this(next, hostingEnv, HtmlEncoder.Default, options)
         {
         }
@@ -78,8 +79,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            // Check if the URL matches any expected paths
-            if (Helpers.IsGetOrHeadMethod(context.Request.Method)
+            // Check if the URL matches any expected paths, skip if an endpoint was selected
+            if (context.GetEndpoint() == null &&
+                Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
                 && TryGetDirectoryInfo(subpath, out var contents))
             {
@@ -87,8 +89,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // This prevents relative links from breaking.
                 if (!Helpers.PathEndsInSlash(context.Request.Path))
                 {
-                    context.Response.StatusCode = 301;
-                    context.Response.Headers[HeaderNames.Location] = context.Request.PathBase + context.Request.Path + "/" + context.Request.QueryString;
+                    context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
+                    var request = context.Request;
+                    var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
+                    context.Response.Headers[HeaderNames.Location] = redirect;
                     return Task.CompletedTask;
                 }
 

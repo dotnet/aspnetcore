@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../FunctionalTest.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\testassets\**\*.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IIS.csproj" />
+    <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
   </ItemGroup>
 
   <ItemGroup>

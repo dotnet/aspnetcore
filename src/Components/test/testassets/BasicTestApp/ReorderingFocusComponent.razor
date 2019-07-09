@@ -1,0 +1,55 @@
+<h3>To do</h3>
+
+<p>
+    This component will randomly reorder the todo items on each keystroke.
+    The point of this is to show that focus is correctly preserved even
+    when items are moved around. Also, by checking the boxes to move items
+    between the two lists, we show that use of <code>key</code> causes the
+    form element state to behave as expected.
+</p>
+
+<ul class="incomplete-items">
+    @foreach (var item in todoItems.Where(item => !item.IsDone))
+    {
+        <li @key="@item.Id" class="@($"item-{item.Id}")">
+            <input type="checkbox" @bind="item.IsDone"/>
+            <input type="text" @bind="item.Text" @oninput="Shuffle" />
+        </li>
+    }
+</ul>
+
+<h3>Done</h3>
+
+<ul class="complete-items">
+    @foreach (var item in todoItems.Where(item => item.IsDone))
+    {
+        <li @key="@item.Id" class="@($"item-{item.Id}")">
+            <input type="checkbox" @bind="item.IsDone" />
+            <input type="text" @bind="item.Text" @oninput="Shuffle" />
+        </li>
+    }
+</ul>
+
+@code {
+    Random rng = new Random();
+    TodoItem[] todoItems = new[]
+    {
+        new TodoItem { Id = 1, Text = "First" },
+        new TodoItem { Id = 2, Text = "Second" },
+        new TodoItem { Id = 3, Text = "Third" },
+        new TodoItem { Id = 4, Text = "Fourth" },
+        new TodoItem { Id = 5, Text = "Fifth" },
+    };
+
+    void Shuffle()
+    {
+        todoItems = todoItems.OrderBy(x => rng.Next()).ToArray();
+    }
+
+    class TodoItem
+    {
+        public int Id { get; set; }
+        public string Text { get; set; }
+        public bool IsDone { get; set; }
+    }
+}

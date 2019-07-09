@@ -25,21 +25,33 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IOptions<JsonOptions> _jsonOptions;
 
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
-            : this(readerFactory, NullLoggerFactory.Instance)
+            : this(readerFactory, NullLoggerFactory.Instance, Options.Create(new JsonOptions()))
         {
         }
 
-        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory)
+        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory, IOptions<JsonOptions> jsonOptions)
         {
             if (readerFactory == null)
             {
                 throw new ArgumentNullException(nameof(readerFactory));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            if (jsonOptions == null)
+            {
+                throw new ArgumentNullException(nameof(jsonOptions));
+            }
+
             _readerFactory = readerFactory;
             _loggerFactory = loggerFactory;
+            _jsonOptions = jsonOptions;
         }
 
         public void Configure(MvcOptions options)
@@ -65,10 +77,14 @@ namespace Microsoft.AspNetCore.Mvc
             // Set up filters
             options.Filters.Add(new UnsupportedContentTypeFilter());
 
+            // Set up default input formatters.
+            options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value, _loggerFactory.CreateLogger<SystemTextJsonInputFormatter>()));
+
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
+            options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(_jsonOptions.Value));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new FormValueProviderFactory());

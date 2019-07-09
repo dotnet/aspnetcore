@@ -1,37 +1,47 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Represents a single edit operation on a component's render tree.
     /// </summary>
+    [StructLayout(LayoutKind.Explicit)]
     public readonly struct RenderTreeEdit
     {
         /// <summary>
         /// Gets the type of the edit operation.
         /// </summary>
-        public readonly RenderTreeEditType Type;
+        [FieldOffset(0)] public readonly RenderTreeEditType Type;
 
         /// <summary>
         /// Gets the index of the sibling frame that the edit relates to.
         /// </summary>
-        public readonly int SiblingIndex;
+        [FieldOffset(4)] public readonly int SiblingIndex;
 
         /// <summary>
         /// Gets the index of related data in an associated render frames array. For example, if the
         /// <see cref="Type"/> value is <see cref="RenderTreeEditType.PrependFrame"/>, gets the
         /// index of the new frame data in an associated render tree.
         /// </summary>
-        public readonly int ReferenceFrameIndex;
+        [FieldOffset(8)] public readonly int ReferenceFrameIndex;
+
+        /// <summary>
+        /// If the <see cref="Type"/> value is <see cref="RenderTreeEditType.PermutationListEntry"/>,
+        /// gets the sibling index to which the frame should be moved.
+        /// </summary>
+        // NOTE: Other code relies on the assumption that ReferenceFrameIndex and
+        // MoveToSiblingIndex share a memory slot. If you change this, be sure to
+        // update affected usages of ReferenceFrameIndex.
+        [FieldOffset(8)] public readonly int MoveToSiblingIndex;
 
         /// <summary>
         /// If the <see cref="Type"/> value is <see cref="RenderTreeEditType.RemoveAttribute"/>,
         /// gets the name of the attribute that is being removed.
         /// </summary>
-        public readonly string RemovedAttributeName;
+        [FieldOffset(16)] public readonly string RemovedAttributeName;
 
         private RenderTreeEdit(RenderTreeEditType type) : this()
         {
@@ -44,11 +54,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             SiblingIndex = siblingIndex;
         }
 
-        private RenderTreeEdit(RenderTreeEditType type, int siblingIndex, int referenceFrameIndex) : this()
+        private RenderTreeEdit(RenderTreeEditType type, int siblingIndex, int referenceFrameOrMoveToSiblingIndex) : this()
         {
             Type = type;
             SiblingIndex = siblingIndex;
-            ReferenceFrameIndex = referenceFrameIndex;
+
+            // MoveToSiblingIndex is stored in the same slot as ReferenceFrameIndex,
+            // so assigning to either one is equivalent
+            ReferenceFrameIndex = referenceFrameOrMoveToSiblingIndex;
         }
 
         private RenderTreeEdit(RenderTreeEditType type, int siblingIndex, string removedAttributeName) : this()
@@ -81,5 +94,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal static RenderTreeEdit StepOut()
             => new RenderTreeEdit(RenderTreeEditType.StepOut);
+
+        internal static RenderTreeEdit PermutationListEntry(int fromSiblingIndex, int toSiblingIndex)
+            => new RenderTreeEdit(RenderTreeEditType.PermutationListEntry, fromSiblingIndex, toSiblingIndex);
+
+        internal static RenderTreeEdit PermutationListEnd()
+            => new RenderTreeEdit(RenderTreeEditType.PermutationListEnd);
     }
 }

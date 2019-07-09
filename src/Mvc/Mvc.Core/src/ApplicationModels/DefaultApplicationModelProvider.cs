@@ -565,6 +565,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 if (!(routeProvider is IActionHttpMethodProvider))
                 {
                     createSelectorForSilentRouteProviders = false;
+                    break;
                 }
             }
 

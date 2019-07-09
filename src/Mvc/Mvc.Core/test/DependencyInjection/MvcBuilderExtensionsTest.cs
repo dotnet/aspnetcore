@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers;
@@ -32,6 +35,28 @@ namespace Microsoft.AspNetCore.Mvc
             var part = Assert.Single(builder.PartManager.ApplicationParts);
             var assemblyPart = Assert.IsType<AssemblyPart>(part);
             Assert.Equal(assembly, assemblyPart.Assembly);
+        }
+
+        [Fact]
+        public void AddApplicationPart_UsesPartFactory_ToRetrieveApplicationParts()
+        {
+            // Arrange
+            var manager = new ApplicationPartManager();
+            var builder = new MvcBuilder(Mock.Of<IServiceCollection>(), manager);
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.Run);
+
+            var attribute = new CustomAttributeBuilder(typeof(ProvideApplicationPartFactoryAttribute).GetConstructor(
+                new[] { typeof(Type) }),
+                new[] { typeof(TestApplicationPartFactory) });
+
+            assembly.SetCustomAttribute(attribute);
+
+            // Act
+            builder.AddApplicationPart(assembly);
+
+            // Assert
+            var part = Assert.Single(builder.PartManager.ApplicationParts);
+            Assert.Same(TestApplicationPartFactory.TestPart, part);
         }
 
         [Fact]
@@ -151,6 +176,16 @@ namespace Microsoft.AspNetCore.Mvc
             manager.FeatureProviders.Add(new ControllerFeatureProvider());
 
             return manager;
+        }
+
+        private class TestApplicationPartFactory : ApplicationPartFactory
+        {
+            public static readonly ApplicationPart TestPart = Mock.Of<ApplicationPart>();
+
+            public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly)
+            {
+                yield return TestPart;
+            }
         }
     }
 }

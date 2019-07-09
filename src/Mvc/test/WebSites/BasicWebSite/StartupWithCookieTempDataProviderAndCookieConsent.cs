@@ -28,11 +28,11 @@ namespace BasicWebSite
             app.UseDeveloperExceptionPage();
 
             app.UseCookiePolicy();
-
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
-                routes.MapRazorPages();
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

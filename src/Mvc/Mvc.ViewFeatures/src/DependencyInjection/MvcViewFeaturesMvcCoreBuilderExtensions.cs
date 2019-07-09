@@ -4,13 +4,12 @@
 using System;
 using System.Buffers;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.Components.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -63,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        private static void AddViewComponentApplicationPartsProviders(ApplicationPartManager manager)
+        internal static void AddViewComponentApplicationPartsProviders(ApplicationPartManager manager)
         {
             if (!manager.FeatureProviders.OfType<ViewComponentFeatureProvider>().Any())
             {
@@ -174,7 +173,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelExpressionProvider>(s => s.GetRequiredService<ModelExpressionProvider>());
             services.TryAddSingleton<ValidationHtmlAttributeProvider, DefaultValidationHtmlAttributeProvider>();
 
-            services.TryAddSingleton<IJsonHelper, DefaultJsonHelper>();
+            services.TryAddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
             //
             // View Components
@@ -206,9 +205,11 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Component prerendering
             //
-            services.TryAddSingleton<IComponentPrerenderer, MvcRazorComponentPrerenderer>();
+            services.TryAddScoped<StaticComponentRenderer>();
             services.TryAddScoped<IUriHelper, HttpUriHelper>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.TryAddScoped<IComponentContext, UnsupportedComponentContext>();
+            services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 

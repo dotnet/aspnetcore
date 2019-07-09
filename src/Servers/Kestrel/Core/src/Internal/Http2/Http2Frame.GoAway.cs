@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         |                  Additional Debug Data (*)                    |
         +---------------------------------------------------------------+
     */
-    public partial class Http2Frame
+    internal partial class Http2Frame
     {
         public int GoAwayLastStreamId { get; set; }
 

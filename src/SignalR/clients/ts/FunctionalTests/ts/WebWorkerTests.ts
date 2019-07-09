@@ -3,9 +3,6 @@
 
 import { ENDPOINT_BASE_URL } from "./Common";
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
-
 describe("WebWorkers", () => {
     it("can use SignalR client", (done) => {
         if (typeof window !== "undefined" && (window as any).Worker) {

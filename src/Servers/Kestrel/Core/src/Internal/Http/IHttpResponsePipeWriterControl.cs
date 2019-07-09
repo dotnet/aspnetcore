@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpResponsePipeWriterControl
+    internal interface IHttpResponsePipeWriterControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);

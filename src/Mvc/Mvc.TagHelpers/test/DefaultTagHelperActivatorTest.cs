@@ -53,20 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             Assert.Same(FileVersionProvider, linkTagHelper.FileVersionProvider);
         }
 
-        [Fact]
-        public void ImageTagHelper_DoesNotUseMemoryCacheInstanceFromDI()
-        {
-            // Arrange
-            var activator = new DefaultTagHelperActivator(new TypeActivatorCache());
-            var viewContext = CreateViewContext();
-
-            var imageTagHelper = activator.Create<ImageTagHelper>(viewContext);
-
-            Assert.Same(CacheProvider.Cache, imageTagHelper.Cache);
-            Assert.Same(HostingEnvironment, imageTagHelper.HostingEnvironment);
-            Assert.Same(FileVersionProvider, imageTagHelper.FileVersionProvider);
-        }
-
         private ViewContext CreateViewContext()
         {
             var services = new ServiceCollection()

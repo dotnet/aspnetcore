@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -80,6 +81,48 @@ namespace Microsoft.AspNetCore.Http.Features
 
             // Cleanup
             await responseFeature.CompleteAsync();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_SimpleData_ReplacePipeReader_ReturnsParsedFormCollection(bool bufferRequest)
+        {
+            var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+
+            var pipe = new Pipe();
+            await pipe.Writer.WriteAsync(formContent);
+            pipe.Writer.Complete();
+
+            var mockFeature = new MockRequestBodyPipeFeature();
+            mockFeature.Reader = pipe.Reader;
+            context.Features.Set<IRequestBodyPipeFeature>(mockFeature);
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var formCollection = await context.Request.ReadFormAsync();
+
+            Assert.Equal("bar", formCollection["foo"]);
+            Assert.Equal("2", formCollection["baz"]);
+
+            // Cached	
+            formFeature = context.Features.Get<IFormFeature>();
+            Assert.NotNull(formFeature);
+            Assert.NotNull(formFeature.Form);
+            Assert.Same(formFeature.Form, formCollection);
+
+            // Cleanup	
+            await responseFeature.CompleteAsync();
+        }
+
+        private class MockRequestBodyPipeFeature : IRequestBodyPipeFeature
+        {
+            public PipeReader Reader { get; set; }
         }
 
         private const string MultipartContentType = "multipart/form-data; boundary=WebKitFormBoundary5pDRpGheQXaM8k3T";

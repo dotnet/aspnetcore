@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
     /// <summary>
-    /// Provides configuration for RazorPages.
+    /// Provides configuration for Razor Pages.
     /// </summary>
     public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
     {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets a collection of <see cref="IPageConvention"/> instances that are applied during
         /// route and page model construction.
         /// </summary>
-        public PageConventionCollection Conventions { get; } = new PageConventionCollection();
+        public PageConventionCollection Conventions { get; internal set; }
 
         /// <summary>
         /// Application relative path used as the root of discovery for Razor Page files.

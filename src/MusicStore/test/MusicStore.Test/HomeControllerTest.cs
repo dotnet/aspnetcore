@@ -12,19 +12,14 @@ using Xunit;
 
 namespace MusicStore.Controllers
 {
-    public class HomeControllerTest
+    public class HomeControllerTest : IClassFixture<SqliteInMemoryFixture>
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly SqliteInMemoryFixture _fixture;
 
-        public HomeControllerTest()
+        public HomeControllerTest(SqliteInMemoryFixture fixture)
         {
-            var efServiceProvider = new ServiceCollection().AddEntityFrameworkInMemoryDatabase().BuildServiceProvider();
-
-            var services = new ServiceCollection();
-
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
-
-            _serviceProvider = services.BuildServiceProvider();
+            _fixture = fixture;
+            _fixture.CreateDatabase();
         }
 
         [Fact]
@@ -47,8 +42,8 @@ namespace MusicStore.Controllers
         public async Task Index_GetsSixTopAlbums()
         {
             // Arrange
-            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
-            var cache = _serviceProvider.GetRequiredService<IMemoryCache>();
+            var dbContext = _fixture.Context;
+            var cache = _fixture.ServiceProvider.GetRequiredService<IMemoryCache>();
             var controller = new HomeController(new TestAppSettings());
             PopulateData(dbContext);
 
@@ -113,12 +108,13 @@ namespace MusicStore.Controllers
                     }).ToArray();
 
                 var albums = Enumerable.Range(1, 10).Select(n =>
-                    new Album()
+                    new Album
                     {
                         Artist = artists[n - 1],
                         ArtistId = n,
                         Genre = generes[n - 1],
                         GenreId = n,
+                        Title = "Greatest Hits",
                     }).ToArray();
 
                 return albums;

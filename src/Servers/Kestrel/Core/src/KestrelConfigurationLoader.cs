@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -257,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
 
                 // EndpointDefaults or configureEndpoint may have added an https adapter.
-                if (https && !listenOptions.ConnectionAdapters.Any(f => f.IsHttps))
+                if (https && !listenOptions.IsTls)
                 {
                     if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                     {
@@ -379,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
         {
             var subject = certInfo.Subject;
-            var storeName = certInfo.Store;
+            var storeName = string.IsNullOrEmpty(certInfo.Store) ? StoreName.My.ToString() : certInfo.Store;
             var location = certInfo.Location;
             var storeLocation = StoreLocation.CurrentUser;
             if (!string.IsNullOrEmpty(location))

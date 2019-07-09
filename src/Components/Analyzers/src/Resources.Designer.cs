@@ -10,7 +10,6 @@
 
 namespace Microsoft.AspNetCore.Components.Analyzers {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNetCore.Components.Analyzers.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNetCore.Components.Analyzers.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -62,38 +61,119 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameters should not have public setters..
+        ///   Looks up a localized string similar to Component parameters with CaptureUnmatchedValues must be a correct type..
         /// </summary>
-        internal static string ComponentParametersShouldNotBePublic_Description {
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Description {
             get {
-                return ResourceManager.GetString("ComponentParametersShouldNotBePublic_Description", resourceCulture);
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Make component parameter private.
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; defines CaptureUnmatchedValues but has an unsupported type &apos;{1}&apos;. Use a type assignable from &apos;{2}&apos;..
         /// </summary>
-        internal static string ComponentParametersShouldNotBePublic_FixTitle {
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Format {
             get {
-                return ResourceManager.GetString("ComponentParametersShouldNotBePublic_FixTitle", resourceCulture);
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Format", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; has a public setter, but component parameters should not be publicly settable..
+        ///   Looks up a localized string similar to Component parameter with CaptureUnmatchedValues has the wrong type.
         /// </summary>
-        internal static string ComponentParametersShouldNotBePublic_Format {
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Title {
             get {
-                return ResourceManager.GetString("ComponentParametersShouldNotBePublic_Format", resourceCulture);
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Title", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameter has public setter.
+        ///   Looks up a localized string similar to Components may only define a single parameter with CaptureUnmatchedValues..
         /// </summary>
-        internal static string ComponentParametersShouldNotBePublic_Title {
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description {
             get {
-                return ResourceManager.GetString("ComponentParametersShouldNotBePublic_Title", resourceCulture);
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component type &apos;{0}&apos; defines properties multiple parameters with CaptureUnmatchedValues. Properties: {1}{2}.
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component has multiple CaptureUnmatchedValues parameters.
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameters should have public setters..
+        /// </summary>
+        internal static string ComponentParameterSettersShouldBePublic_Description {
+            get {
+                return ResourceManager.GetString("ComponentParameterSettersShouldBePublic_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; should have a public setter..
+        /// </summary>
+        internal static string ComponentParameterSettersShouldBePublic_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterSettersShouldBePublic_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter should have public setters..
+        /// </summary>
+        internal static string ComponentParameterSettersShouldBePublic_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterSettersShouldBePublic_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; should be public..
+        /// </summary>
+        internal static string ComponentParameterShouldBePublic_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterShouldBePublic_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter should be public..
+        /// </summary>
+        internal static string ComponentParameterShouldBePublic_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterShouldBePublic_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameters should be public..
+        /// </summary>
+        internal static string ComponentParametersShouldBePublic_Description {
+            get {
+                return ResourceManager.GetString("ComponentParametersShouldBePublic_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Make component parameters public..
+        /// </summary>
+        internal static string ComponentParametersShouldBePublic_FixTitle {
+            get {
+                return ResourceManager.GetString("ComponentParametersShouldBePublic_FixTitle", resourceCulture);
             }
         }
     }

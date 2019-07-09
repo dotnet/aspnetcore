@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// A <see cref="PipeReader"/> representing the request body, if any.
         /// </summary>
-        PipeReader RequestBodyPipe { get; set; }
+        PipeReader Reader { get; }
     }
 }

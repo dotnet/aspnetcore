@@ -15,7 +15,17 @@ namespace System.Threading.Tasks
 #endif
     static class TaskExtensions
     {
-        private const int DefaultTimeout = 5000;
+        private const int DefaultTimeout = 30 * 1000;
+
+        public static Task OrTimeout(this ValueTask task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
+        }
+
+        public static Task OrTimeout(this ValueTask task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        {
+            return task.AsTask().TimeoutAfter(timeout, filePath, lineNumber ?? 0);
+        }
 
         public static Task OrTimeout(this Task task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {

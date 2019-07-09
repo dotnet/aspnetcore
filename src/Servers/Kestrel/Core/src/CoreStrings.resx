@@ -487,7 +487,7 @@
     <value>The endpoint {endpointName} is missing the required 'Url' parameter.</value>
   </data>
   <data name="NoCertSpecifiedNoDevelopmentCertificateFound" xml:space="preserve">
-    <value>Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found.
+    <value>Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found or is out of date.
 To generate a developer certificate run 'dotnet dev-certs https'. To trust the certificate (Windows and macOS only) run 'dotnet dev-certs https --trust'.
 For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.</value>
   </data>
@@ -598,5 +598,17 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="StartAsyncBeforeGetMemory" xml:space="preserve">
     <value>Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().</value>
+  </data>
+  <data name="Http2MinDataRateNotSupported" xml:space="preserve">
+    <value>This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.</value>
+  </data>
+  <data name="RequestTrailersNotAvailable" xml:space="preserve">
+    <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
+  </data>
+  <data name="HTTP2NoTlsOsx" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on OSX due to missing ALPN support.</value>
+  </data>
+  <data name="Http2StreamResetByApplication" xml:space="preserve">
+    <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
   </data>
 </root>

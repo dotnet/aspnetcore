@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 using System.Runtime.Loader;
 #endif
 using Microsoft.DotNet.Cli.CommandLine;
@@ -14,44 +14,29 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class GetDocumentCommand : ProjectCommandBase
     {
-        internal const string FallbackDocumentName = "v1";
-        internal const string FallbackMethod = "GenerateAsync";
-        internal const string FallbackService = "Microsoft.Extensions.ApiDescription.IDocumentProvider";
-
-        private CommandOption _documentName;
-        private CommandOption _method;
+        private CommandOption _fileListPath;
         private CommandOption _output;
-        private CommandOption _service;
 
         public override void Configure(CommandLineApplication command)
         {
             base.Configure(command);
 
-            _documentName = command.Option(
-                "--documentName <Name>",
-                Resources.FormatDocumentDescription(FallbackDocumentName));
-            _method = command.Option("--method <Name>", Resources.FormatMethodDescription(FallbackMethod));
-            _output = command.Option("--output <Path>", Resources.OutputDescription);
-            _service = command.Option("--service <QualifiedName>", Resources.FormatServiceDescription(FallbackService));
+            _fileListPath = command.Option("--file-list <Path>", Resources.FileListDescription);
+            _output = command.Option("--output <Directory>", Resources.OutputDescription);
         }
 
         protected override void Validate()
         {
             base.Validate();
 
+            if (!_fileListPath.HasValue())
+            {
+                throw new CommandException(Resources.FormatMissingOption(_fileListPath.LongName));
+            }
+
             if (!_output.HasValue())
             {
                 throw new CommandException(Resources.FormatMissingOption(_output.LongName));
-            }
-
-            if (_method.HasValue() && !_service.HasValue())
-            {
-                throw new CommandException(Resources.FormatMissingOption(_service.LongName));
-            }
-
-            if (_service.HasValue() && !_method.HasValue())
-            {
-                throw new CommandException(Resources.FormatMissingOption(_method.LongName));
             }
         }
 
@@ -79,7 +64,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 }
             }
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
             AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
             {
                 var name = assemblyName.Name;
@@ -125,7 +110,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 return Assembly.LoadFile(assemblyPath);
             };
 #else
-#error target frameworks need to be updated.
+#error Target frameworks need to be updated.
 #endif
 
             // Now safe to reference the application's code.
@@ -135,12 +120,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 var context = new GetDocumentCommandContext
                 {
                     AssemblyPath = assemblyPath,
-                    AssemblyDirectory = Path.GetDirectoryName(assemblyPath),
                     AssemblyName = Path.GetFileNameWithoutExtension(assemblyPath),
-                    DocumentName = _documentName.Value(),
-                    Method = _method.Value(),
-                    OutputPath = _output.Value(),
-                    Service = _service.Value(),
+                    FileListPath = _fileListPath.Value(),
+                    OutputDirectory = _output.Value(),
+                    ProjectName = ProjectName.Value(),
                 };
 
                 return GetDocumentCommandWorker.Process(context);
@@ -148,7 +131,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.ToString());
-                return 1;
+                return 2;
             }
         }
 

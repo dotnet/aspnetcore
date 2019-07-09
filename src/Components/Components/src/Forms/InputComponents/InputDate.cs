@@ -14,18 +14,20 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         const string dateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
 
-        [Parameter] string ParsingErrorMessage { get; set; } = "The {0} field must be a date.";
+        /// <summary>
+        /// Gets or sets the error message used when displaying an a parsing error.
+        /// </summary>
+        [Parameter] public string ParsingErrorMessage { get; private set; } = "The {0} field must be a date.";
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "date");
-            builder.AddAttribute(2, "id", Id);
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "type", "date");
             builder.AddAttribute(3, "class", CssClass);
             builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 

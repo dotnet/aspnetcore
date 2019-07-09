@@ -4,12 +4,14 @@
 // This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
 // tslint:disable:no-floating-promises
 
-import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@aspnet/signalr";
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
+import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
+
+import { PromiseSource } from "../../signalr/tests/Utils";
 
 import * as RX from "rxjs";
 
@@ -17,9 +19,7 @@ const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
 const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS_URL + "/testhub") : undefined;
 
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
-
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
+const TESTHUB_REDIRECT_ENDPOINT_URL = ENDPOINT_BASE_URL + "/redirect?numRedirects=0&baseUrl=" + ENDPOINT_BASE_URL;
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,
@@ -50,7 +50,7 @@ function getConnectionBuilder(transportType?: HttpTransportType, url?: string, o
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
-        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", async () => {
+        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 
@@ -424,16 +424,25 @@ describe("hubConnection", () => {
                     });
             });
 
-            it("closed with error if hub cannot be created", (done) => {
+            it("closed with error or start fails if hub cannot be created", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable")
                     .withHubProtocol(protocol)
                     .build();
 
+                const expectedErrorMessage = "Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.";
+
+                // Either start will fail or onclose will be called. Never both.
                 hubConnection.onclose((error) => {
-                    expect(error!.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
+                    expect(error!.message).toEqual(expectedErrorMessage);
                     done();
                 });
-                hubConnection.start();
+
+                try {
+                    await hubConnection.start();
+                } catch (error) {
+                    expect(error!.message).toEqual(expectedErrorMessage);
+                    done();
+                }
             });
 
             it("can handle different types", (done) => {
@@ -453,7 +462,7 @@ describe("hubConnection", () => {
                     DateTime: protocol.name === "json"
                         ? "2002-04-01T10:20:15Z"
                         : new Date(Date.UTC(2002, 3, 1, 10, 20, 15)), // Apr 1, 2002, 10:20:15am UTC
-                    GUID: "00010203-0405-0607-0706-050403020100",
+                    Guid: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03, 0xff],
                     String: "Hello, World!",
                 };
@@ -496,7 +505,7 @@ describe("hubConnection", () => {
                     DateTime: protocol.name === "json"
                         ? "2000-01-01T00:00:00Z"
                         : new Date(Date.UTC(2000, 0, 1)),
-                    GUID: "00010203-0405-0607-0706-050403020100",
+                    Guid: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03],
                     String: "hello world",
                 };
@@ -699,7 +708,240 @@ describe("hubConnection", () => {
                 await hubConnection.stop();
                 done();
             });
+
+            it("can reconnect", async (done) => {
+                try {
+                    const reconnectingPromise = new PromiseSource();
+                    const reconnectedPromise = new PromiseSource<string | undefined>();
+                    const hubConnection = getConnectionBuilder(transportType)
+                        .withAutomaticReconnect()
+                        .build();
+
+                    hubConnection.onreconnecting(() => {
+                        reconnectingPromise.resolve();
+                    });
+
+                    hubConnection.onreconnected((connectionId?) => {
+                        reconnectedPromise.resolve(connectionId);
+                    });
+
+                    await hubConnection.start();
+
+                    const initialConnectionId = (hubConnection as any).connection.connectionId as string;
+
+                    // Induce reconnect
+                    (hubConnection as any).serverTimeout();
+
+                    await reconnectingPromise;
+                    const newConnectionId = await reconnectedPromise;
+
+                    expect(newConnectionId).not.toBe(initialConnectionId);
+
+                    const response = await hubConnection.invoke("Echo", "test");
+
+                    expect(response).toEqual("test");
+
+                    await hubConnection.stop();
+
+                    done();
+                } catch (err) {
+                    fail(err);
+                    done();
+                }
+            });
         });
+
+        it("can change url in reconnecting state", async (done) => {
+            try {
+                const reconnectingPromise = new PromiseSource();
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withAutomaticReconnect()
+                    .build();
+
+                hubConnection.onreconnecting(() => {
+                    hubConnection.baseUrl = "http://example123.com";
+                    reconnectingPromise.resolve();
+                });
+
+                await hubConnection.start();
+
+                // Induce reconnect
+                (hubConnection as any).serverTimeout();
+
+                await reconnectingPromise;
+
+                expect(hubConnection.baseUrl).toBe("http://example123.com");
+
+                await hubConnection.stop();
+
+                done();
+            } catch (err) {
+                fail(err);
+                done();
+            }
+        });
+    });
+
+    it("can reconnect after negotiate redirect", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(undefined, TESTHUB_REDIRECT_ENDPOINT_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            await hubConnection.start();
+
+            const preReconnectRedirects = await hubConnection.invoke<number>("GetNumRedirects");
+
+            const initialConnectionId = (hubConnection as any).connection.connectionId as string;
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).not.toBe(initialConnectionId);
+
+            const serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(newConnectionId).toBe(serverConnectionId);
+
+            const postReconnectRedirects = await hubConnection.invoke<number>("GetNumRedirects");
+
+            expect(postReconnectRedirects).toBeGreaterThan(preReconnectRedirects);
+
+            await hubConnection.stop();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("can reconnect after skipping negotiation", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(
+                    HttpTransportType.WebSockets,
+                    undefined,
+                    { skipNegotiation: true },
+                )
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            await hubConnection.start();
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).toBeUndefined();
+
+            const response = await hubConnection.invoke("Echo", "test");
+
+            expect(response).toEqual("test");
+
+            await hubConnection.stop();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("connection id matches server side connection id", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(undefined, TESTHUB_REDIRECT_ENDPOINT_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.start();
+
+            expect(hubConnection.connectionId).not.toBeNull();
+            let serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(hubConnection.connectionId).toBe(serverConnectionId);
+
+            const initialConnectionId = hubConnection.connectionId!;
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).not.toBe(initialConnectionId);
+
+            serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(newConnectionId).toBe(serverConnectionId);
+
+            await hubConnection.stop();
+            expect(hubConnection.connectionId).toBeNull();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("connection id is alwys null is negotiation is skipped", async (done) => {
+        try {
+            const hubConnection = getConnectionBuilder(
+                    HttpTransportType.WebSockets,
+                    undefined,
+                    { skipNegotiation: true },
+                )
+                .build();
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.start();
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.stop();
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
     });
 
     if (typeof EventSource !== "undefined") {

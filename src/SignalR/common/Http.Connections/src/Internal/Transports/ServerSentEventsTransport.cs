@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    public class ServerSentEventsTransport : IHttpTransport
+    internal class ServerSentEventsTransport : IHttpTransport
     {
         private readonly PipeReader _application;
         private readonly string _connectionId;
@@ -26,13 +27,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             context.Response.ContentType = "text/event-stream";
-            context.Response.Headers["Cache-Control"] = "no-cache";
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
 
             // Make sure we disable all response buffering for SSE
             var bufferingFeature = context.Features.Get<IHttpBufferingFeature>();
             bufferingFeature?.DisableResponseBuffering();
 
-            context.Response.Headers["Content-Encoding"] = "identity";
+            context.Response.Headers[HeaderNames.ContentEncoding] = "identity";
 
             // Workaround for a Firefox bug where EventSource won't fire the open event
             // until it receives some data

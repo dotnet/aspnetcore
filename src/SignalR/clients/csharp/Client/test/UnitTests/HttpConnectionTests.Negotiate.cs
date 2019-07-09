@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, url: requestedUrl, loggerFactory: noErrorScope.LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                         });
                 }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                             connectionId = connection.ConnectionId;
                         });
                 }
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                         });
                 }
 
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                         async (connection) =>
                         {
-                            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().OrTimeout());
                             Assert.Equal("Negotiate redirection limit exceeded.", exception.Message);
                         });
                 }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory, accessTokenProvider: AccessTokenProvider),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Text).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                         });
                 }
 
@@ -327,10 +327,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 using (var noErrorScope = new VerifyNoErrorsScope())
                 {
                     await WithConnectionAsync(
-                        CreateConnection(testHttpHandler, transportFactory: transportFactory.Object, loggerFactory: noErrorScope.LoggerFactory),
+                        CreateConnection(testHttpHandler, transportFactory: transportFactory.Object, loggerFactory: noErrorScope.LoggerFactory, transferFormat: TransferFormat.Binary),
                         async (connection) =>
                         {
-                            await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                            await connection.StartAsync().OrTimeout();
                         });
                 }
             }
@@ -374,10 +374,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
                 await WithConnectionAsync(
-                    CreateConnection(testHttpHandler, transportFactory: transportFactory.Object),
+                    CreateConnection(testHttpHandler, transportFactory: transportFactory.Object, transferFormat: TransferFormat.Binary),
                     async (connection) =>
                     {
-                        await connection.StartAsync(TransferFormat.Binary).OrTimeout();
+                        await connection.StartAsync().OrTimeout();
                     });
             }
 
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                         async (connection) =>
                         {
-                            var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                            var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync().OrTimeout());
                             Assert.Equal("Test error.", exception.Message);
                         });
                 }
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     async (connection) =>
                     {
                         var exception = await Assert.ThrowsAsync<TException>(
-                            () => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                            () => connection.StartAsync().OrTimeout());
 
                         Assert.Equal(expectedExceptionMessage, exception.Message);
                     });

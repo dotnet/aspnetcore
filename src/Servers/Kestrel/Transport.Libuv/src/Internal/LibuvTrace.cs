@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTrace : ILibuvTrace
+    internal class LibuvTrace : ILibuvTrace
     {
         // ConnectionRead: Reserved: 3
 

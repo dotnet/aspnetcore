@@ -155,8 +155,15 @@ namespace BasicApi
                 }
             });
 
+            app.UseRouting();
+
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
 
         private void CreateDatabaseTables(IServiceProvider services)

@@ -1,8 +1,10 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -15,10 +17,7 @@ namespace Templates.Test.Helpers
 {
     internal class ProcessEx : IDisposable
     {
-        private static readonly string NUGET_PACKAGES = typeof(ProcessEx).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .First(attribute => attribute.Key == "TestPackageRestorePath")
-            .Value;
+        private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
 
         private readonly ITestOutputHelper _output;
         private readonly Process _process;
@@ -27,6 +26,56 @@ namespace Templates.Test.Helpers
         private readonly object _pipeCaptureLock = new object();
         private BlockingCollection<string> _stdoutLines;
         private TaskCompletionSource<int> _exited;
+
+        public ProcessEx(ITestOutputHelper output, Process proc)
+        {
+            _output = output;
+            _stdoutCapture = new StringBuilder();
+            _stderrCapture = new StringBuilder();
+            _stdoutLines = new BlockingCollection<string>();
+
+            _process = proc;
+            proc.EnableRaisingEvents = true;
+            proc.OutputDataReceived += OnOutputData;
+            proc.ErrorDataReceived += OnErrorData;
+            proc.Exited += OnProcessExited;
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
+
+            _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        public Task Exited => _exited.Task;
+
+        public bool HasExited => _process.HasExited;
+
+        public string Error
+        {
+            get
+            {
+                lock (_pipeCaptureLock)
+                {
+                    return _stderrCapture.ToString();
+                }
+            }
+        }
+
+        public string Output
+        {
+            get
+            {
+                lock (_pipeCaptureLock)
+                {
+                    return _stdoutCapture.ToString();
+                }
+            }
+        }
+
+        public IEnumerable<string> OutputLinesAsEnumerable => _stdoutLines.GetConsumingEnumerable();
+
+        public int ExitCode => _process.ExitCode;
+
+        public object Id => _process.Id;
 
         public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
         {
@@ -55,58 +104,16 @@ namespace Templates.Test.Helpers
             return new ProcessEx(output, proc);
         }
 
-        public static void RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
+        public static async Task<ProcessEx> RunViaShellAsync(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
         {
             var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? ("cmd", "/c")
                 : ("bash", "-c");
-            Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"")
-                .WaitForExit(assertSuccess: true);
+
+            var result = Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"");
+            await result.Exited;
+            return result;
         }
-
-        public ProcessEx(ITestOutputHelper output, Process proc)
-        {
-            _output = output;
-            _stdoutCapture = new StringBuilder();
-            _stderrCapture = new StringBuilder();
-            _stdoutLines = new BlockingCollection<string>();
-
-            _process = proc;
-            proc.EnableRaisingEvents = true;
-            proc.OutputDataReceived += OnOutputData;
-            proc.ErrorDataReceived += OnErrorData;
-            proc.Exited += OnProcessExited;
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
-
-            _exited = new TaskCompletionSource<int>();
-        }
-
-        public Task Exited => _exited.Task;
-
-        public string Error
-        {
-            get
-            {
-                lock (_pipeCaptureLock)
-                {
-                    return _stderrCapture.ToString();
-                }
-            }
-        }
-
-        public string Output
-        {
-            get
-            {
-                lock (_pipeCaptureLock)
-                {
-                    return _stdoutCapture.ToString();
-                }
-            }
-        }
-
-        public int ExitCode => _process.ExitCode;
 
         private void OnErrorData(object sender, DataReceivedEventArgs e)
         {
@@ -151,6 +158,16 @@ namespace Templates.Test.Helpers
             _exited.TrySetResult(_process.ExitCode);
         }
 
+        internal string GetFormattedOutput()
+        {
+            if (!_process.HasExited)
+            {
+                throw new InvalidOperationException("Process has not finished running.");
+            }
+
+            return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
+        }
+
         public void WaitForExit(bool assertSuccess)
         {
             Exited.Wait();
@@ -160,6 +177,12 @@ namespace Templates.Test.Helpers
                 throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
             }
         }
+
+        private static string GetNugetPackagesRestorePath() =>
+            typeof(ProcessEx).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "TestPackageRestorePath")
+                .Value;
 
         public void Dispose()
         {
@@ -176,7 +199,5 @@ namespace Templates.Test.Helpers
             _process.Exited -= OnProcessExited;
             _process.Dispose();
         }
-
-        public IEnumerable<string> OutputLinesAsEnumerable => _stdoutLines.GetConsumingEnumerable();
     }
 }

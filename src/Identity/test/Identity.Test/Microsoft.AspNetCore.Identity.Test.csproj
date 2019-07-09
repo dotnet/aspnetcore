@@ -7,6 +7,8 @@
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="..\..\UI\src\Areas\Identity\Pages\**\*.*" LinkBase="UI\src\Areas\Identity\Pages" />
+    <Content Include="..\..\UI\src\wwwroot\**\*.*" LinkBase="UI\src\wwwroot" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,6 +16,33 @@ namespace Interop.FunctionalTests
 {
     public static class H2SpecCommands
     {
+        #region chmod
+        // user permissions
+        const int S_IRUSR = 0x100;
+        const int S_IWUSR = 0x80;
+        const int S_IXUSR = 0x40;
+
+        // group permission
+        const int S_IRGRP = 0x20;
+        const int S_IWGRP = 0x10;
+        const int S_IXGRP = 0x8;
+
+        // other permissions
+        const int S_IROTH = 0x4;
+        const int S_IWOTH = 0x2;
+        const int S_IXOTH = 0x1;
+
+        const int _0755 =
+            S_IRUSR | S_IXUSR | S_IWUSR
+            | S_IRGRP | S_IXGRP
+            | S_IROTH | S_IXOTH;
+
+        [DllImport("libc", SetLastError = true)]
+        private static extern int chmod(string pathname, int mode);
+
+        private static int chmod755(string pathname) => chmod(pathname, _0755);
+        #endregion
+
         private const int TimeoutSeconds = 15;
 
         private static string GetToolLocation()
@@ -27,11 +54,15 @@ namespace Interop.FunctionalTests
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return Path.Combine(root, "linux", "h2spec");
+                var toolPath = Path.Combine(root, "linux", "h2spec");
+                chmod755(toolPath);
+                return toolPath;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return Path.Combine(root, "darwin", "h2spec");
+                var toolPath = Path.Combine(root, "darwin", "h2spec");
+                chmod755(toolPath);
+                return toolPath;
             }
             throw new NotImplementedException("Invalid OS");
         }

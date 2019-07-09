@@ -1,23 +1,36 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import * as Request from "request";
+// @ts-ignore: This will be removed from built files and is here to make the types available during dev work
+import * as Request from "@types/request";
 
 import { AbortError, HttpError, TimeoutError } from "./Errors";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { isArrayBuffer } from "./Utils";
 
+let requestModule: Request.RequestAPI<Request.Request, Request.CoreOptions, Request.RequiredUriUrl>;
+if (typeof XMLHttpRequest === "undefined") {
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    requestModule = requireFunc("request");
+}
+
 export class NodeHttpClient extends HttpClient {
     private readonly logger: ILogger;
-    private readonly request: Request.RequestAPI<Request.Request, Request.CoreOptions, Request.RequiredUriUrl>;
+    private readonly request: typeof requestModule;
     private readonly cookieJar: Request.CookieJar;
 
     public constructor(logger: ILogger) {
         super();
+        if (typeof requestModule === "undefined") {
+            throw new Error("The 'request' module could not be loaded.");
+        }
+
         this.logger = logger;
-        this.cookieJar = Request.jar();
-        this.request = Request.defaults({ jar: this.cookieJar });
+        this.cookieJar = requestModule.jar();
+        this.request = requestModule.defaults({ jar: this.cookieJar });
     }
 
     public send(httpRequest: HttpRequest): Promise<HttpResponse> {

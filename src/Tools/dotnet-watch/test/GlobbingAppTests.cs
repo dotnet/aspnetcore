@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Watcher.Tools.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new GlobbingApp(logger);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
@@ -40,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(2, types);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -56,7 +58,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
@@ -72,7 +74,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8987")]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -84,7 +86,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
@@ -97,7 +100,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotSame(restart, finished);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();

@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/Admin/LG3/SomeAction", responseContent);
         }
 
-        // Rejected because the calling code relies on ambient values, but doesn't pass
+        // This will fallback to the non-area route because the calling code relies on ambient values, but doesn't pass
         // the HttpContext.
         [Fact]
         public async Task GetPathByAction_FailsToGenerateLinkInsideArea()
@@ -106,8 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Equal(string.Empty, responseContent);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("/LG3/SomeAction", responseContent);
         }
 
         [Fact]
@@ -118,8 +118,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Equal(string.Empty, responseContent);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("/LG1/SomeAction", responseContent);
         }
 
         [Fact]
@@ -228,6 +228,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("https://www.example.com/Admin/LGAreaPage?handler=a-handler", responseContent);
+        }
+
+        [Fact]
+        public async Task GetUriByRouteValues_CanGenerateUriToRouteWithoutMvcParameters()
+        {
+            // Act
+            var response = await Client.GetAsync("LG1/LinkToRouteWithNoMvcParameters?custom=17");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("https://www.example.com/routewithnomvcparameters/17", responseContent);
         }
     }
 }

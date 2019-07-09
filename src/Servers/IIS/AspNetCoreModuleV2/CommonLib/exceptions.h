@@ -89,6 +89,9 @@
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
 
+#define RETURN_INT_IF_NOT_ZERO(val)                                 do { if ((val) != 0) { return val; }} while (0, 0)
+#define RETURN_IF_NOT_ZERO(val)                                 do { if ((val) != 0) { return; }} while (0, 0)
+
 inline thread_local IHttpTraceContext* g_traceContext;
 
  __declspec(noinline) inline VOID TraceHRESULT(LOCATION_ARGUMENTS HRESULT hr)

@@ -25,9 +25,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public virtual IServiceCollection Services { get; }
 
-
         private AuthenticationBuilder AddSchemeHelper<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
-            where TOptions : class, new()
+            where TOptions : AuthenticationSchemeOptions, new()
             where THandler : class, IAuthenticationHandler
         {
             Services.Configure<AuthenticationOptions>(o =>
@@ -41,6 +40,10 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 Services.Configure(authenticationScheme, configureOptions);
             }
+            Services.AddOptions<TOptions>(authenticationScheme).Validate(o => {
+                o.Validate(authenticationScheme);
+                return true;
+            });
             Services.AddTransient<THandler>();
             return this;
         }

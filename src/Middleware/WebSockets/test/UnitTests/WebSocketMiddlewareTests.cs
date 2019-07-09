@@ -8,9 +8,10 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
@@ -536,11 +537,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         request.Headers.Connection.Clear();
                         request.Headers.Connection.Add("Upgrade");
                         request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
-                        request.Headers.Add(Constants.Headers.SecWebSocketVersion, Constants.Headers.SupportedVersion);
+                        request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
                         // SecWebSocketKey required to be 16 bytes
-                        request.Headers.Add(Constants.Headers.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
+                        request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
 
-                        request.Headers.Add("Origin", "http://example.com");
+                        request.Headers.Add(HeaderNames.Origin, "http://example.com");
 
                         var response = await client.SendAsync(request);
                         Assert.Equal(expectedCode, response.StatusCode);
@@ -550,6 +551,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8187", FlakyOn.Helix.All)]
         public async Task OriginIsNotValidatedForNonWebSocketRequests()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>

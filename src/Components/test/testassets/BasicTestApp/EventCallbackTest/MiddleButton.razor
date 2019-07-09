@@ -1,0 +1,7 @@
+
+<InnerButton OnClick="@OnClick" Text="@Text"/>
+
+@code {
+    [Parameter] EventCallback OnClick { get; set; }
+    [Parameter] string Text { get; set; }
+}

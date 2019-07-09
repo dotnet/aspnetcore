@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.</Description>
@@ -12,11 +12,12 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)UrlDecoder\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.Text.Encodings.Web" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

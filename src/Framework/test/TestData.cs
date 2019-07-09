@@ -8,19 +8,15 @@ namespace Microsoft.AspNetCore
 {
     public class TestData
     {
-        public static string GetPackageVersion() => GetTestDataValue("PackageVersion");
+        public static string GetSharedFxVersion() => GetTestDataValue("SharedFxVersion");
 
-        public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppPackageVersion");
+        public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimeVersion");
 
         public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
 
         public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("TargetRuntimeIdentifier");
 
         public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
-
-        public static string GetMetadataOutput() => GetTestDataValue("MetadataOutputPath");
-
-        public static string GetManifestOutputDir() => GetTestDataValue("ManifestOutputDir");
 
         public static string GetTestDataValue(string key)
              => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;

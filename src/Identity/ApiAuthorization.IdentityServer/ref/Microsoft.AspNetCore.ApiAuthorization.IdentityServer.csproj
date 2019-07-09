@@ -7,7 +7,9 @@
     <Compile Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer.netcoreapp3.0.cs" />
     <Reference Include="IdentityServer4.AspNetIdentity"  />
     <Reference Include="IdentityServer4.EntityFramework"  />
+    <Reference Include="IdentityServer4.EntityFramework.Storage"  />
     <Reference Include="IdentityServer4"  />
+    <Reference Include="IdentityServer4.Storage"  />
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer"  />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"  />
     <Reference Include="Microsoft.AspNetCore.Identity.UI"  />

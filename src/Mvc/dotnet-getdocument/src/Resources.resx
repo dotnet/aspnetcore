@@ -117,47 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConfigurationDescription" xml:space="preserve">
-    <value>The configuration to use.</value>
-  </data>
   <data name="CommandFullName" xml:space="preserve">
     <value>dotnet-getdocument</value>
   </data>
   <data name="TargetFrameworkDescription" xml:space="preserve">
-    <value>The target framework.</value>
+    <value>The target framework to use. Required.</value>
   </data>
-  <data name="GetMetadataFailed" xml:space="preserve">
-    <value>Unable to retrieve project metadata. If you are using custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, use the --projectExtensionsPath option.</value>
-  </data>
-  <data name="MultipleProjects" xml:space="preserve">
-    <value>More than one project was found in the current working directory. Use the --project option.</value>
-  </data>
-  <data name="MultipleProjectsInDirectory" xml:space="preserve">
-    <value>More than one project was found in directory '{0}'. Specify one using its file name.</value>
-  </data>
-  <data name="NETCoreApp1Project" xml:space="preserve">
-    <value>Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.0 or higher.</value>
+  <data name="OldNETCoreAppProject" xml:space="preserve">
+    <value>Project '{0}' targets framework '.NETCoreApp' version '{1}'. This version of the dotnet-getdocument tool only supports version 2.1 or higher.</value>
   </data>
   <data name="NETStandardProject" xml:space="preserve">
-    <value>Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, add an executable project targeting .NET Core or .NET Framework that references this project and specify it using the --project option; or, update this project to target .NET Core and / or .NET Framework.</value>
+    <value>Project '{0}' targets framework '.NETStandard'. There is no runtime associated with this framework and projects targeting it cannot be executed directly. To use the dotnet-getdocument tool with this project, update this project to target .NET Core and / or .NET Framework.</value>
   </data>
   <data name="NoColorDescription" xml:space="preserve">
-    <value>Do not colorize output.</value>
-  </data>
-  <data name="NoProject" xml:space="preserve">
-    <value>No project was found. Change the current working directory or use the --project option.</value>
-  </data>
-  <data name="NoProjectInDirectory" xml:space="preserve">
-    <value>No project was found in directory '{0}'.</value>
+    <value>Do not colorize console output.</value>
   </data>
   <data name="PrefixDescription" xml:space="preserve">
-    <value>Prefix output with level.</value>
+    <value>Prefix console output with logging level.</value>
   </data>
   <data name="ProjectDescription" xml:space="preserve">
-    <value>The project to use.</value>
-  </data>
-  <data name="ProjectExtensionsPathDescription" xml:space="preserve">
-    <value>The MSBuild project extensions path. Defaults to "obj".</value>
+    <value>The project name. Required.</value>
   </data>
   <data name="RuntimeDescription" xml:space="preserve">
     <value>The runtime identifier to use.</value>
@@ -165,22 +144,19 @@
   <data name="UnsupportedFramework" xml:space="preserve">
     <value>Project '{0}' targets framework '{1}'. The dotnet-getdocument tool does not support this framework.</value>
   </data>
-  <data name="UsingProject" xml:space="preserve">
-    <value>Using project '{0}'.</value>
-  </data>
   <data name="VerboseDescription" xml:space="preserve">
     <value>Show verbose output.</value>
   </data>
-  <data name="WritingFile" xml:space="preserve">
-    <value>Writing '{0}'...</value>
+  <data name="AssetsFileDescription" xml:space="preserve">
+    <value>The project assets file to use.</value>
   </data>
-  <data name="MustBuild" xml:space="preserve">
-    <value>Project output not found. Project must be up-to-date when using this tool.</value>
+  <data name="MissingOption" xml:space="preserve">
+    <value>Missing required option '--{0}'.</value>
   </data>
-  <data name="OutputDescription" xml:space="preserve">
-    <value>The file to write the result to.</value>
+  <data name="PlatformDescription" xml:space="preserve">
+    <value>The platform to use.</value>
   </data>
-  <data name="GetMetadataValueFailed" xml:space="preserve">
-    <value>Unable to retrieve '{0}' project metadata. Ensure '$({1})' is set.</value>
+  <data name="AssemblyDescription" xml:space="preserve">
+    <value>The assembly path to use. Required.</value>
   </data>
 </root>

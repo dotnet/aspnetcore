@@ -14,11 +14,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         private string _relativePhysicalPath;
         private bool _isRelativePhysicalPathSet;
 
-        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root)
+        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root) : this(fileInfo, basePath, filePath, root, fileKind: null)
+        {
+        }
+
+        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string root, string fileKind)
         {
             FileInfo = fileInfo;
             BasePath = basePath;
             FilePath = filePath;
+            FileKind = fileKind ?? FileKinds.GetFileKindFromFilePath(filePath);
             _root = root;
         }
 
@@ -27,6 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public override string BasePath { get; }
 
         public override string FilePath { get; }
+
+        public override string FileKind { get; }
 
         public override bool Exists => FileInfo.Exists;
 

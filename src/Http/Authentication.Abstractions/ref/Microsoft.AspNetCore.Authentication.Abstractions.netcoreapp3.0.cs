@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Authentication
         public string DefaultScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultSignInScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultSignOutScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool RequireAuthenticatedSignIn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> SchemeMap { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> Schemes { get { throw null; } }
         public void AddScheme(string name, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> configureBuilder) { }

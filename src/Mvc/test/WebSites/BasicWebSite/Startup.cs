@@ -13,8 +13,6 @@ namespace BasicWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
-
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddNewtonsoftJson()
@@ -35,16 +33,17 @@ namespace BasicWebSite
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "ActionAsMethod",
-                    template: "{controller}/{action}",
+                    pattern: "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute(
-                    name: "PageRoute", 
-                    template: "{controller}/{action}/{page}");
+                endpoints.MapControllerRoute(
+                    name: "PageRoute",
+                    pattern: "{controller}/{action}/{page}");
             });
         }
     }

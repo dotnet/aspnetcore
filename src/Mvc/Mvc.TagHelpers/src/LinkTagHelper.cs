@@ -210,12 +210,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestValueAttributeName)]
         public string FallbackTestValue { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// </summary>
         protected internal IWebHostEnvironment HostingEnvironment { get; }
 
+        /// <summary>
+        /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
+        /// </summary>
         protected internal IMemoryCache Cache { get; }
 
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.JavaScriptEncoder"/> used to encode fallback information.
+        /// </summary>
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
+        /// <summary>
+        /// Gets the <see cref="GlobbingUrlBuilder"/> used to populate included and excluded urls.
+        /// </summary>
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
 
@@ -369,8 +381,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             builder.AppendHtml(", \"");
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
                 if (string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
@@ -428,8 +441,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             builder.AppendHtml("[");
             var firstAdded = false;
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < fallbackHrefs.Count; i++)
+
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var fallbackHrefsCount = fallbackHrefs.Count;
+            for (var i = 0; i < fallbackHrefsCount; i++)
             {
                 if (firstAdded)
                 {
@@ -486,8 +501,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var addHref = true;
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
 

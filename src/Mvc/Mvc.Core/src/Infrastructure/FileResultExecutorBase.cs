@@ -52,10 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
-            SetContentType(context, result);
-            SetContentDispositionHeader(context, result);
-
+            
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
 
@@ -82,6 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 response.StatusCode = StatusCodes.Status412PreconditionFailed;
                 return (range: null, rangeLength: 0, serveBody: false);
             }
+
+            SetContentType(context, result);
+            SetContentDispositionHeader(context, result);
 
             if (fileLength.HasValue)
             {

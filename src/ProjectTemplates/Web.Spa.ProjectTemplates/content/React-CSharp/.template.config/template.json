@@ -34,6 +34,7 @@
             "Data/**",
             "Models/**",
             "ClientApp/src/components/api-authorization/**",
+            "ClientApp/src/setupTests.js",
             "Controllers/OidcConfigurationController.cs"
           ]
         },

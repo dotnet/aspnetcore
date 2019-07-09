@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     }
     public partial class FileBufferingReadStream : System.IO.Stream
     {
+        public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, System.Func<string> tempFileDirectoryAccessor) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, System.Func<string> tempFileDirectoryAccessor, System.Buffers.ArrayPool<byte> bytePool) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, string tempFileDirectory) { }
@@ -53,6 +54,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override long Position { get { throw null; } set { } }
         public string TempFileName { get { throw null; } }
         protected override void Dispose(bool disposing) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         public override void Flush() { }
         public override int Read(byte[] buffer, int offset, int count) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -60,6 +63,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
         public override void SetLength(long value) { }
         public override void Write(byte[] buffer, int offset, int count) { }
+        public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+    }
+    public sealed partial class FileBufferingWriteStream : System.IO.Stream
+    {
+        public FileBufferingWriteStream(int memoryThreshold = 32768, long? bufferLimit = default(long?), System.Func<string> tempFileDirectoryAccessor = null) { }
+        public override bool CanRead { get { throw null; } }
+        public override bool CanSeek { get { throw null; } }
+        public override bool CanWrite { get { throw null; } }
+        public override long Length { get { throw null; } }
+        public override long Position { get { throw null; } set { } }
+        protected override void Dispose(bool disposing) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task DrainBufferAsync(System.IO.Stream destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override void Flush() { }
+        public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override int Read(byte[] buffer, int offset, int count) { throw null; }
+        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
+        public override void SetLength(long value) { }
+        public override void Write(byte[] buffer, int offset, int count) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public partial class FileMultipartSection
@@ -78,6 +104,16 @@ namespace Microsoft.AspNetCore.WebUtilities
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Threading.Tasks.Task<string> GetValueAsync() { throw null; }
+    }
+    public partial class FormPipeReader
+    {
+        public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader) { }
+        public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader, System.Text.Encoding encoding) { }
+        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>> ReadFormAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public partial class FormReader : System.IDisposable
     {
@@ -119,6 +155,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public HttpResponseStreamWriter(System.IO.Stream stream, System.Text.Encoding encoding, int bufferSize, System.Buffers.ArrayPool<byte> bytePool, System.Buffers.ArrayPool<char> charPool) { }
         public override System.Text.Encoding Encoding { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override void Dispose(bool disposing) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         public override void Flush() { }
         public override System.Threading.Tasks.Task FlushAsync() { throw null; }
         public override void Write(char value) { }
@@ -197,6 +235,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static string Base64UrlEncode(byte[] input) { throw null; }
         public static int Base64UrlEncode(byte[] input, int offset, char[] output, int outputOffset, int count) { throw null; }
         public static string Base64UrlEncode(byte[] input, int offset, int count) { throw null; }
+        public static string Base64UrlEncode(System.ReadOnlySpan<byte> input) { throw null; }
         public static int GetArraySizeRequiredToDecode(int count) { throw null; }
         public static int GetArraySizeRequiredToEncode(int count) { throw null; }
     }

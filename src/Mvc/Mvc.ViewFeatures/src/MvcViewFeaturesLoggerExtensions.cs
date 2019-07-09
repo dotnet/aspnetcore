@@ -122,10 +122,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
         }
 
-        public static IDisposable ViewComponentScope(this ILogger logger, ViewComponentContext context)
+#nullable enable
+        public static IDisposable? ViewComponentScope(this ILogger logger, ViewComponentContext context)
         {
             return logger.BeginScope(new ViewComponentLogScope(context.ViewComponentDescriptor));
         }
+#nullable restore
 
         public static void ViewComponentExecuting(
             this ILogger logger,

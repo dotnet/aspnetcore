@@ -3,13 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     internal static class RenderTreeDiffBuilder
     {
+        enum DiffAction { Match, Insert, Delete }
+
+        // We use int.MinValue to signal this special case because (1) it would never be used by
+        // the Razor compiler or by accident in developer code, and (2) we know it will always
+        // hit the "old < new" code path during diffing so we only have to check for it in one place.
+        public const int SystemAddedAttributeSequenceNumber = int.MinValue;
+
         public static RenderTreeDiff ComputeDiff(
             Renderer renderer,
             RenderBatchBuilder batchBuilder,
@@ -35,107 +41,302 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
+            // This is deliberately a very large method. Parts of it could be factored out
+            // into other private methods, but doing so comes at a consequential perf cost,
+            // because it involves so much parameter passing. You can think of the code here
+            // as being several private methods (delimited by #region) pre-inlined.
+            //
+            // A naive "extract methods"-type refactoring will worsen perf by about 10%. So,
+            // if you plan to refactor this, be sure to benchmark the old and new versions
+            // on Mono WebAssembly.
+
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
             var prevOldSeq = -1;
             var prevNewSeq = -1;
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
-            while (hasMoreOld || hasMoreNew)
+            var matchWithNewTreeIndex = -1; // Only used when action == DiffAction.Match
+            Dictionary<object, KeyedItemInfo> keyedItemInfos = null;
+
+            try
             {
-                var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
-                var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
-
-                if (oldSeq == newSeq)
+                while (hasMoreOld || hasMoreNew)
                 {
-                    AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, newStartIndex);
-                    oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
-                    newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
-                    hasMoreOld = oldEndIndexExcl > oldStartIndex;
-                    hasMoreNew = newEndIndexExcl > newStartIndex;
-                    prevOldSeq = oldSeq;
-                    prevNewSeq = newSeq;
-                }
-                else
-                {
-                    bool treatAsInsert;
-                    var oldLoopedBack = oldSeq <= prevOldSeq;
-                    var newLoopedBack = newSeq <= prevNewSeq;
-                    if (oldLoopedBack == newLoopedBack)
-                    {
-                        // Both sequences are proceeding through the same loop block, so do a simple
-                        // preordered merge join (picking from whichever side brings us closer to being
-                        // back in sync)
-                        treatAsInsert = newSeq < oldSeq;
+                    DiffAction action;
 
-                        if (oldLoopedBack)
-                        {
-                            // If both old and new have now looped back, we must reset their 'looped back'
-                            // tracker so we can treat them as proceeding through the same loop block
-                            prevOldSeq = prevNewSeq = -1;
-                        }
-                    }
-                    else if (oldLoopedBack)
+                    #region "Read keys and sequence numbers"
+                    int oldSeq, newSeq;
+                    object oldKey, newKey;
+                    if (hasMoreOld)
                     {
-                        // Old sequence looped back but new one didn't
-                        // The new sequence either has some extra trailing elements in the current loop block
-                        // which we should insert, or omits some old trailing loop blocks which we should delete
-                        // TODO: Find a way of not recomputing this next flag on every iteration
-                        var newLoopsBackLater = false;
-                        for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
-                        {
-                            if (newTree[testIndex].Sequence < newSeq)
-                            {
-                                newLoopsBackLater = true;
-                                break;
-                            }
-                        }
-
-                        // If the new sequence loops back later to an earlier point than this,
-                        // then we know it's part of the existing loop block (so should be inserted).
-                        // If not, then it's unrelated to the previous loop block (so we should treat
-                        // the old items as trailing loop blocks to be removed).
-                        treatAsInsert = newLoopsBackLater;
+                        ref var oldFrame = ref oldTree[oldStartIndex];
+                        oldSeq = oldFrame.Sequence;
+                        oldKey = KeyValue(ref oldFrame);
                     }
                     else
                     {
-                        // New sequence looped back but old one didn't
-                        // The old sequence either has some extra trailing elements in the current loop block
-                        // which we should delete, or the new sequence has extra trailing loop blocks which we
-                        // should insert
-                        // TODO: Find a way of not recomputing this next flag on every iteration
-                        var oldLoopsBackLater = false;
-                        for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
-                        {
-                            if (oldTree[testIndex].Sequence < oldSeq)
-                            {
-                                oldLoopsBackLater = true;
-                                break;
-                            }
-                        }
-
-                        // If the old sequence loops back later to an earlier point than this,
-                        // then we know it's part of the existing loop block (so should be removed).
-                        // If not, then it's unrelated to the previous loop block (so we should treat
-                        // the new items as trailing loop blocks to be inserted).
-                        treatAsInsert = !oldLoopsBackLater;
+                        oldSeq = int.MaxValue;
+                        oldKey = null;
                     }
 
-                    if (treatAsInsert)
+                    if (hasMoreNew)
                     {
-                        InsertNewFrame(ref diffContext, newStartIndex);
-                        newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
-                        hasMoreNew = newEndIndexExcl > newStartIndex;
-                        prevNewSeq = newSeq;
+                        ref var newFrame = ref newTree[newStartIndex];
+                        newSeq = newFrame.Sequence;
+                        newKey = KeyValue(ref newFrame);
                     }
                     else
                     {
-                        RemoveOldFrame(ref diffContext, oldStartIndex);
-                        oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
-                        hasMoreOld = oldEndIndexExcl > oldStartIndex;
-                        prevOldSeq = oldSeq;
+                        newSeq = int.MaxValue;
+                        newKey = null;
+                    }
+                    #endregion
+
+                    // If there's a key on either side, prefer matching by key not sequence
+                    if (oldKey != null || newKey != null)
+                    {
+                        #region "Get diff action by matching on key"
+                        if (Equals(oldKey, newKey))
+                        {
+                            // Keys match
+                            action = DiffAction.Match;
+                            matchWithNewTreeIndex = newStartIndex;
+                        }
+                        else
+                        {
+                            // Keys don't match
+                            if (keyedItemInfos == null)
+                            {
+                                keyedItemInfos = BuildKeyToInfoLookup(diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
+                            }
+
+                            var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1, false);
+                            var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1, false);
+                            var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
+                            var newKeyIsInOldTree = newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
+
+                            // If either key is not in the other tree, we can handle it as an insert or a delete
+                            // on this iteration. We're only forced to use the move logic that's not the case
+                            // (i.e., both keys are in both trees)
+                            if (oldKeyIsInNewTree && newKeyIsInOldTree)
+                            {
+                                // It's a move
+                                // Since the recipient of the diff script already has the old frame (the one with oldKey)
+                                // at the current siblingIndex, recurse into oldKey and update its descendants in place.
+                                // We re-order the frames afterwards.
+                                action = DiffAction.Match;
+                                matchWithNewTreeIndex = oldKeyItemInfo.NewIndex;
+
+                                // Track the post-edit sibling indices of the moved items
+                                // Since diffContext.SiblingIndex only increases, we can be sure the values we
+                                // write at this point will remain correct, because there won't be any further
+                                // insertions/deletions at smaller sibling indices.
+                                keyedItemInfos[oldKey] = oldKeyItemInfo.WithOldSiblingIndex(diffContext.SiblingIndex);
+                                keyedItemInfos[newKey] = newKeyItemInfo.WithNewSiblingIndex(diffContext.SiblingIndex);
+                            }
+                            else if (!hasMoreNew)
+                            {
+                                // If we've run out of new items, we must be looking at just an old item, so delete it
+                                action = DiffAction.Delete;
+                            }
+                            else
+                            {
+                                // It's an insertion or a deletion, or both
+                                // If the new key is in both trees, but the old key isn't, then the old item was deleted
+                                // Otherwise, it's either an insertion or *both* insertion+deletion, so pick insertion and get the deletion on the next iteration if needed
+                                action = newKeyIsInOldTree ? DiffAction.Delete : DiffAction.Insert;
+                            }
+                        }
+                        #endregion
+                    }
+                    else
+                    {
+                        #region "Get diff action by matching on sequence number"
+                        // Neither side is keyed, so match by sequence number
+                        if (oldSeq == newSeq)
+                        {
+                            // Sequences match
+                            action = DiffAction.Match;
+                            matchWithNewTreeIndex = newStartIndex;
+                        }
+                        else
+                        {
+                            // Sequences don't match
+                            var oldLoopedBack = oldSeq <= prevOldSeq;
+                            var newLoopedBack = newSeq <= prevNewSeq;
+                            if (oldLoopedBack == newLoopedBack)
+                            {
+                                // Both sequences are proceeding through the same loop block, so do a simple
+                                // preordered merge join (picking from whichever side brings us closer to being
+                                // back in sync)
+                                action = newSeq < oldSeq ? DiffAction.Insert : DiffAction.Delete;
+
+                                if (oldLoopedBack)
+                                {
+                                    // If both old and new have now looped back, we must reset their 'looped back'
+                                    // tracker so we can treat them as proceeding through the same loop block
+                                    prevOldSeq = -1;
+                                    prevNewSeq = -1;
+                                }
+                            }
+                            else if (oldLoopedBack)
+                            {
+                                // Old sequence looped back but new one didn't
+                                // The new sequence either has some extra trailing elements in the current loop block
+                                // which we should insert, or omits some old trailing loop blocks which we should delete
+                                // TODO: Find a way of not recomputing this next flag on every iteration
+                                var newLoopsBackLater = false;
+                                for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
+                                {
+                                    if (newTree[testIndex].Sequence < newSeq)
+                                    {
+                                        newLoopsBackLater = true;
+                                        break;
+                                    }
+                                }
+
+                                // If the new sequence loops back later to an earlier point than this,
+                                // then we know it's part of the existing loop block (so should be inserted).
+                                // If not, then it's unrelated to the previous loop block (so we should treat
+                                // the old items as trailing loop blocks to be removed).
+                                action = newLoopsBackLater ? DiffAction.Insert : DiffAction.Delete;
+                            }
+                            else
+                            {
+                                // New sequence looped back but old one didn't
+                                // The old sequence either has some extra trailing elements in the current loop block
+                                // which we should delete, or the new sequence has extra trailing loop blocks which we
+                                // should insert
+                                // TODO: Find a way of not recomputing this next flag on every iteration
+                                var oldLoopsBackLater = false;
+                                for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
+                                {
+                                    if (oldTree[testIndex].Sequence < oldSeq)
+                                    {
+                                        oldLoopsBackLater = true;
+                                        break;
+                                    }
+                                }
+
+                                // If the old sequence loops back later to an earlier point than this,
+                                // then we know it's part of the existing loop block (so should be removed).
+                                // If not, then it's unrelated to the previous loop block (so we should treat
+                                // the new items as trailing loop blocks to be inserted).
+                                action = oldLoopsBackLater ? DiffAction.Delete : DiffAction.Insert;
+                            }
+                        }
+                        #endregion
+                    }
+
+                    #region "Apply diff action"
+                    switch (action)
+                    {
+                        case DiffAction.Match:
+                            AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, matchWithNewTreeIndex);
+                            oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
+                            newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
+                            hasMoreOld = oldEndIndexExcl > oldStartIndex;
+                            hasMoreNew = newEndIndexExcl > newStartIndex;
+                            prevOldSeq = oldSeq;
+                            prevNewSeq = newSeq;
+                            break;
+                        case DiffAction.Insert:
+                            InsertNewFrame(ref diffContext, newStartIndex);
+                            newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
+                            hasMoreNew = newEndIndexExcl > newStartIndex;
+                            prevNewSeq = newSeq;
+                            break;
+                        case DiffAction.Delete:
+                            RemoveOldFrame(ref diffContext, oldStartIndex);
+                            oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
+                            hasMoreOld = oldEndIndexExcl > oldStartIndex;
+                            prevOldSeq = oldSeq;
+                            break;
+                    }
+                    #endregion
+                }
+
+                #region "Write permutations list"
+                if (keyedItemInfos != null)
+                {
+                    var hasPermutations = false;
+                    foreach (var keyValuePair in keyedItemInfos)
+                    {
+                        var value = keyValuePair.Value;
+                        if (value.OldSiblingIndex >= 0 && value.NewSiblingIndex >= 0)
+                        {
+                            // This item moved
+                            hasPermutations = true;
+                            diffContext.Edits.Append(
+                                RenderTreeEdit.PermutationListEntry(value.OldSiblingIndex, value.NewSiblingIndex));
+                        }
+                    }
+
+                    if (hasPermutations)
+                    {
+                        // It's much easier for the recipient to handle if we're explicit about
+                        // when the list is finished
+                        diffContext.Edits.Append(RenderTreeEdit.PermutationListEnd());
                     }
                 }
+                #endregion
+            }
+            finally
+            {
+                if (keyedItemInfos != null)
+                {
+                    keyedItemInfos.Clear();
+                    diffContext.KeyedItemInfoDictionaryPool.Return(keyedItemInfos);
+                }
+            }
+        }
+
+        private static Dictionary<object, KeyedItemInfo> BuildKeyToInfoLookup(DiffContext diffContext, int oldStartIndex, int oldEndIndexExcl, int newStartIndex, int newEndIndexExcl)
+        {
+            var result = diffContext.KeyedItemInfoDictionaryPool.Get();
+            var oldTree = diffContext.OldTree;
+            var newTree = diffContext.NewTree;
+
+            while (oldStartIndex < oldEndIndexExcl)
+            {
+                ref var frame = ref oldTree[oldStartIndex];
+                var key = KeyValue(ref frame);
+                if (key != null)
+                {
+                    result[key] = new KeyedItemInfo(oldStartIndex, -1, isUnique: !result.ContainsKey(key));
+                }
+
+                oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
+            }
+
+            while (newStartIndex < newEndIndexExcl)
+            {
+                ref var frame = ref newTree[newStartIndex];
+                var key = KeyValue(ref frame);
+                if (key != null)
+                {
+                    result[key] = result.TryGetValue(key, out var existingEntry)
+                        ? new KeyedItemInfo(existingEntry.OldIndex, newStartIndex, isUnique: existingEntry.NewIndex < 0)
+                        : new KeyedItemInfo(-1, newStartIndex, isUnique: true);
+                }
+
+                newStartIndex = NextSiblingIndex(frame, newStartIndex);
+            }
+
+            return result;
+        }
+
+        private static object KeyValue(ref RenderTreeFrame frame)
+        {
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    return frame.ElementKey;
+                case RenderTreeFrameType.Component:
+                    return frame.ComponentKey;
+                default:
+                    return null;
             }
         }
 
@@ -186,6 +387,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 else if (oldSeq < newSeq)
                 {
+                    if (oldSeq == SystemAddedAttributeSequenceNumber)
+                    {
+                        // This special sequence number means that we can't rely on the sequence numbers
+                        // for matching and are forced to fall back on the dictionary-based join in order
+                        // to produce an optimal diff. If we didn't we'd likely produce a diff that removes
+                        // and then re-adds the same attribute.
+                        // We use the special sequence number to signal it because it adds almost no cost
+                        // to check for it only in this one case.
+                        AppendAttributeDiffEntriesForRangeSlow(
+                            ref diffContext,
+                            oldStartIndex, oldEndIndexExcl,
+                            newStartIndex, newEndIndexExcl);
+                        return;
+                    }
+
                     // An attribute was removed compared to the old sequence.
                     RemoveOldFrame(ref diffContext, oldStartIndex);
 
@@ -315,11 +531,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
+            // This can't happen for sequence-matched frames from .razor components, but it can happen if you write your
+            // builder logic manually or if two dissimilar frames matched by key. Treat as completely unrelated.
+            var newFrameType = newFrame.FrameType;
+            if (oldFrame.FrameType != newFrameType)
+            {
+                InsertNewFrame(ref diffContext, newFrameIndex);
+                RemoveOldFrame(ref diffContext, oldFrameIndex);
+                return;
+            }
+
             // We can assume that the old and new frames are of the same type, because they correspond
             // to the same sequence number (and if not, the behaviour is undefined).
             // TODO: Consider supporting dissimilar types at same sequence for custom IComponent implementations.
             //       It should only be a matter of calling RemoveOldFrame+InsertNewFrame
-            switch (newFrame.FrameType)
+            switch (newFrameType)
             {
                 case RenderTreeFrameType.Text:
                     {
@@ -455,13 +681,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var valueChanged = !Equals(oldFrame.AttributeValue, newFrame.AttributeValue);
             if (valueChanged)
             {
-                if (oldFrame.AttributeEventHandlerId > 0)
-                {
-                    diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
-                }
                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
                 var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
                 diffContext.Edits.Append(RenderTreeEdit.SetAttribute(diffContext.SiblingIndex, referenceFrameIndex));
+
+                // If we're replacing an old event handler ID with a new one, register the old one for disposal,
+                // plus keep track of the old->new chain until the old one is fully disposed
+                if (oldFrame.AttributeEventHandlerId > 0)
+                {
+                    diffContext.Renderer.TrackReplacedEventHandlerId(oldFrame.AttributeEventHandlerId, newFrame.AttributeEventHandlerId);
+                    diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
+                }
             }
             else if (oldFrame.AttributeEventHandlerId > 0)
             {
@@ -718,6 +948,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             public readonly ArrayBuilder<RenderTreeEdit> Edits;
             public readonly ArrayBuilder<RenderTreeFrame> ReferenceFrames;
             public readonly Dictionary<string, int> AttributeDiffSet;
+            public readonly StackObjectPool<Dictionary<object, KeyedItemInfo>> KeyedItemInfoDictionaryPool;
             public readonly int ComponentId;
             public int SiblingIndex;
 
@@ -736,6 +967,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 Edits = batchBuilder.EditsBuffer;
                 ReferenceFrames = batchBuilder.ReferenceFramesBuffer;
                 AttributeDiffSet = batchBuilder.AttributeDiffSet;
+                KeyedItemInfoDictionaryPool = batchBuilder.KeyedItemInfoDictionaryPool;
                 SiblingIndex = 0;
             }
         }

@@ -3,9 +3,19 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    public sealed partial class PageActionEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
+    {
+        internal PageActionEndpointConventionBuilder() { }
+        public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
+    }
     public static partial class RazorPagesEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapRazorPages(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
+        public static void MapDynamicPageRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern) where TTransformer : Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer { }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string page, string area) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string page, string area) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string page) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string page) { throw null; }
+        public static Microsoft.AspNetCore.Builder.PageActionEndpointConventionBuilder MapRazorPages(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -13,6 +23,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     public partial interface IPageApplicationModelConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IPageConvention
     {
         void Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel model);
+    }
+    public partial interface IPageApplicationModelPartsProvider
+    {
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel CreateHandlerModel(System.Reflection.MethodInfo method);
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel CreateParameterModel(System.Reflection.ParameterInfo parameter);
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel CreatePropertyModel(System.Reflection.PropertyInfo property);
+        bool IsHandler(System.Reflection.MethodInfo methodInfo);
     }
     public partial interface IPageApplicationModelProvider
     {
@@ -45,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string AreaName { get { throw null; } }
         public System.Reflection.TypeInfo DeclaredModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<object> EndpointMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel> HandlerMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel> HandlerProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -516,6 +534,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor Select(Microsoft.AspNetCore.Mvc.RazorPages.PageContext context);
     }
+    [System.ObsoleteAttribute("This type is obsolete. Use PageLoader instead.")]
     public partial interface IPageLoader
     {
         Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor Load(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor);
@@ -533,6 +552,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public PageBoundPropertyDescriptor() { }
         System.Reflection.PropertyInfo Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor.PropertyInfo { get { throw null; } }
         public System.Reflection.PropertyInfo Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public abstract partial class PageLoader : Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageLoader
+    {
+        protected PageLoader() { }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor> LoadAsync(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor);
+        Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageLoader.Load(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public partial class PageModelAttribute : System.Attribute

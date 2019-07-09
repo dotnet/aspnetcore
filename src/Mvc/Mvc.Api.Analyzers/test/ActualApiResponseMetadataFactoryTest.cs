@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 }";
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var returnType = compilation.GetTypeByMetadataName($"{Namespace}.TestController");
             var syntaxTree = returnType.DeclaringSyntaxReferences[0].SyntaxTree;
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
             var type = compilation.GetTypeByMetadataName(typeName);
             var method = (IMethodSymbol)type.GetMembers(methodName).First();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var syntaxTree = method.DeclaringSyntaxReferences[0].SyntaxTree;
             var methodSyntax = (MethodDeclarationSyntax)syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             // Arrange
             var compilation = await GetCompilation("InspectReturnExpressionTests");
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var controllerType = compilation.GetTypeByMetadataName(typeof(TestFiles.InspectReturnExpressionTests.TestController).FullName);
             var syntaxTree = controllerType.DeclaringSyntaxReferences[0].SyntaxTree;
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         {
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { source });
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new ApiControllerSymbolCache(compilation);
+            Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
             var returnType = compilation.GetTypeByMetadataName($"{Namespace}.{test}");
             var syntaxTree = returnType.DeclaringSyntaxReferences[0].SyntaxTree;

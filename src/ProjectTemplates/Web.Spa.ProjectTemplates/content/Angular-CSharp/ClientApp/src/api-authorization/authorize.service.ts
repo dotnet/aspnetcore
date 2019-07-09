@@ -50,6 +50,10 @@ interface IAuthenticationState {
   providedIn: 'root'
 })
 export class AuthorizeService {
+  // By default pop ups are disabled because they don't work properly on Edge.
+  // If you want to enable pop up authentication simply set this flag to false.
+
+  private popUpDisabled = true;
   private userManager: UserManager;
   private userSubject: BehaviorSubject<IUser | null> = new BehaviorSubject(null);
 
@@ -90,6 +94,9 @@ export class AuthorizeService {
       console.log('Silent authentication error: ', silentError);
 
       try {
+        if (this.popUpDisabled) {
+          throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.');
+        }
         user = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
         this.userSubject.next(user.profile);
         return this.success(state);
@@ -97,8 +104,9 @@ export class AuthorizeService {
         if (popupError.message === 'Popup window closed') {
           // The user explicitly cancelled the login action by closing an opened popup.
           return this.error('The user closed the window.');
+        } else if (!this.popUpDisabled) {
+          console.log('Popup authentication error: ', popupError);
         }
-        console.log('Popup authentication error: ', popupError);
 
         // PopUps might be blocked by the user, fallback to redirect
         try {
@@ -174,6 +182,7 @@ export class AuthorizeService {
         throw new Error(`Invalid login mode '${mode}'.`);
     }
   }
+
   // We try to sign out the user in two different ways:
   // 1) We try to do a sign-out using a PopUp Window. This might fail if there is a
   //    Pop-Up blocker or the user has disabled PopUps.
@@ -313,6 +322,11 @@ export class AuthorizeService {
       prefix: ApplicationName
     });
     this.userManager = new UserManager(settings);
+
+    this.userManager.events.addUserSignedOut(async () => {
+      await this.userManager.removeUser();
+      this.userSubject.next(null);
+    });
   }
 
   private getUserFromStorage(): Observable<IUser> {

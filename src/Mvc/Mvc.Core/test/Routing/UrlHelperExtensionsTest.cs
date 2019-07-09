@@ -615,7 +615,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
             {
                 Request =
                 {
-                    Protocol = expectedProtocol,
+                    Scheme = expectedProtocol,
                     Host = new HostString(expectedHost),
                 }
             };
@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
             {
                 Request =
                 {
-                    Protocol = "http://",
+                    Scheme = "http://",
                     Host = new HostString(expectedHost),
                 }
             };
@@ -685,7 +685,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
             {
                 Request =
                 {
-                    Protocol = expectedProtocol,
+                    Scheme = expectedProtocol,
                     Host = new HostString("www.asp.net"),
                 }
             };
@@ -723,7 +723,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
                 {
                     Request =
                     {
-                        Protocol = expectedProtocol,
+                        Scheme = expectedProtocol,
                         Host = new HostString(expectedHost),
                     }
                 },
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
                 {
                     Request =
                     {
-                        Protocol = "http://",
+                        Scheme = "http://",
                         Host = new HostString(expectedHost),
                     }
                 },
@@ -819,7 +819,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
                 {
                     Request =
                     {
-                        Protocol = expectedProtocol,
+                        Scheme = expectedProtocol,
                         Host = new HostString("www.asp.net"),
                     }
                 },

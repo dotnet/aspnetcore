@@ -29,7 +29,7 @@ __usage() {
     echo "    -e, --env <NAME=VAL>       Additional environment variables to add to the build container"
     echo ""
     echo "Description:"
-    echo "    This will run build.sh inside the dockerfile as defined in build/docker/\$image.Dockerfile."
+    echo "    This will run build.sh inside the dockerfile as defined in eng/docker/\$image.Dockerfile."
 
     if [[ "${1:-}" != '--no-exit' ]]; then
         exit 2
@@ -101,8 +101,24 @@ if [ ! -z "$commit_hash" ]; then
     build_args[${#build_args[*]}]="-p:SourceRevisionId=$commit_hash"
 fi
 
-dockerfile="$DIR/build/docker/$image.Dockerfile"
+dockerfile="$DIR/eng/docker/$image.Dockerfile"
 tagname="aspnetcore-build-$image"
+
+# Use docker pull with retries to pre-pull the image need by the dockerfile
+# docker build regularly fails with TLS handshake issues for unclear reasons.
+base_imagename="$(grep -E -o 'FROM (.*)' $dockerfile | cut -c 6-)"
+pull_retries=3
+while [ $pull_retries -gt 0 ]; do
+    failed=false
+    docker pull $base_imagename || failed=true
+    if [ "$failed" = true ]; then
+        let pull_retries=pull_retries-1
+        echo -e "${YELLOW}Failed to pull $base_imagename Retries left: $pull_retries.${RESET}"
+        sleep 1
+    else
+        pull_retries=0
+    fi
+done
 
 docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \
@@ -114,8 +130,7 @@ docker build "$(dirname "$dockerfile")" \
 docker run \
     --rm \
     -t \
-    -e CI \
-    -e TEAMCITY_VERSION \
+    -e TF_BUILD \
     -e BUILD_NUMBER \
     -e BUILD_BUILDNUMBER \
     -e BUILD_REPOSITORY_URI \
@@ -127,5 +142,4 @@ docker run \
     ${docker_args[@]+"${docker_args[@]}"} \
     $tagname \
     ./build.sh \
-    ${build_args[@]+"${build_args[@]}"} \
-    "-p:HostMachineRepositoryRoot=$DIR"
+    ${build_args[@]+"${build_args[@]}"}

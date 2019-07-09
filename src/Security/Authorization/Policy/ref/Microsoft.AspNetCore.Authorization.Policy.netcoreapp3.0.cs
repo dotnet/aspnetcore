@@ -44,15 +44,17 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class AuthorizationEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params Microsoft.AspNetCore.Authorization.IAuthorizeData[] authorizeData) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] policyNames) { throw null; }
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params Microsoft.AspNetCore.Authorization.IAuthorizeData[] authorizeData) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params string[] policyNames) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class PolicyServiceCollectionExtensions
     {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationOptions> configure) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorizationPolicyEvaluator(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
     }
 }

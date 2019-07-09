@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public static class PlatformApis
+    internal static class PlatformApis
     {
         public static bool IsWindows { get; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 

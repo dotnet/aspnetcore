@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class Heartbeat : IDisposable
+    internal class Heartbeat : IDisposable
     {
         public static readonly TimeSpan Interval = TimeSpan.FromSeconds(1);
 

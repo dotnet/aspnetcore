@@ -76,8 +76,8 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
 export function isArrayBuffer(val: any): val is ArrayBuffer {
     return val && typeof ArrayBuffer !== "undefined" &&
         (val instanceof ArrayBuffer ||
-        // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
-        (val.constructor && val.constructor.name === "ArrayBuffer"));
+            // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
+            (val.constructor && val.constructor.name === "ArrayBuffer"));
 }
 
 /** @private */
@@ -147,8 +147,17 @@ export class SubjectSubscription<T> implements ISubscription<T> {
 export class ConsoleLogger implements ILogger {
     private readonly minimumLogLevel: LogLevel;
 
+    // Public for testing purposes.
+    public outputConsole: {
+        error(message: any): void,
+        warn(message: any): void,
+        info(message: any): void,
+        log(message: any): void,
+    };
+
     constructor(minimumLogLevel: LogLevel) {
         this.minimumLogLevel = minimumLogLevel;
+        this.outputConsole = console;
     }
 
     public log(logLevel: LogLevel, message: string): void {
@@ -156,17 +165,17 @@ export class ConsoleLogger implements ILogger {
             switch (logLevel) {
                 case LogLevel.Critical:
                 case LogLevel.Error:
-                    console.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.outputConsole.error(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 case LogLevel.Warning:
-                    console.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.outputConsole.warn(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 case LogLevel.Information:
-                    console.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.outputConsole.info(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    console.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
+                    this.outputConsole.log(`[${new Date().toISOString()}] ${LogLevel[logLevel]}: ${message}`);
                     break;
             }
         }

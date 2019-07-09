@@ -48,8 +48,6 @@
 #include "iapplication.h"
 #include "debugutil.h"
 #include "requesthandler.h"
-#include "resources.h"
-#include "aspnetcore_msg.h"
 #include "Helpers.h"
 #include "GlobalVersionUtility.h"
 

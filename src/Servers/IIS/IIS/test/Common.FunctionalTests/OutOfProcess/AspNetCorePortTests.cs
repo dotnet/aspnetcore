@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AspNetCorePortTests : IISFunctionalTestBase
@@ -23,11 +23,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static readonly Random _random = new Random();
 
-        private readonly PublishedSitesFixture _fixture;
-
-        public AspNetCorePortTests(PublishedSitesFixture fixture)
+        public AspNetCorePortTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
@@ -45,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task EnvVarInWebConfig_Valid(TestVariant variant)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             var port = GetUnusedRandomPort();
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString();
 
@@ -61,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task EnvVarInWebConfig_Empty(TestVariant variant)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = string.Empty;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -77,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task EnvVarInWebConfig_Invalid(TestVariant variant, string port)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port;
 
             var deploymentResult = await DeployAsync(deploymentParameters);

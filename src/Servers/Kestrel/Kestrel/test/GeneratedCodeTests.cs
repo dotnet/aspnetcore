@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -12,16 +13,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class GeneratedCodeTests
     {
-        [ConditionalFact] 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6720
+        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2223", FlakyOn.Helix.All)]
         public void GeneratedCodeIsUpToDate()
         {
-            var repositoryRoot = typeof(GeneratedCodeTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().First(f => string.Equals(f.Key, "RepositoryRoot", StringComparison.OrdinalIgnoreCase)).Value;
-
-            var httpHeadersGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
-            var httpProtocolGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
-            var httpUtilitiesGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
-            var transportConnectionGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Transport.Abstractions/src/Internal/TransportConnection.Generated.cs");
+            var httpHeadersGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "HttpHeaders.Generated.cs");
+            var httpProtocolGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "HttpProtocol.Generated.cs");
+            var httpUtilitiesGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "HttpUtilities.Generated.cs");
+            var transportConnectionGeneratedPath = Path.Combine(AppContext.BaseDirectory,"shared", "GeneratedContent", "TransportConnection.Generated.cs");
 
             var testHttpHeadersGeneratedPath = Path.GetTempFileName();
             var testHttpProtocolGeneratedPath = Path.GetTempFileName();

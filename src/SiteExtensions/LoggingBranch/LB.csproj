@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <title>ASP.NET Core Extensions</title>
+    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRuntimeVersion)</HostingStartupRuntimeFrameworkVersion>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoSemVer20>true</NoSemVer20>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(TargetRuntimeIdentifier)" />
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(OriginalPackageVersion)" />
+
+    <ProjectReference Include="..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

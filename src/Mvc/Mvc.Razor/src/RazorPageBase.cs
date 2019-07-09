@@ -370,12 +370,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var encoder = HtmlEncoder;
             if (value is IHtmlContent htmlContent)
             {
-                var bufferedWriter = writer as ViewBufferTextWriter;
-                if (bufferedWriter == null || !bufferedWriter.IsBuffering)
-                {
-                    htmlContent.WriteTo(writer, encoder);
-                }
-                else
+                if (writer is ViewBufferTextWriter bufferedWriter)
                 {
                     if (value is IHtmlContentContainer htmlContentContainer)
                     {
@@ -388,6 +383,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                         // for writing character by character.
                         bufferedWriter.Buffer.AppendHtml(htmlContent);
                     }
+                }
+                else
+                {
+                    htmlContent.WriteTo(writer, encoder);
                 }
 
                 return;
@@ -644,9 +643,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
             var viewContext = ViewContext;
-            var antiforgery = viewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(viewContext?.HttpContext);
-
+            if (viewContext != null)
+            {
+                var antiforgery = viewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+                antiforgery.SetCookieTokenAndHeader(viewContext.HttpContext);
+            }
             return HtmlString.Empty;
         }
 

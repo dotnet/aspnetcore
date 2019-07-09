@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -138,8 +142,44 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 hubConnectionBuilder.Services.Configure(configureHttpConnection);
             }
 
+            // Add HttpConnectionOptionsDerivedHttpEndPoint so HubConnection can read the Url from HttpConnectionOptions
+            // without the Signal.Client.Core project taking a new dependency on Http.Connections.Client.
+            hubConnectionBuilder.Services.AddSingleton<EndPoint, HttpConnectionOptionsDerivedHttpEndPoint>();
+
+            // Configure the HttpConnection so that it uses the correct transfer format for the configured IHubProtocol.
+            hubConnectionBuilder.Services.AddSingleton<IConfigureOptions<HttpConnectionOptions>, HubProtocolDerivedHttpOptionsConfigurer>();
+
+            // If and when HttpConnectionFactory is made public, it can be moved out of this assembly and into Http.Connections.Client.
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory, HttpConnectionFactory>();
             return hubConnectionBuilder;
+        }
+
+        private class HttpConnectionOptionsDerivedHttpEndPoint : UriEndPoint
+        {
+            public HttpConnectionOptionsDerivedHttpEndPoint(IOptions<HttpConnectionOptions> httpConnectionOptions)
+                : base(httpConnectionOptions.Value.Url)
+            {
+            }
+        }
+
+        private class HubProtocolDerivedHttpOptionsConfigurer : IConfigureNamedOptions<HttpConnectionOptions>
+        {
+            private readonly TransferFormat _defaultTransferFormat;
+
+            public HubProtocolDerivedHttpOptionsConfigurer(IHubProtocol hubProtocol)
+            {
+                _defaultTransferFormat = hubProtocol.TransferFormat;
+            }
+
+            public void Configure(string name, HttpConnectionOptions options)
+            {
+                Configure(options);
+            }
+
+            public void Configure(HttpConnectionOptions options)
+            {
+                options.DefaultTransferFormat = _defaultTransferFormat;
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Net;
 
 namespace WsProxy {
 
@@ -20,6 +21,8 @@ namespace WsProxy {
 		public const string REMOVE_BREAK_POINT = "MONO.mono_wasm_remove_breakpoint({0})";
 		public const string GET_LOADED_FILES = "MONO.mono_wasm_get_loaded_files()";
 		public const string CLEAR_ALL_BREAKPOINTS = "MONO.mono_wasm_clear_all_breakpoints()";
+		public const string GET_OBJECT_PROPERTIES = "MONO.mono_wasm_get_object_properties({0})";
+		public const string GET_ARRAY_VALUES = "MONO.mono_wasm_get_array_values({0})";
 	}
 
 	internal enum MonoErrorCodes {
@@ -128,7 +131,7 @@ namespace WsProxy {
 			case "Debugger.getScriptSource": {
 					var script_id = args? ["scriptId"]?.Value<string> ();
 					if (script_id.StartsWith ("dotnet://", StringComparison.InvariantCultureIgnoreCase)) {
-						OnGetScriptSource (id, script_id, token);
+						await OnGetScriptSource (id, script_id, token);
 						return true;
 					}
 
@@ -154,7 +157,7 @@ namespace WsProxy {
 
 			case "Debugger.setBreakpointByUrl": {
 					Info ($"BP req {args}");
-					var bp_req = BreakPointRequest.Parse (args);
+					var bp_req = BreakPointRequest.Parse (args, store);
 					if (bp_req != null) {
 						await SetBreakPoint (id, bp_req, token);
 						return true;
@@ -200,7 +203,14 @@ namespace WsProxy {
 						await GetScopeProperties (id, int.Parse (objId.Substring ("dotnet:scope:".Length)), token);
 						return true;
 					}
-
+					if (objId.StartsWith("dotnet:", StringComparison.InvariantCulture))
+					{
+						if (objId.StartsWith("dotnet:object:", StringComparison.InvariantCulture))
+							await GetDetails(id, int.Parse(objId.Substring("dotnet:object:".Length)), token, MonoCommands.GET_OBJECT_PROPERTIES);
+						if (objId.StartsWith("dotnet:array:", StringComparison.InvariantCulture))
+							await GetDetails(id, int.Parse(objId.Substring("dotnet:array:".Length)), token, MonoCommands.GET_ARRAY_VALUES);
+						return true;
+					}
 					break;
 				}
 			}
@@ -213,6 +223,7 @@ namespace WsProxy {
 			Info ("RUNTIME READY, PARTY TIME");
 			await RuntimeReady (token);
 			await SendCommand ("Debugger.resume", new JObject (), token);
+			SendEvent ("Mono.runtimeReady", new JObject (), token);
 		}
 
 		async Task OnBreakPointHit (JObject args, CancellationToken token)
@@ -236,7 +247,6 @@ namespace WsProxy {
 			}
 
 			//step one, figure out where did we hit
-			//lol no, fuck it, let's use fake data
 			var res_value = res.Value? ["result"]? ["value"];
 			if (res_value == null || res_value is JValue) {
 				//Give up and send the original call stack
@@ -257,9 +267,9 @@ namespace WsProxy {
 			var src = bp == null ? null : store.GetFileById (bp.Location.Id);
 
 			var callFrames = new List<JObject> ();
-			foreach (var f in orig_callframes) {
-				var function_name = f ["functionName"]?.Value<string> ();
-				var url = f ["url"]?.Value<string> ();
+			foreach (var frame in orig_callframes) {
+				var function_name = frame ["functionName"]?.Value<string> ();
+				var url = frame ["url"]?.Value<string> ();
 				if ("mono_wasm_fire_bp" == function_name || "_mono_wasm_fire_bp" == function_name) {
 					var frames = new List<Frame> ();
 					int frame_id = 0;
@@ -271,14 +281,19 @@ namespace WsProxy {
 
 						var asm = store.GetAssemblyByName (assembly_name);
 						var method = asm.GetMethodByToken (method_token);
-						var location = method.GetLocationByIl (il_pos);
+
+						if (method == null) {
+							Info ($"Unable to find il offset: {il_pos} in method token: {method_token} assembly name: {assembly_name}");
+							continue;
+						}
+
+						var location = method?.GetLocationByIl (il_pos);
 
 						// When hitting a breakpoint on the "IncrementCount" method in the standard
 						// Blazor project template, one of the stack frames is inside mscorlib.dll
 						// and we get location==null for it. It will trigger a NullReferenceException
 						// if we don't skip over that stack frame.
-						if (location == null)
-						{
+						if (location == null) {
 							continue;
 						}
 
@@ -288,7 +303,7 @@ namespace WsProxy {
 
 						callFrames.Add (JObject.FromObject (new {
 							functionName = method.Name,
-
+							callFrameId = $"dotnet:scope:{frame_id}",
 							functionLocation = method.StartLocation.ToJObject (),
 
 							location = location.ToJObject (),
@@ -300,25 +315,24 @@ namespace WsProxy {
 									type = "local",
 									@object = new {
 										@type = "object",
-							 			className = "Object",
+										className = "Object",
 										description = "Object",
-										objectId = $"dotnet:scope:{frame_id}"
+										objectId = $"dotnet:scope:{frame_id}",
 									},
 									name = method.Name,
 									startLocation = method.StartLocation.ToJObject (),
 									endLocation = method.EndLocation.ToJObject (),
-								}
-							},
-
-							@this = new {
-							}
+								}},
+								@this = new { }
 						}));
 
 						++frame_id;
 						this.current_callstack = frames;
+
 					}
-				} else if (!url.StartsWith ("wasm://wasm/", StringComparison.InvariantCulture)) {
-					callFrames.Add (f);
+				} else if (!(function_name.StartsWith ("wasm-function", StringComparison.InvariantCulture)
+					|| url.StartsWith ("wasm://wasm/", StringComparison.InvariantCulture))) {
+					callFrames.Add (frame);
 				}
 			}
 
@@ -393,6 +407,57 @@ namespace WsProxy {
 			await SendCommand ("Debugger.resume", new JObject (), token);
 		}
 
+		async Task GetDetails(int msg_id, int object_id, CancellationToken token, string command)
+		{
+			var o = JObject.FromObject(new
+			{
+				expression = string.Format(command, object_id),
+				objectGroup = "mono_debugger",
+				includeCommandLineAPI = false,
+				silent = false,
+				returnByValue = true,
+			});
+
+			var res = await SendCommand("Runtime.evaluate", o, token);
+
+			//if we fail we just buble that to the IDE (and let it panic over it)
+			if (res.IsErr)
+			{
+				SendResponse(msg_id, res, token);
+				return;
+			}
+
+			var values = res.Value?["result"]?["value"]?.Values<JObject>().ToArray();
+
+			var var_list = new List<JObject>();
+
+			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
+			// results in a "Memory access out of bounds", causing 'values' to be null,
+			// so skip returning variable values in that case.
+			for (int i = 0; i < values.Length; i+=2)
+			{
+				string fieldName = (string)values[i]["name"];
+				if (fieldName.Contains("k__BackingField")){
+				fieldName = fieldName.Replace("k__BackingField", "");
+				fieldName = fieldName.Replace("<", "");
+				fieldName = fieldName.Replace(">", "");
+			}
+			var_list.Add(JObject.FromObject(new
+			{
+				name = fieldName,
+				value = values[i+1]["value"]
+			}));
+
+			}
+			o = JObject.FromObject(new
+			{
+				result = var_list
+			});
+
+			SendResponse(msg_id, Result.Ok(o), token);
+		}
+
+
 		async Task GetScopeProperties (int msg_id, int scope_id, CancellationToken token)
 		{
 			var scope = this.current_callstack.FirstOrDefault (s => s.Id == scope_id);
@@ -425,6 +490,10 @@ namespace WsProxy {
 			// results in a "Memory access out of bounds", causing 'values' to be null,
 			// so skip returning variable values in that case.
 			for (int i = 0; values != null && i < vars.Length; ++i) {
+				var value = values [i] ["value"];
+				if (((string)value ["description"]) == null)
+					value ["description"] = value ["value"]?.ToString();
+
 				var_list.Add (JObject.FromObject (new {
 					name = vars [i].Name,
 					value = values [i] ["value"]
@@ -485,7 +554,8 @@ namespace WsProxy {
 					url = s.Url,
 					executionContextId = this.ctx_id,
 					hash = s.DocHashCode,
-					executionContextAuxData = this.aux_ctx_data
+					executionContextAuxData = this.aux_ctx_data,
+					dotNetUrl = s.DotNetUrl
 				});
 				//Debug ($"\tsending {s.Url}");
 				SendEvent ("Debugger.scriptParsed", ok, token);
@@ -640,23 +710,51 @@ namespace WsProxy {
 
 		}
 
-		void OnGetScriptSource (int msg_id, string script_id, CancellationToken token)
+		async Task OnGetScriptSource (int msg_id, string script_id, CancellationToken token)
 		{
 			var id = new SourceId (script_id);
 			var src_file = store.GetFileById (id);
 
 			var res = new StringWriter ();
-			res.WriteLine ($"//dotnet:{id}");
+			//res.WriteLine ($"//{id}");
 
-			using (var f = new StreamReader (File.Open (src_file.LocalPath, FileMode.Open))) {
-				res.Write (f.ReadToEnd ());
+			try {
+				var uri = new Uri (src_file.Url);
+				if (uri.IsFile && File.Exists(uri.LocalPath)) {
+					using (var f = new StreamReader (File.Open (src_file.SourceUri.LocalPath, FileMode.Open))) {
+						await res.WriteAsync (await f.ReadToEndAsync ());
+					}
+
+					var o = JObject.FromObject (new {
+						scriptSource = res.ToString ()
+					});
+
+					SendResponse (msg_id, Result.Ok (o), token);
+				} else if(src_file.SourceLinkUri != null) {
+					var doc = await new WebClient ().DownloadStringTaskAsync (src_file.SourceLinkUri);
+					await res.WriteAsync (doc);
+
+					var o = JObject.FromObject (new {
+						scriptSource = res.ToString ()
+					});
+
+					SendResponse (msg_id, Result.Ok (o), token);
+				} else {
+					var o = JObject.FromObject (new {
+						scriptSource = $"// Unable to find document {src_file.SourceUri}"
+					});
+
+					SendResponse (msg_id, Result.Ok (o), token);
+				}
+			} catch (Exception e) {
+				var o = JObject.FromObject (new {
+					scriptSource = $"// Unable to read document ({e.Message})\n" +
+								$"Local path: {src_file?.SourceUri}\n" +
+								$"SourceLink path: {src_file?.SourceLinkUri}\n"
+				});
+
+				SendResponse (msg_id, Result.Ok (o), token);
 			}
-
-			var o = JObject.FromObject (new {
-				scriptSource = res.ToString ()
-			});
-
-			SendResponse (msg_id, Result.Ok (o), token);
 		}
 	}
 }

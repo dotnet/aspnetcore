@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class DynamicTable
+    internal class DynamicTable
     {
         private HeaderField[] _buffer;
         private int _maxSize;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
@@ -50,11 +51,16 @@ namespace BasicWebSite.Controllers
                 }
             };
 
-        [HttpGet("/components")]
-        [HttpGet("/components/routable")]
-        public IActionResult Index()
+        [HttpGet("/components/{staticPrerender=true}")]
+        [HttpGet("/components/routable/{staticPrerender=true}")]
+        public IActionResult Index(bool staticPrerender)
         {
-            return View();
+            // Override the path so that the router finds the RoutedPage component
+            // as the client router doesn't support optional parameters.
+            Request.Path = Request.Path.StartsWithSegments("/components/routable") ?
+                PathString.FromUriComponent("/components/routable") : Request.Path;
+
+            return View(staticPrerender);
         }
 
         [HttpGet("/WeatherData")]
@@ -62,6 +68,12 @@ namespace BasicWebSite.Controllers
         public IActionResult WeatherData()
         {
             return Ok(_weatherData);
+        }
+
+        [HttpGet("/components/Navigation/{staticPrerender=true}")]
+        public IActionResult Navigation(bool staticPrerender)
+        {
+            return View(staticPrerender);
         }
 
         private class WeatherRow

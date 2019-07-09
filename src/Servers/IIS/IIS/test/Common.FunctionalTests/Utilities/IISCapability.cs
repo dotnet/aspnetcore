@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Flags]
     public enum IISCapability
@@ -12,11 +12,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         Websockets = 1,
         WindowsAuthentication = 2,
         PoolEnvironmentVariables = 4,
-        ShutdownToken = 8,
-        DynamicCompression = 16,
-        ApplicationInitialization = 32,
-        TracingModule = 64,
-        FailedRequestTracingModule = 128,
-        BasicAuthentication = 256
+        DynamicCompression = 8,
+        ApplicationInitialization = 16,
+        TracingModule = 32,
+        FailedRequestTracingModule = 64,
+        BasicAuthentication = 128
     }
 }

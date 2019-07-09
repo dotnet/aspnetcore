@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class RequestBodyTests
     {
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task RequestBody_SyncReadDisabledByDefault_WorksWhenEnabled()
         {
             string address;
@@ -141,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2206", FlakyOn.All)]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvAwaitable<TRequest> : ICriticalNotifyCompletion where TRequest : UvRequest
+    internal class LibuvAwaitable<TRequest> : ICriticalNotifyCompletion where TRequest : UvRequest
     {
         private readonly static Action _callbackCompleted = () => { };
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         }
     }
 
-    public struct UvWriteResult
+    internal struct UvWriteResult
     {
         public int Status { get; }
         public UvException Error { get; }

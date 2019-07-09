@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddSingleton<IJsonHelper, DefaultJsonHelper>();
+                .AddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
             // Act
             NewtonsoftJsonMvcCoreBuilderExtensions.AddServicesCore(services);
@@ -58,6 +59,21 @@ namespace Microsoft.Extensions.DependencyInjection
             // Assert
             var tempDataSerializer = Assert.Single(services, d => d.ServiceType == typeof(TempDataSerializer));
             Assert.Same(typeof(BsonTempDataSerializer), tempDataSerializer.ImplementationType);
+        }
+
+        [Fact]
+        public void AddServicesCore_ReplacesDefaultJsonResultExecutor()
+        {
+            // Arrange
+            var services = new ServiceCollection()
+                .AddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
+
+            // Act
+            NewtonsoftJsonMvcCoreBuilderExtensions.AddServicesCore(services);
+
+            // Assert
+            var jsonResultExecutor = Assert.Single(services, d => d.ServiceType == typeof(IActionResultExecutor<JsonResult>));
+            Assert.Same(typeof(NewtonsoftJsonResultExecutor), jsonResultExecutor.ImplementationType);
         }
     }
 }

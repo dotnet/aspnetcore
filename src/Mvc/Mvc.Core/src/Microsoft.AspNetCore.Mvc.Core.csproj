@@ -28,6 +28,10 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\Http\Routing\src\DataSourceDependentCache.cs" Link="Routing\DataSourceDependentCache.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
@@ -38,7 +42,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>

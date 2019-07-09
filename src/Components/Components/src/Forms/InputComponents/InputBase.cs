@@ -22,32 +22,27 @@ namespace Microsoft.AspNetCore.Components.Forms
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
         /// <summary>
-        /// Gets a value for the component's 'id' attribute.
+        /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter] protected string Id { get; private set; }
-
-        /// <summary>
-        /// Gets a value for the component's 'class' attribute.
-        /// </summary>
-        [Parameter] protected string Class { get; private set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
         /// </summary>
         /// <example>
-        /// bind-Value="@model.PropertyName"
+        /// @bind-Value="model.PropertyName"
         /// </example>
-        [Parameter] T Value { get; set; }
+        [Parameter] public T Value { get; private set; }
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
         /// </summary>
-        [Parameter] Action<T> ValueChanged { get; set; }
+        [Parameter] public EventCallback<T> ValueChanged { get; private set; }
 
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
         /// </summary>
-        [Parameter] Expression<Func<T>> ValueExpression { get; set; }
+        [Parameter] public Expression<Func<T>> ValueExpression { get; private set; }
 
         /// <summary>
         /// Gets the associated <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.
@@ -71,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 if (hasChanged)
                 {
                     Value = value;
-                    ValueChanged?.Invoke(value);
+                    _ = ValueChanged.InvokeAsync(value);
                     EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
             }
@@ -152,14 +147,25 @@ namespace Microsoft.AspNetCore.Components.Forms
             => EditContext.FieldClass(FieldIdentifier);
 
         /// <summary>
-        /// Gets a CSS class string that combines the <see cref="Class"/> and <see cref="FieldClass"/>
+        /// Gets a CSS class string that combines the <c>class</c> attribute and <see cref="FieldClass"/>
         /// properties. Derived components should typically use this value for the primary HTML element's
         /// 'class' attribute.
         /// </summary>
         protected string CssClass
-            => string.IsNullOrEmpty(Class)
-            ? FieldClass // Never null or empty
-            : $"{Class} {FieldClass}";
+        {
+            get
+            {
+                if (AdditionalAttributes != null &&
+                    AdditionalAttributes.TryGetValue("class", out var @class) &&
+                    !string.IsNullOrEmpty(Convert.ToString(@class)))
+                {
+                    return $"{@class} {FieldClass}";
+                }
+
+                return FieldClass; // Never null or empty
+            }
+        }
+
 
         /// <inheritdoc />
         public override Task SetParametersAsync(ParameterCollection parameters)

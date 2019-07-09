@@ -31,12 +31,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = _application.CreateContext(this);
+
                 await _application.ProcessRequestAsync(context);
-                // TODO Verification of Response
-                //if (Volatile.Read(ref _requestAborted) == 0)
-                //{
-                //    VerifyResponseContentLength();
-                //}
+            }
+            catch (BadHttpRequestException ex)
+            {
+                SetBadRequestState(ex);
+                ReportApplicationError(ex);
+                success = false;
             }
             catch (Exception ex)
             {
@@ -59,11 +61,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            if (Volatile.Read(ref _requestAborted) == 0)
+            if (!_requestAborted)
             {
                 await ProduceEnd();
             }
-            else if (!HasResponseStarted)
+            else if (!HasResponseStarted && _requestRejectedException == null)
             {
                 // If the request was aborted and no response was sent, there's no
                 // meaningful status code to log.

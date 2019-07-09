@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Security.Claims;
@@ -20,7 +19,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
-    public partial class HttpConnectionDispatcher
+    internal partial class HttpConnectionDispatcher
     {
         private static readonly AvailableTransport _webSocketAvailableTransport =
             new AvailableTransport
@@ -62,11 +61,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(GetConnectionId(context));
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}
@@ -96,11 +90,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var logScope = new ConnectionLogScope(connectionId: string.Empty);
             using (_logger.BeginScope(logScope))
             {
-                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
-                {
-                    return;
-                }
-
                 if (HttpMethods.IsPost(context.Request.Method))
                 {
                     // POST /{path}/negotiate
@@ -194,99 +183,36 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
                 var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                await connection.StateLock.WaitAsync();
-                try
+                using (connection.Cancellation)
                 {
-                    if (connection.Status == HttpConnectionStatus.Disposed)
-                    {
-                        Log.ConnectionDisposed(_logger, connection.ConnectionId);
+                    // Cancel the previous request
+                    connection.Cancellation?.Cancel();
 
-                        // The connection was disposed
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    try
+                    {
+                        // Wait for the previous request to drain
+                        await connection.PreviousPollTask;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Previous poll canceled due to connection closing, close this poll too
                         context.Response.ContentType = "text/plain";
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
                         return;
                     }
-
-                    if (connection.Status == HttpConnectionStatus.Active)
-                    {
-                        var existing = connection.GetHttpContext();
-                        Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
-                    }
-
-                    using (connection.Cancellation)
-                    {
-                        // Cancel the previous request
-                        connection.Cancellation?.Cancel();
-
-                        try
-                        {
-                            // Wait for the previous request to drain
-                            await connection.PreviousPollTask;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Previous poll canceled due to connection closing, close this poll too
-                            context.Response.ContentType = "text/plain";
-                            context.Response.StatusCode = StatusCodes.Status204NoContent;
-                            return;
-                        }
-
-                        connection.PreviousPollTask = currentRequestTcs.Task;
-                    }
-
-                    // Mark the connection as active
-                    connection.Status = HttpConnectionStatus.Active;
-
-                    // Raise OnConnected for new connections only since polls happen all the time
-                    if (connection.ApplicationTask == null)
-                    {
-                        Log.EstablishedConnection(_logger);
-
-                        connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
-
-                        context.Response.ContentType = "application/octet-stream";
-
-                        // This request has no content
-                        context.Response.ContentLength = 0;
-
-                        // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
-                        // requests can be made safely
-                        connection.TransportTask = context.Response.Body.FlushAsync();
-                    }
-                    else
-                    {
-                        Log.ResumingConnection(_logger);
-
-                        // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
-                        connection.Cancellation = new CancellationTokenSource();
-
-                        var timeoutSource = new CancellationTokenSource();
-                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(connection.Cancellation.Token, context.RequestAborted, timeoutSource.Token);
-
-                        // Dispose these tokens when the request is over
-                        context.Response.RegisterForDispose(timeoutSource);
-                        context.Response.RegisterForDispose(tokenSource);
-
-                        var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, _loggerFactory);
-
-                        // Start the transport
-                        connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
-
-                        // Start the timeout after we return from creating the transport task
-                        timeoutSource.CancelAfter(options.LongPolling.PollTimeout);
-                    }
                 }
-                finally
+
+                if (!connection.TryActivateLongPollingConnection(
+                        connectionDelegate, context, options.LongPolling.PollTimeout,
+                        currentRequestTcs.Task, _loggerFactory, _logger))
                 {
-                    connection.StateLock.Release();
+                    return;
                 }
 
                 var resultTask = await Task.WhenAny(connection.ApplicationTask, connection.TransportTask);
 
                 try
                 {
-                    var pollAgain = true;
-
                     // If the application ended before the transport task then we potentially need to end the connection
                     if (resultTask == connection.ApplicationTask)
                     {
@@ -305,9 +231,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             // We should be able to safely dispose because there's no more data being written
                             // We don't need to wait for close here since we've already waited for both sides
                             await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
-
-                            // Don't poll again if we've removed the connection completely
-                            pollAgain = false;
+                        }
+                        else
+                        {
+                            // Only allow repoll if we aren't removing the connection.
+                            connection.MarkInactive();
                         }
                     }
                     else if (resultTask.IsFaulted)
@@ -317,21 +245,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         // transport task was faulted, we should remove the connection
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
-
-                        pollAgain = false;
                     }
-                    else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
+                    else
                     {
-                        // Don't poll if the transport task was canceled
-                        pollAgain = false;
-                    }
-
-                    if (pollAgain)
-                    {
-                        // Mark the connection as inactive
-                        connection.LastSeenUtc = DateTime.UtcNow;
-
-                        connection.Status = HttpConnectionStatus.Inactive;
+                        // Only allow repoll if we aren't removing the connection.
+                        connection.MarkInactive();
                     }
                 }
                 finally
@@ -348,59 +266,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                                   HttpContext context,
                                                   HttpConnectionContext connection)
         {
-            await connection.StateLock.WaitAsync();
-            try
+            if (connection.TryActivatePersistentConnection(connectionDelegate, transport, _logger))
             {
-                if (connection.Status == HttpConnectionStatus.Disposed)
-                {
-                    Log.ConnectionDisposed(_logger, connection.ConnectionId);
+                // Wait for any of them to end
+                await Task.WhenAny(connection.ApplicationTask, connection.TransportTask);
 
-                    // Connection was disposed
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    return;
-                }
-
-                // There's already an active request
-                if (connection.Status == HttpConnectionStatus.Active)
-                {
-                    Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
-
-                    // Reject the request with a 409 conflict
-                    context.Response.StatusCode = StatusCodes.Status409Conflict;
-                    return;
-                }
-
-                // Mark the connection as active
-                connection.Status = HttpConnectionStatus.Active;
-
-                // Call into the end point passing the connection
-                connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
-
-                // Start the transport
-                connection.TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
+                await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
             }
-            finally
-            {
-                connection.StateLock.Release();
-            }
-
-            // Wait for any of them to end
-            await Task.WhenAny(connection.ApplicationTask, connection.TransportTask);
-
-            await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
-        }
-
-        private async Task ExecuteApplication(ConnectionDelegate connectionDelegate, HttpConnectionContext connection)
-        {
-            // Verify some initialization invariants
-            Debug.Assert(connection.TransportType != HttpTransportType.None, "Transport has not been initialized yet");
-
-            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
-            // connection and transport
-            await AwaitableThreadPool.Yield();
-
-            // Running this in an async method turns sync exceptions into async ones
-            await connectionDelegate(connection);
         }
 
         private async Task ProcessNegotiate(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
@@ -632,7 +504,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // We specifically clone the identity on first poll if it's a windows identity
                     // If we swapped the new User here we'd have to dispose the old identities which could race with the application
                     // trying to access the identity.
-                    if (context.User.Identity is WindowsIdentity)
+                    if (!(context.User.Identity is WindowsIdentity))
                     {
                         existing.User = context.User;
                     }
@@ -685,7 +557,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             requestFeature.PathBase = existingRequestFeature.PathBase;
             requestFeature.QueryString = existingRequestFeature.QueryString;
             requestFeature.RawTarget = existingRequestFeature.RawTarget;
-            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.Ordinal);
+            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var header in existingRequestFeature.Headers)
             {
                 requestHeaders[header.Key] = header.Value;
@@ -717,6 +589,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
+
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+            newHttpContext.SetEndpoint(endpointFeature?.Endpoint);
 
             CloneUser(newHttpContext, context);
 

@@ -117,16 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ComponentParametersShouldNotBePublic_Description" xml:space="preserve">
-    <value>Component parameters should not have public setters.</value>
+  <data name="ComponentParameterSettersShouldBePublic_Description" xml:space="preserve">
+    <value>Component parameters should have public setters.</value>
   </data>
-  <data name="ComponentParametersShouldNotBePublic_FixTitle" xml:space="preserve">
-    <value>Make component parameter private</value>
+  <data name="ComponentParameterSettersShouldBePublic_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should have a public setter.</value>
   </data>
-  <data name="ComponentParametersShouldNotBePublic_Format" xml:space="preserve">
-    <value>Component parameter '{0}' has a public setter, but component parameters should not be publicly settable.</value>
+  <data name="ComponentParameterSettersShouldBePublic_Title" xml:space="preserve">
+    <value>Component parameter should have public setters.</value>
   </data>
-  <data name="ComponentParametersShouldNotBePublic_Title" xml:space="preserve">
-    <value>Component parameter has public setter</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description" xml:space="preserve">
+    <value>Components may only define a single parameter with CaptureUnmatchedValues.</value>
+  </data>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format" xml:space="preserve">
+    <value>Component type '{0}' defines properties multiple parameters with CaptureUnmatchedValues. Properties: {1}{2}</value>
+  </data>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title" xml:space="preserve">
+    <value>Component has multiple CaptureUnmatchedValues parameters</value>
+  </data>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Description" xml:space="preserve">
+    <value>Component parameters with CaptureUnmatchedValues must be a correct type.</value>
+  </data>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Format" xml:space="preserve">
+    <value>Component parameter '{0}' defines CaptureUnmatchedValues but has an unsupported type '{1}'. Use a type assignable from '{2}'.</value>
+  </data>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Title" xml:space="preserve">
+    <value>Component parameter with CaptureUnmatchedValues has the wrong type</value>
+  </data>
+  <data name="ComponentParameterShouldBePublic_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should be public.</value>
+  </data>
+  <data name="ComponentParameterShouldBePublic_Title" xml:space="preserve">
+    <value>Component parameter should be public.</value>
+  </data>
+  <data name="ComponentParametersShouldBePublic_Description" xml:space="preserve">
+    <value>Component parameters should be public.</value>
+  </data>
+  <data name="ComponentParametersShouldBePublic_FixTitle" xml:space="preserve">
+    <value>Make component parameters public.</value>
   </data>
 </root>

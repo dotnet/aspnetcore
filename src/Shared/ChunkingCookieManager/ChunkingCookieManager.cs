@@ -169,6 +169,7 @@ namespace Microsoft.AspNetCore.Internal
                 HttpOnly = options.HttpOnly,
                 Path = options.Path,
                 Secure = options.Secure,
+                MaxAge = options.MaxAge,
             };
 
             var templateLength = template.ToString().Length;
@@ -285,6 +286,7 @@ namespace Microsoft.AspNetCore.Internal
                     Path = options.Path,
                     Domain = options.Domain,
                     SameSite = options.SameSite,
+                    Secure = options.Secure,
                     IsEssential = options.IsEssential,
                     Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 });
@@ -300,6 +302,7 @@ namespace Microsoft.AspNetCore.Internal
                         Path = options.Path,
                         Domain = options.Domain,
                         SameSite = options.SameSite,
+                        Secure = options.Secure,
                         IsEssential = options.IsEssential,
                         Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                     });

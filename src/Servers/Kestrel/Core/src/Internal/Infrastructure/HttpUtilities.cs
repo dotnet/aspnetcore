@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
@@ -82,6 +82,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 return *(ulong*)ptr;
             }
+        }
+
+        // The same as GetAsciiStringNonNullCharacters but throws BadRequest
+        public static unsafe string GetHeaderName(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = span)
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!StringUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
+                }
+            }
+
+            return asciiString;
         }
 
         public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
@@ -410,10 +434,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
         public static string MethodToString(HttpMethod method)
         {
-            int methodIndex = (int)method;
-            if (methodIndex >= 0 && methodIndex <= 8)
+            var methodIndex = (int)method;
+            var methodNames = _methodNames;
+            if ((uint)methodIndex < (uint)methodNames.Length)
             {
-                return _methodNames[methodIndex];
+                return methodNames[methodIndex];
             }
             return null;
         }

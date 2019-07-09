@@ -10,7 +10,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class RequiresIISAttribute : Attribute, ITestCondition
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 return;
             }
 
-            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
+            var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema.xml");
 
             if (!File.Exists(ancmConfigPath) && !SkipInVSTSAttribute.RunningInVSTS)
             {
@@ -122,12 +122,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     SkipReason += "The machine does allow for setting environment variables on application pools.";
                 }
-            }
-
-            if (capabilities.HasFlag(IISCapability.ShutdownToken))
-            {
-                IsMet = false;
-                SkipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
             }
 
             foreach (var module in Modules)

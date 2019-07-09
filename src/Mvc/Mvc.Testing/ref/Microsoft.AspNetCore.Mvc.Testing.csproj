@@ -8,6 +8,7 @@
     <Reference Include="Microsoft.AspNetCore.TestHost"  />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core"  />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources"  />
+    <Reference Include="Microsoft.Extensions.DependencyModel"  />
     <Reference Include="Microsoft.Extensions.Hosting"  />
   </ItemGroup>
 </Project>

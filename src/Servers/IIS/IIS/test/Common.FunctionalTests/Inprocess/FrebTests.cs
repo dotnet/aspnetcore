@@ -10,19 +10,19 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class FrebTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-        public FrebTests(PublishedSitesFixture fixture)
+        public FrebTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static IList<FrebLogItem> FrebChecks()
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task FrebIncludesHResultFailures()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters();
+            var parameters = Fixture.GetBaseDeploymentParameters();
             parameters.TransformArguments((args, _) => string.Empty);
             var result = await SetupFrebApp(parameters);
 
@@ -78,7 +78,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
         }
 
+        // I think this test is flaky due to freb file not being created quickly enough.
+        // Adding extra logging, marking as flaky, and repeating should help
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2570", FlakyOn.Helix.All)]
+        [Repeat(10)]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFrebDisconnect()
         {
@@ -104,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task<IISDeploymentResult> SetupFrebApp(IISDeploymentParameters parameters = null)
         {
-            parameters = parameters ?? _fixture.GetBaseDeploymentParameters();
+            parameters = parameters ?? Fixture.GetBaseDeploymentParameters();
             parameters.EnableFreb("Verbose", _logFolderPath);
 
             Directory.CreateDirectory(_logFolderPath);
@@ -122,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var frebEvent = GetFrebLogItems(result);
             foreach (var expectedEvent in expectedFrebEvents)
             {
+                result.Logger.LogInformation($"Checking if {expectedEvent.ToString()} exists.");
                 Assert.Contains(expectedEvent, frebEvent);
             }
         }
@@ -129,9 +134,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private IEnumerable<FrebLogItem> GetFrebLogItems(IISDeploymentResult result)
         {
             var folderPath = Helpers.GetFrebFolder(_logFolderPath, result);
-            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml"));
+            var xmlFiles = Directory.GetFiles(folderPath).Where(f => f.EndsWith("xml")).ToList();
             var frebEvents = new List<FrebLogItem>();
 
+            result.Logger.LogInformation($"Number of freb files available {xmlFiles.Count}.");
             foreach (var xmlFile in xmlFiles)
             {
                 var xDocument = XDocument.Load(xmlFile).Root;
@@ -175,6 +181,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             public override int GetHashCode()
             {
                 return HashCode.Combine(_opCode, _requestStatus);
+            }
+
+            public override string ToString()
+            {
+                return $"FrebLogItem: opCode: {_opCode}, requestStatus: {_requestStatus}";
             }
         }
     }

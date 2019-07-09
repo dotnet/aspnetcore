@@ -258,6 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<RedirectToRouteResult>, RedirectToRouteResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
             services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
 
             //
@@ -269,9 +270,10 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Endpoint Routing / Endpoints
             //
-            services.TryAddSingleton<ActionEndpointDataSource>();
             services.TryAddSingleton<ControllerActionEndpointDataSource>();
             services.TryAddSingleton<ActionEndpointFactory>();
+            services.TryAddSingleton<DynamicControllerEndpointSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicControllerEndpointMatcherPolicy>());
 
             //
             // Middleware pipeline filter related

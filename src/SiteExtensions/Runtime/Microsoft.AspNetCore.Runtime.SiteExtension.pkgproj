@@ -5,14 +5,15 @@
     <PackageType>AzureSiteExtension</PackageType>
     <ContentTargetFolders>content</ContentTargetFolders>
 
-    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
-    <Title>ASP.NET Core $(TrimmedVersion) ($(TargetArchitecture)) Runtime </Title>
+    <Title>ASP.NET Core $(AspNetCoreMajorMinorVersion) ($(TargetArchitecture)) Runtime </Title>
     <Description>This site extension installs Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
-    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
+    <PackageId>AspNetCoreRuntime.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <DotNetUnpackFolder>$(ArtifactsObjDir)ar\$(TargetRuntimeIdentifier)\</DotNetUnpackFolder>
+    <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
     <IsShippingPackage>true</IsShippingPackage>
+    <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +26,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
     <!-- Make sure redist folder is built and ready -->
-    <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
 
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
 
   </ItemGroup>
 

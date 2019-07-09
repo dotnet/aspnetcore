@@ -2,13 +2,15 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
 
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <EnableApiCheck>false</EnableApiCheck>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,26 +22,9 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
-
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        description=$(Description);
-        tags=$(PackageTags.Replace(';', ' '));
-        licenseUrl=$(PackageLicenseUrl);
-        projectUrl=$(PackageProjectUrl);
-        iconUrl=$(PackageIconUrl);
-        repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(SourceRevisionId);
-        copyright=$(Copyright);
-
-        OutputBinary=$(OutputPath)$(AssemblyName).dll;
-        OutputSymbol=$(OutputPath)$(AssemblyName).pdb;
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <NuspecProperty Include="OutputBinary=$(OutputPath)$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
+  </ItemGroup>
 
 </Project>

@@ -11,16 +11,13 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class MultipleAppTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public MultipleAppTests(PublishedSitesFixture fixture)
+        public MultipleAppTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
@@ -35,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 // Deploy all apps
                 for (var i = 0; i < numApps; i++)
                 {
-                    var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: IntegrationTesting.HostingModel.OutOfProcess);
+                    var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: IntegrationTesting.HostingModel.OutOfProcess);
                     var deployer = CreateDeployer(deploymentParameters);
                     deployers.Add(deployer);
                     deploymentResults.Add(await deployer.DeployAsync());

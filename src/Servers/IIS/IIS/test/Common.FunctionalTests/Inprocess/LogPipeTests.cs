@@ -9,16 +9,13 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class LogPipeTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public LogPipeTests(PublishedSitesFixture fixture)
+        public LogPipeTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]
@@ -26,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("ConsoleWrite")]
         public async Task CheckStdoutLoggingToPipe_DoesNotCrashProcess(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, path);
@@ -44,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("ConsoleWriteStartServer")]
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
             var firstWriteString = "TEST MESSAGE";
 
@@ -67,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckUnicodePipe()
         {
             var path = "CheckConsoleFunctions";
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -77,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
         }
     }
 }

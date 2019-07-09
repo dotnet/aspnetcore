@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public enum ValidationSummary
     {
-        All = 2,
-        ModelOnly = 1,
         None = 0,
+        ModelOnly = 1,
+        All = 2,
     }
 }
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -221,10 +221,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("img", Attributes="asp-append-version,src", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     public partial class ImageTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper
     {
+        [System.ObsoleteAttribute("This constructor is obsolete and will be removed in a future version.")]
         public ImageTagHelper(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) : base (default(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory), default(System.Text.Encodings.Web.HtmlEncoder)) { }
+        [Microsoft.Extensions.DependencyInjection.ActivatorUtilitiesConstructorAttribute]
+        public ImageTagHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) : base (default(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory), default(System.Text.Encodings.Web.HtmlEncoder)) { }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("asp-append-version")]
         public bool AppendVersion { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.ObsoleteAttribute("This property is obsolete and will be removed in a future version.")]
         protected internal Microsoft.Extensions.Caching.Memory.IMemoryCache Cache { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [System.ObsoleteAttribute("This property is obsolete and will be removed in a future version.")]
         protected internal Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostingEnvironment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override int Order { get { throw null; } }
         [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute("src")]

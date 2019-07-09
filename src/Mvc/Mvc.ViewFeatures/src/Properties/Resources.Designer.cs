@@ -808,6 +808,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal static string FormatSerializingTempData()
             => GetString("SerializingTempData");
 
+        /// <summary>
+        /// The '{0}' cannot serialize an object of type '{1}'.
+        /// </summary>
+        internal static string TempData_CannotSerializeType
+        {
+            get => GetString("TempData_CannotSerializeType");
+        }
+
+        /// <summary>
+        /// The '{0}' cannot serialize an object of type '{1}'.
+        /// </summary>
+        internal static string FormatTempData_CannotSerializeType(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeType"), p0, p1);
+
+        /// <summary>
+        /// Unsupported data type '{0}'.
+        /// </summary>
+        internal static string TempData_CannotDeserializeType
+        {
+            get => GetString("TempData_CannotDeserializeType");
+        }
+
+        /// <summary>
+        /// Unsupported data type '{0}'.
+        /// </summary>
+        internal static string FormatTempData_CannotDeserializeType(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotDeserializeType"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

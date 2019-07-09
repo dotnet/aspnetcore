@@ -10,10 +10,10 @@
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1028"
   },
-  "order": 100,
-  "icon": "vs-2017.3/Empty.png",
+  "order": 500,
+  "icon": "vs-2017.3/gRPC.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784883",
   "uiFilters": [ "oneaspnet" ],
-  "supportsDocker": true,
+  "supportsDocker": false,
   "excludeLaunchSettings": false
 }

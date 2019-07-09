@@ -40,6 +40,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Debug"                           Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventSource"                     Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventLog"                        Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.TraceSource"                     Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.ObjectPool"                              Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
@@ -52,13 +53,7 @@
 
     <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
-
-    <!-- Dependencies from dotnet/core-setup -->
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
@@ -69,10 +64,9 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
-    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.DotNet.PlatformAbstractions"              Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="Newtonsoft.Json"                                    Version="$(NewtonsoftJsonPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">
@@ -85,12 +79,25 @@
   </ItemGroup>
 
   <!--
+    This compilation reference is necessary to compile netstandard2.0 assemblies that need IAsyncEnumerable and IAsyncDisposable and the assembly is also in the shared framework.
+    This reference is part of Microsoft.NETCore.App, so is listed here as a reference to be used during compilation only.
+  -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <_CompilationOnlyReference Include="Microsoft.Bcl.AsyncInterfaces" />
+  </ItemGroup>
+
+  <!--
     These compilation references are necessary to compile netstandard2.0 assemblies which are in the shared framework.
     This references are part of Microsoft.NETCore.App, so are listed here as references to be used during compilation only.
   -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+    <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
+    <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
+    <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
+    <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <_CompilationOnlyReference Include="System.Text.Json" />
   </ItemGroup>
 
   <!--

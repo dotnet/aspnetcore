@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -13,12 +14,17 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
 {
     public class RendererTest
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         private const string EventActionsName = nameof(NestedAsyncComponent.EventActions);
         private const string WhatToRenderName = nameof(NestedAsyncComponent.WhatToRender);
         private const string LogName = nameof(NestedAsyncComponent.Log);
@@ -1896,6 +1902,76 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void ReRendersChildComponentWhenUnmatchedValuesChange()
+        {
+            // Arrange: First render
+            var renderer = new TestRenderer();
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<MyStrongComponent>(1);
+                builder.AddAttribute(1, "class", firstRender ? "first" : "second");
+                builder.AddAttribute(2, "id", "some_text");
+                builder.AddAttribute(3, nameof(MyStrongComponent.Text), "hi there.");
+                builder.CloseComponent();
+            });
+
+            var rootComponentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var childComponentId = renderer.Batches.Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+                .ComponentId;
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+            var diff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
+
+            // Assert
+            Assert.Collection(diff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            AssertFrame.Attribute(renderer.Batches[1].ReferenceFrames[0], "class", "second");
+        }
+
+        // This is a sanity check that diffs of "unmatched" values *just work* without any specialized
+        // code in the renderer to handle it. All of the data that's used in the diff is contained in
+        // the render tree, and the diff process does not need to inspect the state of the component.
+        [Fact]
+        public void ReRendersDoesNotReRenderChildComponentWhenUnmatchedValuesDoNotChange()
+        {
+            // Arrange: First render
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<MyStrongComponent>(1);
+                builder.AddAttribute(1, "class", "cool-beans");
+                builder.AddAttribute(2, "id", "some_text");
+                builder.AddAttribute(3, nameof(MyStrongComponent.Text), "hi there.");
+                builder.CloseComponent();
+            });
+
+            var rootComponentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var childComponentId = renderer.Batches.Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+                .ComponentId;
+
+            // Act: Second render
+            component.TriggerRender();
+
+            // Assert
+            Assert.False(renderer.Batches[1].DiffsByComponentId.ContainsKey(childComponentId));
+        }
+
+        [Fact]
         public void RenderBatchIncludesListOfDisposedComponents()
         {
             // Arrange
@@ -1941,7 +2017,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
             var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
-            renderHandle.Invoke(() => renderHandle.Render(builder
+            renderHandle.InvokeAsync(() => renderHandle.Render(builder
                 => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
@@ -2122,12 +2198,12 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.AddContent(0, "Child event count: " + eventCount);
                 builder.OpenComponent<EventComponent>(1);
-                builder.AddAttribute(2, nameof(EventComponent.OnTest), args =>
+                builder.AddAttribute(2, nameof(EventComponent.OnTest), new Action<UIEventArgs>(args =>
                 {
                     eventCount++;
                     rootComponent.TriggerRender();
                     childComponent.TriggerRender();
-                });
+                }));
                 builder.CloseComponent();
             });
             var rootComponentId = renderer.AssignRootComponentId(rootComponent);
@@ -2455,6 +2531,64 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void CallsAfterRenderAfterTheUIHasFinishedUpdatingAsynchronously()
+        {
+            // Arrange
+            var @event = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<object>();
+            var afterRenderTcs = new TaskCompletionSource<object>();
+            var onAfterRenderCallCountLog = new List<int>();
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
+            {
+                OnAfterRenderComplete = () => @event.Set(),
+            };
+            var renderer = new AsyncUpdateTestRenderer()
+            {
+                OnUpdateDisplayAsync = _ => tcs.Task,
+            };
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+            tcs.SetResult(null);
+            afterRenderTcs.SetResult(null);
+
+            // We need to wait here because the completions from SetResult will be scheduled.
+            @event.Wait(Timeout);
+
+            // Assert
+            Assert.True(component.Called);
+        }
+
+        [Fact]
+        public void CallsAfterRenderAfterTheUIHasFinishedUpdatingSynchronously()
+        {
+            // Arrange
+            var @event = new ManualResetEventSlim();
+            var afterRenderTcs = new TaskCompletionSource<object>();
+            var onAfterRenderCallCountLog = new List<int>();
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
+            {
+                OnAfterRenderComplete = () => @event.Set(),
+            };
+            var renderer = new AsyncUpdateTestRenderer()
+            {
+                OnUpdateDisplayAsync = _ => Task.CompletedTask
+            };
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+            afterRenderTcs.SetResult(null);
+
+            // We need to wait here because the completions from SetResult will be scheduled.
+            @event.Wait(Timeout);
+
+            // Assert
+            Assert.True(component.Called);
+        }
+
+        [Fact]
         public void DoesNotCallOnAfterRenderForComponentsNotRendered()
         {
             // Arrange
@@ -2507,13 +2641,38 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
         }
 
+        [Fact]
+        public void CanTriggerRenderingSynchronouslyFromInsideAfterRenderCallback()
+        {
+            // Arrange
+            AfterRenderCaptureComponent component = null;
+            component = new AfterRenderCaptureComponent
+            {
+                OnAfterRenderLogic = () =>
+                {
+                    if (component.OnAfterRenderCallCount < 10)
+                    {
+                        component.TriggerRender();
+                    }
+                }
+            };
+            var renderer = new TestRenderer();
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+
+            // Assert
+            Assert.Equal(10, component.OnAfterRenderCallCount);
+        }
+
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7487
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered
             // rapidly, such as an input event while typing. It only applies to asynchronous
-            // batch updates, i.e., server-side Blazor.
+            // batch updates, i.e., server-side Components.
             // Sequence:
             // 1. The client dispatches event X twice (say) in quick succession
             // 2. The server receives the first instance, handles the event, and re-renders
@@ -2566,8 +2725,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 3: After we complete the first UI update in which a given
             // event handler ID is disposed, we can no longer reuse that event handler ID
+
+            // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
+            // There is a small chance in which the continuations from TaskCompletionSource run asynchronously.
+            // In that case we might not be able to see the results from RemoveEventHandlerIds as they might run asynchronously.
+            // For that case, we are going to queue a continuation on render1TCS.Task, include a 1s delay and await the resulting
+            // task to offer the best chance that we get to see the error in all cases.
+            var awaitableTask = render1TCS.Task.ContinueWith(_ => Task.Delay(1000)).Unwrap();
             render1TCS.SetResult(null);
-            await Task.Delay(500); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
+            await awaitableTask;
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
@@ -2676,7 +2842,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task ExceptionsThrownAsynchronouslyCanBeHandled()
+        public async Task ExceptionsThrownAsynchronouslyDuringFirstRenderCanBeHandled()
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
@@ -2712,6 +2878,46 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.False(renderTask.IsCompleted);
             tcs.SetResult(0);
             await renderTask;
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
+        }
+
+        [Fact]
+        public async Task ExceptionsThrownAsynchronouslyAfterFirstRenderCanBeHandled()
+        {
+            // This differs from the "during first render" case, because some aspects of the rendering
+            // code paths are special cased for the first render because of prerendering.
+
+            // Arrange
+            var @event = new ManualResetEventSlim();
+            var renderer = new TestRenderer()
+            {
+                ShouldHandleExceptions = true,
+                OnExceptionHandled = () => { @event.Set(); },
+            };
+            var taskToAwait = Task.CompletedTask;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<ComponentThatAwaitsTask>(0);
+                builder.AddAttribute(1, nameof(ComponentThatAwaitsTask.TaskToAwait), taskToAwait);
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.RenderRootComponentAsync(componentId); // Not throwing on first render
+
+            var asyncExceptionTcs = new TaskCompletionSource<object>();
+            taskToAwait = asyncExceptionTcs.Task;
+            await renderer.InvokeAsync(component.TriggerRender);
+
+            // Act
+            var exception = new InvalidOperationException();
+
+            @event.Reset();
+            asyncExceptionTcs.SetException(exception);
+
+            // We need to wait here because the continuations of SetException will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
+
+            // Assert
             Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
         }
 
@@ -3066,9 +3272,108 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(exception2, renderer.HandledExceptions);
         }
 
+        [Theory]
+        [InlineData(null)] // No existing attribute to update
+        [InlineData("old property value")] // Has existing attribute to update
+        public void EventFieldInfoCanPatchTreeSoDiffDoesNotUpdateAttribute(string oldValue)
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            var component = new BoundPropertyComponent { BoundString = oldValue };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
+                .AttributeEventHandlerId;
+
+            // Act: Fire event and re-render
+            var eventFieldInfo = new EventFieldInfo
+            {
+                FieldValue = "new property value",
+                ComponentId = componentId
+            };
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, eventFieldInfo, new UIChangeEventArgs
+            {
+                Value = "new property value"
+            });
+            Assert.True(dispatchEventTask.IsCompletedSuccessfully);
+
+            // Assert: Property was updated, but the diff doesn't include changing the
+            // element attribute, since we told it the element attribute was already updated
+            Assert.Equal("new property value", component.BoundString);
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch2 = renderer.Batches[1];
+            Assert.Collection(batch2.DiffsInOrder.Single().Edits.ToArray(), edit =>
+            {
+                // The only edit is updating the event handler ID, since the test component
+                // deliberately uses a capturing lambda. The whole point of this test is to
+                // show that the diff does *not* update the BoundString value attribute.
+                Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
+                AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
+            });
+        }
+
+        [Fact]
+        public void EventFieldInfoWorksWhenEventHandlerIdWasSuperseded()
+        {
+            // Arrange: Render a component with an event handler
+            // We want the renderer to think none of the "UpdateDisplay" calls ever complete, because we
+            // want to keep reusing the same eventHandlerId and not let it get disposed
+            var renderCompletedTcs = new TaskCompletionSource<object>();
+            var renderer = new TestRenderer { NextRenderResultTask = renderCompletedTcs.Task };
+            var component = new BoundPropertyComponent { BoundString = "old property value" };
+            var componentId = renderer.AssignRootComponentId(component);
+
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
+                .AttributeEventHandlerId;
+
+            // Act: Fire event and re-render *repeatedly*, without changing to use a newer event handler ID,
+            // even though we know the event handler ID is getting updated in successive diffs
+            for (var i = 0; i < 10; i++)
+            {
+                var newPropertyValue = $"new property value {i}";
+                var fieldInfo = new EventFieldInfo
+                {
+                    ComponentId = componentId,
+                    FieldValue = newPropertyValue,
+                };
+                var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, fieldInfo, new UIChangeEventArgs
+                {
+                    Value = newPropertyValue
+                });
+                Assert.True(dispatchEventTask.IsCompletedSuccessfully);
+
+                // Assert: Property was updated, but the diff doesn't include changing the
+                // element attribute, since we told it the element attribute was already updated
+                Assert.Equal(newPropertyValue, component.BoundString);
+                Assert.Equal(i + 2, renderer.Batches.Count);
+                var latestBatch = renderer.Batches.Last();
+                Assert.Collection(latestBatch.DiffsInOrder.Single().Edits.ToArray(), edit =>
+                {
+                    // The only edit is updating the event handler ID, since the test component
+                    // deliberately uses a capturing lambda. The whole point of this test is to
+                    // show that the diff does *not* update the BoundString value attribute.
+                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                    var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
+                    AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                    Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                    Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
+                });
+            }
+        }
+
         private class NoOpRenderer : Renderer
         {
-            public NoOpRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
+            public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
             {
             }
 
@@ -3105,7 +3410,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
             {
-                var t = _renderHandle.Invoke(() => _renderHandle.Render(_renderFragment));
+                var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 // This should always be run synchronously
                 Assert.True(t.IsCompleted);
                 if (t.IsFaulted)
@@ -3132,6 +3437,21 @@ namespace Microsoft.AspNetCore.Components.Test
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddContent(0, Message);
+            }
+        }
+
+        private class MyStrongComponent : AutoRenderComponent
+        {
+            [Parameter(CaptureUnmatchedValues = true)] internal IDictionary<string, object> Attributes { get; set; }
+
+            [Parameter] internal string Text { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, "strong");
+                builder.AddMultipleAttributes(1, Attributes);
+                builder.AddContent(2, Text);
+                builder.CloseElement();
             }
         }
 
@@ -3318,7 +3638,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => _renderHandle.Render(builder =>
                 {
                     builder.OpenElement(0, "my button");
-                    builder.AddAttribute(1, "my click handler", eventArgs => OnClick(eventArgs));
+                    builder.AddAttribute(1, "my click handler", new Action<UIEventArgs>(eventArgs => OnClick(eventArgs)));
                     builder.CloseElement();
                 });
         }
@@ -3340,7 +3660,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Invoke(() => renderHandle.Render(builder =>
+                    renderHandle.InvokeAsync(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     }));
@@ -3365,11 +3685,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenElement(0, "input");
                 builder.AddAttribute(1, "type", "checkbox");
                 builder.AddAttribute(2, "value", BindMethods.GetValue(CheckboxEnabled));
-                builder.AddAttribute(3, "onchange", BindMethods.SetValueHandler(__value => CheckboxEnabled = __value, CheckboxEnabled));
+                builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CheckboxEnabled = __value, CheckboxEnabled));
                 builder.CloseElement();
                 builder.OpenElement(4, "input");
                 builder.AddAttribute(5, "value", BindMethods.GetValue(SomeStringProperty));
-                builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => SomeStringProperty = __value, SomeStringProperty));
+                builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => SomeStringProperty = __value, SomeStringProperty));
                 builder.AddAttribute(7, "disabled", !CheckboxEnabled);
                 builder.CloseElement();
             }
@@ -3377,11 +3697,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class AfterRenderCaptureComponent : AutoRenderComponent, IComponent, IHandleAfterRender
         {
+            public Action OnAfterRenderLogic { get; set; }
+
             public int OnAfterRenderCallCount { get; private set; }
 
             public Task OnAfterRenderAsync()
             {
                 OnAfterRenderCallCount++;
+                OnAfterRenderLogic?.Invoke();
                 return Task.CompletedTask;
             }
 
@@ -3498,7 +3821,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return TriggerRenderAsync();
             }
 
-            public Task TriggerRenderAsync() => _renderHandle.Invoke(() => _renderHandle.Render(RenderFragment));
+            public Task TriggerRenderAsync() => _renderHandle.InvokeAsync(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)
@@ -3566,17 +3889,16 @@ namespace Microsoft.AspNetCore.Components.Test
 
             [Parameter] public ConcurrentQueue<(int testId, EventType @event)> Log { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 if (TryGetEntry(EventType.OnInit, out var entry))
                 {
                     var result = entry.EventAction();
                     LogResult(result.Result);
                 }
-                base.OnInit();
             }
 
-            protected override async Task OnInitAsync()
+            protected override async Task OnInitializedAsync()
             {
                 if (TryGetEntry(EventType.OnInitAsyncSync, out var entrySync))
                 {
@@ -3618,7 +3940,6 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 var renderFactory = WhatToRender[TestId];
                 renderFactory(this)(builder);
             }
@@ -3687,6 +4008,75 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnParametersSetAsyncSync,
                 OnParametersSetAsyncAsync,
                 OnAfterRenderAsync,
+            }
+        }
+
+        private class ComponentThatAwaitsTask : ComponentBase
+        {
+            [Parameter] public Task TaskToAwait { get; set; }
+
+            protected override async Task OnParametersSetAsync()
+            {
+                await TaskToAwait;
+            }
+        }
+
+        private class AsyncUpdateTestRenderer : TestRenderer
+        {
+            public Func<RenderBatch, Task> OnUpdateDisplayAsync { get; set; }
+
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+            {
+                return OnUpdateDisplayAsync(renderBatch);
+            }
+        }
+
+        private class AsyncAfterRenderComponent : AutoRenderComponent, IHandleAfterRender
+        {
+            private readonly Task _task;
+
+            public AsyncAfterRenderComponent(Task task)
+            {
+                _task = task;
+            }
+
+            public bool Called { get; private set; }
+
+            public Action OnAfterRenderComplete { get; set; }
+
+            public async Task OnAfterRenderAsync()
+            {
+                await _task;
+                Called = true;
+
+                OnAfterRenderComplete?.Invoke();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, "p");
+                builder.CloseElement();
+            }
+        }
+
+        class BoundPropertyComponent : AutoRenderComponent
+        {
+            public string BoundString { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                var unrelatedThingToMakeTheLambdaCapture = new object();
+
+                builder.OpenElement(0, "element with event");
+                builder.AddAttribute(1, nameof(BoundString), BoundString);
+                builder.AddAttribute(2, "ontestevent", new Action<UIChangeEventArgs>((UIChangeEventArgs eventArgs) =>
+                {
+                    BoundString = (string)eventArgs.Value;
+                    TriggerRender();
+                    GC.KeepAlive(unrelatedThingToMakeTheLambdaCapture);
+                }));
+                builder.SetUpdatesAttributeName(nameof(BoundString));
+                builder.CloseElement();
             }
         }
     }

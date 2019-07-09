@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <PropertyGroup>
@@ -6,9 +6,10 @@
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
+    <TestGroupName>Mvc.FunctionalTests</TestGroupName>
     <!-- The test asset projects this depends on are not strong-named. -->
     <SignAssembly>false</SignAssembly>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/10423 -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
@@ -45,7 +46,7 @@
     <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
     <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
@@ -54,14 +55,8 @@
 
     <Reference Include="AngleSharp" />
     <Reference Include="Microsoft.AspNet.WebApi.Client" />
-
-    <!--
-      Explicitly referencing routing here to make it easy to integrate breaking changes. Localization.Routing brings in a transitive
-      reference to routing, which makes it hard to work with builds from a feature branch.
-    -->
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" NoWarn="NU1605" />
-    <Reference Include="Microsoft.AspNetCore.Routing" NoWarn="NU1605" />
-
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>

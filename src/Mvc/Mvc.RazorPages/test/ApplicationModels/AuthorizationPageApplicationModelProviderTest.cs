@@ -17,12 +17,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class AuthorizationPageApplicationModelProviderTest
     {
+        private readonly IOptions<MvcOptions> OptionsWithoutEndpointRouting = Options.Create(new MvcOptions { EnableEndpointRouting = false });
+
         [Fact]
         public void OnProvidersExecuting_IgnoresAttributesOnHandlerMethods()
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider, OptionsWithoutEndpointRouting);
             var typeInfo = typeof(PageWithAuthorizeHandlers).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
 
@@ -52,11 +54,30 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
+        public void OnProvidersExecuting_DoesNothingWithEndpointRouting()
+        {
+            // Arrange
+            var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider, Options.Create(new MvcOptions()));
+            var typeInfo = typeof(TestPage).GetTypeInfo();
+            var context = GetApplicationProviderContext(typeInfo);
+
+            // Act
+            authorizationProvider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(
+                context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f));
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsAuthorizeFilter_IfModelHasAuthorizationAttributes()
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider, OptionsWithoutEndpointRouting);
             var context = GetApplicationProviderContext(typeof(TestPage).GetTypeInfo());
 
             // Act
@@ -94,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
             var policyProvider = new DefaultAuthorizationPolicyProvider(options);
-            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider, OptionsWithoutEndpointRouting);
 
             var context = GetApplicationProviderContext(typeof(TestPageWithDerivedModel).GetTypeInfo());
 
@@ -138,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider, OptionsWithoutEndpointRouting);
             var context = GetApplicationProviderContext(typeof(PageWithAnonymousModel).GetTypeInfo());
 
             // Act
@@ -167,9 +188,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static PageApplicationModelProviderContext GetApplicationProviderContext(TypeInfo typeInfo)
         {
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             var defaultProvider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions()));
+                modelMetadataProvider,
+                Options.Create(new RazorPagesOptions()),
+                new DefaultPageApplicationModelPartsProvider(modelMetadataProvider));
 
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);

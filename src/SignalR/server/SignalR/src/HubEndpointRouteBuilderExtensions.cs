@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
@@ -17,25 +15,25 @@ namespace Microsoft.AspNetCore.Builder
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder builder, string pattern) where THub : Hub
+        /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
+        public static HubEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
         {
-            return builder.MapHub<THub>(pattern, configureOptions: null);
+            return endpoints.MapHub<THub>(pattern, configureOptions: null);
         }
 
         /// <summary>
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder builder, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
+        /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
+        public static HubEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
-            var marker = builder.ServiceProvider.GetService<SignalRMarkerService>();
+            var marker = endpoints.ServiceProvider.GetService<SignalRMarkerService>();
 
             if (marker == null)
             {
@@ -44,32 +42,28 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var options = new HttpConnectionDispatcherOptions();
-            // REVIEW: WE should consider removing this and instead just relying on the
-            // AuthorizationMiddleware
-            var attributes = typeof(THub).GetCustomAttributes(inherit: true);
-            foreach (var attribute in attributes.OfType<AuthorizeAttribute>())
-            {
-                options.AuthorizationData.Add(attribute);
-            }
-
             configureOptions?.Invoke(options);
 
-            var conventionBuilder = builder.MapConnections(pattern, options, b =>
+            var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
             {
                 b.UseHub<THub>();
             });
 
+            var attributes = typeof(THub).GetCustomAttributes(inherit: true);
             conventionBuilder.Add(e =>
             {
-                // Add all attributes on the Hub has metadata (this will allow for things like)
+                // Add all attributes on the Hub as metadata (this will allow for things like)
                 // auth attributes and cors attributes to work seamlessly
                 foreach (var item in attributes)
                 {
                     e.Metadata.Add(item);
                 }
+
+                // Add metadata that captures the hub type this endpoint is associated with
+                e.Metadata.Add(new HubMetadata(typeof(THub)));
             });
 
-            return conventionBuilder;
+            return new HubEndpointConventionBuilder(conventionBuilder);
         }
     }
 }

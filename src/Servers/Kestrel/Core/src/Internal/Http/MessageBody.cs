@@ -9,13 +9,12 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class MessageBody
+    internal abstract class MessageBody
     {
         private static readonly MessageBody _zeroContentLengthClose = new ZeroContentLengthMessageBody(keepAlive: false);
         private static readonly MessageBody _zeroContentLengthKeepAlive = new ZeroContentLengthMessageBody(keepAlive: true);
 
         private readonly HttpProtocol _context;
-        private readonly MinDataRate _minRequestBodyDataRate;
 
         private bool _send100Continue = true;
         private long _consumedBytes;
@@ -25,10 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected bool _backpressure;
         protected long _alreadyTimedBytes;
 
-        protected MessageBody(HttpProtocol context, MinDataRate minRequestBodyDataRate)
+        protected MessageBody(HttpProtocol context)
         {
             _context = context;
-            _minRequestBodyDataRate = minRequestBodyDataRate;
         }
 
         public static MessageBody ZeroContentLengthClose => _zeroContentLengthClose;
@@ -98,10 +96,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
 
-                if (_minRequestBodyDataRate != null)
+                if (_context.MinRequestBodyDataRate != null)
                 {
                     _timingEnabled = true;
-                    _context.TimeoutControl.StartRequestBody(_minRequestBodyDataRate);
+                    _context.TimeoutControl.StartRequestBody(_context.MinRequestBodyDataRate);
                 }
             }
 

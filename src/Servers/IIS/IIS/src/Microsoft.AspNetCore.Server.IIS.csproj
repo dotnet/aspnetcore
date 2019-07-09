@@ -14,8 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\"/>
+    <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
+    <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
   </ItemGroup>
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
@@ -32,6 +35,10 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
@@ -48,9 +55,10 @@
 
   <Target Name="AddRunNativeComponents"
           BeforeTargets="AssignTargetPaths"
+          DependsOnTargets="DebugSymbolsProjectOutputGroup"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(InProcessComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
+      <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 </Project>

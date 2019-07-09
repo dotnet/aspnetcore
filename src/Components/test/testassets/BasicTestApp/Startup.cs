@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.InteropServices;
+using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Blazor.Http;
-using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Runtime.InteropServices;
 
 namespace BasicTestApp
 {
@@ -14,6 +14,13 @@ namespace BasicTestApp
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+
+            services.AddAuthorizationCore(options =>
+            {
+                options.AddPolicy("NameMustStartWithB", policy =>
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
         }
 
         public void Configure(IComponentsApplicationBuilder app)

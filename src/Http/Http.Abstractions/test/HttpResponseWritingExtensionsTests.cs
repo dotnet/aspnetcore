@@ -3,8 +3,7 @@
 
 using System;
 using System.IO;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Tests;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -36,15 +35,12 @@ namespace Microsoft.AspNetCore.Http
         [MemberData(nameof(Encodings))]
         public async Task WritingTextThatRequiresMultipleSegmentsWorks(Encoding encoding)
         {
-            // Need to change the StreamPipeWriter with a capped MemoryPool
-            var memoryPool = new TestMemoryPool(maxBufferSize: 16);
             var outputStream = new MemoryStream();
-            var streamPipeWriter = new StreamPipeWriter(outputStream, minimumSegmentSize: 0, memoryPool);
 
             HttpContext context = new DefaultHttpContext();
-            context.Response.BodyPipe = streamPipeWriter;
+            context.Response.Body = outputStream;
 
-            var inputString = "昨日すき焼きを食べました";
+            var inputString = string.Concat(Enumerable.Repeat("昨日すき焼きを食べました", 1000));
             var expected = encoding.GetBytes(inputString);
             await context.Response.WriteAsync(inputString, encoding);
 
@@ -52,11 +48,8 @@ namespace Microsoft.AspNetCore.Http
             var actual = new byte[expected.Length];
             var length = outputStream.Read(actual);
 
-            var res1 = encoding.GetString(actual);
-            var res2 = encoding.GetString(expected);
             Assert.Equal(expected.Length, length);
             Assert.Equal(expected, actual);
-            streamPipeWriter.Complete();
         }
 
         [Theory]

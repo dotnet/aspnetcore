@@ -3,18 +3,20 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class Http1MessageBody : MessageBody
+    internal abstract class Http1MessageBody : MessageBody
     {
         protected readonly Http1Connection _context;
+        protected bool _completed;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context, context.MinRequestBodyDataRate)
+            : base(context)
         {
             _context = context;
         }
@@ -34,11 +36,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        public abstract bool TryReadInternal(out ReadResult readResult);
+
+        public abstract ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default);
+
         protected override Task OnConsumeAsync()
         {
             try
             {
-                if (TryRead(out var readResult))
+                while (TryReadInternal(out var readResult))
                 {
                     AdvanceTo(readResult.Buffer.End);
 
@@ -79,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ReadResult result;
                 do
                 {
-                    result = await ReadAsync();
+                    result = await ReadAsyncInternal();
                     AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
@@ -129,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
+                context.OnTrailersComplete(); // No trailers for these.
                 return new Http1UpgradeMessageBody(context);
             }
 
@@ -145,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // status code and then close the connection.
                 if (transferCoding != TransferCoding.Chunked)
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, in transferEncoding);
+                    BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
                 }
 
                 // TODO may push more into the wrapper rather than just calling into the message body
@@ -173,7 +180,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
+            context.OnTrailersComplete(); // No trailers for these.
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
+        }
+
+        protected void ThrowIfCompleted()
+        {
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
         }
     }
 }

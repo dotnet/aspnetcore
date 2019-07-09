@@ -41,79 +41,13 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Supplies information about an drag event that is being raised.
     /// </summary>
-    public class UIDragEventArgs : UIEventArgs
+    public class UIDragEventArgs : UIMouseEventArgs
     {
-        /// <summary>
-        /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
-        /// </summary>
-        public long Detail { get; set; }
-
         /// <summary>
         /// The data that underlies a drag-and-drop operation, known as the drag data store.
         /// See <see cref="DataTransfer"/>.
         /// </summary>
         public DataTransfer DataTransfer { get; set; }
-
-        /// <summary>
-        /// The X coordinate of the mouse pointer in global (screen) coordinates.
-        /// </summary>
-        public long ScreenX { get; set; }
-
-        /// <summary>
-        /// The Y coordinate of the mouse pointer in global (screen) coordinates.
-        /// </summary>
-        public long ScreenY { get; set; }
-
-        /// <summary>
-        /// The X coordinate of the mouse pointer in local (DOM content) coordinates.
-        /// </summary>
-        public long ClientX { get; set; }
-
-        /// <summary>
-        /// 	The Y coordinate of the mouse pointer in local (DOM content) coordinates.
-        /// </summary>
-        public long ClientY { get; set; }
-
-        /// <summary>
-        /// The button number that was pressed when the mouse event was fired:
-        /// Left button=0,
-        /// middle button=1 (if present),
-        /// right button=2.
-        /// For mice configured for left handed use in which the button actions are reversed the values are instead read from right to left.
-        /// </summary>
-        public long Button { get; set; }
-
-        /// <summary>
-        /// The buttons being pressed when the mouse event was fired:
-        /// Left button=1,
-        /// Right button=2,
-        /// Middle (wheel) button=4,
-        /// 4th button (typically, "Browser Back" button)=8,
-        /// 5th button (typically, "Browser Forward" button)=16.
-        /// If two or more buttons are pressed, returns the logical sum of the values.
-        /// E.g., if Left button and Right button are pressed, returns 3 (=1 | 2).
-        /// </summary>
-        public long Buttons { get; set; }
-        
-        /// <summary>
-        /// true if the control key was down when the event was fired. false otherwise.
-        /// </summary>
-        public bool CtrlKey { get; set; }
-
-        /// <summary>
-        /// true if the shift key was down when the event was fired. false otherwise.
-        /// </summary>
-        public bool ShiftKey { get; set; }
-
-        /// <summary>
-        /// true if the alt key was down when the event was fired. false otherwise.
-        /// </summary>
-        public bool AltKey { get; set; }
-
-        /// <summary>
-        /// true if the meta key was down when the event was fired. false otherwise.
-        /// </summary>
-        public bool MetaKey { get; set; }
     }
 
     /// <summary>
@@ -268,22 +202,22 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The X coordinate of the mouse pointer in global (screen) coordinates.
         /// </summary>
-        public long ScreenX { get; set; }
+        public double ScreenX { get; set; }
 
         /// <summary>
         /// The Y coordinate of the mouse pointer in global (screen) coordinates.
         /// </summary>
-        public long ScreenY { get; set; }
+        public double ScreenY { get; set; }
 
         /// <summary>
         /// The X coordinate of the mouse pointer in local (DOM content) coordinates.
         /// </summary>
-        public long ClientX { get; set; }
+        public double ClientX { get; set; }
 
         /// <summary>
         /// 	The Y coordinate of the mouse pointer in local (DOM content) coordinates.
         /// </summary>
-        public long ClientY { get; set; }
+        public double ClientY { get; set; }
 
         /// <summary>
         /// The button number that was pressed when the mouse event was fired:
@@ -465,34 +399,34 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The X coordinate of the touch point relative to the left edge of the screen.
         /// </summary>
-        public long ScreenX { get; set; }
+        public double ScreenX { get; set; }
 
         /// <summary>
         /// The Y coordinate of the touch point relative to the top edge of the screen.
         /// </summary>
-        public long ScreenY { get; set; }
+        public double ScreenY { get; set; }
 
         /// <summary>
         /// The X coordinate of the touch point relative to the left edge of the browser viewport, not including any scroll offset.
         /// </summary>
-        public long ClientX { get; set; }
+        public double ClientX { get; set; }
 
         /// <summary>
         /// The Y coordinate of the touch point relative to the top edge of the browser viewport, not including any scroll offset.
         /// </summary>
-        public long ClientY { get; set; }
+        public double ClientY { get; set; }
 
         /// <summary>
         /// The X coordinate of the touch point relative to the left edge of the document.
         /// Unlike <see cref="ClientX"/>, this value includes the horizontal scroll offset, if any.
         /// </summary>
-        public long PageX { get; set; }
+        public double PageX { get; set; }
 
         /// <summary>
         /// The Y coordinate of the touch point relative to the top of the document.
         /// Unlike <see cref="ClientY"/>, this value includes the vertical scroll offset, if any.
         /// </summary>
-        public long PageY { get; set; }
+        public double PageY { get; set; }
     }
 
     /// <summary>

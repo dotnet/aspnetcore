@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Hosting
             // Check if in process
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
             {
-                hostBuilder.CaptureStartupErrors(true);
-
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
                 // Trim trailing slash to be consistent with other servers
                 var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
@@ -42,10 +40,16 @@ namespace Microsoft.AspNetCore.Hosting
                         services.AddSingleton<IServer, IISHttpServer>();
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
+                        services.AddSingleton<IServerIntegratedAuth>(_ => new ServerIntegratedAuth()
+                        {
+                            IsEnabled = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled,
+                            AuthenticationScheme = IISServerDefaults.AuthenticationScheme
+                        });
                         services.Configure<IISServerOptions>(
                             options => {
                                 options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                                 options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
+                                options.IisMaxRequestSizeLimit = iisConfigData.maxRequestBodySize;
                             }
                         );
                     });

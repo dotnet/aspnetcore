@@ -12,13 +12,12 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;
@@ -125,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(this, ServerOptions.Limits.MinRequestBodyDataRate);
+            => Http2MessageBody.For(this);
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -321,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task OnDataAsync(Http2Frame dataFrame, ReadOnlySequence<byte> payload)
+        public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
         {
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)
@@ -368,11 +367,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             RequestBodyPipe.Writer.Write(segment.Span);
                         }
-                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
-                        // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
-                        // _inputFlowControl.Advance() didn't throw.
-                        Debug.Assert(flushTask.IsCompleted);
+                        // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
+                        // Data will still be available to the reader.
+                        if (!endStream)
+                        {
+                            var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                            // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                            // _inputFlowControl.Advance() didn't throw.
+                            Debug.Assert(flushTask.IsCompleted);
+                        }
                     }
                 }
             }
@@ -398,6 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
+            OnTrailersComplete();
             RequestBodyPipe.Writer.Complete();
 
             _inputFlowControl.StopWindowUpdates();
@@ -464,9 +469,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void AbortCore(Exception abortReason)
         {
-            // Call _http2Output.Dispose() prior to poisoning the request body stream or pipe to
+            // Call _http2Output.Stop() prior to poisoning the request body stream or pipe to
             // ensure that an app that completes early due to the abort doesn't result in header frames being sent.
-            _http2Output.Dispose();
+            _http2Output.Stop();
 
             AbortRequest();
 
@@ -488,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 pauseWriterThreshold: windowSize + 1,
                 resumeWriterThreshold: windowSize + 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
         private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)

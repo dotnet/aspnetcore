@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class CorsEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithCorsPolicy(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder> configurePolicy) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithCorsPolicy(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, string policyName) { throw null; }
+        public static TBuilder RequireCors<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder> configurePolicy) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder RequireCors<TBuilder>(this TBuilder builder, string policyName) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
     }
     public static partial class CorsMiddlewareExtensions
     {
@@ -128,9 +128,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     {
         public DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> options) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy> GetPolicyAsync(Microsoft.AspNetCore.Http.HttpContext context, string policyName) { throw null; }
-    }
-    public partial interface ICorsMetadata
-    {
     }
     public partial interface ICorsPolicyMetadata : Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
     {

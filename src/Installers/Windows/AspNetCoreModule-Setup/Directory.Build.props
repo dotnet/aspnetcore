@@ -15,23 +15,24 @@
     <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>
 
     <!-- ANCM msi version is prepended with a 1 due to previous msi versions starting with 8.x.x.0 -->
-    <ANCMMsiVersion>1$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(BUILD_MAJOR).0</ANCMMsiVersion>
+    <ANCMFolderVersion>1$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(BUILD_MAJOR)</ANCMFolderVersion>
+    <ANCMMsiVersion>$(ANCMFolderVersion).0</ANCMMsiVersion>
 
     <!-- The handler version in the M.A.AspNetCoreV2 nuget package. Today, this is hard coded to 2.0.0
           The actual handler folder version is dependent on the ANCMMsiVersion -->
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
     <!-- Location of main folders-->
-    <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
+    <AspNetCoreSetupRoot>$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
 
-    <_ServerIISBasePath>$(RepositoryRoot)\src\Servers\IIS\</_ServerIISBasePath>
+    <_ServerIISBasePath>$(RepoRoot)\src\Servers\IIS\</_ServerIISBasePath>
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
-    <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
+    <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMFolderVersion=$(ANCMFolderVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
     <DefineConstants>
       AspNetCoreSchemaPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml;
       AspNetCoreMofPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\ancm.mof;
@@ -41,14 +42,14 @@
 
  <ItemGroup>
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
-      <Name>AspNetCoreV2WoW64</Name>
+      <Name>AspNetCoreV2</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=x64</SetPlatform>
     </ProjectReference>
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
-      <Name>AspNetCoreV2HandlerWoW64</Name>
+      <Name>AspNetCoreV2Handler</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -56,14 +57,14 @@
     </ProjectReference>
 
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
-      <Name>AspNetCoreV2</Name>
+      <Name>AspNetCoreV2WoW64</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
-      <Name>AspNetCoreV2Handler</Name>
+      <Name>AspNetCoreV2HandlerWoW64</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
         public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;
@@ -147,39 +148,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public void Server_MultipleOutstandingSyncRequests_Success()
-        {
-            int requestLimit = 10;
-            int requestCount = 0;
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
-            {
-                if (Interlocked.Increment(ref requestCount) == requestLimit)
-                {
-                    tcs.TrySetResult(null);
-                }
-                else
-                {
-                    tcs.Task.Wait();
-                }
-
-                return Task.FromResult(0);
-            }))
-            {
-                List<Task> requestTasks = new List<Task>();
-                for (int i = 0; i < requestLimit; i++)
-                {
-                    Task<string> requestTask = SendRequestAsync(address);
-                    requestTasks.Add(requestTask);
-                }
-
-                Assert.True(Task.WaitAll(requestTasks.ToArray(), TimeSpan.FromSeconds(60)), "Timed out");
-            }
-        }
-
-        [ConditionalFact]
         public void Server_MultipleOutstandingAsyncRequests_Success()
         {
             int requestLimit = 10;
@@ -225,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 ct.Register(() => canceled.SetResult(0));
                 received.SetResult(0);
                 await aborted.Task.TimeoutAfter(interval);
-                Assert.True(ct.WaitHandle.WaitOne(interval), "CT Wait");
+                await canceled.Task.TimeoutAfter(interval);
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
             }))
             {
@@ -595,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private async Task<string> SendRequestAsync(string uri)
         {
-            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout } )
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })
             {
                 return await client.GetStringAsync(uri);
             }

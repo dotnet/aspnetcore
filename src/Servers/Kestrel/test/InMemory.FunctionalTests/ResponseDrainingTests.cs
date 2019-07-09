@@ -15,24 +15,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
     {
-        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
+        public static TheoryData<ListenOptions> ConnectionMiddlewareData => new TheoryData<ListenOptions>
         {
             new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
-            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
-            {
-                ConnectionAdapters = { new PassThroughConnectionAdapter() }
-            }
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)).UsePassThrough()
         };
 
         [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
+        [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var minRate = new MinDataRate(16384, TimeSpan.FromSeconds(2));
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinResponseDataRateFeature>().MinDataRate = minRate;
                 return Task.CompletedTask;
@@ -79,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel == LogLevel.Information);
                 }
-                await server.StopAsync();
             }
         }
     }

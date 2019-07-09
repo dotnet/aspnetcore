@@ -21,10 +21,12 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             if (context.ActionContext.ActionDescriptor.FilterDescriptors != null)
             {
-                // Perf: Avoid allocations
-                for (var i = 0; i < context.Results.Count; i++)
+                var results = context.Results;
+                // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+                var resultsCount = results.Count;
+                for (var i = 0; i < resultsCount; i++)
                 {
-                    ProvideFilter(context, context.Results[i]);
+                    ProvideFilter(context, results[i]);
                 }
             }
         }

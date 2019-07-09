@@ -13,7 +13,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpResponseTests
     {
@@ -65,41 +65,12 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
-        public void BodyPipe_CanGet()
+        public void BodyWriter_CanGet()
         {
             var response = new DefaultHttpContext();
-            var bodyPipe = response.Response.BodyPipe;
+            var bodyPipe = response.Response.BodyWriter;
 
             Assert.NotNull(bodyPipe);
-        }
-
-        [Fact]
-        public void BodyPipe_CanSet()
-        {
-            var response = new DefaultHttpContext();
-            var pipeWriter = new Pipe().Writer;
-            response.Response.BodyPipe = pipeWriter;
-
-            Assert.Equal(pipeWriter, response.Response.BodyPipe);
-        }
-
-        [Fact]
-        public void BodyPipe_WrapsStream()
-        {
-            var context = new DefaultHttpContext();
-            var expectedStream = new MemoryStream();
-            context.Response.Body = expectedStream;
-
-            var bodyPipe = context.Response.BodyPipe as StreamPipeWriter;
-
-            Assert.Equal(expectedStream, bodyPipe.InnerStream);
-        }
-
-        [Fact]
-        public void BodyPipe_ThrowsWhenSettingNull()
-        {
-            var context = new DefaultHttpContext();
-            Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
         }
 
         [Fact]
@@ -109,6 +80,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             var mock = new Mock<IHttpResponseStartFeature>();
             mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
 
             var context = new DefaultHttpContext(features);
             await context.Response.StartAsync();
@@ -126,10 +101,33 @@ namespace Microsoft.AspNetCore.Http.Internal
             mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
             features.Set(mock.Object);
 
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
             var context = new DefaultHttpContext(features);
             await context.Response.StartAsync(ct);
 
             mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_DoesNotCallStartIfHasStartedIsTrue()
+        {
+            var features = new FeatureCollection();
+
+            var startMock = new Mock<IHttpResponseStartFeature>();
+            startMock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(startMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(true);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            startMock.Verify(m => m.StartAsync(default), Times.Never());
         }
 
         [Fact]

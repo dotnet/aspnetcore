@@ -4,13 +4,15 @@
 
   <PropertyGroup>
     <Name>AspNetCoreModuleV2IISExpress</Name>
-    <IsProductInstaller>true</IsProductInstaller>
+    <IsShipping>true</IsShipping>
     <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
     <OutputType>Package</OutputType>
     <OutputName>ancm_iis_express_$(Platform)_en_v2</OutputName>
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <SchemaVersion>2.0</SchemaVersion>
+    <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
+    <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,7 +53,20 @@
     </ProjectReference>
   </ItemGroup>
 
+  <Target Name="CopyBuildOutputToArtifactDirectory"
+          AfterTargets="Build">
+    <ItemGroup>
+      <BuildContentForAncm Include="$(ArtifactsBinDir)AspNetCore\$(TempPlatform)\$(Configuration)\*" />
+      <BuildContentForAncmHandler Include="$(ArtifactsBinDir)OutOfProcessRequestHandler\$(TempPlatform)\$(Configuration)\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildContentForAncm)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+    <Copy SourceFiles="@(BuildContentForAncmHandler)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+  </Target>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />
-  <Import Project="..\build\versions.props" />
+
+  <PropertyGroup>
+    <PackageFileName>$(TargetName)$(TargetExt)</PackageFileName>
+  </PropertyGroup>
 </Project>

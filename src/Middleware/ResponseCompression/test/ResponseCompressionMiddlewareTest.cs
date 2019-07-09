@@ -453,7 +453,123 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             }
             else
             {
-                AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
+                AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpsCompressionMode.Default, 100)]
+        [InlineData(HttpsCompressionMode.DoNotCompress, 100)]
+        [InlineData(HttpsCompressionMode.Compress, 30)]
+        public async Task Request_Https_CompressedIfOptIn(HttpsCompressionMode mode, int expectedLength)
+        {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>,
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    services.AddResponseCompression(options =>
+                    {
+                        options.EnableForHttps = false;
+                        options.MimeTypes = new[] { TextPlain };
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        var feature = context.Features.Get<IHttpsCompressionFeature>();
+                        feature.Mode = mode;
+                        context.Response.ContentType = TextPlain;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder)
+            {
+                BaseAddress = new Uri("https://localhost/")
+            };
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+
+            var logMessages = sink.Writes.ToList();
+            if (mode == HttpsCompressionMode.Compress)
+            {
+                AssertCompressedWithLog(logMessages, "gzip");
+            }
+            else
+            {
+                AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpsCompressionMode.Default, 30)]
+        [InlineData(HttpsCompressionMode.Compress, 30)]
+        [InlineData(HttpsCompressionMode.DoNotCompress, 100)]
+        public async Task Request_Https_NotCompressedIfOptOut(HttpsCompressionMode mode, int expectedLength)
+        {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>,
+                TestSink.EnableWithTypeName<ResponseCompressionProvider>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    services.AddResponseCompression(options =>
+                    {
+                        options.EnableForHttps = true;
+                        options.MimeTypes = new[] { TextPlain };
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        var feature = context.Features.Get<IHttpsCompressionFeature>();
+                        feature.Mode = mode;
+                        context.Response.ContentType = TextPlain;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder)
+            {
+                BaseAddress = new Uri("https://localhost/")
+            };
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+
+            var logMessages = sink.Writes.ToList();
+            if (mode == HttpsCompressionMode.DoNotCompress)
+            {
+                AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
+            }
+            else
+            {
+                AssertCompressedWithLog(logMessages, "gzip");
             }
         }
 

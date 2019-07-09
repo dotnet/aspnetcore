@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         // We do it this way so that we don't have to be doing renderer.Invoke on each and every test.
         public void TriggerRender()
         {
-            var t = _renderHandle.Invoke(() => _renderHandle.Render(BuildRenderTree));
+            var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(BuildRenderTree));
             // This should always be run synchronously
             Assert.True(t.IsCompleted);
             if (t.IsFaulted)

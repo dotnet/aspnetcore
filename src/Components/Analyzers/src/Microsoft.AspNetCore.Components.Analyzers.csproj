@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentsApi.cs" LinkBase="Shared" />
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

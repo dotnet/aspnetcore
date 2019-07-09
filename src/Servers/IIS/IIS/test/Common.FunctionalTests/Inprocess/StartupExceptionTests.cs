@@ -8,16 +8,13 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class StartupExceptionTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public StartupExceptionTests(PublishedSitesFixture fixture)
+        public StartupExceptionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]
@@ -27,14 +24,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckOversizedStdOutWrites")]
         public async Task CheckStdoutWithLargeWrites_TestSink(string mode)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await AssertFailsToStart(deploymentResult);
             var expectedString = new string('a', 30000);
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
         [ConditionalTheory]
@@ -44,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("CheckOversizedStdOutWrites")]
         public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} {mode}");
             deploymentParameters.EnableLogging(_logFolderPath);
 
@@ -56,13 +53,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var expectedString = new string('a', 30000);
 
             Assert.Contains(expectedString, contents);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
         [ConditionalFact]
         public async Task CheckValidConsoleFunctions()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} CheckConsoleFunctions");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -84,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task Gets500_30_ErrorPage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
 
             var deploymentResult = await DeployAsync(deploymentParameters);

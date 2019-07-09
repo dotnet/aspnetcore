@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class IOQueue : PipeScheduler, IThreadPoolWorkItem
+    internal class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
         private int _doingWork;

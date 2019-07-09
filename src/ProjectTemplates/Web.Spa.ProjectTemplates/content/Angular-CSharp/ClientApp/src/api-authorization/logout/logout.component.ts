@@ -14,7 +14,7 @@ import { LogoutActions, ApplicationPaths, ReturnUrlType } from '../api-authoriza
   styleUrls: ['./logout.component.css']
 })
 export class LogoutComponent implements OnInit {
-  private message = new BehaviorSubject<string>(null);
+  public message = new BehaviorSubject<string>(null);
 
   constructor(
     private authorizeService: AuthorizeService,
@@ -54,7 +54,7 @@ export class LogoutComponent implements OnInit {
       switch (result.status) {
         case AuthenticationResultStatus.Redirect:
           // We replace the location here so that in case the user hits the back
-          // arrow from within the IdP he doesn't get into an infinite redirect loop.
+          // arrow from within the IdP they don't get into an infinite redirect loop.
           window.location.replace(result.redirectUrl);
           break;
         case AuthenticationResultStatus.Success:

@@ -28,6 +28,12 @@ Our team members also monitor several other discussion forums:
 
 ## Contributing code and content
 
+We accept fixes and features! Here are some resources to help you get started on how to contribute code or new content.
+
+* Look at the [Contributor documentation](/docs/) to get started on building the source code on your own.
+* ["Help wanted" issues](https://github.com/aspnet/AspNetCore/labels/help%20wanted) - these issues are up for grabs. Comment on an issue if you want to create a fix.
+* ["Good first issue" issues](https://github.com/aspnet/AspNetCore/labels/good%20first%20issue) - we think these are a good for newcomers.
+
 ### Identifying the scale
 
 If you would like to contribute to one of our repositories, first identify the scale of what you would like to contribute. If it is small (grammar/spelling or a bug fix) feel free to start working on a fix. If you are submitting a feature or substantial code contribution, please discuss it with the team and ensure it follows the product roadmap. You might also read these two blogs posts on contributing code: [Open Source Contribution Etiquette](http://tirania.org/blog/archive/2010/Dec-31.html) by Miguel de Icaza and [Don't "Push" Your Pull Requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) by Ilya Grigorik. All code submissions will be rigorously reviewed and tested by the ASP.NET and Entity Framework teams, and only those that meet an extremely high bar for both quality and design/roadmap appropriateness will be merged into the source.

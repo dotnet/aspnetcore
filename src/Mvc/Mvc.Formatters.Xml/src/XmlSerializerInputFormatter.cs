@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
@@ -24,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class XmlSerializerInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
+        private const int DefaultMemoryThreshold = 1024 * 30;
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
         private readonly MvcOptions _options;
@@ -99,39 +98,44 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var request = context.HttpContext.Request;
-
+            Stream readStream = new NonDisposableStream(request.Body);
             if (!request.Body.CanSeek && !_options.SuppressInputFormatterBuffering)
             {
                 // XmlSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
+                var memoryThreshold = DefaultMemoryThreshold;
+                var contentLength = request.ContentLength.GetValueOrDefault();
+                if (contentLength > 0 && contentLength < memoryThreshold)
+                {
+                    // If the Content-Length is known and is smaller than the default buffer size, use it.
+                    memoryThreshold = (int)contentLength;
+                }
 
-                await request.Body.DrainAsync(CancellationToken.None);
-                request.Body.Seek(0L, SeekOrigin.Begin);
+                readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
+
+                await readStream.DrainAsync(CancellationToken.None);
+                readStream.Seek(0L, SeekOrigin.Begin);
             }
 
             try
             {
-                using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), encoding))
+                using var xmlReader = CreateXmlReader(readStream, encoding);
+                var type = GetSerializableType(context.ModelType);
+
+                var serializer = GetCachedSerializer(type);
+
+                var deserializedObject = serializer.Deserialize(xmlReader);
+
+                // Unwrap only if the original type was wrapped.
+                if (type != context.ModelType)
                 {
-                    var type = GetSerializableType(context.ModelType);
-
-                    var serializer = GetCachedSerializer(type);
-
-                    var deserializedObject = serializer.Deserialize(xmlReader);
-
-                    // Unwrap only if the original type was wrapped.
-                    if (type != context.ModelType)
+                    if (deserializedObject is IUnwrappable unwrappable)
                     {
-                        if (deserializedObject is IUnwrappable unwrappable)
-                        {
-                            deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
-                        }
+                        deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
                     }
-
-                    return InputFormatterResult.Success(deserializedObject);
                 }
+
+                return InputFormatterResult.Success(deserializedObject);
             }
             // XmlSerializer wraps actual exceptions (like FormatException or XmlException) into an InvalidOperationException
             // https://github.com/dotnet/corefx/blob/master/src/System.Private.Xml/src/System/Xml/Serialization/XmlSerializer.cs#L652
@@ -148,6 +152,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 exception.InnerException is XmlException)
             {
                 throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception.InnerException);
+            }
+            finally
+            {
+                if (readStream is FileBufferingReadStream fileBufferingReadStream)
+                {
+                    await fileBufferingReadStream.DisposeAsync();
+                }
             }
         }
 

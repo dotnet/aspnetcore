@@ -4,13 +4,10 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <RazorCompileOnBuild>true</RazorCompileOnBuild>
-  </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />

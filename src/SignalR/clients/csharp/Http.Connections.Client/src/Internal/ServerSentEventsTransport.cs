@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
-    public partial class ServerSentEventsTransport : ITransport
+    internal partial class ServerSentEventsTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Text)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             try
             {
-                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None);
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                 response.EnsureSuccessStatusCode();
             }
             catch

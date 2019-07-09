@@ -9,23 +9,20 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AuthenticationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public AuthenticationTests(PublishedSitesFixture fixture)
+        public AuthenticationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.WindowsAuthentication)]
         public async Task Authentication_InProcess()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.SetWindowsAuth();
 
             var deploymentResult = await DeployAsync(deploymentParameters);

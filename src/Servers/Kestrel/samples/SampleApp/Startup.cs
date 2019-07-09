@@ -13,8 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -85,18 +84,10 @@ namespace SampleApp
 
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    options.ConfigureEndpointDefaults(opt =>
-                    {
-                        opt.NoDelay = true;
-                    });
-
                     options.ConfigureHttpsDefaults(httpsOptions =>
                     {
                         httpsOptions.SslProtocols = SslProtocols.Tls12;
                     });
-
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
                     options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                     {
@@ -148,7 +139,7 @@ namespace SampleApp
                         .Configure(context.Configuration.GetSection("Kestrel"))
                         .Endpoint("NamedEndpoint", opt =>
                         {
-                            opt.ListenOptions.NoDelay = true;
+
                         })
                         .Endpoint("NamedHttpsEndpoint", opt =>
                         {

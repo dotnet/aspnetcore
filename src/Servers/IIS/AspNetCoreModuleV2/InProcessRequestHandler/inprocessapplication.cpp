@@ -20,7 +20,7 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
     IHttpApplication& pApplication,
     std::unique_ptr<InProcessOptions> pConfig,
-    APPLICATION_PARAMETER *pParameters,
+    APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
     m_Initialized(false),
@@ -55,6 +55,7 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 VOID
 IN_PROCESS_APPLICATION::StopClr()
 {
+    // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -69,11 +70,13 @@ IN_PROCESS_APPLICATION::StopClr()
             shutdownHandler(m_ShutdownHandlerContext);
         }
 
+        SRWSharedLock dataLock(m_dataLock);
+
         auto requestCount = m_requestCount.load();
+
         if (requestCount == 0)
         {
-            LOG_INFO(L"Drained all requests, notifying managed.");
-            m_RequestsDrainedHandler(m_ShutdownHandlerContext);
+            CallRequestsDrained();
         }
     }
 
@@ -127,7 +130,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
 }
 
 HRESULT
-IN_PROCESS_APPLICATION::LoadManagedApplication()
+IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 {
     THROW_LAST_ERROR_IF_NULL(m_pInitializeEvent = CreateEvent(
         nullptr,  // default security attributes
@@ -136,12 +139,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
         nullptr)); // name
 
     THROW_LAST_ERROR_IF_NULL(m_pShutdownEvent = CreateEvent(
-        nullptr,  // default security attributes
-        TRUE,     // manual reset event
-        FALSE,    // not set
-        nullptr)); // name
-
-    THROW_LAST_ERROR_IF_NULL(m_pRequestDrainEvent = CreateEvent(
         nullptr,  // default security attributes
         TRUE,     // manual reset event
         FALSE,    // not set
@@ -160,11 +157,17 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
 
     // Wait for shutdown request
     const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryStartupTimeLimitInMS());
+
     THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
 
     if (waitResult == WAIT_TIMEOUT)
     {
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
+        errorContext.statusCode = 500;
+        errorContext.subStatusCode = 37;
+        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
+        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+
         m_waitForShutdown = false;
         StopClr();
         throw InvalidOperationException(format(L"Managed server didn't initialize after %u ms.", m_pConfig->QueryStartupTimeLimitInMS()));
@@ -192,6 +195,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
+        ErrorContext errorContext; // unused 
+
         if (s_fMainCallback == nullptr)
         {
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
@@ -199,6 +204,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
+                errorContext,
                 hostFxrResolutionResult
                 ));
 
@@ -238,8 +244,21 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        bool clrThreadExited;
+        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
+        if (startupReturnCode != 0)
+        {
+            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
+        }
 
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+        }
+
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STACK_SIZE, m_pConfig->QueryStackSize().c_str()));
+
+        bool clrThreadExited;
         {
             auto redirectionOutput = LoggingHelpers::CreateOutputs(
                     m_pConfig->QueryStdoutLogEnabled(),
@@ -364,7 +383,8 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     IHttpApplication& pHttpApplication,
     APPLICATION_PARAMETER* pParameters,
     DWORD nParameters,
-    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application)
+    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+    ErrorContext& errorContext)
 {
     try
     {
@@ -372,7 +392,7 @@ HRESULT IN_PROCESS_APPLICATION::Start(
         THROW_IF_FAILED(InProcessOptions::Create(pServer, pSite, pHttpApplication, options));
         application = std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>(
             new IN_PROCESS_APPLICATION(pServer, pHttpApplication, std::move(options), pParameters, nParameters));
-        THROW_IF_FAILED(application->LoadManagedApplication());
+        THROW_IF_FAILED(application->LoadManagedApplication(errorContext));
         return S_OK;
     }
     catch (InvalidOperationException& ex)
@@ -411,6 +431,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         LOG_INFOF(L"Managed application exited with code %d", exitCode);
 
         context->m_exitCode = exitCode;
+        context->m_hostFxr.Close();
     }
     __except(GetExceptionCode() != 0)
     {
@@ -532,8 +553,13 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
+        SRWSharedLock dataLock(m_dataLock);
+
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
+
+        LOG_TRACEF(L"Adding request. Total Request Count %d", m_requestCount.load());
+
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
     CATCH_RETURN();
@@ -544,11 +570,25 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    SRWSharedLock lock(m_stateLock);
-    auto requestCount = m_requestCount--;
-    if (m_fStopCalled && requestCount == 0)
+    SRWSharedLock dataLock(m_dataLock);
+
+    auto requestCount = --m_requestCount;
+
+    LOG_TRACEF(L"Removing Request %d", requestCount);
+
+    if (m_fStopCalled && requestCount == 0 && !m_blockManagedCallbacks)
+    {
+        CallRequestsDrained();
+    }
+}
+
+void IN_PROCESS_APPLICATION::CallRequestsDrained()
+{
+    // Atomic swap these.
+    auto handler = m_RequestsDrainedHandler.exchange(nullptr);
+    if (handler != nullptr)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
-        m_RequestsDrainedHandler(m_ShutdownHandlerContext);
+        handler(m_ShutdownHandlerContext);
     }
 }

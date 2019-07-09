@@ -9,13 +9,16 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class Http1ContentLengthMessageBody : Http1MessageBody
+    internal sealed class Http1ContentLengthMessageBody : Http1MessageBody
     {
+        private ReadResult _readResult;
         private readonly long _contentLength;
         private long _inputLength;
-        private ReadResult _readResult;
-        private bool _completed;
+        private bool _readCompleted;
+        private bool _isReading;
         private int _userCanceled;
+        private long _totalExaminedInPreviousReadResult;
+        private bool _finalAdvanceCalled;
 
         public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Http1Connection context)
             : base(context)
@@ -25,13 +28,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _inputLength = _contentLength;
         }
 
-        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             ThrowIfCompleted();
+            return ReadAsyncInternal(cancellationToken);
+        }
 
-            if (_inputLength == 0)
+        public override async ValueTask<ReadResult> ReadAsyncInternal(CancellationToken cancellationToken = default)
+        {
+            if (_isReading)
             {
-                _readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
+                throw new InvalidOperationException("Reading is already in progress.");
+            }
+
+            if (_readCompleted)
+            {
+                _isReading = true;
                 return _readResult;
             }
 
@@ -53,6 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 try
                 {
                     var readAwaitable = _context.Input.ReadAsync(cancellationToken);
+
+                    _isReading = true;
                     _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
                 }
                 catch (ConnectionAbortedException ex)
@@ -101,10 +115,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override bool TryRead(out ReadResult readResult)
         {
             ThrowIfCompleted();
+            return TryReadInternal(out readResult);
+        }
 
-            if (_inputLength == 0)
+        public override bool TryReadInternal(out ReadResult readResult)
+        {
+            if (_isReading)
             {
-                readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
+                throw new InvalidOperationException("Reading is already in progress.");
+            }
+
+            if (_readCompleted)
+            {
+                _isReading = true;
+                readResult = _readResult;
                 return true;
             }
 
@@ -126,6 +150,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            // Only set _isReading if we are returing true.
+            _isReading = true;
+
             CreateReadResultFromConnectionReadResult();
 
             readResult = _readResult;
@@ -133,23 +160,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        private void ThrowIfCompleted()
+        public override Task ConsumeAsync()
         {
-            if (_completed)
+            TryStart();
+
+            if (!_readResult.Buffer.IsEmpty && _inputLength == 0)
             {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+                _context.Input.AdvanceTo(_readResult.Buffer.End);
             }
+
+            return OnConsumeAsync();
         }
 
         private void CreateReadResultFromConnectionReadResult()
         {
-            if (_readResult.Buffer.Length > _inputLength)
+            if (_readResult.Buffer.Length >= _inputLength + _totalExaminedInPreviousReadResult)
             {
-                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, isCompleted: true);
-            }
-            else if (_readResult.Buffer.Length == _inputLength)
-            {
-                _readResult = new ReadResult(_readResult.Buffer, _readResult.IsCanceled, isCompleted: true);
+                _readCompleted = true;
+                _readResult = new ReadResult(
+                    _readResult.Buffer.Slice(0, _inputLength + _totalExaminedInPreviousReadResult),
+                    _readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1,
+                    _readCompleted);
             }
 
             if (_readResult.IsCompleted)
@@ -165,18 +196,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            if (_inputLength == 0)
+            if (!_isReading)
             {
+                throw new InvalidOperationException("No reading operation to complete.");
+            }
+
+            _isReading = false;
+
+            if (_readCompleted)
+            {
+                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), Interlocked.Exchange(ref _userCanceled, 0) == 1, _readCompleted);
+
+                if (_readResult.Buffer.Length == 0 && !_finalAdvanceCalled)
+                {
+                    _context.Input.AdvanceTo(consumed);
+                    _finalAdvanceCalled = true;
+                    _context.OnTrailersComplete();
+                }
+
                 return;
             }
 
-            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
-
-            _inputLength -= dataLength;
+            var consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            var examinedLength = consumedLength + _readResult.Buffer.Slice(consumed, examined).Length;
 
             _context.Input.AdvanceTo(consumed, examined);
 
-            OnDataRead(dataLength);
+            var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
+
+            OnDataRead(newlyExamined);
+            _totalExaminedInPreviousReadResult += newlyExamined;
+            _inputLength -= newlyExamined;
+
+            _totalExaminedInPreviousReadResult -= consumedLength;
         }
 
         protected override void OnReadStarting()
