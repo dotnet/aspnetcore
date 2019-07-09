@@ -51,7 +51,6 @@
 
   <Target Name="CreateSharedFrameworkNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
     <PropertyGroup>
-      <!--TODO this may not have en-US. it's confusing-->
       <MsiFullPath>$(InstallersOutputPath)en-US/$(TargetFileName)</MsiFullPath>
       <CabFullPath>$(InstallersOutputPath)en-US/$(Cabinet)</CabFullPath>
     </PropertyGroup>
