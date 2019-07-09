@@ -1270,6 +1270,14 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         public bool Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext context) { throw null; }
         public abstract bool IsValidForRequest(Microsoft.AspNetCore.Routing.RouteContext routeContext, Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor action);
     }
+    public partial class HttpMethodActionConstraint : Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint, Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata
+    {
+        public static readonly int HttpMethodConstraintOrder;
+        public HttpMethodActionConstraint(System.Collections.Generic.IEnumerable<string> httpMethods) { }
+        public System.Collections.Generic.IEnumerable<string> HttpMethods { get { throw null; } }
+        public int Order { get { throw null; } }
+        public virtual bool Accept(Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext context) { throw null; }
+    }
 }
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
@@ -1940,6 +1948,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public sealed partial class ActionResultStatusCodeAttribute : System.Attribute
     {
         public ActionResultStatusCodeAttribute() { }
+    }
+    public partial class AmbiguousActionException : System.InvalidOperationException
+    {
+        protected AmbiguousActionException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+        public AmbiguousActionException(string message) { }
     }
     public partial class CompatibilitySwitch<TValue> : Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch where TValue : struct
     {
