@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Analyzers
             Assert.Empty(diagnostics);
 
             Assert.Collection(
-                ConfigureServicesMethods.OrderBy(m => m.Name), 
+                ConfigureServicesMethods.OrderBy(m => m.Name),
                 m => Assert.Equal("ConfigureServices", m.Name));
 
             Assert.Collection(
-                ConfigureMethods.OrderBy(m => m.Name), 
+                ConfigureMethods.OrderBy(m => m.Name),
                 m => Assert.Equal("Configure", m.Name),
                 m => Assert.Equal("ConfigureProduction", m.Name));
         }
@@ -209,7 +209,25 @@ namespace Microsoft.AspNetCore.Analyzers
                     AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM3"], diagnostic.Location);
                 });
         }
+        [Fact]
+        public async Task StartupAnalyzer_ServicesAnalysis_CallBuildServiceProvider()
+        {
+            // Arrange
+            var source = ReadSource("ConfigureServices_BuildServiceProvider");
 
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var servicesAnalysis = Assert.Single(Analyses.OfType<ServicesAnalysis>());
+            Assert.NotEmpty(servicesAnalysis.Services);
+            Assert.Collection(diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalzyer.BuildServiceProviderShouldNotCalledInConfigureServicesMethod, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
+                });
+        }
         private TestSource ReadSource(string fileName)
         {
             return MvcTestSource.Read(nameof(StartupAnalyzerTest), fileName);

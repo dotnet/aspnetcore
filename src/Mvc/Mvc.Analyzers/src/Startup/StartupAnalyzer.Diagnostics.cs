@@ -16,5 +16,15 @@ namespace Microsoft.AspNetCore.Analyzers
             DiagnosticSeverity.Warning, 
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/YJggeFn");
+
+        internal readonly static DiagnosticDescriptor BuildServiceProviderShouldNotCalledInConfigureServicesMethod = new DiagnosticDescriptor(
+            "MVC1007",
+            "Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'",
+            "Calling 'BuildServiceProvider' from application code results in an additional copy of singleton services being created. Consider alternatives such as dependency injecting services as parameters to 'Configure'.",
+            "Design",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://aka.ms/AA5k895"
+            );
     }
 }
