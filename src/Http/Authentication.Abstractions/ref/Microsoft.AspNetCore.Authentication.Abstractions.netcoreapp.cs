@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Authentication
     public partial class AuthenticationOptions
     {
         public AuthenticationOptions() { }
+        public bool ApplyClaimsTransformationOnce { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultAuthenticateScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultChallengeScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultForbidScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         public AuthenticationProperties(System.Collections.Generic.IDictionary<string, string> items) { }
         public AuthenticationProperties(System.Collections.Generic.IDictionary<string, string> items, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public bool? AllowRefresh { get { throw null; } set { } }
+        public bool? ClaimsTransformed { get { throw null; } set { } }
         public System.DateTimeOffset? ExpiresUtc { get { throw null; } set { } }
         public bool IsPersistent { get { throw null; } set { } }
         public System.DateTimeOffset? IssuedUtc { get { throw null; } set { } }
