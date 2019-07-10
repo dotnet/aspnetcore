@@ -19,12 +19,12 @@ namespace Microsoft.AspNetCore.Analyzers
 
         internal readonly static DiagnosticDescriptor BuildServiceProviderShouldNotCalledInConfigureServicesMethod = new DiagnosticDescriptor(
             "MVC1007",
-            "Cannot use BuildServiceProvider in ConfigureServices.",
-            "BuildServiceProvider called by runtime,don't call this method in your application code directly",
+            "Do not call 'IServiceCollection.BuildServiceProvider' in 'ConfigureServices'",
+            "Calling 'BuildServiceProvider' from application code results in an additional copy of singleton services being created. Consider alternatives such as dependency injecting services as parameters to 'Configure'.",
             "Design",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/aspnet/AspNetCore/issues/11727"
+            helpLinkUri: "https://aka.ms/AA5k895"
             );
     }
 }
