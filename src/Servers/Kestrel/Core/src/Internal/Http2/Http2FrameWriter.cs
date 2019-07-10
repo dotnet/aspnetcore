@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -51,9 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ITimeoutControl timeoutControl,
             MinDataRate minResponseDataRate,
             string connectionId,
+            MemoryPool<byte> memoryPool,
             IKestrelTrace log)
         {
-            _outputWriter = outputPipeWriter;
+            // Allow appending more data to the PipeWriter when a flush is pending.
+            _outputWriter = new ConcurrentPipeWriter(outputPipeWriter, memoryPool);
             _connectionContext = connectionContext;
             _http2Connection = http2Connection;
             _connectionOutputFlowControl = connectionOutputFlowControl;
