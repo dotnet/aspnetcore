@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
-        // Mac SslStream is missing ALPN support: https://github.com/dotnet/corefx/issues/30492
+        // Win7 SslStream is missing ALPN support.
         public void TlsAndHttp2NotSupportedOnWin7()
         {
             var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
