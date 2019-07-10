@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +19,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         private readonly object _sync = new object();
         private readonly PipeWriter _innerPipeWriter;
-        private Task _lastFlushTask = Task.CompletedTask;
+
+
+
+        private TaskCompletionSource<FlushResult> _currentFlushTcs;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter)
         {
@@ -28,34 +33,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             lock (_sync)
             {
-                if (_lastFlushTask.IsCompletedSuccessfully)
+                if (_currentFlushTcs == null)
                 {
                     _innerPipeWriter.Advance(bytes);
+                    return;
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+
+                throw new NotImplementedException();
             }
         }
 
+        // This is not exposed to end users. Throw so we find out if we ever start calling this.
         public override void CancelPendingFlush()
         {
-            _innerPipeWriter.CancelPendingFlush();
+            throw new NotImplementedException();
         }
 
         public override void Complete(Exception exception = null)
         {
             lock (_sync)
             {
-                if (_lastFlushTask.IsCompletedSuccessfully)
+                if (_currentFlushTcs == null)
                 {
                     _innerPipeWriter.Complete(exception);
+                    return;
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+
+                throw new NotImplementedException();
             }
         }
 
@@ -63,42 +67,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             lock (_sync)
             {
-                if (_lastFlushTask.IsCompletedSuccessfully)
+                if (_currentFlushTcs != null)
                 {
-                    var flushValueTask = _innerPipeWriter.FlushAsync(cancellationToken);
-
-                    if (flushValueTask.IsCompletedSuccessfully)
-                    {
-                        _lastFlushTask = Task.CompletedTask;
-                        return flushValueTask;
-                    }
-
-                    // Use a local to avoid an explicit cast from Task to Task<FlushResult> when calling the ValueTask ctor.
-                    var localFlushTask = flushValueTask.AsTask();
-                    _lastFlushTask = flushValueTask.AsTask();
-
-                    // The PipeWriter's ValueTask<FlushResult> cannot be awaited twice, so use the created Task.
-                    return new ValueTask<FlushResult>(localFlushTask);
+                    return new ValueTask<FlushResult>(_currentFlushTcs.Task);
                 }
-                else
+
+                var flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
+
+                if (flushTask.IsCompletedSuccessfully)
                 {
-                    throw new NotImplementedException();
+                    return flushTask;
                 }
+
+                return FlushAsyncAwaitedUnsynchronized(flushTask);
             }
+        }
+
+        private async ValueTask<FlushResult> FlushAsyncAwaitedUnsynchronized(ValueTask<FlushResult> flushTask)
+        {
+            // TODO: Propogate IsCanceled when we do multiple flushes in a loop.
+            // If IsCanceled and more data pending to flush, complete currentTcs with canceled flush task,
+            // But rekick the FlushAsync loop.
         }
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
             lock (_sync)
             {
-                if (_lastFlushTask.IsCompletedSuccessfully)
+                if (_currentFlushTcs == null)
                 {
                     return _innerPipeWriter.GetMemory(sizeHint);
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+
+                throw new NotImplementedException();
             }
         }
 
@@ -106,14 +107,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             lock (_sync)
             {
-                if (_lastFlushTask.IsCompletedSuccessfully)
+                if (_currentFlushTcs == null)
                 {
                     return _innerPipeWriter.GetSpan(sizeHint);
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
+
+                throw new NotImplementedException();
             }
         }
 
