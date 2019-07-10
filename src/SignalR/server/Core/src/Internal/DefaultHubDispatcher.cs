@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 scope = _serviceScopeFactory.CreateScope();
 
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var hub = hubActivator.Create();
+                var handle = hubActivator.Create();
+                var hub = handle.Hub;
                 try
                 {
                     InitializeHub(hub, connection);
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
                 finally
                 {
-                    hubActivator.Release(hub);
+                    hubActivator.Release(handle);
                 }
             }
             finally
@@ -73,7 +74,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 scope = _serviceScopeFactory.CreateScope();
 
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var hub = hubActivator.Create();
+                var handle = hubActivator.Create();
+                var hub = handle.Hub;
                 try
                 {
                     InitializeHub(hub, connection);
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
                 finally
                 {
-                    hubActivator.Release(hub);
+                    hubActivator.Release(handle);
                 }
             }
             finally
@@ -219,6 +221,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var scope = _serviceScopeFactory.CreateScope();
             IHubActivator<THub> hubActivator = null;
             THub hub = null;
+            HubHandle<THub> handle = default;
+
             try
             {
                 if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor.Policies, descriptor.MethodExecutor.MethodInfo.Name, hubMethodInvocationMessage.Arguments))
@@ -235,7 +239,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
 
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                hub = hubActivator.Create();
+                handle = hubActivator.Create();
+                hub = handle.Hub;
 
                 try
                 {
@@ -309,7 +314,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
+                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, handle, cts, hubMethodInvocationMessage);
                     }
 
                     else if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -342,7 +347,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, handle, scope);
                                 }
                             }
 
@@ -380,13 +385,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 if (disposeScope)
                 {
-                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, handle, scope);
                 }
             }
         }
 
         private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
-            THub hub, IServiceScope scope)
+            HubHandle<THub> handle, IServiceScope scope)
         {
             if (hubMessage.StreamIds != null)
             {
@@ -396,13 +401,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
             }
 
-            hubActivator?.Release(hub);
+            hubActivator?.Release(handle);
 
             return scope.DisposeAsync();
         }
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerable<object> enumerable, IServiceScope scope,
-            IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
+            IHubActivator<THub> hubActivator, THub hub, HubHandle<THub> handle, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
         {
             string error = null;
 
@@ -430,7 +435,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, handle, scope);
 
                 // Dispose the linked CTS for the stream.
                 streamCts.Dispose();

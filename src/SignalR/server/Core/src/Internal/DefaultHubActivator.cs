@@ -10,42 +10,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     internal class DefaultHubActivator<THub> : IHubActivator<THub> where THub: Hub
     {
         // Object factory for THub instances
-        private static readonly Lazy<ObjectFactory> _objectFactory = new Lazy<ObjectFactory>(() => ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes));
+        private readonly ObjectFactory _objectFactory = ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes);
         private readonly IServiceProvider _serviceProvider;
-        private bool? _created;
 
         public DefaultHubActivator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public virtual THub Create()
+        public virtual HubHandle<THub> Create()
         {
-            Debug.Assert(!_created.HasValue, "hub activators must not be reused.");
-
-            _created = false;
+            var created = false;
             var hub = _serviceProvider.GetService<THub>();
             if (hub == null)
             {
-                hub = (THub)_objectFactory.Value(_serviceProvider, Array.Empty<object>());
-                _created = true;
+                hub = (THub)_objectFactory(_serviceProvider, Array.Empty<object>());
+                created = true;
             }
 
-            return hub;
+            return new HubHandle<THub>(hub, created);
         }
 
-        public virtual void Release(THub hub)
+        public virtual void Release(HubHandle<THub> hub)
         {
-            if (hub == null)
+            if (hub.Created)
             {
-                throw new ArgumentNullException(nameof(hub));
-            }
-
-            Debug.Assert(_created.HasValue, "hubs must be released with the hub activator they were created");
-
-            if (_created.Value)
-            {
-                hub.Dispose();
+                hub.Hub.Dispose();
             }
         }
     }

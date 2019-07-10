@@ -172,6 +172,18 @@ namespace Microsoft.AspNetCore.SignalR
             public void Reset() { }
         }
     }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct HubHandle<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
+    {
+        [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+        private readonly THub _Hub_k__BackingField;
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public HubHandle(THub hub, bool created) { throw null; }
+        public bool Created { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public THub Hub { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class HubInvocationContext
     {
         public HubInvocationContext(Microsoft.AspNetCore.SignalR.HubCallerContext context, string hubMethodName, object[] hubMethodArguments) { }
@@ -248,8 +260,8 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial interface IHubActivator<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
     {
-        THub Create();
-        void Release(THub hub);
+        Microsoft.AspNetCore.SignalR.HubHandle<THub> Create();
+        void Release(Microsoft.AspNetCore.SignalR.HubHandle<THub> hub);
     }
     public partial interface IHubCallerClients : Microsoft.AspNetCore.SignalR.IHubCallerClients<Microsoft.AspNetCore.SignalR.IClientProxy>, Microsoft.AspNetCore.SignalR.IHubClients<Microsoft.AspNetCore.SignalR.IClientProxy>
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// Creates a hub.
         /// </summary>
         /// <returns>The created hub.</returns>
-        THub Create();
+        HubHandle<THub> Create();
 
         /// <summary>
         /// Releases the specified hub.
         /// </summary>
         /// <param name="hub">The hub to release.</param>
-        void Release(THub hub);
+        void Release(HubHandle<THub> hub);
     }
 }
