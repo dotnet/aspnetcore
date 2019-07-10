@@ -22,7 +22,7 @@
     {
       "id": "Hosted",
       "name": {
-        "text": "_Hosted"
+        "text": "ASP.NET Core _hosted"
       },
       "isVisible": "true"
     }
