@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
 
+        private static readonly Exception _successfulCompletionSentinal = new Exception();
+
         private readonly object _sync = new object();
         private readonly PipeWriter _innerPipeWriter;
         private readonly MemoryPool<byte> _pool;
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     return;
                 }
 
-                throw new NotImplementedException();
+                _completeEx = exception ?? _successfulCompletionSentinal;
             }
         }
 
@@ -124,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     {
                         if (_bytesBuffered == 0)
                         {
+                            CompleteInnerPipeIfNecessaryUnsynchronized();
                             _currentFlushTcs.SetResult(flushResult);
                             _currentFlushTcs = null;
                             return flushResult;
@@ -141,6 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 lock (_sync)
                 {
+                    CompleteInnerPipeIfNecessaryUnsynchronized();
                     _currentFlushTcs.SetException(ex);
                     _currentFlushTcs = null;
 
@@ -221,6 +225,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             // Even if a non-passthrough advance is pending, there a 0 bytes currently buffered.
             _bytesBuffered = 0;
+        }
+
+        public void CompleteInnerPipeIfNecessaryUnsynchronized()
+        {
+            if (_completeEx != null)
+            {
+                if (ReferenceEquals(_completeEx, _successfulCompletionSentinal))
+                {
+                    _innerPipeWriter.Complete();
+                }
+                else
+                {
+                    _innerPipeWriter.Complete(_completeEx);
+                }
+            }
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
