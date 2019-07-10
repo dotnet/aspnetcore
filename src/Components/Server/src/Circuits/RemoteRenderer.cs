@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to
             // snapshot its contents now.
-            using var memoryStream = new ArrayBuilderMemoryStream();
+            var arrayBuilder = new ArrayBuilder<byte>(2048);
+            using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
             PendingRender pendingRender;
-            var arrayBuilder = memoryStream.ArrayBuilder;
             try
             {
                 using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))

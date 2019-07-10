@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     /// <summary>
-    /// Writeable memory stream backed by a an <see cref="ArrayPool{T}"/>.
+    /// Writeable memory stream backed by a an <see cref="ArrayBuilder{T}"/>.
     /// </summary>
     internal sealed class ArrayBuilderMemoryStream : Stream
     {
-        public ArrayBuilderMemoryStream()
+        public ArrayBuilderMemoryStream(ArrayBuilder<byte> arrayBuilder)
         {
-            ArrayBuilder = new ArrayBuilder<byte>(2048);
+            ArrayBuilder = arrayBuilder;
         }
 
         /// <inheritdoc />
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
         {
-            ThrowArgumentException(buffer, offset, count);
+            ValidateArguments(buffer, offset, count);
 
             ArrayBuilder.Append(buffer, offset, count);
         }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            ThrowArgumentException(buffer, offset, count);
+            ValidateArguments(buffer, offset, count);
 
             ArrayBuilder.Append(buffer, offset, count);
             return Task.CompletedTask;
@@ -83,33 +83,43 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            // Do nothing. It's the responsibility of the consumer of this API to dispose the ArrayBuilder
+            // Do nothing.
         }
 
         /// <inheritdoc />
         public override ValueTask DisposeAsync() => default;
 
-        private static void ThrowArgumentException(byte[] buffer, int offset, int count)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ValidateArguments(byte[] buffer, int offset, int count)
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException(nameof(buffer));
+                ThrowHelper.ThrowArgumentNullException(nameof(buffer));
             }
 
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(offset));
             }
 
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count));
             }
 
             if (buffer.Length - offset < count)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(offset));
             }
+        }
+
+        private static class ThrowHelper
+        {
+            public static void ThrowArgumentNullException(string name)
+                => throw new ArgumentNullException(name);
+
+            public static void ThrowArgumentOutOfRangeException(string name)
+                => throw new ArgumentOutOfRangeException(name);
         }
     }
 }
