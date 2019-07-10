@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
             var length = PathNormalizer.RemoveDotSegments(unescapedPath);
 
-            return UTF8.GetString(unescapedPath.Array, unescapedPath.Offset, length);
+            return UTF8.GetString(unescapedPath.Slice(0, length));
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// </summary>
         /// <param name="rawPath">The raw path string to be unescaped</param>
         /// <returns>The unescaped path string</returns>
-        private static ReadOnlySpan<byte> Unescape(Span<byte> rawPath)
+        private static Span<byte> Unescape(Span<byte> rawPath)
         {
             // the slot to read the input
             var reader = 0;
