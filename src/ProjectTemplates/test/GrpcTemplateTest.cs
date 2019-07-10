@@ -46,6 +46,12 @@ namespace Templates.Test
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on OSX due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                {
+                    Assert.True(serverProcess.Process.HasExited, "built");
+                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
+                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
+                }
                 else
                 {
                     Assert.False(
@@ -62,6 +68,12 @@ namespace Templates.Test
                 {
                     Assert.True(aspNetProcess.Process.HasExited, "published");
                     Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on OSX due to missing ALPN support.",
+                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                {
+                    Assert.True(aspNetProcess.Process.HasExited, "published");
+                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
                 }
                 else
