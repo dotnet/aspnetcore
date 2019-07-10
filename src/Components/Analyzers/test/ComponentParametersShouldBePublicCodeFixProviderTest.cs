@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         class TypeName
         {
             [Parameter] private string BadProperty1 { get; set; }
-            [CascadingParameter] private object BadProperty2 { get; set; }
         }
     }" + ComponentsTestDeclarations.Source;
 
@@ -51,16 +50,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                     {
                         new DiagnosticResultLocation("Test0.cs", 8, 40)
                     }
-                },
-                new DiagnosticResult
-                {
-                    Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
-                    Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty2' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
-                    Locations = new[]
-                    {
-                        new DiagnosticResultLocation("Test0.cs", 9, 49)
-                    }
                 });
 
             VerifyCSharpFix(test, @"
@@ -71,7 +60,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         class TypeName
         {
             [Parameter] public string BadProperty1 { get; set; }
-            [CascadingParameter] public object BadProperty2 { get; set; }
         }
     }" + ComponentsTestDeclarations.Source);
         }

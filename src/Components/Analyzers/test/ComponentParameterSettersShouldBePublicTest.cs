@@ -11,6 +11,22 @@ namespace Microsoft.AspNetCore.Components.Analyzers
     public class ComponentParameterSettersShouldBePublicTest : DiagnosticVerifier
     {
         [Fact]
+        public void IgnoresCascadingParameterProperties()
+        {
+            var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(CascadingParameterAttribute).Namespace};
+        class TypeName
+        {{
+            [CascadingParameter] string MyProperty {{ get; set; }}
+        }}
+    }}" + ComponentsTestDeclarations.Source;
+
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [Fact]
         public void IgnoresPublicSettersProperties()
         {
             var test = $@"
