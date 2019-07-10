@@ -4,7 +4,7 @@
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    internal readonly struct RouteTemplate
+    internal class RouteTemplate
     {
         public RouteTemplate(string templateText, TemplateSegment[] segments)
         {

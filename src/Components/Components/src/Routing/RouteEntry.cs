@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    internal readonly struct RouteEntry
+    internal class RouteEntry
     {
         public RouteEntry(RouteTemplate template, Type handler)
         {

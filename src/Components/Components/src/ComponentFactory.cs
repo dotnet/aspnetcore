@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Components.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
+    /// <remarks>
+    /// The <see cref="Instance"/> property on this type is used as a static global cache. Ensure any changes to this type
+    /// are thread safe and can be safely cached statically.
+    /// </remarks>
     internal class ComponentFactory
     {
         private static readonly BindingFlags _injectablePropertyBindingFlags

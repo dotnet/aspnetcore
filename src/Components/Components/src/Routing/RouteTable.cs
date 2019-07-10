@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    internal readonly struct RouteTable
+    internal class RouteTable
     {
         public RouteTable(RouteEntry[] routes)
         {

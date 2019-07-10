@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] public RenderFragment AuthorizingContent { get; private set; }
 
         private RouteTable Routes { get; set; }
-        private bool RouteTableInitialized { get; set; }
 
         /// <inheritdoc />
         public void Configure(RenderHandle renderHandle)
@@ -72,7 +71,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             parameters.SetParameterProperties(this);
             Routes = RouteTableFactory.Create(AppAssembly);
-            RouteTableInitialized = true;
             Refresh(isNavigationIntercepted: false);
             return Task.CompletedTask;
         }
@@ -143,7 +141,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             _locationAbsolute = args.Location;
-            if (_renderHandle.IsInitialized && RouteTableInitialized)
+            if (_renderHandle.IsInitialized && Routes != null)
             {
                 Refresh(args.IsNavigationIntercepted);
             }
