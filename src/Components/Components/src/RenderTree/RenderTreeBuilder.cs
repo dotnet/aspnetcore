@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
 
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             _entries.Dispose();
         }

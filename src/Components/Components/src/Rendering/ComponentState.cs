@@ -187,8 +187,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void DisposeBuffers()
         {
-            _renderTreeBuilderPrevious.Dispose();
-            CurrrentRenderTree.Dispose();
+            ((IDisposable)_renderTreeBuilderPrevious).Dispose();
+            ((IDisposable)CurrrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
         }
     }

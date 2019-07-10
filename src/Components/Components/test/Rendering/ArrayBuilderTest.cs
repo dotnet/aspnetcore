@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -313,21 +312,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ArrayBuilder<int> CreateArrayBuilder(int capacity = 32)
         {
             return new ArrayBuilder<int>(capacity, ArrayPool);
-        }
-
-        private class TestArrayPool<T> : ArrayPool<T>
-        {
-            public override T[] Rent(int minimumLength)
-            {
-                return new T[minimumLength];
-            }
-
-            public List<T[]> ReturnedBuffers = new List<T[]>();
-
-            public override void Return(T[] array, bool clearArray = false)
-            {
-                ReturnedBuffers.Add(array);
-            }
         }
     }
 }
