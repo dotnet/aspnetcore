@@ -808,6 +808,12 @@ namespace TestSite
             await ctx.Response.WriteAsync(AppDomain.CurrentDomain.BaseDirectory);
         }
 
+        private Task RequestPath(HttpContext ctx)
+        {
+            ctx.Request.Headers.ContentLength = ctx.Request.Path.Value.Length;
+            return ctx.Response.WriteAsync(ctx.Request.Path.Value);
+        }
+
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
