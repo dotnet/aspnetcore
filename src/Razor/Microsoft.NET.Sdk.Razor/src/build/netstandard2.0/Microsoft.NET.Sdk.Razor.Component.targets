@@ -191,7 +191,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          AddModules="@(AddModules)"
          AdditionalFiles="@(AdditionalFiles)"
          AllowUnsafeBlocks="$(AllowUnsafeBlocks)"
-         Analyzers="@(Analyzer)"
          ApplicationConfiguration="$(AppConfigForCompiler)"
          BaseAddress="$(BaseAddress)"
          CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
