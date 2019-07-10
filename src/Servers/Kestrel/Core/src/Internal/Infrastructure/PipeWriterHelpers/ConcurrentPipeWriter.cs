@@ -197,6 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             while (segment != null)
             {
+                // Make sure we don't return the last segement in the linked list yet.
                 if (returnSegment != null)
                 {
                     returnSegment.ResetMemory();
