@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         public class {typeof(CascadingParameterAttribute).Name} : System.Attribute
         {{
         }}
+
+        public interface {typeof(IComponent).Name}
+        {{
+        }}
     }}
 ";
     }

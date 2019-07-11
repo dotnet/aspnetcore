@@ -160,6 +160,33 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Component parameters should not be set outside of their declared component. Doing so may result in unexpected behavior at runtime..
+        /// </summary>
+        internal static string ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Description {
+            get {
+                return ResourceManager.GetString("ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; should not be set outside of its component..
+        /// </summary>
+        internal static string ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter should not be set outside of its component..
+        /// </summary>
+        internal static string ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Component parameters should be public..
         /// </summary>
         internal static string ComponentParametersShouldBePublic_Description {
