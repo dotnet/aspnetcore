@@ -254,7 +254,8 @@ namespace Templates.Test.SpaTemplateTest
 
                 badEntries = badEntries.Where(e =>
                     !e.Message.Contains("failed: WebSocket is closed before the connection is established.")
-                    && !e.Message.Contains("[WDS] Disconnected!"));
+                    && !e.Message.Contains("[WDS] Disconnected!")
+                    && !e.Message.Contains("Timed out connecting to Chrome, retrying"));
 
                 Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }
