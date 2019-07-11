@@ -651,8 +651,7 @@ public class HubConnection {
         } finally {
             hubConnectionStateLock.unlock();
         }
-
-
+        
         String id = connectionState.getNextInvocationId();
 
         SingleSubject<T> subject = SingleSubject.create();
