@@ -444,7 +444,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 CreateConnection();
             }
 
-            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
+            var connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
+
+            async Task CompletePipeOnTaskCompletion()
+            {
+                try
+                {
+                    await connectionTask;
+                }
+                finally
+                {
+                    _pair.Transport.Input.Complete();
+                    _pair.Transport.Output.Complete();
+                }
+            }
+
+            _connectionTask = CompletePipeOnTaskCompletion();
 
             await SendPreambleAsync().ConfigureAwait(false);
             await SendSettingsAsync();
