@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Prerendered = true
             });
 
-            var record = JsonSerializer.ToString(new PrerenderedComponentRecord(
+            var record = JsonSerializer.Serialize(new PrerenderedComponentRecord(
                     circuitHost.CircuitId.Replace("--", ".."), // We need to do this due to the fact that -- is not allowed within HTML comments and HTML doesn't encode '-'.
                     circuitHost.Renderer.Id,
                     renderResult.ComponentId),
