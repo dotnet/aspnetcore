@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
     public class CircuitPrerendererTest
     {
         private static readonly Regex ContentWrapperRegex = new Regex(
-            $"<!-- M.A.C.Component:{{\"circuitId\":\"[^\"]+\",\"rendererId\":\"0\",\"componentId\":\"0\"}} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
+            "<!-- M.A.C.Component:{\"circuitId\":\"[^\"]+\",\"rendererId\":0,\"componentId\":0} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
             RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
 
         private static readonly Regex CircuitInfoRegex = new Regex(
-            $"<!-- M.A.C.Component: (?<info>.*?) -->.*",
+            "<!-- M.A.C.Component: (?<info>.*?) -->.*",
             RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
 
         // Because CircuitPrerenderer is a point of integration with HttpContext,
