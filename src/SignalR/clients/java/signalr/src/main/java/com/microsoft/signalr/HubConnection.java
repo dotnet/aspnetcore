@@ -643,7 +643,6 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
-        ConnectionState localConnectionState;
         InvocationRequest irq;
         String id;
         hubConnectionStateLock.lock();
