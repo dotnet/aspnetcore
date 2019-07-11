@@ -38,6 +38,7 @@
     <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
     <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testassets\Ignitor\Ignitor.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 

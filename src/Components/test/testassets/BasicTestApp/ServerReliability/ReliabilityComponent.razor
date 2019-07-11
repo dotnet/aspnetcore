@@ -1,0 +1,33 @@
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@using System.Security.Cryptography;
+@namespace BasicTestApp
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+<p id="errormessage">Error = @error</p>
+<button id="triggerjsinterop" @onclick="@TriggerJSInterop"></button>
+
+<button id="thecounter" @onclick="@IncrementCount">Click me</button>
+
+@code {
+    int currentCount = 0;
+    string error = "";
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    async Task TriggerJSInterop(){
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<int>(
+                "sendMalformedCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (Exception e)
+        {
+            error = e.Message;
+        }
+    }
+}

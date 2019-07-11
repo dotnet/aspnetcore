@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -60,6 +61,42 @@ namespace Ignitor
             }
 
             _events[eventName] = descriptor;
+        }
+
+        internal async Task SelectAsync(HubConnection connection, string value)
+        {
+            if (!Events.TryGetValue("change", out var changeEventDescriptor))
+            {
+                throw new InvalidOperationException("Element does not have a click event.");
+            }
+
+            var mouseEventArgs = new UIChangeEventArgs()
+            {
+                Type = changeEventDescriptor.EventName,
+                Value = value
+            };
+
+            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
+            {
+                BrowserRendererId = 0,
+                EventHandlerId = changeEventDescriptor.EventId,
+                EventArgsType = "change",
+                EventFieldInfo = new EventFieldInfo
+                {
+                    ComponentId = 0,
+                    FieldValue = value
+                }
+            };
+
+            var serializedJson = JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var argsObject = new object[] { browserDescriptor, serializedJson };
+            var callId = "0";
+            var assemblyName = "Microsoft.AspNetCore.Components.Web";
+            var methodIdentifier = "DispatchEvent";
+            var dotNetObjectId = 0;
+            var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs);
+
         }
 
         public class ElementEventDescriptor

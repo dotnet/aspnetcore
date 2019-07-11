@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +32,8 @@ namespace Ignitor
         private CancellationToken CancellationToken => CancellationTokenSource.Token;
         private TaskCompletionSource<object> TaskCompletionSource { get; }
 
+        private TaskCompletionSource<object> NextBatchAppliedCompletionSource { get; set; }
+
         public bool ConfirmRenderBatch { get; set; } = true;
 
         public event Action<int, string, string> JSInterop;
@@ -41,6 +42,15 @@ namespace Ignitor
         public string CircuitId { get; set; }
 
         public HubConnection HubConnection { get; set; }
+
+        public Task PrepareForNextBatch()
+        {
+            NextBatchAppliedCompletionSource = NextBatchAppliedCompletionSource?.Task?.IsCompleted == false ?
+                throw new InvalidOperationException("Invalid state previous task not completed") :
+                NextBatchAppliedCompletionSource = new TaskCompletionSource<object>();
+
+            return NextBatchAppliedCompletionSource.Task;
+        }
 
         public Task ClickAsync(string elementId)
         {
@@ -52,15 +62,24 @@ namespace Ignitor
             return elementNode.ClickAsync(HubConnection);
         }
 
-        public ElementHive Hive { get; set; }
+        public Task SelectAsync(string elementId, string value)
+        {
+            if (!Hive.TryFindElementById(elementId, out var elementNode))
+            {
+                throw new InvalidOperationException($"Could not find element with id {elementId}.");
+            }
+
+            return elementNode.SelectAsync(HubConnection, value);
+        }
+
+        public ElementHive Hive { get; set; } = new ElementHive();
 
         public async Task<bool> ConnectAsync(Uri uri, bool prerendered)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
-            builder.WithUrl(new Uri(uri, "_blazor/"));
+            builder.WithUrl(GetHubUrl(uri));
             builder.ConfigureLogging(l => l.AddConsole().SetMinimumLevel(LogLevel.Trace));
-            var hive = new ElementHive();
 
             HubConnection = builder.Build();
             await HubConnection.StartAsync(CancellationToken);
@@ -79,7 +98,7 @@ namespace Ignitor
             }
             else
             {
-                CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri);
+                CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", new Uri(uri.GetLeftPart(UriPartial.Authority)), uri);
                 return CircuitId != null;
             }
 
@@ -90,15 +109,24 @@ namespace Ignitor
 
             void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
             {
-                var batch = RenderBatchReader.Read(batchData);
-                hive.Update(batch);
-
-                if (ConfirmRenderBatch)
+                try
                 {
-                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
-                }
+                    var batch = RenderBatchReader.Read(batchData);
+                    RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
 
-                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
+                    Hive.Update(batch);
+
+                    if (ConfirmRenderBatch)
+                    {
+                        HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
+                    }
+
+                    NextBatchAppliedCompletionSource?.TrySetResult(null);
+                }
+                catch (Exception e)
+                {
+                    NextBatchAppliedCompletionSource?.TrySetResult(e);
+                }
             }
 
             void OnError(Error error)
@@ -121,7 +149,21 @@ namespace Ignitor
             }
         }
 
-        void InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
+        private Uri GetHubUrl(Uri uri)
+        {
+            if (uri.Segments.Length == 1)
+            {
+                return new Uri(uri, "_blazor");
+            }
+            else
+            {
+                var builder = new UriBuilder(uri);
+                builder.Path += builder.Path.EndsWith("/") ? "_blazor" : "/_blazor";
+                return builder.Uri;
+            }
+        }
+
+        public void InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
         {
             HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson);
         }
@@ -143,6 +185,16 @@ namespace Ignitor
         {
             CancellationTokenSource.Cancel();
             CancellationTokenSource.Dispose();
+        }
+
+        public ElementNode FindElementById(string id)
+        {
+            if(!Hive.TryFindElementById(id, out var element))
+            {
+                throw new InvalidOperationException("Element not found.");
+            }
+
+            return element;
         }
     }
 }
