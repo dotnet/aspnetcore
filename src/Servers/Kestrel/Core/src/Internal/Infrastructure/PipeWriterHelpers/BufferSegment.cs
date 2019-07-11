@@ -126,6 +126,5 @@ namespace System.IO.Pipelines
         {
             return (endSegment.RunningIndex + (uint)endIndex) - startPosition;
         }
-
     }
 }

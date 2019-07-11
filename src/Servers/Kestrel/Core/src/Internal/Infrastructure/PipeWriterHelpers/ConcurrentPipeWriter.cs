@@ -32,16 +32,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private int _tailBytesBuffered;
         private int _bytesBuffered;
 
-        // When _currentFlushTcs is null, the ConcurrentPipeWriter is in pass-through mode. When it's non-null, it means either:
+        // When _currentFlushTcs is null and _head/_tail is also null, the ConcurrentPipeWriter is in passthrough mode.
+        // When the ConcurrentPipeWriter is not in passthrough mode, that could be for one of two reasons:
         //
-        // 1. A flush is in progress
-        // 2. Or the last flush completed between calls to GetMemory/Span() and Advance().
+        // 1. A flush of the _innerPipeWriter is in progress.
+        // 2. Or the last flush of the _innerPipeWriter completed between external calls to GetMemory/Span() and Advance().
         //
-        // In either case, we need to manually append buffer segments until _innerPipeWriter.FlushAsync() completes without any
-        // other committed data remaining and without any calls to Advance() pending. This logic is borrowed from StreamPipeWriter.
+        // In either case, we need to manually append buffer segments until the loop in the current or next call to FlushAsync()
+        // flushes all the buffers putting the ConcurrentPipeWriter back into passthrough mode.
+        // The manual buffer appending logic is borrowed from corefx's StreamPipeWriter.
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
-        private bool _nonPassThroughAdvancePending;
-        private bool _isFlushing;
+        private bool _bufferedWritePending;
 
         // We're trusting the Http2FrameWriter to not call into the PipeWriter after calling abort, we don't validate this.
         // We will however clean up after any ongoing flush, assuming a flush is in progress.
@@ -53,11 +54,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _pool = pool;
         }
 
+        public override Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            lock (_sync)
+            {
+                if (_currentFlushTcs == null && _head == null)
+                {
+                    return _innerPipeWriter.GetMemory(sizeHint);
+                }
+
+                AllocateMemoryUnsynchronized(sizeHint);
+                return _tailMemory;
+            }
+        }
+
+        public override Span<byte> GetSpan(int sizeHint = 0)
+        {
+            lock (_sync)
+            {
+                if (_currentFlushTcs == null && _head == null)
+                {
+                    return _innerPipeWriter.GetSpan(sizeHint);
+                }
+
+                AllocateMemoryUnsynchronized(sizeHint);
+                return _tailMemory.Span;
+            }
+        }
+
         public override void Advance(int bytes)
         {
             lock (_sync)
             {
-                if (_currentFlushTcs == null)
+                if (_currentFlushTcs == null && _head == null)
                 {
                     _innerPipeWriter.Advance(bytes);
                     return;
@@ -71,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _tailBytesBuffered += bytes;
                 _bytesBuffered += bytes;
                 _tailMemory = _tailMemory.Slice(bytes);
-                _nonPassThroughAdvancePending = false;
+                _bufferedWritePending = false;
             }
         }
 
@@ -99,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             lock (_sync)
             {
-                if (_isFlushing)
+                if (_currentFlushTcs != null)
                 {
                     return new ValueTask<FlushResult>(_currentFlushTcs.Task);
                 }
@@ -121,11 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     return flushTask;
                 }
 
-                _isFlushing = true;
-
                 // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
-                // _currentFlushTcs might already be set if the last flush that completed, completed between a call to GetMemory() and Advance().
-                _currentFlushTcs ??= new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
                 return FlushAsyncAwaited(flushTask, cancellationToken);
             }
         }
@@ -134,12 +160,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             try
             {
-                var flushResult = await flushTask;
-
                 // This while (true) does look scary, but the real continuation condition is at the start of the loop
-                // so the _sync lock can be acquired.
+                // after the await, so the _sync lock can be acquired.
                 while (true)
                 {
+                    var flushResult = await flushTask;
+
                     lock (_sync)
                     {
                         if (_bytesBuffered == 0)
@@ -152,8 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                         flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
                     }
-
-                    flushResult = await flushTask;
                 }
             }
             catch (Exception ex)
@@ -166,35 +190,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     // And is observing this method directly instead of through the TCS.
                     throw;
                 }
-            }
-        }
-
-        public override Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            lock (_sync)
-            {
-                if (_currentFlushTcs == null)
-                {
-                    return _innerPipeWriter.GetMemory(sizeHint);
-                }
-
-
-                AllocateMemoryUnsynchronized(sizeHint);
-                return _tailMemory;
-            }
-        }
-
-        public override Span<byte> GetSpan(int sizeHint = 0)
-        {
-            lock (_sync)
-            {
-                if (_currentFlushTcs == null)
-                {
-                    return _innerPipeWriter.GetSpan(sizeHint);
-                }
-
-                AllocateMemoryUnsynchronized(sizeHint);
-                return _tailMemory.Span;
             }
         }
 
@@ -211,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _aborted = true;
 
                 // If we're flushing, the cleanup will happen after the flush.
-                if (!_isFlushing)
+                if (_currentFlushTcs == null)
                 {
                     CleanupUnsynchronized();
                 }
@@ -231,7 +226,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _head = null;
             _tail = null;
             _tailMemory = null;
-            _currentFlushTcs = null;
         }
 
         private void CopyAndReturnSegmentsUnsynchronized()
@@ -263,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 segment = segment.NextSegment;
             }
 
-            if (_nonPassThroughAdvancePending)
+            if (_bufferedWritePending)
             {
                 // If an advance is pending, so is a flush, so the _tail segment should still get returned eventually.
                 _head = _tail;
@@ -281,8 +275,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
         {
-            _isFlushing = false;
-
             if (flushEx != null)
             {
                 _currentFlushTcs.SetException(flushEx);
@@ -292,25 +284,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _currentFlushTcs.SetResult(flushResult);
             }
 
+            _currentFlushTcs = null;
+
             if (_aborted)
             {
                 CleanupUnsynchronized();
-            }
-            else if (_nonPassThroughAdvancePending)
-            {
-                // If there's still another non-passthrough call to Advance pending, we cannot yet switch back to passthrough mode.
-                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            }
-            else
-            {
-                _currentFlushTcs = null;
             }
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
         private void AllocateMemoryUnsynchronized(int sizeHint)
         {
-            _nonPassThroughAdvancePending = true;
+            _bufferedWritePending = true;
 
             if (_head == null)
             {
