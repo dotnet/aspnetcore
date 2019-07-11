@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -16,57 +16,84 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IfFlushIsCalledAgainBeforeTheLastFlushCompletedItWaitsForTheLastCall()
         {
-            var mockPipeWriter = new Mock<PipeWriter>();
-            var pipeWriterFlushTcsArray = new[] {
-                new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
-                new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
-            };
-            var pipeWriterFlushCallCount = 0;
-
-            mockPipeWriter.Setup(p => p.FlushAsync(CancellationToken.None)).Returns(() =>
-            {
-                return new ValueTask<FlushResult>(pipeWriterFlushTcsArray[pipeWriterFlushCallCount++].Task);
-            });
-
             using (var slabPool = new SlabMemoryPool())
             using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
             {
+                var pipeWriterFlushTcsArray = new[] {
+                    new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
+                    new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
+                };
 
-                var timingPipeFlusher = new ConcurrentPipeWriter(mockPipeWriter.Object, diagnosticPool);
+                var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
 
-                var flushTask0 = timingPipeFlusher.FlushAsync();
-                var flushTask1 = timingPipeFlusher.FlushAsync();
-                var flushTask2 = timingPipeFlusher.FlushAsync();
+                var flushTask0 = concurrentPipeWriter.FlushAsync();
+
+                concurrentPipeWriter.GetMemory();
+                concurrentPipeWriter.Advance(1);
+
+                var flushTask1 = concurrentPipeWriter.FlushAsync();
 
                 Assert.False(flushTask0.IsCompleted);
                 Assert.False(flushTask1.IsCompleted);
-                Assert.False(flushTask2.IsCompleted);
-                Assert.Equal(1, pipeWriterFlushCallCount);
+                Assert.Equal(1, mockPipeWriter.FlushCallCount);
 
                 pipeWriterFlushTcsArray[0].SetResult(default);
+
+                Assert.False(flushTask0.IsCompleted);
+                Assert.False(flushTask1.IsCompleted);
+                Assert.True(mockPipeWriter.FlushCallCount <= 2);
+
+                pipeWriterFlushTcsArray[1].SetResult(default);
                 await flushTask0.AsTask().DefaultTimeout();
+                await flushTask1.AsTask().DefaultTimeout();
 
-                //Assert.True(flushTask0.IsCompleted);
-                //Assert.False(flushTask1.IsCompleted);
-                //Assert.False(flushTask2.IsCompleted);
-                //Assert.True(pipeWriterFlushCallCount <= 2);
+                Assert.Equal(2, mockPipeWriter.FlushCallCount);
+            }
+        }
 
-                //pipeWriterFlushTcsArray[1].SetResult(default);
-                //await flushTask1.AsTask().DefaultTimeout();
+        private class MockPipeWriter : PipeWriter
+        {
+            private readonly TaskCompletionSource<FlushResult>[] _flushResults;
 
-                //Assert.True(flushTask0.IsCompleted);
-                //Assert.True(flushTask1.IsCompleted);
-                //Assert.False(flushTask2.IsCompleted);
-                //Assert.True(pipeWriterFlushCallCount <= 3);
+            public MockPipeWriter(TaskCompletionSource<FlushResult>[] flushResults)
+            {
+                _flushResults = flushResults;
+            }
 
-                //pipeWriterFlushTcsArray[2].SetResult(default);
-                //await flushTask2.AsTask().DefaultTimeout();
+            public int FlushCallCount { get; set; }
 
-                //Assert.True(flushTask0.IsCompleted);
-                //Assert.True(flushTask1.IsCompleted);
-                //Assert.True(flushTask2.IsCompleted);
-                //Assert.Equal(3, pipeWriterFlushCallCount);
+            public override void Advance(int bytes)
+            {
+            }
+
+            public override void CancelPendingFlush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Complete(Exception exception = null)
+            {
+            }
+
+            public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
+            {
+                return new ValueTask<FlushResult>(_flushResults[FlushCallCount++].Task);
+            }
+
+            public override Memory<byte> GetMemory(int sizeHint = 0)
+            {
+                return new Memory<byte>(new byte[sizeHint]);
+            }
+
+            public override Span<byte> GetSpan(int sizeHint = 0)
+            {
+                return GetMemory(sizeHint).Span;
+            }
+
+            public override void OnReaderCompleted(Action<Exception, object> callback, object state)
+            {
+                throw new NotImplementedException();
             }
         }
     }
