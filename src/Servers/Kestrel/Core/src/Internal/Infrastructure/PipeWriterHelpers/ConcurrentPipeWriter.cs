@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
 
-        private static readonly Exception _successfulCompletionSentinal = new Exception();
-
         private readonly object _sync = new object();
         private readonly PipeWriter _innerPipeWriter;
         private readonly MemoryPool<byte> _pool;
@@ -44,7 +42,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
         private bool _nonPassThroughAdvancePending;
         private bool _isFlushing;
-        private Exception _completeEx;
+
+        // We're trusting the Http2FrameWriter to not call into the PipeWriter after calling abort, we don't validate this.
+        // We will however clean up after any ongoing flush, assuming a flush is in progress.
+        private bool _aborted;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool)
         {
@@ -83,19 +84,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             throw new NotImplementedException();
         }
 
+        // This is not exposed to end users. Throw so we find out if we ever start calling this.
         public override void Complete(Exception exception = null)
         {
-            lock (_sync)
-            {
-                if (_currentFlushTcs == null)
-                {
-                    // No need to return anything if _currentFlushTcs is not set meaning we're in passthrough mode.
-                    _innerPipeWriter.Complete(exception);
-                    return;
-                }
+            // If we wanted, we could store the complete exception or some sentinel exception instance in a field
+            // if a flush was ongoing. We'd just call the inner Complete() method after the flush loop ended.
 
-                _completeEx = exception ?? _successfulCompletionSentinal;
-            }
+            // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
+            // called but not Advance(), or there's a flush pending), just call Abort().
+            throw new NotImplementedException();
         }
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -206,6 +203,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             throw new NotImplementedException();
         }
+        public void Abort()
+        {
+            lock (_sync)
+            {
+                _aborted = true;
+
+                if (_isFlushing)
+                {
+                    return;
+                }
+
+                CleanupUnsynchronized();
+            }
+        }
+
+        private void CleanupUnsynchronized()
+        {
+            BufferSegment segment = _head;
+            while (segment != null)
+            {
+                BufferSegment returnSegment = segment;
+                segment = segment.NextSegment;
+                returnSegment.ResetMemory();
+            }
+
+            _head = null;
+            _tail = null;
+            _tailMemory = null;
+            _currentFlushTcs = null;
+        }
 
         private void CopyAndReturnSegmentsUnsynchronized()
         {
@@ -252,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _bytesBuffered = 0;
         }
 
-        public void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
+        private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
         {
             _isFlushing = false;
 
@@ -265,50 +292,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _currentFlushTcs.SetResult(flushResult);
             }
 
-            if (_completeEx != null)
+            if (_aborted)
             {
-                // We're done so return any unflushed segments. _head should have already
-                // been nulled out by CopyAndReturnSegmentsUnsynchronized unless a flush threw,
-                // or GetMemory() was called without Advance() before completion.
-                Cleanup();
-
-                if (ReferenceEquals(_completeEx, _successfulCompletionSentinal))
-                {
-                    _innerPipeWriter.Complete();
-                }
-                else
-                {
-                    _innerPipeWriter.Complete(_completeEx);
-                }
+                CleanupUnsynchronized();
+            }
+            else if (_nonPassThroughAdvancePending)
+            {
+                // If there's still another non-passthrough call to Advance pending, we cannot yet switch back to passthrough mode.
+                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             }
             else
             {
-                // If there's still another non-passthrough call to Advance pending, we cannot yet switch back to passthrough mode.
-                if (_nonPassThroughAdvancePending)
-                {
-                    _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-                }
-                else
-                {
-                    _currentFlushTcs = null;
-                }
+                _currentFlushTcs = null;
             }
-        }
-
-        private void Cleanup()
-        {
-            BufferSegment segment = _head;
-            while (segment != null)
-            {
-                BufferSegment returnSegment = segment;
-                segment = segment.NextSegment;
-                returnSegment.ResetMemory();
-            }
-
-            _head = null;
-            _tail = null;
-            _tailMemory = null;
-            _currentFlushTcs = null;
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
@@ -350,12 +346,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             BufferSegment newSegment = CreateSegmentUnsynchronized();
 
-            if (_pool is null)
-            {
-                // Use the array pool
-                newSegment.SetOwnedMemory(ArrayPool<byte>.Shared.Rent(GetSegmentSize(sizeHint)));
-            }
-            else if (sizeHint <= _pool.MaxBufferSize)
+            if (sizeHint <= _pool.MaxBufferSize)
             {
                 // Use the specified pool if it fits
                 newSegment.SetOwnedMemory(_pool.Rent(GetSegmentSize(sizeHint, _pool.MaxBufferSize)));

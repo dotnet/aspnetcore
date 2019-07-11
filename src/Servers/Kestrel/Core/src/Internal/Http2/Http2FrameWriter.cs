@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _writeLock = new object();
         private readonly Http2Frame _outgoingFrame;
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
-        private readonly PipeWriter _outputWriter;
+        private readonly ConcurrentPipeWriter _outputWriter;
         private readonly ConnectionContext _connectionContext;
         private readonly Http2Connection _http2Connection;
         private readonly OutputFlowControl _connectionOutputFlowControl;
@@ -92,6 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _completed = true;
                 _connectionOutputFlowControl.Abort();
+                _outputWriter.Abort();
             }
         }
 
