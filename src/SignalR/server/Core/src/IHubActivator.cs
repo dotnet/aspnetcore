@@ -14,13 +14,14 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Creates a hub.
         /// </summary>
+        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> that can be used to resolve dependencies.</param>
         /// <returns>The created hub.</returns>
-        HubHandle<THub> Create();
+        HubHandle<THub> Create(IServiceProvider serviceProvider);
 
         /// <summary>
         /// Releases the specified hub.
         /// </summary>
         /// <param name="hub">The hub to release.</param>
-        void Release(HubHandle<THub> hub);
+        void Release(in HubHandle<THub> hub);
     }
 }

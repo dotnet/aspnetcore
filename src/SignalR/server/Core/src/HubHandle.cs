@@ -9,10 +9,11 @@ namespace Microsoft.AspNetCore.SignalR
     /// <typeparam name="THub"></typeparam>
     public readonly struct HubHandle<THub> where THub : Hub
     {
-        public HubHandle(THub hub, bool created)
+        public HubHandle(THub hub, bool created, object state)
         {
             Hub = hub;
             Created = created;
+            State = state;
         }
 
         /// <summary>
@@ -24,5 +25,10 @@ namespace Microsoft.AspNetCore.SignalR
         /// Determines if the hub was created by this the activator
         /// </summary>
         public bool Created { get; }
+
+        /// <summary>
+        /// State
+        /// </summary>
+        public object State { get; }
     }
 }

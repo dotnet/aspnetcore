@@ -1,6 +1,7 @@
 // Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSingleton<IUserIdProvider, CustomIdProvider>();
             serviceCollection.AddSingleton(typeof(HubLifetimeManager<>), typeof(CustomHubLifetimeManager<>));
             serviceCollection.AddSingleton<IHubProtocolResolver, CustomHubProtocolResolver>();
-            serviceCollection.AddScoped(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            serviceCollection.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
             serviceCollection.AddSingleton(typeof(IHubContext<>), typeof(CustomHubContext<>));
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
             var hubOptions = new HubOptionsSetup(new List<IHubProtocol>());
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSingleton<IUserIdProvider, CustomIdProvider>();
             serviceCollection.AddSingleton(typeof(HubLifetimeManager<>), typeof(CustomHubLifetimeManager<>));
             serviceCollection.AddSingleton<IHubProtocolResolver, CustomHubProtocolResolver>();
-            serviceCollection.AddScoped(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+            serviceCollection.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
             serviceCollection.AddSingleton(typeof(IHubContext<>), typeof(CustomHubContext<>));
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
 
@@ -128,12 +129,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
     {
-        public THub Create()
+        public HubHandle<THub> Create(IServiceProvider serviceProvider)
         {
             throw new System.NotImplementedException();
         }
 
-        public void Release(THub hub)
+        public void Release(in HubHandle<THub> hub)
         {
             throw new System.NotImplementedException();
         }

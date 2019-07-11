@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 scope = _serviceScopeFactory.CreateScope();
 
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var handle = hubActivator.Create();
+                var handle = hubActivator.Create(scope.ServiceProvider);
                 var hub = handle.Hub;
                 try
                 {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 scope = _serviceScopeFactory.CreateScope();
 
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                var handle = hubActivator.Create();
+                var handle = hubActivator.Create(scope.ServiceProvider);
                 var hub = handle.Hub;
                 try
                 {
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
 
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-                handle = hubActivator.Create();
+                handle = hubActivator.Create(scope.ServiceProvider);
                 hub = handle.Hub;
 
                 try
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         }
 
         private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
-            HubHandle<THub> handle, IServiceScope scope)
+            in HubHandle<THub> handle, IServiceScope scope)
         {
             if (hubMessage.StreamIds != null)
             {
