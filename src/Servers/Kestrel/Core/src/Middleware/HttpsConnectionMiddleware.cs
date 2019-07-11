@@ -43,9 +43,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
-            if (options.HttpProtocols == HttpProtocols.Http2 && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (options.HttpProtocols == HttpProtocols.Http2)
             {
-                throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                {
+                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
+                }
             }
 
             _next = next;

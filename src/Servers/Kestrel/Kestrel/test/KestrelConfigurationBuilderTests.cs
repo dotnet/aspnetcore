@@ -320,8 +320,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-        public void DefaultConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
+        public void DefaultConfigSectionCanSetProtocols_MacAndWin7(string input, HttpProtocols expected)
             => DefaultConfigSectionCanSetProtocols(input, expected);
 
         [ConditionalTheory]
@@ -329,7 +330,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DefaultConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected)
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7)]
+        public void DefaultConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected)
             => DefaultConfigSectionCanSetProtocols(input, expected);
 
         private void DefaultConfigSectionCanSetProtocols(string input, HttpProtocols expected)
@@ -387,8 +389,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http1", HttpProtocols.Http1)]
         // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)] // Gracefully falls back to HTTP/1
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-        public void EndpointConfigSectionCanSetProtocols_Mac(string input, HttpProtocols expected) =>
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
+        public void EndpointConfigSectionCanSetProtocols_MacAndWin7(string input, HttpProtocols expected) =>
             EndpointConfigSectionCanSetProtocols(input, expected);
 
         [ConditionalTheory]
@@ -396,7 +399,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void EndpointConfigSectionCanSetProtocols_NonMac(string input, HttpProtocols expected) =>
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7)]
+        public void EndpointConfigSectionCanSetProtocols_NonMacAndWin7(string input, HttpProtocols expected) =>
             EndpointConfigSectionCanSetProtocols(input, expected);
 
         private void EndpointConfigSectionCanSetProtocols(string input, HttpProtocols expected)
