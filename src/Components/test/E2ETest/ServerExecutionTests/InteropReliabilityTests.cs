@@ -1,37 +1,29 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.E2ETesting;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
 {
-    public class InteropReliabilityTests : ServerTestBase<AspNetSiteServerFixture>
+    public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>
     {
         private const int DefaultLatencyTimeout = 500;
+        private readonly AspNetSiteServerFixture _serverFixture;
 
-        public InteropReliabilityTests(
-            BrowserFixture browserFixture,
-            AspNetSiteServerFixture serverFixture,
-            ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
+        public InteropReliabilityTests(AspNetSiteServerFixture serverFixture)
         {
             serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
+            _serverFixture = serverFixture;
         }
 
-        public BlazorClient Client { get; set; } = new BlazorClient();
-
-        public override Task InitializeAsync()
-        {
-            // Do nothing.
-            return Task.CompletedTask;
-        }
+        public BlazorClient Client { get; set; } = new BlazorClient() { DefaultLatencyTimeout = new TimeSpan(DefaultLatencyTimeout) };
 
         [Fact]
         public async Task CannotInvokeNonJSInvokableMethods()
@@ -45,14 +37,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "System.IO.FileSystem",
                 "WriteAllText",
                 null,
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -72,14 +62,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
                 "MadeUpMethod",
                 null,
                 JsonSerializer.Serialize(new[] { ".\\log.txt", "log" }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -98,14 +86,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "NotifyLocationChanged",
                 null,
                 JsonSerializer.Serialize(new[] { _serverFixture.RootUri }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -125,14 +111,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "",
                 "NotifyLocationChanged",
                 null,
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -152,14 +136,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "",
                 null,
                 JsonSerializer.Serialize(new object[] { _serverFixture.RootUri + "counter", false }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -177,37 +159,31 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
                 "CreateInformation",
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            await Task.Delay(DefaultLatencyTimeout);
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedDotNetObjectRef));
 
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 null,
                 "Reverse",
                 1,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            await Task.Delay(DefaultLatencyTimeout);
-
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
 
-            Client.InvokeDotNetMethod(
+            await Assert.ThrowsAsync<OperationCanceledException>(() => Client.InvokeDotNetMethod(
                 "1",
                 null,
                 "Reverse",
                 3, // non existing ref
-                JsonSerializer.Serialize(Array.Empty<object>()));
-
-            await Task.Delay(5000);
-            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
+                JsonSerializer.Serialize(Array.Empty<object>())));
 
             await ValidateClientKeepsWorking(Client, batches);
         }
@@ -224,26 +200,22 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
                 "CreateImportant",
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
-            await Task.Delay(DefaultLatencyTimeout);
-
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedImportantDotNetObjectRef));
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
                 "ReceiveTrivial",
                 null,
                 JsonSerializer.Serialize(new object[] { new { __dotNetObject = 1 } }));
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -261,21 +233,17 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            var jsInteropTriggered = Client.PrepareForNextBatch();
             await Client.ClickAsync("triggerjsinterop");
 
-            await Task.Delay(DefaultLatencyTimeout);
             Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
 
-            var invalidJSInteropResponse = Client.PrepareForNextBatch();
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 0,
                 "Microsoft.JSInterop",
                 "DotNetDispatcher.EndInvoke",
                 null,
                 "[4, true, \"{\"]");
 
-            await invalidJSInteropResponse;
             var text = Assert.Single(
                 Client.FindElementById("errormessage").Children.OfType<TextNode>(),
                 e => expectedError == e.TextContent);
@@ -295,14 +263,12 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await GoToTestComponent(batches);
 
             // Act
-            Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 "Microsoft.AspNetCore.Components.Server",
                 "NotifyLocationChanged",
                 null,
                 "[ \"invalidPayload\"}");
-
-            await Task.Delay(DefaultLatencyTimeout);
 
             // Assert
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
@@ -315,9 +281,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
         private async Task ValidateClientKeepsWorking(BlazorClient Client, Func<int> countAccessor)
         {
             var currentBatches = countAccessor();
-            var nextClickRendered = Client.PrepareForNextBatch();
             await Client.ClickAsync("thecounter");
-            await nextClickRendered;
 
             Assert.Equal(currentBatches + 1, countAccessor());
         }
@@ -325,15 +289,10 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
         private async Task GoToTestComponent(List<(int, int, byte[])> batches)
         {
             var rootUri = _serverFixture.RootUri;
-            var initialRender = Client.PrepareForNextBatch();
             Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
-
-            await initialRender;
             Assert.Single(batches);
 
-            var selectComponentRender = Client.PrepareForNextBatch();
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
-            await selectComponentRender;
             Assert.Equal(2, batches.Count);
         }
 

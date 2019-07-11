@@ -26,53 +26,123 @@ namespace Ignitor
             {
                 TaskCompletionSource.TrySetCanceled();
             });
+
+            ImplicitWait = DefaultLatencyTimeout != null;
         }
 
+        public TimeSpan? DefaultLatencyTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+
         private CancellationTokenSource CancellationTokenSource { get; }
+
         private CancellationToken CancellationToken => CancellationTokenSource.Token;
+
         private TaskCompletionSource<object> TaskCompletionSource { get; }
 
-        private TaskCompletionSource<object> NextBatchAppliedCompletionSource { get; set; }
+        private CancellableOperation NextBatchReceived { get; set; }
+
+        private CancellableOperation NextJSInteropReceived { get; set; }
 
         public bool ConfirmRenderBatch { get; set; } = true;
 
         public event Action<int, string, string> JSInterop;
+
         public event Action<int, int, byte[]> RenderBatchReceived;
 
+        public event Action<Error> OnCircuitError;
+
         public string CircuitId { get; set; }
+
+        public ElementHive Hive { get; set; } = new ElementHive();
+
+        public bool ImplicitWait { get; set; }
 
         public HubConnection HubConnection { get; set; }
 
         public Task PrepareForNextBatch()
         {
-            NextBatchAppliedCompletionSource = NextBatchAppliedCompletionSource?.Task?.IsCompleted == false ?
-                throw new InvalidOperationException("Invalid state previous task not completed") :
-                NextBatchAppliedCompletionSource = new TaskCompletionSource<object>();
+            if (NextBatchReceived?.Completion != null)
+            {
+                throw new InvalidOperationException("Invalid state previous task not completed");
+            }
 
-            return NextBatchAppliedCompletionSource.Task;
+            NextBatchReceived = new CancellableOperation(DefaultLatencyTimeout);
+
+            return NextBatchReceived.Completion.Task;
         }
 
-        public Task ClickAsync(string elementId)
+        public Task PrepareForNextJSInterop()
+        {
+            if (NextJSInteropReceived?.Completion != null)
+            {
+                throw new InvalidOperationException("Invalid state previous task not completed");
+            }
+
+            NextJSInteropReceived = new CancellableOperation(DefaultLatencyTimeout);
+
+            return NextJSInteropReceived.Completion.Task;
+        }
+
+        public async Task ClickAsync(string elementId)
         {
             if (!Hive.TryFindElementById(elementId, out var elementNode))
             {
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
 
-            return elementNode.ClickAsync(HubConnection);
+            await elementNode.ClickAsync(HubConnection);
+            await WaitForRenderBatch();
         }
 
-        public Task SelectAsync(string elementId, string value)
+        public async Task SelectAsync(string elementId, string value)
         {
             if (!Hive.TryFindElementById(elementId, out var elementNode))
             {
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
 
-            return elementNode.SelectAsync(HubConnection, value);
+            await elementNode.SelectAsync(HubConnection, value);
+            await WaitForRenderBatch();
         }
 
-        public ElementHive Hive { get; set; } = new ElementHive();
+        public async Task ExpectRenderBatch(Func<Task> action)
+        {
+            var task = WaitForRenderBatch();
+            await action();
+            await task;
+        }
+
+        public async Task ExpectJSInterop(Func<Task> action)
+        {
+            var task = WaitForJSInterop();
+            await action();
+            await task;
+        }
+
+        private async Task WaitForRenderBatch()
+        {
+            if (ImplicitWait)
+            {
+                if (DefaultLatencyTimeout == null)
+                {
+                    throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
+                }
+
+                await PrepareForNextBatch();
+            }
+        }
+
+        private async Task WaitForJSInterop()
+        {
+            if (ImplicitWait)
+            {
+                if (DefaultLatencyTimeout == null)
+                {
+                    throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
+                }
+
+                await PrepareForNextJSInterop();
+            }
+        }
 
         public async Task<bool> ConnectAsync(Uri uri, bool prerendered)
         {
@@ -83,7 +153,6 @@ namespace Ignitor
 
             HubConnection = builder.Build();
             await HubConnection.StartAsync(CancellationToken);
-            Console.WriteLine("Connected");
 
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
@@ -94,59 +163,72 @@ namespace Ignitor
             if (prerendered)
             {
                 CircuitId = await GetPrerenderedCircuitIdAsync(uri);
-                return await HubConnection.InvokeAsync<bool>("ConnectCircuit", CircuitId);
+                var result = await HubConnection.InvokeAsync<bool>("ConnectCircuit", CircuitId);
+                await WaitForRenderBatch();
+                return result;
             }
             else
             {
                 CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", new Uri(uri.GetLeftPart(UriPartial.Authority)), uri);
+                await WaitForRenderBatch();
                 return CircuitId != null;
             }
+        }
 
-            void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
+        private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
+        {
+            try
             {
                 JSInterop?.Invoke(asyncHandle, identifier, argsJson);
-            }
 
-            void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+                NextJSInteropReceived?.Completion?.TrySetResult(null);
+            }
+            catch (Exception e)
             {
-                try
-                {
-                    var batch = RenderBatchReader.Read(batchData);
-                    RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
-
-                    Hive.Update(batch);
-
-                    if (ConfirmRenderBatch)
-                    {
-                        HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
-                    }
-
-                    NextBatchAppliedCompletionSource?.TrySetResult(null);
-                }
-                catch (Exception e)
-                {
-                    NextBatchAppliedCompletionSource?.TrySetResult(e);
-                }
+                NextJSInteropReceived?.Completion?.TrySetResult(e);
             }
+        }
 
-            void OnError(Error error)
+        private void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+        {
+            try
             {
-                Console.WriteLine("ERROR: " + error.Stack);
-            }
+                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
 
-            Task OnClosedAsync(Exception ex)
+                var batch = RenderBatchReader.Read(batchData);
+
+                Hive.Update(batch);
+
+                if (ConfirmRenderBatch)
+                {
+                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
+                }
+
+                NextBatchReceived?.Completion?.TrySetResult(null);
+            }
+            catch (Exception e)
             {
-                if (ex == null)
-                {
-                    TaskCompletionSource.TrySetResult(null);
-                }
-                else
-                {
-                    TaskCompletionSource.TrySetException(ex);
-                }
-
-                return Task.CompletedTask;
+                NextBatchReceived?.Completion?.TrySetResult(e);
             }
+        }
+
+        private void OnError(Error error)
+        {
+            OnCircuitError?.Invoke(error);
+        }
+
+        private Task OnClosedAsync(Exception ex)
+        {
+            if (ex == null)
+            {
+                TaskCompletionSource.TrySetResult(null);
+            }
+            else
+            {
+                TaskCompletionSource.TrySetException(ex);
+            }
+
+            return Task.CompletedTask;
         }
 
         private Uri GetHubUrl(Uri uri)
@@ -163,9 +245,10 @@ namespace Ignitor
             }
         }
 
-        public void InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
+        public async Task InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
         {
-            HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson);
+            await HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson);
+            await WaitForJSInterop();
         }
 
         private static async Task<string> GetPrerenderedCircuitIdAsync(Uri uri)
@@ -189,12 +272,61 @@ namespace Ignitor
 
         public ElementNode FindElementById(string id)
         {
-            if(!Hive.TryFindElementById(id, out var element))
+            if (!Hive.TryFindElementById(id, out var element))
             {
                 throw new InvalidOperationException("Element not found.");
             }
 
             return element;
+        }
+
+        private class CancellableOperation
+        {
+            public CancellableOperation(TimeSpan? timeout)
+            {
+                Timeout = timeout;
+                Initialize();
+            }
+
+            private void Initialize()
+            {
+                Completion = new TaskCompletionSource<object>();
+                Completion.Task.ContinueWith(
+                    (task, state) =>
+                    {
+                        var operation = (CancellableOperation)state;
+                        operation.Dispose();
+                    },
+                    this);
+                if (Timeout != null)
+                {
+                    Cancellation = new CancellationTokenSource();
+                    CancellationRegistration = Cancellation.Token.Register(
+                        (self) =>
+                        {
+                            var operation = (CancellableOperation)self;
+                            operation.Completion.TrySetCanceled(operation.Cancellation.Token);
+                            operation.Cancellation.Dispose();
+                            operation.CancellationRegistration.Dispose();
+                        },
+                        this);
+                }
+            }
+
+            private void Dispose()
+            {
+                Completion = null;
+                Cancellation.Dispose();
+                CancellationRegistration.Dispose();
+            }
+
+            public TimeSpan? Timeout { get; }
+
+            public TaskCompletionSource<object> Completion { get; set; }
+
+            public CancellationTokenSource Cancellation { get; set; }
+
+            public CancellationTokenRegistration CancellationRegistration { get; set; }
         }
     }
 }
