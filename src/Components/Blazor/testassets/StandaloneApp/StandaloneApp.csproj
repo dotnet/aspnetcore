@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <ReferenceBlazorBuildLocally Condition="'$(BuildNodeJS)' == 'true'">true</ReferenceBlazorBuildLocally>
+    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
