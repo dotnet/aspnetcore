@@ -57,8 +57,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile)')" />
     <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
   </ItemGroup>
+
+  <Target Name="VerifyBlazorServerJSFileExists" BeforeTargets="PrepareForBuild">
+    <Warning
+      Text="Blazor server JS files not found and will not be embedded. Set BuildNodeJS to true or build the Microsoft.AspNetCore.Components.Web.JS.npmproj before building this project."
+      Condition="!Exists('$(BlazorServerJSFile)')" />
+    <Error
+      Text="Blazor server JS files not found and will not be embedded. Set BuildNodeJS to true or build the Microsoft.AspNetCore.Components.Web.JS.npmproj before building this project."
+      Condition="!Exists('$(BlazorServerJSFile)') and '$(Configuration)' == 'Release'" />
+  </Target>
 
 </Project>
