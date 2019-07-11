@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private int _tailBytesBuffered;
         private int _bytesBuffered;
         private bool _nonPassThroughAdvancePending;
+        private bool _isFlushing;
         private Exception _completeEx;
-
 
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
 
@@ -94,20 +94,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             lock (_sync)
             {
-                if (_currentFlushTcs != null)
+                if (_isFlushing)
                 {
                     return new ValueTask<FlushResult>(_currentFlushTcs.Task);
+                }
+
+                if (_bytesBuffered > 0)
+                {
+                    CopyAndReturnSegmentsUnsynchronized();
                 }
 
                 var flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
 
                 if (flushTask.IsCompletedSuccessfully)
                 {
+                    if (_currentFlushTcs != null)
+                    {
+                        CompleteFlushUnsynchronized(flushTask.GetAwaiter().GetResult(), null);
+                    }
+
                     return flushTask;
                 }
 
+                _isFlushing = true;
+
                 // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
-                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                // _currentFlushTcs might already be set if the last flush that completed, completed between a call to GetMemory() and Advance().
+                _currentFlushTcs ??= new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
                 return FlushAsyncAwaited(flushTask, cancellationToken);
             }
         }
@@ -126,9 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     {
                         if (_bytesBuffered == 0)
                         {
-                            CompleteInnerPipeIfNecessaryUnsynchronized();
-                            _currentFlushTcs.SetResult(flushResult);
-                            _currentFlushTcs = null;
+                            CompleteFlushUnsynchronized(flushResult, null);
                             return flushResult;
                         }
 
@@ -144,9 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 lock (_sync)
                 {
-                    CompleteInnerPipeIfNecessaryUnsynchronized();
-                    _currentFlushTcs.SetException(ex);
-                    _currentFlushTcs = null;
+                    CompleteFlushUnsynchronized(default, ex);
 
                     // Ensure the exception still gets observed by the original caller who started the flush loop
                     // And is observing this method directly instead of through the TCS.
@@ -192,6 +201,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private void CopyAndReturnSegmentsUnsynchronized()
         {
+            // Update any buffered data
+            _tail.End += _tailBytesBuffered;
+            _tailBytesBuffered = 0;
+
             var segment = _head;
             var returnSegment = default(BufferSegment);
 
@@ -204,9 +217,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     ReturnSegmentUnsynchronized(returnSegment);
                 }
 
-                var span = _innerPipeWriter.GetSpan(segment.Length);
-                segment.Memory.Span.CopyTo(span);
-                _innerPipeWriter.Advance(segment.Length);
+                // Fortunately, the sizeHint is now more than a hint, now it's a guaranteed minimum size for the returned span.
+                var fromSpan = segment.Memory.Span;
+                var toSpan = _innerPipeWriter.GetSpan(fromSpan.Length);
+
+                fromSpan.CopyTo(toSpan);
+                _innerPipeWriter.Advance(fromSpan.Length);
 
                 returnSegment = segment;
                 segment = segment.NextSegment;
@@ -224,12 +240,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 _head = _tail = null;
             }
 
-            // Even if a non-passthrough advance is pending, there a 0 bytes currently buffered.
+            // Even if a non-passthrough call to Advance is pending, there a 0 bytes currently buffered.
             _bytesBuffered = 0;
         }
 
-        public void CompleteInnerPipeIfNecessaryUnsynchronized()
+        public void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
         {
+            _isFlushing = false;
+
             if (_completeEx != null)
             {
                 if (ReferenceEquals(_completeEx, _successfulCompletionSentinal))
@@ -240,6 +258,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 {
                     _innerPipeWriter.Complete(_completeEx);
                 }
+            }
+
+            if (flushEx == null)
+            {
+                _currentFlushTcs.SetResult(flushResult);
+            }
+            else
+            {
+                _currentFlushTcs.SetException(flushEx);
+            }
+
+            // If there's still another non-passthrough call to Advance is pending, we cannot passthrough
+            if (_nonPassThroughAdvancePending)
+            {
+                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+            else
+            {
+                _currentFlushTcs = null;
             }
         }
 
