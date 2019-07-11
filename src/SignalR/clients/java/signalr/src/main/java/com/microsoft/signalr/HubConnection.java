@@ -57,6 +57,7 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
+    private final Lock connectionStateLock = new ReentrantLock();
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -505,9 +506,15 @@ public class HubConnection {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
-            if (connectionState != null) {
-                connectionState.cancelOutstandingInvocations(exception);
-                connectionState = null;
+
+            connectionStateLock.lock();
+            try {
+                if (connectionState != null) {
+                    connectionState.cancelOutstandingInvocations(exception);
+                    connectionState = null;
+                }
+            } finally {
+                connectionStateLock.unlock();
             }
 
             logger.info("HubConnection stopped.");
@@ -643,20 +650,23 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
+        ConnectionState localConnectionState;
+        InvocationRequest irq;
+        String id;
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
+
+            id = connectionState.getNextInvocationId();
+            irq = new InvocationRequest(returnType, id);
+            connectionState.addInvocation(irq);
         } finally {
             hubConnectionStateLock.unlock();
         }
-        
-        String id = connectionState.getNextInvocationId();
 
         SingleSubject<T> subject = SingleSubject.create();
-        InvocationRequest irq = new InvocationRequest(returnType, id);
-        connectionState.addInvocation(irq);
 
         // forward the invocation result or error to the user
         // run continuations on a separate thread
@@ -687,21 +697,23 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
+        String invocationId;
+        InvocationRequest irq;
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
+
+            invocationId = connectionState.getNextInvocationId();
+            irq = new InvocationRequest(returnType, invocationId);
+            connectionState.addInvocation(irq);
         } finally {
             hubConnectionStateLock.unlock();
         }
 
-        String invocationId = connectionState.getNextInvocationId();
         AtomicInteger subscriptionCount = new AtomicInteger();
-        InvocationRequest irq = new InvocationRequest(returnType, invocationId);
-        connectionState.addInvocation(irq);
         ReplaySubject<T> subject = ReplaySubject.create();
-
         Subject<Object> pendingCall = irq.getPendingCall();
         pendingCall.subscribe(result -> {
             // Primitive types can't be cast with the Class cast function
@@ -719,7 +731,14 @@ public class HubConnection {
             if (subscriptionCount.decrementAndGet() == 0) {
                 CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
                 sendHubMessage(cancelInvocationMessage);
-                connectionState.tryRemoveInvocation(invocationId);
+                connectionStateLock.lock();
+                try {
+                    if (connectionState != null) {
+                        connectionState.tryRemoveInvocation(invocationId);
+                    }
+                } finally {
+                    connectionStateLock.unlock();
+                }
                 subject.onComplete();
             }
         });
