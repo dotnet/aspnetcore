@@ -77,7 +77,7 @@ namespace MusicStore.Controllers
             Assert.Equal(0, model.CartTotal);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task Index_ReturnsCartItems_WhenItemsInCart()
         {
             // Arrange
@@ -113,7 +113,7 @@ namespace MusicStore.Controllers
             Assert.Equal(5 * 10, model.CartTotal);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task AddToCart_AddsItemToCart()
         {
             // Arrange
@@ -146,7 +146,7 @@ namespace MusicStore.Controllers
             Assert.Equal("Index", redirectResult.ActionName);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task RemoveFromCart_RemovesItemFromCart()
         {
             // Arrange
