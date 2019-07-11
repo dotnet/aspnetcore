@@ -380,6 +380,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                     fixed (byte* pHeaderValue = headerValueBytes)
                     {
+                        if (headerValueBytes.Length == 0)
+                        {
+                            throw new ArgumentException("Header value cannot be an empty string");
+                        }
+
                         if (knownHeaderIndex == -1)
                         {
                             var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
