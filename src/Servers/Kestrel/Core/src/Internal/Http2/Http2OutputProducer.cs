@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         if (readResult.Buffer.Length != 0)
                         {
-                            throw new Exception("Http2OutpuProducer.ProcessDataWrites() observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+                            ThrowUnexpectedState();
                         }
 
                         // Headers have already been written and there is no other content to write
@@ -402,12 +402,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Exception ex)
             {
-                _log.LogCritical(ex, "Http2OutpuProducer.ProcessDataWrites() observed an unexpected exception.");
+                _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
             }
 
             _dataPipe.Reader.Complete();
 
             return flushResult;
+
+            static void ThrowUnexpectedState()
+            {
+                throw new InvalidOperationException(nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected state where the streams output ended with data still remaining in the pipe.");
+            }
         }
 
         private Memory<byte> GetFakeMemory(int sizeHint)
