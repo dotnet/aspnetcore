@@ -180,9 +180,10 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly THub _Hub_k__BackingField;
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public HubHandle(THub hub, bool created) { throw null; }
+        public HubHandle(THub hub, bool created, object state) { throw null; }
         public bool Created { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public THub Hub { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class HubInvocationContext
     {
@@ -260,8 +261,8 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial interface IHubActivator<THub> where THub : Microsoft.AspNetCore.SignalR.Hub
     {
-        Microsoft.AspNetCore.SignalR.HubHandle<THub> Create();
-        void Release(Microsoft.AspNetCore.SignalR.HubHandle<THub> hub);
+        Microsoft.AspNetCore.SignalR.HubHandle<THub> Create(System.IServiceProvider serviceProvider);
+        void Release(in Microsoft.AspNetCore.SignalR.HubHandle<THub> hub);
     }
     public partial interface IHubCallerClients : Microsoft.AspNetCore.SignalR.IHubCallerClients<Microsoft.AspNetCore.SignalR.IClientProxy>, Microsoft.AspNetCore.SignalR.IHubClients<Microsoft.AspNetCore.SignalR.IClientProxy>
     {
