@@ -74,6 +74,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="2.2.6" />
   <Package Id="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
   <Package Id="Microsoft.AspNetCore.Mvc.Cors" Version="2.2.0" />

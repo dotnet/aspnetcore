@@ -649,6 +649,11 @@
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Analyzers' AND '$(TargetFramework)' == 'netstandard1.3' " />
+  <!-- Package: Microsoft.AspNetCore.Mvc.Api.Analyzers-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Api.Analyzers' ">
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Api.Analyzers' AND '$(TargetFramework)' == 'netstandard1.3' " />
   <!-- Package: Microsoft.AspNetCore.Mvc.ApiExplorer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.ApiExplorer' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
