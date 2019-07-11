@@ -28,7 +28,7 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/11354")]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
         [InlineData("Startup")]
         [InlineData("StartupWithoutEndpointRouting")]
@@ -98,7 +98,7 @@ namespace FunctionalTests
             var originDeployment = await originFactory.DeployAsync();
 
             var secondOriginFactory = ApplicationDeployerFactory.Create(originParameters, loggerFactory);
-            var secondOriginDeployment = await originFactory.DeployAsync();
+            var secondOriginDeployment = await secondOriginFactory.DeployAsync();
 
             var port = originDeployment.HttpClient.BaseAddress.Port;
             var destinationParameters = new DeploymentParameters
