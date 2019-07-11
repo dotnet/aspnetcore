@@ -153,7 +153,6 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
             // Assert
             Assert.Equal("..1234..", GetUnwrappedCircuitInfo(result).RootElement.GetProperty("circuitId").GetString());
-<<<<<<< HEAD
         }
 
         [Fact]
@@ -180,8 +179,6 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
             // Assert
             circuitFactory.MockServiceScope.Verify(scope => scope.Dispose(), Times.Once());
-=======
->>>>>>> Replace dashes with dots
         }
 
         class TestCircuitFactory : CircuitFactory
