@@ -57,7 +57,6 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
-    private final Lock connectionStateLock = new ReentrantLock();
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -506,15 +505,9 @@ public class HubConnection {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
-
-            connectionStateLock.lock();
-            try {
-                if (connectionState != null) {
-                    connectionState.cancelOutstandingInvocations(exception);
-                    connectionState = null;
-                }
-            } finally {
-                connectionStateLock.unlock();
+            if (connectionState != null) {
+                connectionState.cancelOutstandingInvocations(exception);
+                connectionState = null;
             }
 
             logger.info("HubConnection stopped.");
@@ -731,13 +724,13 @@ public class HubConnection {
             if (subscriptionCount.decrementAndGet() == 0) {
                 CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
                 sendHubMessage(cancelInvocationMessage);
-                connectionStateLock.lock();
+                hubConnectionStateLock.lock();
                 try {
                     if (connectionState != null) {
                         connectionState.tryRemoveInvocation(invocationId);
                     }
                 } finally {
-                    connectionStateLock.unlock();
+                    hubConnectionStateLock.unlock();
                 }
                 subject.onComplete();
             }
