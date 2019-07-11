@@ -158,7 +158,7 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;" />
 
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects);@(NodeJsProjectsForManagedProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(NodeJsProjectsForManagedProjects);@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
 
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true' and '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjectsForManagedProjects)" />
