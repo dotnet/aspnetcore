@@ -48,11 +48,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
-            return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
-        }
-
-        private ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
-        {
             var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
             if (minRate != null)
@@ -86,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             catch (Exception ex)
             {
                 // A canceled token is the only reason flush should ever throw.
-                _log.LogError(0, ex, $"Unexpected exception in {nameof(TimingPipeFlusher)}.{nameof(TimeFlushAsync)}.");
+                _log.LogError(0, ex, $"Unexpected exception in {nameof(TimingPipeFlusher)}.{nameof(FlushAsync)}.");
             }
             finally
             {

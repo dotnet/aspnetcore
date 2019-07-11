@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private BufferSegment _tail;
         private Memory<byte> _tailMemory;
         private int _tailBytesBuffered;
-        private int _bytesBuffered;
+        private long _bytesBuffered;
 
         // When _currentFlushTcs is null and _head/_tail is also null, the ConcurrentPipeWriter is in passthrough mode.
         // When the ConcurrentPipeWriter is not in passthrough mode, that could be for one of two reasons:
@@ -235,26 +235,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _tailBytesBuffered = 0;
 
             var segment = _head;
-            var returnSegment = default(BufferSegment);
 
             while (segment != null)
             {
-                // Make sure we don't return the last segment in the linked list yet.
-                if (returnSegment != null)
+                // Fortunately, the sizeHint is now more than a hint, now it's a guaranteed minimum size for the returned span.
+                _innerPipeWriter.Write(segment.Memory.Span);
+
+                var returnSegment = segment;
+                segment = segment.NextSegment;
+
+                // We haven't reached the tail of the linked list yet, so we can always return the returnSegment.
+                if (segment != null)
                 {
                     returnSegment.ResetMemory();
                     ReturnSegmentUnsynchronized(returnSegment);
                 }
-
-                // Fortunately, the sizeHint is now more than a hint, now it's a guaranteed minimum size for the returned span.
-                var fromSpan = segment.Memory.Span;
-                var toSpan = _innerPipeWriter.GetSpan(fromSpan.Length);
-
-                fromSpan.CopyTo(toSpan);
-                _innerPipeWriter.Advance(fromSpan.Length);
-
-                returnSegment = segment;
-                segment = segment.NextSegment;
             }
 
             if (_bufferedWritePending)
@@ -264,8 +259,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             else
             {
-                returnSegment.ResetMemory();
-                ReturnSegmentUnsynchronized(returnSegment);
+                _tail.ResetMemory();
+                ReturnSegmentUnsynchronized(_tail);
                 _head = _tail = null;
             }
 
