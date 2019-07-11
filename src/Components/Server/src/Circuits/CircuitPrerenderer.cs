@@ -82,7 +82,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
 
             var record = JsonSerializer.Serialize(new PrerenderedComponentRecord(
-                    circuitHost.CircuitId.Replace("--", ".."), // We need to do this due to the fact that -- is not allowed within HTML comments and HTML doesn't encode '-'.
+                    // We need to do this due to the fact that -- is not allowed within HTML comments and HTML doesn't encode '-'.
+                    // We will never have '..' sequences because we Base64UrlEncode the circuit id
+                    circuitHost.CircuitId.Replace("--", ".."),
                     circuitHost.Renderer.Id,
                     renderResult.ComponentId),
                 _jsonSerializationOptions);
@@ -180,7 +182,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return result;
         }
 
-        private struct PrerenderedComponentRecord
+        private readonly struct PrerenderedComponentRecord
         {
             public PrerenderedComponentRecord(string circuitId, int rendererId, int componentId)
             {
