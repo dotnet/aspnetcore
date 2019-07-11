@@ -40,4 +40,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Server.HttpSys;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.13' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

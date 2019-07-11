@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.11</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.12</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -898,14 +898,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.HttpSys-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.12</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' ">
