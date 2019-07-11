@@ -203,12 +203,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             throw new NotImplementedException();
         }
+
         public void Abort()
         {
             lock (_sync)
             {
                 _aborted = true;
 
+                // If we're flushing, the cleanup will happen after the flush.
                 if (!_isFlushing)
                 {
                     CleanupUnsynchronized();
