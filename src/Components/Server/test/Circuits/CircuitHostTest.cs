@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 serviceScope.Object,
                 remoteRenderer);
 
-            var component = new DispatcherComponent(circuitHost.Dispatcher);
+            var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
             circuitHost.Renderer.AssignRootComponentId(component);
             var original = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(null);

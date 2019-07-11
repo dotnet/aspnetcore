@@ -94,11 +94,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IServiceProvider Services { get; }
 
-        public Dispatcher Dispatcher { get; }
-
         public Task<ComponentRenderedText> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
         {
-            return Dispatcher.InvokeAsync(async () =>
+            return Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 var result = await Renderer.RenderComponentAsync(componentType, parameters);
 

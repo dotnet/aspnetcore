@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _htmlEncoder = htmlEncoder;
         }
 
-        public override Dispatcher Dispatcher { get; } = new RendererSynchronizationContextDispatcher();
+        public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

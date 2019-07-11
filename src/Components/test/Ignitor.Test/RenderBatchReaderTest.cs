@@ -339,7 +339,7 @@ namespace Ignitor
             {
             }
 
-            public override Dispatcher Dispatcher { get; } = new RendererSynchronizationContextDispatcher();
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

@@ -375,17 +375,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void EnsureSynchronizationContext()
         {
-            // When the Dispatcher is a synchronization context
-            // Render operations are not thread-safe, so they need to be serialized.
+            // Render operations are not thread-safe, so they need to be serialized by the dispatcher.
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
             if (!Dispatcher.CheckAccess())
             {
                 throw new InvalidOperationException(
-                    "The current thread is not associated with the renderer's synchronization context. " +
-                    "Use Invoke() or InvokeAsync() to switch execution to the renderer's synchronization " +
-                    "context when triggering rendering or modifying any state accessed during rendering.");
+                    "The current thread is not associated with the Dispatcher. " +
+                    "Use Invoke() or InvokeAsync() to switch execution to the Dispatcher when " +
+                    "triggering rendering or modifying any state accessed during rendering.");
             }
         }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, NullLoggerFactory.Instance)
         {
-            Dispatcher = new RendererSynchronizationContextDispatcher();
+            Dispatcher = Dispatcher.CreateDefault();
         }
 
         public override Dispatcher Dispatcher { get; }

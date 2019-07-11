@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 if (DisconnectCore(circuitHost, connectionId))
                 {
-                    circuitHandlerTask = circuitHost.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
+                    circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
                 }
                 else
                 {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 // Dispatch the circuit handlers inside the sync context to ensure the order of execution. CircuitHost executes circuit handlers inside of
                 // 
-                circuitHandlerTask = circuitHost.Dispatcher.InvokeAsync(async () =>
+                circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
                 {
                     if (previouslyConnected)
                     {
