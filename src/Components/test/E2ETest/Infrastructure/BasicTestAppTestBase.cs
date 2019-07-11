@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
@@ -38,16 +37,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         protected SelectElement WaitUntilTestSelectorReady()
         {
             var elemToFind = By.CssSelector("#test-selector > select");
-            WaitUntilExists(elemToFind, timeoutSeconds: 30);
+            WaitUntilExists(elemToFind, timeoutSeconds: 30, throwOnError: true);
             return new SelectElement(Browser.FindElement(elemToFind));
-        }
-
-        protected IWebElement WaitUntilExists(By findBy, int timeoutSeconds = 10)
-        {
-            IWebElement result = null;
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(timeoutSeconds))
-                .Until(driver => (result = driver.FindElement(findBy)) != null);
-            return result;
         }
 
         protected void SignInAs(string usernameOrNull, string rolesOrNull, bool useSeparateTab = false)
