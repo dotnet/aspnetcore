@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void HubCanBeResolvedFromServiceProvider()
         {
-            var hub = Mock.Of<Hub>();
+            var hub = Mock.Of<CreatableHub>();
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider
-                .Setup(sp => sp.GetService(typeof(Hub)))
+                .Setup(sp => sp.GetService(typeof(CreatableHub)))
                 .Returns(hub);
-            var handle = new DefaultHubActivator<Hub>().Create(mockServiceProvider.Object);
+            var handle = new DefaultHubActivator<CreatableHub>().Create(mockServiceProvider.Object);
 
             Assert.Same(hub, handle.Hub);
             Assert.False(handle.Created);
@@ -44,15 +44,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider
-                .Setup(sp => sp.GetService(typeof(Hub)))
+                .Setup(sp => sp.GetService(typeof(CreatableHub)))
                 .Returns(() =>
                 {
-                    var m = new Mock<Hub>();
+                    var m = new Mock<CreatableHub>();
                     m.Protected().Setup("Dispose", ItExpr.IsAny<bool>());
                     return m.Object;
                 });
 
-            var hubActivator = new DefaultHubActivator<Hub>();
+            var hubActivator = new DefaultHubActivator<CreatableHub>();
             var handle = hubActivator.Create(mockServiceProvider.Object);
             hubActivator.Release(handle);
             Mock.Get(handle.Hub).Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());

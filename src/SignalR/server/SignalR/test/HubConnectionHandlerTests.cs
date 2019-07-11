@@ -705,19 +705,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
+                var mockLifetimeManager = new Mock<HubLifetimeManager<MethodHub>>();
                 mockLifetimeManager
                     .Setup(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()))
                     .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
-                var mockHubActivator = new Mock<IHubActivator<Hub>>();
+                var mockHubActivator = new TrackCallsActivator<MethodHub>();
 
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
                     services.AddSingleton(mockLifetimeManager.Object);
-                    services.AddSingleton(mockHubActivator.Object);
+                    services.AddSingleton(mockHubActivator);
                 }, LoggerFactory);
 
-                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<Hub>>();
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
                 using (var client = new TestClient())
                 {
@@ -734,9 +734,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
                     mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
+
                     // No hubs should be created since the connection is terminated
-                    mockHubActivator.Verify(m => m.Create(It.IsAny<IServiceProvider>()), Times.Never);
-                    mockHubActivator.Verify(m => m.Release(It.IsAny<HubHandle<Hub>>()), Times.Never);
+                    Assert.Equal(0, mockHubActivator.Created);
+                    Assert.Equal(0, mockHubActivator.Released);
                 }
             }
         }
@@ -3701,7 +3702,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class CustomHubActivator<THub> : IHubActivator<THub> where THub : Hub
         {
             public int ReleaseCount;
-            
+
             public HubHandle<THub> Create(IServiceProvider serviceProvider)
             {
                 return new DefaultHubActivator<THub>().Create(serviceProvider);
@@ -3711,6 +3712,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 ReleaseCount++;
                 handle.Hub.Dispose();
+            }
+        }
+
+        public class TrackCallsActivator<THub> : IHubActivator<THub> where THub : Hub
+        {
+            public int Created { get; private set; }
+
+            public int Released { get; private set; }
+
+            public HubHandle<THub> Create(IServiceProvider serviceProvider)
+            {
+                Created++;
+                return default;   
+            }
+
+            public void Release(in HubHandle<THub> hub)
+            {
+                Released++;
             }
         }
 
