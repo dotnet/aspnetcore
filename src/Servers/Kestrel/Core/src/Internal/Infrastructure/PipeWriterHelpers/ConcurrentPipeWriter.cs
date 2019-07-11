@@ -33,11 +33,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private Memory<byte> _tailMemory;
         private int _tailBytesBuffered;
         private int _bytesBuffered;
+
+        // When _currentFlushTcs is null, the ConcurrentPipeWriter is in pass-through mode. When it's non-null, it means either:
+        //
+        // 1. A flush is in progress
+        // 2. Or the last flush completed between calls to GetMemory/Span() and Advance().
+        //
+        // In either case, we need to manually append buffer segments until _innerPipeWriter.FlushAsync() completes without any
+        // other committed data remaining and without any calls to Advance() pending. This logic is borrowed from StreamPipeWriter.
+        private TaskCompletionSource<FlushResult> _currentFlushTcs;
         private bool _nonPassThroughAdvancePending;
         private bool _isFlushing;
         private Exception _completeEx;
-
-        private TaskCompletionSource<FlushResult> _currentFlushTcs;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool)
         {
@@ -82,6 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 if (_currentFlushTcs == null)
                 {
+                    // No need to return anything if _currentFlushTcs is not set meaning we're in passthrough mode.
                     _innerPipeWriter.Complete(exception);
                     return;
                 }
@@ -248,8 +256,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             _isFlushing = false;
 
+            if (flushEx != null)
+            {
+                _currentFlushTcs.SetException(flushEx);
+            }
+            else
+            {
+                _currentFlushTcs.SetResult(flushResult);
+            }
+
             if (_completeEx != null)
             {
+                // We're done so return any unflushed segments. _head should have already
+                // been nulled out by CopyAndReturnSegmentsUnsynchronized unless a flush threw,
+                // or GetMemory() was called without Advance() before completion.
+                Cleanup();
+
                 if (ReferenceEquals(_completeEx, _successfulCompletionSentinal))
                 {
                     _innerPipeWriter.Complete();
@@ -259,25 +281,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     _innerPipeWriter.Complete(_completeEx);
                 }
             }
-
-            if (flushEx == null)
-            {
-                _currentFlushTcs.SetResult(flushResult);
-            }
             else
             {
-                _currentFlushTcs.SetException(flushEx);
+                // If there's still another non-passthrough call to Advance pending, we cannot yet switch back to passthrough mode.
+                if (_nonPassThroughAdvancePending)
+                {
+                    _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+                else
+                {
+                    _currentFlushTcs = null;
+                }
+            }
+        }
+
+        private void Cleanup()
+        {
+            BufferSegment segment = _head;
+            while (segment != null)
+            {
+                BufferSegment returnSegment = segment;
+                segment = segment.NextSegment;
+                returnSegment.ResetMemory();
             }
 
-            // If there's still another non-passthrough call to Advance is pending, we cannot passthrough
-            if (_nonPassThroughAdvancePending)
-            {
-                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            }
-            else
-            {
-                _currentFlushTcs = null;
-            }
+            _head = null;
+            _tail = null;
+            _tailMemory = null;
+            _currentFlushTcs = null;
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
