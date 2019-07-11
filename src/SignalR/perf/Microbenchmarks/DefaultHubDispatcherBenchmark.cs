@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var serviceScopeFactory = provider.GetService<IServiceScopeFactory>();
 
             _dispatcher = new DefaultHubDispatcher<TestHub>(
+                new DefaultHubActivator<TestHub>(),
                 serviceScopeFactory,
                 new HubContext<TestHub>(new DefaultHubLifetimeManager<TestHub>(NullLogger<DefaultHubLifetimeManager<TestHub>>.Instance)),
                 Options.Create(new HubOptions<TestHub>()),

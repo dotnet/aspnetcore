@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void HubCreatedIfNotResolvedFromServiceProvider()
         {
-            Assert.NotNull(
-                new DefaultHubActivator<CreatableHub>(Mock.Of<IServiceProvider>()).Create());
+            var handle = new DefaultHubActivator<CreatableHub>().Create(Mock.Of<IServiceProvider>());
+            Assert.NotNull(handle.Hub);
+            Assert.True(handle.Created);
         }
 
         [Fact]
@@ -30,9 +31,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             mockServiceProvider
                 .Setup(sp => sp.GetService(typeof(Hub)))
                 .Returns(hub);
+            var handle = new DefaultHubActivator<Hub>().Create(mockServiceProvider.Object);
 
-            Assert.Same(hub,
-                new DefaultHubActivator<Hub>(mockServiceProvider.Object).Create());
+            Assert.Same(hub, handle.Hub);
+            Assert.False(handle.Created);
+            Assert.Null(handle.State);
         }
 
 
@@ -49,18 +52,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     return m.Object;
                 });
 
-            var hubActivator = new DefaultHubActivator<Hub>(mockServiceProvider.Object);
-            var hub = hubActivator.Create();
-            hubActivator.Release(hub);
-            Mock.Get(hub).Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
-        }
-
-        [Fact]
-        public void CannotReleaseNullHub()
-        {
-            Assert.Equal("hub",
-                Assert.Throws<ArgumentNullException>(
-                    () => new DefaultHubActivator<Hub>(Mock.Of<IServiceProvider>()).Release(null)).ParamName);
+            var hubActivator = new DefaultHubActivator<Hub>();
+            var handle = hubActivator.Create(mockServiceProvider.Object);
+            hubActivator.Release(handle);
+            Mock.Get(handle.Hub).Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
         }
     }
 }

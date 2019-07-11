@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial class HubConnectionHandler<THub> : Microsoft.AspNetCore.Connections.ConnectionHandler where THub : Microsoft.AspNetCore.SignalR.Hub
     {
-        public HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub> lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> hubOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider userIdProvider, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory serviceScopeFactory) { }
+        public HubConnectionHandler(Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub> lifetimeManager, Microsoft.AspNetCore.SignalR.IHubProtocolResolver protocolResolver, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions> globalHubOptions, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.HubOptions<THub>> hubOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.IUserIdProvider userIdProvider, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory serviceScopeFactory, Microsoft.AspNetCore.SignalR.IHubActivator<THub> hubActivator) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task OnConnectedAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection) { throw null; }
     }

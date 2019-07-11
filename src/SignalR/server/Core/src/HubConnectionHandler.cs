@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="userIdProvider">The user ID provider used to get the user ID from a hub connection.</param>
         /// <param name="serviceScopeFactory">The service scope factory.</param>
+        /// <param name="hubActivator">The hub activator.</param>
         /// <remarks>This class is typically created via dependency injection.</remarks>
         public HubConnectionHandler(HubLifetimeManager<THub> lifetimeManager,
                                     IHubProtocolResolver protocolResolver,
@@ -48,7 +49,8 @@ namespace Microsoft.AspNetCore.SignalR
                                     IOptions<HubOptions<THub>> hubOptions,
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
-                                    IServiceScopeFactory serviceScopeFactory
+                                    IServiceScopeFactory serviceScopeFactory,
+                                    IHubActivator<THub> hubActivator
         )
         {
             _protocolResolver = protocolResolver;
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.SignalR
             _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
 
             _dispatcher = new DefaultHubDispatcher<THub>(
+                hubActivator,
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
                 hubOptions,

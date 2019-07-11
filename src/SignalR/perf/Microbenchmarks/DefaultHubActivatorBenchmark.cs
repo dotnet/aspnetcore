@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var services = new ServiceCollection();
 
             _activator = new DefaultHubActivator<MyHub>();
-            services.BuildServiceProvider();
+            _serviceProvider = services.BuildServiceProvider();
         }
 
         [Benchmark]
