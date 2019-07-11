@@ -102,15 +102,15 @@
         <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
+        <NodeJsProjectsForManagedProjects Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.Js.npmproj" />
         <NodeJsProjects Include="
                           $(RepoRoot)src\SignalR\**\*.npmproj;
-                          $(RepoRoot)src\Components\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 
-        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects);@(NodeJsProjectsForManagedProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
@@ -158,8 +158,10 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;" />
 
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects);@(NodeJsProjectsForManagedProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
+
+        <ProjectToExclude Condition=" '$(BuildManaged)' != 'true' and '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjectsForManagedProjects)" />
       </ItemGroup>
     </Otherwise>
   </Choose>

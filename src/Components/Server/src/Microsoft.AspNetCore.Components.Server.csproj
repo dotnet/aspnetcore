@@ -57,7 +57,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile)')" />
+    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)"/>
     <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
   </ItemGroup>
 
