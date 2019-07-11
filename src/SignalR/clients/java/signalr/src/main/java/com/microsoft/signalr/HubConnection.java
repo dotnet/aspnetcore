@@ -537,8 +537,13 @@ public class HubConnection {
      * @param args   The arguments to be passed to the method.
      */
     public void send(String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
+            }
+        } finally {
+            hubConnectionStateLock.unlock();
         }
 
         sendInvocationMessage(method, args);
@@ -638,9 +643,15 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+            }
+        } finally {
+            hubConnectionStateLock.unlock();
         }
+
 
         String id = connectionState.getNextInvocationId();
 
@@ -677,6 +688,15 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
+            }
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
+
         String invocationId = connectionState.getNextInvocationId();
         AtomicInteger subscriptionCount = new AtomicInteger();
         InvocationRequest irq = new InvocationRequest(returnType, invocationId);
