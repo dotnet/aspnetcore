@@ -151,7 +151,7 @@
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
-    <BuildIisNativeProjects Condition="('$(BuildNative)' == 'true' OR '$(BuildingInsideVisualStudio)' == 'true') AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
+    <BuildIisNativeProjects Condition="'$(BuildNative)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
     <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
     <TargetingPackLayoutRoot>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
     <!-- This property is shared by several projects to layout the AspNetCore.App shared framework for installers -->
