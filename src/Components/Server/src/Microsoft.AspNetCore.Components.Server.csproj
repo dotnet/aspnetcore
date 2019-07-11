@@ -62,12 +62,9 @@
   </ItemGroup>
 
   <Target Name="VerifyBlazorServerJSFileExists" BeforeTargets="CoreCompile">
-    <Warning
-      Text="Blazor server JS files not found and will not be embedded. Set BuildNodeJS to true or build the Microsoft.AspNetCore.Components.Web.JS.npmproj before building this project."
-      Condition="!Exists('$(BlazorServerJSFile)')" />
     <Error
       Text="Blazor server JS files not found and will not be embedded. Set BuildNodeJS to true or build the Microsoft.AspNetCore.Components.Web.JS.npmproj before building this project."
-      Condition="!Exists('$(BlazorServerJSFile)') and '$(Configuration)' == 'Release'" />
+      Condition="!Exists('$(BlazorServerJSFile)')" />
   </Target>
 
 </Project>
