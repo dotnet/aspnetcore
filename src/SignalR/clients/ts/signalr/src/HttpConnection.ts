@@ -370,10 +370,6 @@ export class HttpConnection implements IConnection {
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
                 } catch (ex) {
-                    if (!ex) {
-                        ex = "The transport is not available.";
-                    }
-
                     this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
                     negotiateResponse.connectionId = undefined;
                     transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
