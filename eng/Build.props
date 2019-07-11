@@ -102,7 +102,7 @@
         <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
-        <NodeJsProjectsForManagedProjects Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.Js.npmproj" />
+        <NodeJsProjectsForManagedProjects Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" />
         <NodeJsProjects Include="
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
