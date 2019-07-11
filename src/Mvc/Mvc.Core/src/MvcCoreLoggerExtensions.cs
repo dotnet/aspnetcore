@@ -724,13 +724,14 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     if (i == routeValues.Length - 1)
                     {
-                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\"}}");
+                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\"");
                     }
                     else
                     {
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
+                stringBuilder.Append("}");
 
                 if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
