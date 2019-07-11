@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         // This is not exposed to end users. Throw so we find out if we ever start calling this.
         public override void CancelPendingFlush()
         {
-            // If we wanted, we could propogate IsCanceled when we do multiple flushes in a loop.
+            // If we wanted, we could propagate IsCanceled when we do multiple flushes in a loop.
             // If FlushResult.IsCanceled is true with more data pending to flush, we could complete _currentFlushTcs with canceled flush task,
             // but rekick the FlushAsync loop.
             throw new NotImplementedException();
@@ -209,12 +209,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             {
                 _aborted = true;
 
-                if (_isFlushing)
+                if (!_isFlushing)
                 {
-                    return;
+                    CleanupUnsynchronized();
                 }
-
-                CleanupUnsynchronized();
             }
         }
 
@@ -245,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             while (segment != null)
             {
-                // Make sure we don't return the last segement in the linked list yet.
+                // Make sure we don't return the last segment in the linked list yet.
                 if (returnSegment != null)
                 {
                     returnSegment.ResetMemory();
