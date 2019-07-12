@@ -542,11 +542,10 @@ public class HubConnection {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
             }
+            sendInvocationMessage(method, args);
         } finally {
             hubConnectionStateLock.unlock();
         }
-
-        sendInvocationMessage(method, args);
     }
 
     private void sendInvocationMessage(String method, Object[] args) {
@@ -610,26 +609,31 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public Completable invoke(String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+            }
+
+            String id = connectionState.getNextInvocationId();
+
+            CompletableSubject subject = CompletableSubject.create();
+            InvocationRequest irq = new InvocationRequest(null, id);
+            connectionState.addInvocation(irq);
+
+            Subject<Object> pendingCall = irq.getPendingCall();
+
+            pendingCall.subscribe(result -> subject.onComplete(),
+                    error -> subject.onError(error),
+                    () -> subject.onComplete());
+
+            // Make sure the actual send is after setting up the callbacks otherwise there is a race
+            // where the map doesn't have the callbacks yet when the response is returned
+            sendInvocationMessage(method, args, id, false);
+            return subject;
+        } finally {
+            hubConnectionStateLock.unlock();
         }
-
-        String id = connectionState.getNextInvocationId();
-
-        CompletableSubject subject = CompletableSubject.create();
-        InvocationRequest irq = new InvocationRequest(null, id);
-        connectionState.addInvocation(irq);
-
-        Subject<Object> pendingCall = irq.getPendingCall();
-
-        pendingCall.subscribe(result -> subject.onComplete(),
-                error -> subject.onError(error),
-                () -> subject.onComplete());
-
-        // Make sure the actual send is after setting up the callbacks otherwise there is a race
-        // where the map doesn't have the callbacks yet when the response is returned
-        sendInvocationMessage(method, args, id, false);
-        return subject;
     }
 
     /**
@@ -643,39 +647,37 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
-        InvocationRequest irq;
-        String id;
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
-            id = connectionState.getNextInvocationId();
-            irq = new InvocationRequest(returnType, id);
+            String id = connectionState.getNextInvocationId();
+            InvocationRequest irq = new InvocationRequest(returnType, id);
             connectionState.addInvocation(irq);
+
+            SingleSubject<T> subject = SingleSubject.create();
+
+            // forward the invocation result or error to the user
+            // run continuations on a separate thread
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                // Primitive types can't be cast with the Class cast function
+                if (returnType.isPrimitive()) {
+                    subject.onSuccess((T)result);
+                } else {
+                    subject.onSuccess(returnType.cast(result));
+                }
+            }, error -> subject.onError(error));
+
+            // Make sure the actual send is after setting up the callbacks otherwise there is a race
+            // where the map doesn't have the callbacks yet when the response is returned
+            sendInvocationMessage(method, args, id, false);
+            return subject;
         } finally {
             hubConnectionStateLock.unlock();
         }
-
-        SingleSubject<T> subject = SingleSubject.create();
-
-        // forward the invocation result or error to the user
-        // run continuations on a separate thread
-        Subject<Object> pendingCall = irq.getPendingCall();
-        pendingCall.subscribe(result -> {
-            // Primitive types can't be cast with the Class cast function
-            if (returnType.isPrimitive()) {
-                subject.onSuccess((T)result);
-            } else {
-                subject.onSuccess(returnType.cast(result));
-            }
-        }, error -> subject.onError(error));
-
-        // Make sure the actual send is after setting up the callbacks otherwise there is a race
-        // where the map doesn't have the callbacks yet when the response is returned
-        sendInvocationMessage(method, args, id, false);
-        return subject;
     }
 
     /**
@@ -700,40 +702,35 @@ public class HubConnection {
             invocationId = connectionState.getNextInvocationId();
             irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
-        } finally {
-            hubConnectionStateLock.unlock();
-        }
 
-        AtomicInteger subscriptionCount = new AtomicInteger();
-        ReplaySubject<T> subject = ReplaySubject.create();
-        Subject<Object> pendingCall = irq.getPendingCall();
-        pendingCall.subscribe(result -> {
-            // Primitive types can't be cast with the Class cast function
-            if (returnType.isPrimitive()) {
-                subject.onNext((T)result);
-            } else {
-                subject.onNext(returnType.cast(result));
-            }
-        }, error -> subject.onError(error),
-                () -> subject.onComplete());
+            AtomicInteger subscriptionCount = new AtomicInteger();
+            ReplaySubject<T> subject = ReplaySubject.create();
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                        // Primitive types can't be cast with the Class cast function
+                        if (returnType.isPrimitive()) {
+                            subject.onNext((T)result);
+                        } else {
+                            subject.onNext(returnType.cast(result));
+                        }
+                    }, error -> subject.onError(error),
+                    () -> subject.onComplete());
 
-        Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
-        sendInvocationMessage(method, args, invocationId, true);
-        return observable.doOnDispose(() -> {
-            if (subscriptionCount.decrementAndGet() == 0) {
-                CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
-                sendHubMessage(cancelInvocationMessage);
-                hubConnectionStateLock.lock();
-                try {
+            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+            sendInvocationMessage(method, args, invocationId, true);
+            return observable.doOnDispose(() -> {
+                if (subscriptionCount.decrementAndGet() == 0) {
+                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
+                    sendHubMessage(cancelInvocationMessage);
                     if (connectionState != null) {
                         connectionState.tryRemoveInvocation(invocationId);
                     }
-                } finally {
-                    hubConnectionStateLock.unlock();
+                    subject.onComplete();
                 }
-                subject.onComplete();
-            }
-        });
+            });
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
     }
 
     private void sendHubMessage(HubMessage message) {
