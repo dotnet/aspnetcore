@@ -61,7 +61,7 @@ describe("WebSocketTransport", () => {
 
             await expect(connectPromise)
                 .rejects
-                .toBe("There was an error with the transport.");
+                .toThrow("There was an error with the transport.");
             expect(connectComplete).toBe(false);
         });
     });

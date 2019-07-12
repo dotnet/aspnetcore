@@ -81,7 +81,7 @@ export class WebSocketTransport implements ITransport {
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
                 } else {
-                    error = "There was an error with the transport.";
+                    error = new Error("There was an error with the transport.");
                 }
 
                 reject(error);
