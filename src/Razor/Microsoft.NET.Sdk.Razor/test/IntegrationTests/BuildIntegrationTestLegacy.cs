@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         public abstract string TestProjectName { get; }
         public abstract new string TargetFramework { get; }
+        public virtual string OutputFileName => $"{TestProjectName}.dll";
 
         public BuildIntegrationTestLegacy(LegacyBuildServerTestFixture buildServer)
             : base(buildServer)
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var result = await DotnetMSBuild("Build");
 
                 Assert.BuildPassed(result);
-                Assert.FileExists(result, OutputPath, $"{TestProjectName}.dll");
+                Assert.FileExists(result, OutputPath, OutputFileName);
                 Assert.FileExists(result, OutputPath, $"{TestProjectName}.pdb");
                 Assert.FileExists(result, OutputPath, $"{TestProjectName}.Views.dll");
                 Assert.FileExists(result, OutputPath, $"{TestProjectName}.Views.pdb");
@@ -49,6 +50,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     result,
                     Path.Combine(IntermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache"),
                     @"""Name"":""SimpleMvc.SimpleTagHelper""");
+
+            }
+        }
+
+        [Fact]
+        public virtual async Task BuildingProject_CopyToOutputDirectoryFiles()
+        {
+            using (CreateTestProject())
+            {
+                // Build
+                var result = await DotnetMSBuild("Build");
+
+                Assert.BuildPassed(result);
+                // No cshtml files should be in the build output directory
+                Assert.FileCountEquals(result, 0, Path.Combine(OutputPath, "Views"), "*.cshtml");
+
+                // For .NET Core projects, no ref assemblies should be present in the output directory.
+                Assert.FileCountEquals(result, 0, Path.Combine(OutputPath, "refs"), "*.dll");
             }
         }
 
@@ -61,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 Assert.BuildPassed(result);
 
-                Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.dll");
+                Assert.FileExists(result, PublishOutputPath, OutputFileName);
                 Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.pdb");
                 Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.Views.dll");
                 Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.Views.pdb");
@@ -82,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.BuildPassed(result);
 
                 // Everything we do should noop - including building the app.
-                Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.dll");
+                Assert.FileExists(result, PublishOutputPath, OutputFileName);
                 Assert.FileExists(result, PublishOutputPath, $"{TestProjectName}.pdb");
                 Assert.FileDoesNotExist(result, PublishOutputPath, $"{TestProjectName}.Views.dll");
                 Assert.FileDoesNotExist(result, PublishOutputPath, $"{TestProjectName}.Views.pdb");
@@ -98,8 +117,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 Assert.BuildPassed(result);
 
-                Assert.FileExists(result, IntermediateOutputPath, $"{TestProjectName}.dll");
-                Assert.FileExists(result, IntermediateOutputPath, $"{TestProjectName}.dll");
+                Assert.FileExists(result, IntermediateOutputPath, OutputFileName);
+                Assert.FileExists(result, IntermediateOutputPath, OutputFileName);
                 Assert.FileDoesNotExist(result, IntermediateOutputPath, $"{TestProjectName}.Views.dll");
                 Assert.FileDoesNotExist(result, IntermediateOutputPath, $"{TestProjectName}.Views.pdb");
             }
@@ -130,6 +149,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 Assert.BuildPassed(result);
                 Assert.DoesNotContain("RAZORSDK1005", result.Output);
+            }
+        }
+
+        [Fact]
+        public async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
+        {
+            using (CreateTestProject())
+            {
+                var result = await DotnetMSBuild("Publish", "/p:CopyRefAssembliesToPublishDirectory=true");
+
+                Assert.BuildPassed(result);
+                Assert.FileExists(result, PublishOutputPath, "refs", "System.Threading.Tasks.Extensions.dll");
             }
         }
 

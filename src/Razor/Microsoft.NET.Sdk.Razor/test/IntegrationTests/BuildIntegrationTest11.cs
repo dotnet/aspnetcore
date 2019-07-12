@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIntegrationTest11 : BuildIntegrationTest, IClassFixture<BuildServerTestFixture>
+    public class BuildIntegrationTest11 : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
         public BuildIntegrationTest11(BuildServerTestFixture buildServer)
             : base(buildServer)

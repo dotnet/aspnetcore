@@ -43,6 +43,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyRazorGenerateFilesToPublishDirectory Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'==''">false</CopyRazorGenerateFilesToPublishDirectory>
 
     <!--
+      Set to true to copy reference assembly items to the publish directory.
+
+      Typically reference assemblies are not needed for a published application if Razor compilation occurs at build-time
+      or publish-time. By default, the Razor SDK will suppress the copying of reference assemblies to the publish directory.
+    -->
+    <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
+
+    <!--
     Determines the toolset to use to compile Razor (.cshtml) files. Defaults to 'Implicit' to let the Razor Sdk determine the toolset to use.
     Valid values include 'Implicit', 'RazorSdk', and 'PrecompilationTool'.
     -->

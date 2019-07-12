@@ -214,14 +214,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyRazorGenerateFilesToPublishDirectory Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'">false</CopyRazorGenerateFilesToPublishDirectory>
     <CopyRazorGenerateFilesToPublishDirectory Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='false'">true</CopyRazorGenerateFilesToPublishDirectory>
 
-    <!--
-    In 2.x, setting CopyRefAssembliesToPublishDirectory controlled copying of the refs directory to the publish directory.
-    If explicitly specified, use it to override PreserveCompilationReferences.
-    -->
-    <PreserveCompilationReferences Condition="'$(CopyRefAssembliesToPublishDirectory)'!=''">$(CopyRefAssembliesToPublishDirectory)</PreserveCompilationReferences>
-
-    <PreserveCompilationReferences Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">false</PreserveCompilationReferences>
-    <PreserveCompilationReferences Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='false'">true</PreserveCompilationReferences>
+    <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">false</CopyRefAssembliesToPublishDirectory>
+    <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='false'">true</CopyRefAssembliesToPublishDirectory>
 
     <!--
       We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
@@ -285,11 +279,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Back-compat for PrecompilationTool -->
   <PropertyGroup>
     <!--
-      For 2.x desktop targeting projects using MvcPrecompilation, ref assemblies are required to compile the PrecompiledViews.dll,
-      but are removed by the tool once done. Set PreserveCompilationReferences = true, ignoring any value configured in the project,
-      if the project is using the precompilation tool.
+      Always enable PreserveCompilationReferences for non 3.0 projects. This preserves parity with the 2.x SDK's behavior.
     -->
-    <PreserveCompilationReferences Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'">true</PreserveCompilationReferences>
+    <PreserveCompilationReferences Condition="'$(_TargetingNETCoreApp30OrLater)' != 'true'">true</PreserveCompilationReferences>
   </PropertyGroup>
 
   <!--
@@ -804,6 +796,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'=='false'">
       <ResolvedFileToPublish Remove="%(RazorGenerate.FullPath)"/>
     </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_RazorRemoveRefAssembliesFromPublish"
+    BeforeTargets="PrepareForPublish"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' AND '$(CopyRefAssembliesToPublishDirectory)'!=''">
+    <!--
+      Setting PreserveCompilationReferences affects both Build and Publish, but we want CopyRefAssembliesToPublishDirectory to only affect publishing.
+      If CopyRefAssembliesToPublishDirectory is disabled, clear PreserveCompilationReferences to stop publishing ref assemblies.
+    -->
+    <PropertyGroup>
+      <PreserveCompilationReferences>$(CopyRefAssembliesToPublishDirectory)</PreserveCompilationReferences>
+    </PropertyGroup>
   </Target>
 
   <Target Name="_CheckForMissingRazorCompiler" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
