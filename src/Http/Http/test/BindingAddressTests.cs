@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("https://unix:/tmp/kestrel-test.sock", "https", "unix:/tmp/kestrel-test.sock", 0, "", null)]
         [InlineData("http://unix:/tmp/kestrel-test.sock:", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
         [InlineData("http://unix:/tmp/kestrel-test.sock:/", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
+        [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
         public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
         {
             var serverAddress = BindingAddress.Parse(url);
