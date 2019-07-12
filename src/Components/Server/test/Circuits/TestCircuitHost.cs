@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
             var renderRegistry = new RendererRegistry();
-            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()));
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
             if (remoteRenderer == null)
             {

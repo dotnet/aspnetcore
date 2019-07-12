@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -20,17 +20,23 @@ namespace Microsoft.AspNetCore.Components.Server
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _circuitRegistry;
+        private readonly CircuitOptions _options;
         private readonly ILogger _logger;
 
         /// <summary>
         /// Intended for framework use only. Applications should not instantiate
         /// this class directly.
         /// </summary>
-        public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
+        public ComponentHub(
+            CircuitFactory circuitFactory,
+            CircuitRegistry circuitRegistry,
+            ILogger<ComponentHub> logger,
+            IOptions<CircuitOptions> options)
         {
-            _circuitFactory = services.GetRequiredService<CircuitFactory>();
-            _circuitRegistry = services.GetRequiredService<CircuitRegistry>();
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _circuitFactory = circuitFactory;
+            _circuitRegistry = circuitRegistry;
+            _options = options.Value;
+            _logger = logger;
         }
 
         /// <summary>
@@ -123,6 +129,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
+            Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);   
             EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
@@ -143,7 +150,17 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 Log.UnhandledExceptionInCircuit(_logger, circuitId, (Exception)e.ExceptionObject);
-                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                if (_options.DetailedErrors)
+                {
+                    await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                }
+                else
+                {
+                    var message = $"There was an error on the current session. For more details turn on " +
+                        $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
+
+                    await circuitHost.Client.SendAsync("JS.Error", message);
+                }
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the
@@ -181,6 +198,18 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _failedToTransmitException =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "FailedToTransmitException"), "Failed to transmit exception to client in circuit {CircuitId}");
 
+            private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStatic =
+                LoggerMessage.Define<string, string, string>(
+                    LogLevel.Debug,
+                    new EventId(5, "BeginInvokeDotNet"),
+                    "Invoking static method '[{Assembly}]::{MethodIdentifier}' with callback id '{CallId}'");
+
+            private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstance =
+                LoggerMessage.Define<string, long, string>(
+                    LogLevel.Debug,
+                    new EventId(5, "BeginInvokeDotNet"),
+                    "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'");
+
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
                 _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
@@ -199,6 +228,18 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void FailedToTransmitException(ILogger logger, string circuitId, Exception transmissionException)
             {
                 _failedToTransmitException(logger, circuitId, transmissionException);
+            }
+
+            internal static void BeginInvokeDotNet(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            {
+                if (assemblyName != null)
+                {
+                    _beginInvokeDotNetStatic(logger, assemblyName, methodIdentifier, callId, null);
+                }
+                else
+                {
+                    _beginInvokeDotNetInstance(logger, methodIdentifier, dotNetObjectId, callId, null);
+                }
             }
         }
     }
