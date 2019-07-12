@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
-import { platform } from '../Environment';
+import '../Platform/Platform';
+import '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';

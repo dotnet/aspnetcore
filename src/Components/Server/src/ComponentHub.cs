@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -20,17 +20,23 @@ namespace Microsoft.AspNetCore.Components.Server
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _circuitRegistry;
+        private readonly CircuitOptions _options;
         private readonly ILogger _logger;
 
         /// <summary>
         /// Intended for framework use only. Applications should not instantiate
         /// this class directly.
         /// </summary>
-        public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
+        public ComponentHub(
+            CircuitFactory circuitFactory,
+            CircuitRegistry circuitRegistry,
+            ILogger<ComponentHub> logger,
+            IOptions<CircuitOptions> options)
         {
-            _circuitFactory = services.GetRequiredService<CircuitFactory>();
-            _circuitRegistry = services.GetRequiredService<CircuitRegistry>();
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _circuitFactory = circuitFactory;
+            _circuitRegistry = circuitRegistry;
+            _options = options.Value;
+            _logger = logger;
         }
 
         /// <summary>
@@ -123,7 +129,17 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+        }
+
+        public void EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
+        {
+            _ = EnsureCircuitHost().EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+        }
+
+        public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
+        {
+            _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgs);
         }
 
         /// <summary>
@@ -143,7 +159,17 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 Log.UnhandledExceptionInCircuit(_logger, circuitId, (Exception)e.ExceptionObject);
-                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                if (_options.DetailedErrors)
+                {
+                    await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject.ToString());
+                }
+                else
+                {
+                    var message = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                        $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
+
+                    await circuitHost.Client.SendAsync("JS.Error", message);
+                }
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the
