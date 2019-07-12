@@ -17,6 +17,7 @@
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+      TemplateComponentsPackageVersion=$(TemplateComponentsPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
