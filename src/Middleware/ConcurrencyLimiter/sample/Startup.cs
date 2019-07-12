@@ -23,14 +23,11 @@ namespace ConcurrencyLimiterSample
             });
         }
 
-        //Random rnd = new Random();
-
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.UseConcurrencyLimiter();
             app.Run(async context =>
             {
-                //var delay = rnd.Next(15, 85);
                 var delay = 100;
                 Task.Delay(delay).Wait();
 
