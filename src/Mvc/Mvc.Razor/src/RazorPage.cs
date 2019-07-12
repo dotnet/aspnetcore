@@ -274,11 +274,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        public override void BeginContext(int position, int length, bool isLiteral) 
-            => DiagnosticListener.BeginInstrumentationContext(Context, Path, position, length, isLiteral);
+        public override void BeginContext(int position, int length, bool isLiteral)
+        {
+            // noop
+        }
 
         public override void EndContext()
-            => DiagnosticListener.EndInstrumentationContext(Context, Path);
+        {
+            // noop
+        }
 
         private void EnsureMethodCanBeInvoked(string methodName)
         {

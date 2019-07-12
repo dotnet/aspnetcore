@@ -110,38 +110,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <inheritdoc />
         public override void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
-
-            if ((DiagnosticListener?.IsEnabled() ?? false) && DiagnosticListener?.IsEnabled(BeginContextEvent) == true)
-            {
-                DiagnosticListener.Write(
-                    BeginContextEvent,
-                    new
-                    {
-                        httpContext = ViewContext,
-                        path = Path,
-                        position = position,
-                        length = length,
-                        isLiteral = isLiteral,
-                    });
-            }
+            // noop
         }
 
         /// <inheritdoc />
         public override void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
-
-            if ((DiagnosticListener?.IsEnabled() ?? false) && DiagnosticListener?.IsEnabled(EndContextEvent) == true)
-            {
-                DiagnosticListener.Write(
-                    EndContextEvent,
-                    new
-                    {
-                        httpContext = ViewContext,
-                        path = Path,
-                    });
-            }
+            // noop
         }
 
         /// <summary>
