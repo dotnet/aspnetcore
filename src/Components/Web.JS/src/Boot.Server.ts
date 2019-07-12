@@ -2,7 +2,7 @@ import '@dotnet/jsinterop';
 import './GlobalExports';
 import * as signalR from '@aspnet/signalr';
 import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
-import { fetchBootConfigAsync, loadEmbeddedResourcesAsync, shouldAutoStart } from './BootCommon';
+import { shouldAutoStart } from './BootCommon';
 import { CircuitHandler } from './Platform/Circuits/CircuitHandler';
 import { AutoReconnectCircuitHandler } from './Platform/Circuits/AutoReconnectCircuitHandler';
 import RenderQueue from './Platform/Circuits/RenderQueue';
