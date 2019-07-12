@@ -327,14 +327,13 @@ namespace Interop.FunctionalTests
                 Content = streamingContent,
             };
             var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
-            // The server doesn't respond until we send the first set of data
+            // The server won't send headers until it gets the first message
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
             var response = await responseTask;
 
             Assert.Equal(HttpVersion.Version20, response.Version);
             var stream = await response.Content.ReadAsStreamAsync();
             var responseBuffer = new byte["Hello World".Length];
-
 
             var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
             Assert.Equal(responseBuffer.Length, read);
@@ -549,10 +548,12 @@ namespace Interop.FunctionalTests
                     {
                         var bytes = Encoding.UTF8.GetBytes(text);
                         await stream.WriteAsync(bytes);
+                        await stream.FlushAsync();
                     }
                     catch (Exception ex)
                     {
                         _sendComplete.TrySetException(ex);
+                        throw;
                     }
                 };
                 _sendStarted.SetResult(0);
