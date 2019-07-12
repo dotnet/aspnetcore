@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http
@@ -89,15 +90,14 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
+                var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length + 2, StringComparison.Ordinal);
-                }
-                else
-                {
-                    pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length, StringComparison.Ordinal);
+                    // Windows has drive letters and volume separator (c:)
+                    unixPipeHostPrefixLength += 2;
                 }
 
+                pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + unixPipeHostPrefixLength, StringComparison.Ordinal);
                 pathDelimiterEnd = pathDelimiterStart + ":".Length;
             }
 
