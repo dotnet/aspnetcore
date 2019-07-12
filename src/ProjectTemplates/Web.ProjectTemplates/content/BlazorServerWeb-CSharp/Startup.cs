@@ -38,7 +38,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 #endif
 #if (IndividualLocalAuth)
-using RazorComponentsWeb_CSharp.Areas.Identity;
+using BlazorServerWeb_CSharp.Areas.Identity;
 #endif
 using BlazorServerWeb_CSharp.Data;
 
