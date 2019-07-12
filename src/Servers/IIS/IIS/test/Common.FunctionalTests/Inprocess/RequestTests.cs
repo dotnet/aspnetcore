@@ -12,6 +12,7 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(IISTestSiteCollection.Name)]
+    [RequiresNewHandler]
     public class RequestInProcessTests
     {
         private readonly IISTestSiteFixture _fixture;
