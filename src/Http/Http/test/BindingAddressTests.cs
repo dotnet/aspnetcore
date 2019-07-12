@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
         [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
         [InlineData("http://unix:/c:/foo/bar/pipe.socket:5000/doesn't/matter", "http", "unix:/c:/foo/bar/pipe.socket", 0, "5000/doesn't/matter", "http://unix:/c:/foo/bar/pipe.socket")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
         public void UrlsAreParsedCorrectlyOnWindows(string url, string scheme, string host, int port, string pathBase, string toString)
         {
             var serverAddress = BindingAddress.Parse(url);
