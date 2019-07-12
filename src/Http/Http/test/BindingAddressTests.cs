@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Equal(toString ?? url, serverAddress.ToString());
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http://unix:/c:/foo/bar/pipe.socket", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", null)]
         [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
         [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
