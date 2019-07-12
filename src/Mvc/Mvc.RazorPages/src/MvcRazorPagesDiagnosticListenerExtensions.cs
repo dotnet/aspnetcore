@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
-            IDictionary<string, object> arguments,
+            IReadOnlyDictionary<string, object> arguments,
             object instance)
         {
             Debug.Assert(diagnosticListener != null);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance)
+        private static void BeforeHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object> arguments, object instance)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.BeforeHandlerMethod.EventName))
             {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
             HandlerMethodDescriptor handlerMethodDescriptor,
-            IDictionary<string, object> arguments,
+            IReadOnlyDictionary<string, object> arguments,
             object instance,
             IActionResult result)
         {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IDictionary<string, object> arguments, object instance, IActionResult result)
+        private static void AfterHandlerMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, HandlerMethodDescriptor handlerMethodDescriptor, IReadOnlyDictionary<string, object> arguments, object instance, IActionResult result)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.AfterHandlerMethod.EventName))
             {

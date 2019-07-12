@@ -675,7 +675,7 @@ namespace Microsoft.AspNetCore.Mvc
         public static void BeforeActionMethod(
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
-            IDictionary<string, object> actionArguments,
+            IReadOnlyDictionary<string, object> actionArguments,
             object controller)
         {
             Debug.Assert(diagnosticListener != null);
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private static void BeforeActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller)
+        private static void BeforeActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IReadOnlyDictionary<string, object> actionArguments, object controller)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.BeforeActionMethod.EventName))
             {
@@ -707,7 +707,7 @@ namespace Microsoft.AspNetCore.Mvc
         public static void AfterActionMethod(
             this DiagnosticListener diagnosticListener,
             ActionContext actionContext,
-            IDictionary<string, object> actionArguments,
+            IReadOnlyDictionary<string, object> actionArguments,
             object controller,
             IActionResult result)
         {
@@ -723,7 +723,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private static void AfterActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IDictionary<string, object> actionArguments, object controller, IActionResult result)
+        private static void AfterActionMethodImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, IReadOnlyDictionary<string, object> actionArguments, object controller, IActionResult result)
         {
             if (diagnosticListener.IsEnabled(Diagnostics.AfterActionMethod.EventName))
             {
