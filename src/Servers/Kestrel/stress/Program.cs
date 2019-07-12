@@ -72,22 +72,22 @@ public class Program
         EventListener listener =
             logPath == null ? null :
             new HttpEventListener(logPath != "console" ? new StreamWriter(logPath) { AutoFlush = true } : null);
-        if (listener == null)
-        {
-            // If no command-line requested logging, enable the user to press 'L' to enable logging to the console
-            // during execution, so that it can be done just-in-time when something goes awry.
-            new Thread(() =>
-            {
-                while (true)
-                {
-                    if (Console.ReadKey(intercept: true).Key == ConsoleKey.L)
-                    {
-                        listener = new HttpEventListener();
-                        break;
-                    }
-                }
-            }) { IsBackground = true }.Start();
-        }
+        // if (listener == null)
+        // {
+        //     // If no command-line requested logging, enable the user to press 'L' to enable logging to the console
+        //     // during execution, so that it can be done just-in-time when something goes awry.
+        //     new Thread(() =>
+        //     {
+        //         while (true)
+        //         {
+        //             if (Console.ReadKey(intercept: true).Key == ConsoleKey.L)
+        //             {
+        //                 listener = new HttpEventListener();
+        //                 break;
+        //             }
+        //         }
+        //     }) { IsBackground = true }.Start();
+        // }
 
         string contentSource = string.Concat(Enumerable.Repeat("1234567890", maxContentLength / 10));
         const int DisplayIntervalMilliseconds = 10000;
