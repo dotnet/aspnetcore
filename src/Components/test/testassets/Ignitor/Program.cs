@@ -41,7 +41,7 @@ namespace Ignitor
             {
                 if (batchId < 1000)
                 {
-                    client.ClickAsync("thecounter");
+                    var _ = client.ClickAsync("thecounter");
                 }
                 else
                 {
