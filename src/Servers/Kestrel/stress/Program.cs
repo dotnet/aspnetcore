@@ -515,7 +515,7 @@ public class Program
             new Thread(() =>
             {
                 // 10 second delay * 180 = 1800 seconds or 30 minutes
-                for (var i = 0 ; i < 180; i++)
+                for (var j = 0 ; j < 180; j++)
                 {
                     Thread.Sleep(DisplayIntervalMilliseconds);
                     lock (Console.Out)
