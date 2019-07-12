@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override Memory<byte> GetMemory(int sizeHint = 0)
             {
-                return new Memory<byte>(new byte[sizeHint]);
+                return new Memory<byte>(new byte[sizeHint == 0 ? 4096 : sizeHint]);
             }
 
             public override Span<byte> GetSpan(int sizeHint = 0)
