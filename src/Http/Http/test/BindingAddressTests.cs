@@ -55,6 +55,10 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("http://unix:/tmp/kestrel-test.sock:", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
         [InlineData("http://unix:/tmp/kestrel-test.sock:/", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
         [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", null)]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:5000/doesn't/matter", "http", "unix:/c:/foo/bar/pipe.socket", 0, "5000/doesn't/matter", "http://unix:/c:/foo/bar/pipe.socket")]
         public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
         {
             var serverAddress = BindingAddress.Parse(url);

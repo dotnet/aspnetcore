@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -88,7 +89,15 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length, StringComparison.Ordinal);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length + 2, StringComparison.Ordinal);
+                }
+                else
+                {
+                    pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + UnixPipeHostPrefix.Length, StringComparison.Ordinal);
+                }
+
                 pathDelimiterEnd = pathDelimiterStart + ":".Length;
             }
 
