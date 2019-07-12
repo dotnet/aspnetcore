@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\Middleware.sln",
+    "path": "C:\\Users\\t-dygra\\Desktop\\AspNetCore\\src\\Middleware\\Middleware.sln",
     "projects": [
       "..\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "..\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
@@ -15,12 +15,11 @@
       "..\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "..\\http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
       "..\\http\\http\\src\\Microsoft.AspNetCore.Http.csproj",
-      "HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj",
+      "ConcurrencyLimiter\\perf\\Microbenchmarks\\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj",
       "ConcurrencyLimiter\\sample\\ConcurrencyLimiterSample.csproj",
-      "ConcurrencyLimiter\\starvationSample\\ConcurrencyLimiterStarvationSample.csproj",
       "ConcurrencyLimiter\\src\\Microsoft.AspNetCore.ConcurrencyLimiter.csproj",
       "ConcurrencyLimiter\\test\\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj",
-      "ConcurrencyLimiter\\perf\\Microbenchmarks\\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj"
+      "HttpsPolicy\\src\\Microsoft.AspNetCore.HttpsPolicy.csproj"
     ]
   }
 }
