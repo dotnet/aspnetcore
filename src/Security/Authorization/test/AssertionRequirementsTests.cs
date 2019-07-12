@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var formattedValue = requirement.ToString();
 
             // Assert
-            Assert.Equal("AssertionRequirement:Handler return True", formattedValue);
+            Assert.Equal("Handler assertion should evaluate to true.", formattedValue);
         }
     }
 }

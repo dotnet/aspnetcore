@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var formattedValue = requirement.ToString();
 
             // Assert
-            Assert.Equal("ClaimsAuthorizationRequirement:Claim.Type=Custom AND Claim.Value in (CustomValue1|CustomValue2)", formattedValue);
+            Assert.Equal("ClaimsAuthorizationRequirement:Claim.Type=Custom and Claim.Value is one of the following values: (CustomValue1|CustomValue2)", formattedValue);
         }
         [Fact]
         public void ToString_ShouldReturnWithoutAllowedDescriptionWhenAllowedValuesIsNull()
