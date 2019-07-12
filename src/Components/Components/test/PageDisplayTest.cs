@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisplaysComponentInsideLayout()
         {
             // Arrange/Act
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(ComponentWithLayout) }
             })));
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisplaysComponentInsideNestedLayout()
         {
             // Arrange/Act
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(ComponentWithNestedLayout) }
             })));
@@ -111,13 +111,13 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithSameLayout()
         {
             // Arrange
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(ComponentWithLayout) }
             })));
 
             // Act
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(DifferentComponentWithLayout) }
             })));
@@ -162,13 +162,13 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithDifferentLayout()
         {
             // Arrange
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(ComponentWithLayout) }
             })));
 
             // Act
-            _renderer.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Dispatcher.InvokeAsync(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(PageDisplay.Page), typeof(ComponentWithNestedLayout) }
             })));

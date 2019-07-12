@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
         protected Task InvokeAsync(Action workItem)
-            => _renderHandle.InvokeAsync(workItem);
+            => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
         /// <summary>
         /// Executes the supplied work item on the associated renderer's
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
         protected Task InvokeAsync(Func<Task> workItem)
-            => _renderHandle.InvokeAsync(workItem);
+            => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
         void IComponent.Configure(RenderHandle renderHandle)
         {

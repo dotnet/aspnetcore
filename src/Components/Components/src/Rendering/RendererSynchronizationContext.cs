@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components.Rendering
 {
     [DebuggerDisplay("{_state,nq}")]
-    internal class RendererSynchronizationContext : SynchronizationContext, IDispatcher
+    internal class RendererSynchronizationContext : SynchronizationContext
     {
         private static readonly ContextCallback ExecutionContextThunk = (object state) =>
         {

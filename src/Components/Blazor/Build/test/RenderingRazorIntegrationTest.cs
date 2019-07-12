@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Trigger the change event to show it updates the property
             //
             // This should always complete synchronously.
-            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
+            var task = renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Trigger the change event to show it updates the property
             //
             // This should always complete synchronously.
-            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
+            var task = renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             //
             // This should always complete synchronously.
             var newDateValue = new DateTime(2018, 3, 5, 4, 5, 6);
-            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = newDateValue.ToString(), }));
+            var task = renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = newDateValue.ToString(), }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Trigger the change event to show it updates the property
             //
             // This should always complete synchronously.
-            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = new DateTime(2018, 3, 5).ToString(testDateFormat), }));
+            var task = renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = new DateTime(2018, 3, 5).ToString(testDateFormat), }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Trigger the change event to show it updates the property
             //
             // This should always complete synchronously.
-            var task =  renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs() { Value = false, }));
+            var task =  renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs() { Value = false, }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Trigger the change event to show it updates the property
             //
             // This should always complete synchronously.
-            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = MyEnum.SecondValue.ToString(), }));
+            var task = renderer.Dispatcher.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = MyEnum.SecondValue.ToString(), }));
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
             await task;
 

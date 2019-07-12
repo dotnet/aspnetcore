@@ -30,16 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
             HttpContext httpContext,
             Type componentType)
         {
-            var dispatcher = Renderer.CreateDefaultDispatcher();
-
             InitializeUriHelper(httpContext);
             var loggerFactory = (ILoggerFactory)httpContext.RequestServices.GetService(typeof (ILoggerFactory));
-            using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, loggerFactory, dispatcher, _encoder.Encode))
+            using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, loggerFactory, _encoder.Encode))
             {
                 ComponentRenderedText result = default;
                 try
                 {
-                    result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
+                    result = await htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
                         componentType,
                         parameters));
                 }
