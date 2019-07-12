@@ -217,26 +217,8 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         public System.Xml.Linq.XElement SerializedDescriptorElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
-namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
-{
-    public abstract partial class CngAuthenticatedEncryptorBase : Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor, System.IDisposable
-    {
-        protected CngAuthenticatedEncryptorBase() { }
-        public byte[] Decrypt(System.ArraySegment<byte> ciphertext, System.ArraySegment<byte> additionalAuthenticatedData) { throw null; }
-        protected unsafe abstract byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData);
-        public abstract void Dispose();
-        public byte[] Encrypt(System.ArraySegment<byte> plaintext, System.ArraySegment<byte> additionalAuthenticatedData) { throw null; }
-        public byte[] Encrypt(System.ArraySegment<byte> plaintext, System.ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize) { throw null; }
-        protected unsafe abstract byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
-    }
-}
 namespace Microsoft.AspNetCore.DataProtection.Internal
 {
-    public partial class DataProtectionBuilder : Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder
-    {
-        public DataProtectionBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
-        public Microsoft.Extensions.DependencyInjection.IServiceCollection Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
     public partial interface IActivator
     {
         object CreateInstance(System.Type expectedBaseType, string implementationTypeName);
