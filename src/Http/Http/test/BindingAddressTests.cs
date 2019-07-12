@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 namespace Microsoft.AspNetCore.Http.Tests
 {
@@ -54,11 +55,6 @@ namespace Microsoft.AspNetCore.Http.Tests
         [InlineData("https://unix:/tmp/kestrel-test.sock", "https", "unix:/tmp/kestrel-test.sock", 0, "", null)]
         [InlineData("http://unix:/tmp/kestrel-test.sock:", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
         [InlineData("http://unix:/tmp/kestrel-test.sock:/", "http", "unix:/tmp/kestrel-test.sock", 0, "", "http://unix:/tmp/kestrel-test.sock")]
-        [InlineData("http://unix:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "unix:/tmp/kestrel-test.sock", 0, "5000/doesn't/matter", "http://unix:/tmp/kestrel-test.sock")]
-        [InlineData("http://unix:/c:/foo/bar/pipe.socket", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", null)]
-        [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
-        [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
-        [InlineData("http://unix:/c:/foo/bar/pipe.socket:5000/doesn't/matter", "http", "unix:/c:/foo/bar/pipe.socket", 0, "5000/doesn't/matter", "http://unix:/c:/foo/bar/pipe.socket")]
         public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
         {
             var serverAddress = BindingAddress.Parse(url);
@@ -70,5 +66,24 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             Assert.Equal(toString ?? url, serverAddress.ToString());
         }
+
+        [Theory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", null)]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:/", "http", "unix:/c:/foo/bar/pipe.socket", 0, "", "http://unix:/c:/foo/bar/pipe.socket")]
+        [InlineData("http://unix:/c:/foo/bar/pipe.socket:5000/doesn't/matter", "http", "unix:/c:/foo/bar/pipe.socket", 0, "5000/doesn't/matter", "http://unix:/c:/foo/bar/pipe.socket")]
+        public void UrlsAreParsedCorrectlyOnWindows(string url, string scheme, string host, int port, string pathBase, string toString)
+        {
+            var serverAddress = BindingAddress.Parse(url);
+
+            Assert.Equal(scheme, serverAddress.Scheme);
+            Assert.Equal(host, serverAddress.Host);
+            Assert.Equal(port, serverAddress.Port);
+            Assert.Equal(pathBase, serverAddress.PathBase);
+
+            Assert.Equal(toString ?? url, serverAddress.ToString());
+        }
+
     }
 }
