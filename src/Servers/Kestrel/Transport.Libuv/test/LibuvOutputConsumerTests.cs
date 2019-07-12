@@ -760,7 +760,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var processor = new LibuvOuputProcessor
             {
                 ProcessingTask = outputTask,
-                OutputProducer = (Http1OutputProducer)http1Connection.Output
+                OutputProducer = (Http1OutputProducer)http1Connection.Output,
+                PipeWriter = pair.Transport.Output,
             };
 
             return processor;
@@ -769,11 +770,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         private class LibuvOuputProcessor
         {
             public Http1OutputProducer OutputProducer { get; set; }
+            public PipeWriter PipeWriter { get; set; }
             public Task ProcessingTask { get; set; }
 
             public async ValueTask DisposeAsync()
             {
-                OutputProducer.PipeWriter.Complete();
+                OutputProducer.Dispose();
+                PipeWriter.Complete();
 
                 await ProcessingTask;
             }

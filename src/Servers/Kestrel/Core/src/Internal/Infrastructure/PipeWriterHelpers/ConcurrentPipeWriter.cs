@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
         private bool _bufferedWritePending;
 
-        // We're trusting the Http2FrameWriter to not call into the PipeWriter after calling abort, we don't validate this.
-        // We will however clean up after any ongoing flush, assuming a flush is in progress.
+        // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling abort.
+        // If an abort occurs while a flush is in progress, we clean up after the flush completes, and don't flush again.
         private bool _aborted;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool)
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                     lock (_sync)
                     {
-                        if (_bytesBuffered == 0)
+                        if (_bytesBuffered == 0 || _aborted)
                         {
                             CompleteFlushUnsynchronized(flushResult, null);
                             return flushResult;
@@ -238,7 +238,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
             while (segment != null)
             {
-                // Fortunately, the sizeHint is now more than a hint, now it's a guaranteed minimum size for the returned span.
                 _innerPipeWriter.Write(segment.Memory.Span);
 
                 var returnSegment = segment;
