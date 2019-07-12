@@ -208,12 +208,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 // If we're flushing, the cleanup will happen after the flush.
                 if (_currentFlushTcs == null)
                 {
-                    CleanupUnsynchronized();
+                    CleanupSegmentsUnsynchronized();
                 }
             }
         }
 
-        private void CleanupUnsynchronized()
+        private void CleanupSegmentsUnsynchronized()
         {
             BufferSegment segment = _head;
             while (segment != null)
@@ -270,6 +270,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
         {
+            // Ensure all blocks are returned prior to the last call to FlushAsync() completing.
+            if (_aborted)
+            {
+                CleanupSegmentsUnsynchronized();
+            }
+
             if (flushEx != null)
             {
                 _currentFlushTcs.SetException(flushEx);
@@ -280,11 +286,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
 
             _currentFlushTcs = null;
-
-            if (_aborted)
-            {
-                CleanupUnsynchronized();
-            }
         }
 
         // The methods below were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
