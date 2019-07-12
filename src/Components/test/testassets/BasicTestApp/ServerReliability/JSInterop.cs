@@ -1,7 +1,7 @@
 using System;
 using Microsoft.JSInterop;
 
-namespace BasicTestApp
+namespace BasicTestApp.ServerReliability
 {
     public class JSInterop
     {

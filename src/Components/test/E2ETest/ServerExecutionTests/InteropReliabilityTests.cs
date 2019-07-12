@@ -10,11 +10,11 @@ using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>
     {
-        private const int DefaultLatencyTimeout = 500;
+        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromMilliseconds(500);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public InteropReliabilityTests(AspNetSiteServerFixture serverFixture)
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             _serverFixture = serverFixture;
         }
 
-        public BlazorClient Client { get; set; } = new BlazorClient() { DefaultLatencyTimeout = new TimeSpan(DefaultLatencyTimeout) };
+        public BlazorClient Client { get; set; } = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
 
         [Fact]
         public async Task CannotInvokeNonJSInvokableMethods()
@@ -149,12 +149,14 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact(Skip = "Pending changes from extensions")]
+        [Fact]
         public async Task CannotInvokeJSInvokableMethodsWithWrongReferenceId()
         {
             // Arrange
             var expectedDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
-
+            var expectedError = "[\"1\"," +
+                "false," +
+                "\"There was an exception invoking \\u0027Reverse\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             await Client.InvokeDotNetMethod(
                 "1",
                 "BasicTestApp",
-                "CreateInformation",
+                "CreateImportant",
                 null,
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
@@ -176,20 +178,22 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 JsonSerializer.Serialize(Array.Empty<object>()));
 
             // Assert
-            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"egasseM\"]"));
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", "[\"1\",true,\"tnatropmI\"]"));
 
-            await Assert.ThrowsAsync<OperationCanceledException>(() => Client.InvokeDotNetMethod(
+            await Client.InvokeDotNetMethod(
                 "1",
                 null,
                 "Reverse",
                 3, // non existing ref
-                JsonSerializer.Serialize(Array.Empty<object>())));
+                JsonSerializer.Serialize(Array.Empty<object>()));
+            
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(Client, batches);
         }
 
         [Fact]
-        public async Task CannotInvokeJSInvokableMethodsWronReferenceIdType()
+        public async Task CannotInvokeJSInvokableMethodsWrongReferenceIdType()
         {
             // Arrange
             var expectedImportantDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
