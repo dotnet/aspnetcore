@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             IJsonHelper jsonHelper,
-            DiagnosticListener diagnosticListener,
+            DiagnosticSource diagnosticSource,
             HtmlEncoder htmlEncoder,
             IModelExpressionProvider modelExpressionProvider)
         {
@@ -43,8 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
                 JsonHelperAccessor = context => jsonHelper,
-                DiagnosticListenerAccessor = context => diagnosticListener,
-                DiagnosticSourceAccessor = context => diagnosticListener,
+                DiagnosticSourceAccessor = context => diagnosticSource,
                 HtmlEncoderAccessor = context => htmlEncoder,
                 ModelExpressionProviderAccessor = context => modelExpressionProvider,
             };

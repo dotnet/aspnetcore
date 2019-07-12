@@ -108,10 +108,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 valueAccessor = valueAccessors.JsonHelperAccessor;
             }
-            else if (property.PropertyType == typeof(DiagnosticListener))
-            {
-                valueAccessor = valueAccessors.DiagnosticListenerAccessor;
-            }
             else if (property.PropertyType == typeof(DiagnosticSource))
             {
                 valueAccessor = valueAccessors.DiagnosticSourceAccessor;
@@ -144,8 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public Func<ViewContext, object> UrlHelperAccessor { get; set; }
 
             public Func<ViewContext, object> JsonHelperAccessor { get; set; }
-
-            public Func<ViewContext, object> DiagnosticListenerAccessor { get; set; }
 
             public Func<ViewContext, object> DiagnosticSourceAccessor { get; set; }
 

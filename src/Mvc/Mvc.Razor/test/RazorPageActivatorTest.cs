@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticListener, instance.DiagnosticListener);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticListener, instance.DiagnosticListener);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
 
             // When we don't have a model property, the activator will just leave ViewData alone.
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             activator.Activate(instance, viewContext);
 
             // Assert
-            Assert.Same(DiagnosticListener, instance.DiagnosticListener);
+            Assert.Same(DiagnosticListener, instance.DiagnosticSource);
             Assert.Same(HtmlEncoder, instance.HtmlEncoder);
             Assert.Same(JsonHelper, instance.Json);
             Assert.Same(urlHelper, instance.Url);
