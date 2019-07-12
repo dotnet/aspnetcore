@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
@@ -129,8 +131,48 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);   
-            EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+            var _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+        }
+
+        public void DispatchBrowserEvent(string args)
+        {
+            try
+            {
+                var document = JsonDocument.Parse(args);
+                if (document.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    // Log not array
+                    return;
+                }
+                var length = document.RootElement.GetArrayLength();
+                if (length != 2)
+                {
+                    // Log invalid length
+                }
+                RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
+                string eventArgsJson = null;
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    if (eventDescriptor == null)
+                    {
+                        eventDescriptor = JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
+                            element.GetRawText(),
+                            JsonSerializerOptionsProvider.Options);
+                    }
+                    else
+                    {
+                        eventArgsJson = element.GetString();
+                    }
+                }
+                var _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgsJson);
+
+            }
+            catch (Exception e)
+            {
+                CircuitHost_UnhandledException(this, new UnhandledExceptionEventArgs(e, false));
+                throw;
+            }
         }
 
         /// <summary>

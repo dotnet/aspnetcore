@@ -18,8 +18,7 @@ namespace Microsoft.AspNetCore.Components.Web
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(DispatchEvent))]
-        public static Task DispatchEvent(
-            BrowserEventDescriptor eventDescriptor, string eventArgsJson)
+        public static Task DispatchEvent(BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
             InterpretEventDescriptor(eventDescriptor);
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);

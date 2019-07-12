@@ -136,6 +136,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
+        internal async Task DispatchEvent(RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgsJson)
+        {
+            try
+            {
+                AssertInitialized();
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgsJson);
+                });
+            }
+            catch (Exception ex)
+            {
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             await Renderer.Dispatcher.InvokeAsync(async () =>
@@ -170,12 +187,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-        public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            AssertInitialized();
-
             try
             {
+                AssertInitialized();
+
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);

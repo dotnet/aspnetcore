@@ -130,10 +130,20 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
   }
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
-      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-    },
+    beginInvokeDotNetFromJS: serverDispatcher,
   });
+
+  function serverDispatcher(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void {
+    switch (methodIdentifier) {
+      case 'DispatchEvent':
+        if (assemblyName === 'Microsoft.AspNetCore.Components.Web') {
+          connection.send('DispatchBrowserEvent', argsJson);
+        }
+        break;
+      default:
+        connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    }
+  }
 
   return connection;
 }
