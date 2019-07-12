@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class StackQueuePolicy : IQueuePolicy
+    internal class LIFOQueuePolicy : IQueuePolicy
     {
         private readonly List<TaskCompletionSource<bool>> _buffer;
         private readonly int _maxQueueCapacity;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private int _freeServerSpots;
 
-        public StackQueuePolicy(IOptions<QueuePolicyOptions> options)
+        public LIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _buffer = new List<TaskCompletionSource<bool>>();
             _maxQueueCapacity = options.Value.RequestQueueLimit;

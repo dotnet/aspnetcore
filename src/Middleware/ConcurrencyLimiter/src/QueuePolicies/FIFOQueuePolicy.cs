@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class TailDropQueuePolicy : IQueuePolicy, IDisposable
+    internal class FIFOQueuePolicy : IQueuePolicy, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public TailDropQueuePolicy(IOptions<QueuePolicyOptions> options)
+        public FIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             if (_maxConcurrentRequests <= 0)

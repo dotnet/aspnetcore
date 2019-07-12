@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
-            services.AddSingleton<IQueuePolicy, TailDropQueuePolicy>();
+            services.AddSingleton<IQueuePolicy, FIFOQueuePolicy>();
             return services;
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddStackQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
-            services.AddSingleton<IQueuePolicy, StackQueuePolicy>();
+            services.AddSingleton<IQueuePolicy, LIFOQueuePolicy>();
             return services;
         }
     }

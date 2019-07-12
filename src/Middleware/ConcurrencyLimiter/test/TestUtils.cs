@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 );
         }
 
-        internal static StackQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        internal static LIFOQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestsQueuelimit
             });
 
-            return new StackQueuePolicy(options);
+            return new LIFOQueuePolicy(options);
         }
 
-        internal static TailDropQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        internal static FIFOQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new TailDropQueuePolicy(options);
+            return new FIFOQueuePolicy(options);
         }
     }
 

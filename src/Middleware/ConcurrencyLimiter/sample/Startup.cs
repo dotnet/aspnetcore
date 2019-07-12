@@ -18,34 +18,33 @@ namespace ConcurrencyLimiterSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddStackQueue((options) => {
-                options.MaxConcurrentRequests = 12;
+                options.MaxConcurrentRequests = Environment.ProcessorCount;
                 options.RequestQueueLimit = 50;
             });
         }
 
-        Random rnd = new Random();
+        //Random rnd = new Random();
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.UseConcurrencyLimiter();
             app.Run(async context =>
             {
-                var delay = rnd.Next(15, 85);
-                //var delay = 100;
+                //var delay = rnd.Next(15, 85);
+                var delay = 100;
                 Task.Delay(delay).Wait();
 
-                await context.Response.WriteAsync("Hello Request Throttling!");
+                await context.Response.WriteAsync("Hello World!");
             });
         }
 
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            new WebHostBuilder()
                 .UseKestrel()
                 .UseStartup<Startup>()
-                .Build();
-
-            host.Run();
+                .Build()
+                .Run();
         }
     }
 }
