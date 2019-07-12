@@ -13,7 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${TemplateComponentsPackageVersion}" />
   </ItemGroup>
 
 </Project>

@@ -882,15 +882,12 @@
         "ExampleJsInterop.cs"
       ]
     },
-    "ComponentsAndViews": {
+    "ViewsOnly": {
       "Template": "razorclasslib",
-      "Arguments": "new razorclasslib --support-pages-and-views false",
+      "Arguments": "new razorclasslib --support-pages-and-views true",
       "Files": [
         "content/background.png",
-        "content/exampleJsInterop.js",
         "content/styles.css",
-        "Component1.razor",
-        "ExampleJsInterop.cs",
         "Areas/MyFeature/Pages/Page1.cshtml",
         "Areas/MyFeature/Pages/Page1.cshtml.cs"
       ]

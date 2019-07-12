@@ -28,6 +28,14 @@
           "exclude": [
             "Areas/**"
           ]
+        },
+        {
+          "condition": "(SupportPagesAndViews)",
+          "exclude": [
+            "Component1.razor",
+            "ExampleJsInterop.cs",
+            "content/exampleJsInterop.js"
+          ]
         }
       ]
     }

@@ -1,7 +1,7 @@
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
-namespace BlazorLibrary_CSharp
+namespace RazorClassLibrary_CSharp
 {
     public class ExampleJsInterop
     {
