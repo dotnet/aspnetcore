@@ -279,6 +279,31 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
+        [Fact]
+        public async Task CannotInvokeJSInvokableMethodsWithMalformedArgumentPayload()
+        {
+            // Arrange
+            var expectedError = "[\"1\"," +
+                "false," +
+                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
+
+            // Act
+            await Client.InvokeDotNetMethod(
+                "1",
+                "BasicTestApp",
+                "ReceiveTrivial",
+                null,
+                "[ { \"data\": {\"}} ]");
+
+            // Assert
+            Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
+            await ValidateClientKeepsWorking(Client, batches);
+        }
+
+
         private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>
             ValidateClientKeepsWorking(Client, () => batches.Count);
 

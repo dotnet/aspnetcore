@@ -186,7 +186,7 @@ namespace Ignitor
             }
             catch (Exception e)
             {
-                NextJSInteropReceived?.Completion?.TrySetResult(e);
+                NextJSInteropReceived?.Completion?.TrySetException(e);
             }
         }
 
