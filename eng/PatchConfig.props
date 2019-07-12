@@ -73,4 +73,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Server.IIS;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.7' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
