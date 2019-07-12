@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <PackageId>Microsoft.DotNet.Web.Spa.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
     <Description>Single Page Application templates for ASP.NET Core
 
     To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>

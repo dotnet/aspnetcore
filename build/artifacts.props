@@ -152,7 +152,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" Category="ship" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="noship" />
