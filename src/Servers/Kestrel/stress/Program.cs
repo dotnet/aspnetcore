@@ -39,7 +39,7 @@ public class Program
         cmd.AddOption(new Option("-connectionLifetime", "Max connection lifetime length (milliseconds).") { Argument = new Argument<int?>("connectionLifetime", null)});
         cmd.AddOption(new Option("-ops", "Indices of the operations to use") { Argument = new Argument<int[]>("space-delimited indices", null) });
         cmd.AddOption(new Option("-trace", "Enable Microsoft-System-Net-Http tracing.") { Argument = new Argument<string>("\"console\" or path") });
-        cmd.AddOption(new Option("-aspnetlog", "Enable ASP.NET warning and error logging.") { Argument = new Argument<bool>("enable", true) });
+        cmd.AddOption(new Option("-aspnetlog", "Enable ASP.NET warning and error logging.") { Argument = new Argument<bool>("enable", false) });
         cmd.AddOption(new Option("-listOps", "List available options.") { Argument = new Argument<bool>("enable", false) });
         cmd.AddOption(new Option("-seed", "Seed for generating pseudo-random parameters for a given -n argument.") { Argument = new Argument<int?>("seed", null)});
 
@@ -90,8 +90,8 @@ public class Program
         }
 
         string contentSource = string.Concat(Enumerable.Repeat("1234567890", maxContentLength / 10));
-        const int DisplayIntervalMilliseconds = 1000;
-        const int HttpsPort = 44301;
+        const int DisplayIntervalMilliseconds = 10000;
+        const int HttpsPort = 5001;
         const string LocalhostName = "localhost";
         string serverUri = $"https://{LocalhostName}:{HttpsPort}";
 
@@ -396,7 +396,7 @@ public class Program
             })
 
             // Output only warnings and errors from Kestrel
-            .ConfigureLogging(log => log.AddFilter("Microsoft.AspNetCore", level => aspnetLog ? level >= LogLevel.Trace : false))
+            .ConfigureLogging(log => log.AddFilter("Microsoft.AspNetCore", level => aspnetLog ? level >= LogLevel.Error : false))
 
             // Set up how each request should be handled by the server.
             .Configure(app =>
@@ -514,7 +514,8 @@ public class Program
             // Spin up a thread dedicated to outputting stats for each defined interval
             new Thread(() =>
             {
-                while (true)
+                // 10 second delay * 180 = 1800 seconds or 30 minutes
+                for (var i = 0 ; i < 180; i++)
                 {
                     Thread.Sleep(DisplayIntervalMilliseconds);
                     lock (Console.Out)
