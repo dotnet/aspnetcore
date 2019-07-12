@@ -218,6 +218,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
             var consumed = sequenceReader.Position;
+            var consumedBytes = default(long);
             var equalsDelimiter = GetEqualsForEncoding();
             var andDelimiter = GetAndForEncoding();
 
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false) ||
                     !sequenceReader.IsNext(equalsDelimiter, true))
                 {
-                    if (sequenceReader.Consumed > KeyLengthLimit)
+                    if ((sequenceReader.Consumed - consumedBytes) > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
@@ -245,7 +246,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
-                        if (sequenceReader.Consumed - key.Length > ValueLengthLimit)
+                        if ((sequenceReader.Consumed - consumedBytes - key.Length) > ValueLengthLimit)
                         {
                             ThrowValueTooLargeException();
                         }
@@ -268,6 +269,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
 
+                consumedBytes = sequenceReader.Consumed;
                 consumed = sequenceReader.Position;
             }
 
