@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             var eventSource = new ConcurrencyLimiterEventSource();
 
             Assert.Equal("Microsoft.AspNetCore.ConcurrencyLimiter", eventSource.Name);
-            Assert.Equal(Guid.Parse("436f1cb1-8acc-56c0-86ec-e0832bd696ed"), eventSource.Guid);
+            Assert.Equal(Guid.Parse("a605548a-6963-55cf-f000-99a6013deb01"), eventSource.Guid);
         }
 
         [Fact]
