@@ -37,14 +37,10 @@ using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
-<<<<<<< HEAD:src/ProjectTemplates/Web.ProjectTemplates/content/RazorComponentsWeb-CSharp/Startup.cs
 #if (IndividualLocalAuth)
 using RazorComponentsWeb_CSharp.Areas.Identity;
 #endif
-using RazorComponentsWeb_CSharp.Data;
-=======
 using BlazorServerWeb_CSharp.Data;
->>>>>>> Rename RazorComponents template directory to BlazorServer:src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/Startup.cs
 
 namespace BlazorServerWeb_CSharp
 {
