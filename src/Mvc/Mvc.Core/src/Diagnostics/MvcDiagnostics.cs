@@ -10,21 +10,21 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeAction : MvcDiagnostic
+    public sealed class BeforeAction : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeAction);
-        public ActionDescriptor ActionDescriptor { get; }
-        public HttpContext HttpContext { get; }
-        public RouteData RouteData { get; }
-
-        protected override int Count => 3;
-
         public BeforeAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
             ActionDescriptor = actionDescriptor;
             HttpContext = httpContext;
             RouteData = routeData;
         }
+
+        public ActionDescriptor ActionDescriptor { get; }
+        public HttpContext HttpContext { get; }
+        public RouteData RouteData { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -35,14 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterAction : MvcDiagnostic
+    public sealed class AfterAction : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterAction);
-        public ActionDescriptor ActionDescriptor { get; }
-        public HttpContext HttpContext { get; }
-        public RouteData RouteData { get; }
-
-        protected override int Count => 3;
 
         public AfterAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
@@ -51,6 +46,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             RouteData = routeData;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public HttpContext HttpContext { get; }
+        public RouteData RouteData { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -60,14 +61,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnAuthorization : MvcDiagnostic
+    public sealed class BeforeOnAuthorization : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnAuthorization);
-        public ActionDescriptor ActionDescriptor { get; }
-        public AuthorizationFilterContext AuthorizationContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
@@ -76,6 +72,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public AuthorizationFilterContext AuthorizationContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -85,14 +87,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnAuthorization : MvcDiagnostic
+    public sealed class AfterOnAuthorization : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnAuthorization);
-        public ActionDescriptor ActionDescriptor { get; }
-        public AuthorizationFilterContext AuthorizationContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
@@ -101,6 +98,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public AuthorizationFilterContext AuthorizationContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -110,14 +113,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecution : MvcDiagnostic
+    public sealed class BeforeOnResourceExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResourceExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutingContext ResourceExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -126,6 +124,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutingContext ResourceExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -135,14 +139,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecution : MvcDiagnostic
+    public sealed class AfterOnResourceExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResourceExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutedContext ResourceExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -151,6 +150,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutedContext ResourceExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -160,14 +165,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecuting : MvcDiagnostic
+    public sealed class BeforeOnResourceExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResourceExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutingContext ResourceExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -176,6 +176,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutingContext ResourceExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -185,14 +191,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecuting : MvcDiagnostic
+    public sealed class AfterOnResourceExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResourceExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutingContext ResourceExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
@@ -201,6 +202,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutingContext ResourceExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -210,14 +217,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecuted : MvcDiagnostic
+    public sealed class BeforeOnResourceExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResourceExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutedContext ResourceExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -226,6 +228,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutedContext ResourceExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -235,14 +243,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecuted : MvcDiagnostic
+    public sealed class AfterOnResourceExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResourceExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResourceExecutedContext ResourceExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
@@ -251,6 +254,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResourceExecutedContext ResourceExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -260,14 +269,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnException : MvcDiagnostic
+    public sealed class BeforeOnException : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnException);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ExceptionContext ExceptionContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
@@ -276,6 +280,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ExceptionContext ExceptionContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -285,14 +295,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnException : MvcDiagnostic
+    public sealed class AfterOnException : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnException);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ExceptionContext ExceptionContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
@@ -301,6 +306,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ExceptionContext ExceptionContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -310,14 +321,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecution : MvcDiagnostic
+    public sealed class BeforeOnActionExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnActionExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutingContext ActionExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -326,6 +332,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutingContext ActionExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -335,14 +347,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecution : MvcDiagnostic
+    public sealed class AfterOnActionExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnActionExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutedContext ActionExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -351,6 +358,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutedContext ActionExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -360,14 +373,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecuting : MvcDiagnostic
+    public sealed class BeforeOnActionExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnActionExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutingContext ActionExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -376,6 +384,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutingContext ActionExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -385,14 +399,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecuting : MvcDiagnostic
+    public sealed class AfterOnActionExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnActionExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutingContext ActionExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
@@ -401,6 +410,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutingContext ActionExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -410,14 +425,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecuted : MvcDiagnostic
+    public sealed class BeforeOnActionExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnActionExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutedContext ActionExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -426,6 +436,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutedContext ActionExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -435,14 +451,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecuted : MvcDiagnostic
+    public sealed class AfterOnActionExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnActionExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ActionExecutedContext ActionExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
@@ -451,6 +462,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ActionExecutedContext ActionExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -460,21 +477,22 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeActionMethod : MvcDiagnostic
+    public sealed class BeforeActionMethod : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeActionMethod);
-        public ActionContext ActionContext { get; }
-        public IDictionary<string, object> Arguments { get; }
-        public object Controller { get; }
 
-        protected override int Count => 3;
-
-        public BeforeActionMethod(ActionContext actionContext, IDictionary<string, object> arguments, object controller)
+        public BeforeActionMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, object controller)
         {
             ActionContext = actionContext;
             Arguments = arguments;
             Controller = controller;
         }
+
+        public ActionContext ActionContext { get; }
+        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public object Controller { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -485,23 +503,24 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterActionMethod : MvcDiagnostic
+    public sealed class AfterActionMethod : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterActionMethod);
-        public ActionContext ActionContext { get; }
-        public IDictionary<string, object> Arguments { get; }
-        public object Controller { get; }
-        public IActionResult Result { get; }
 
-        protected override int Count => 4;
-
-        public AfterActionMethod(ActionContext actionContext, IDictionary<string, object> arguments, object controller, IActionResult result)
+        public AfterActionMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, object controller, IActionResult result)
         {
             ActionContext = actionContext;
             Arguments = arguments;
             Controller = controller;
             Result = result;
         }
+
+        public ActionContext ActionContext { get; }
+        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public object Controller { get; }
+        public IActionResult Result { get; }
+
+        protected override int Count => 4;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -513,14 +532,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecution : MvcDiagnostic
+    public sealed class BeforeOnResultExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResultExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutingContext ResultExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -529,6 +543,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutingContext ResultExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -538,14 +558,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecution : MvcDiagnostic
+    public sealed class AfterOnResultExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResultExecution);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutedContext ResultExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -554,6 +569,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutedContext ResultExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -563,14 +584,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecuting : MvcDiagnostic
+    public sealed class BeforeOnResultExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResultExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutingContext ResultExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -579,6 +595,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutingContext ResultExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -588,14 +610,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecuting : MvcDiagnostic
+    public sealed class AfterOnResultExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResultExecuting);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutingContext ResultExecutingContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
@@ -604,6 +621,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutingContext ResultExecutingContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -613,14 +636,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecuted : MvcDiagnostic
+    public sealed class BeforeOnResultExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnResultExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutedContext ResultExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -629,6 +647,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutedContext ResultExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -638,14 +662,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecuted : MvcDiagnostic
+    public sealed class AfterOnResultExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnResultExecuted);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ResultExecutedContext ResultExecutedContext { get; }
-        public IFilterMetadata Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
@@ -654,6 +673,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ResultExecutedContext ResultExecutedContext { get; }
+        public IFilterMetadata Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -663,19 +688,20 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeActionResult : MvcDiagnostic
+    public sealed class BeforeActionResult : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeActionResult);
-        public ActionContext ActionContext { get; }
-        public IActionResult Result { get; }
-
-        protected override int Count => 2;
 
         public BeforeActionResult(ActionContext actionContext, IActionResult result)
         {
             ActionContext = actionContext;
             Result = result;
         }
+
+        public ActionContext ActionContext { get; }
+        public IActionResult Result { get; }
+
+        protected override int Count => 2;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -685,19 +711,20 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterActionResult : MvcDiagnostic
+    public sealed class AfterActionResult : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterActionResult);
-        public ActionContext ActionContext { get; }
-        public IActionResult Result { get; }
-
-        protected override int Count => 2;
 
         public AfterActionResult(ActionContext actionContext, IActionResult result)
         {
             ActionContext = actionContext;
             Result = result;
         }
+
+        public ActionContext ActionContext { get; }
+        public IActionResult Result { get; }
+
+        protected override int Count => 2;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {

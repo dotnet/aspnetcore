@@ -10,24 +10,24 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeHandlerMethod : MvcDiagnostic
+    public sealed class BeforeHandlerMethod : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeHandlerMethod);
 
-        public ActionContext ActionContext { get; }
-        public IDictionary<string, object> Arguments { get; }
-        public HandlerMethodDescriptor HandlerMethodDescriptor { get; }
-        public object Instance { get; }
-
-        protected override int Count => 4;
-
-        public BeforeHandlerMethod(ActionContext actionContext, IDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
+        public BeforeHandlerMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
         {
             ActionContext = actionContext;
             Arguments = arguments;
             HandlerMethodDescriptor = handlerMethodDescriptor;
             Instance = instance;
         }
+
+        public ActionContext ActionContext { get; }
+        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public HandlerMethodDescriptor HandlerMethodDescriptor { get; }
+        public object Instance { get; }
+
+        protected override int Count => 4;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -39,19 +39,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterHandlerMethod : MvcDiagnostic
+    public sealed class AfterHandlerMethod : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterHandlerMethod);
 
-        public ActionContext ActionContext { get; }
-        public IDictionary<string, object> Arguments { get; }
-        public HandlerMethodDescriptor HandlerMethodDescriptor { get; }
-        public object Instance { get; }
-        public IActionResult Result { get; }
-
-        protected override int Count => 5;
-
-        public AfterHandlerMethod(ActionContext actionContext, IDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
+        public AfterHandlerMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -59,6 +51,14 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Instance = instance;
             Result = result;
         }
+
+        public ActionContext ActionContext { get; }
+        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public HandlerMethodDescriptor HandlerMethodDescriptor { get; }
+        public object Instance { get; }
+        public IActionResult Result { get; }
+
+        protected override int Count => 5;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -71,15 +71,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecution : MvcDiagnostic
+    public sealed class BeforeOnPageHandlerExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecution);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutingContext HandlerExecutionContext { get; }
-        public IAsyncPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
         {
@@ -87,6 +81,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             HandlerExecutionContext = handlerExecutionContext;
             Filter = filter;
         }
+
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutingContext HandlerExecutionContext { get; }
+        public IAsyncPageFilter Filter { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -97,15 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecution : MvcDiagnostic
+    public sealed class AfterOnPageHandlerExecution : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecution);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutedContext HandlerExecutedContext { get; }
-        public IAsyncPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
         {
@@ -114,6 +108,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutedContext HandlerExecutedContext { get; }
+        public IAsyncPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -123,15 +123,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecuting : MvcDiagnostic
+    public sealed class BeforeOnPageHandlerExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecuting);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutingContext HandlerExecutingContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
@@ -140,6 +134,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutingContext HandlerExecutingContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -149,15 +149,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecuting : MvcDiagnostic
+    public sealed class AfterOnPageHandlerExecuting : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecuting);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutingContext HandlerExecutingContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
@@ -166,6 +160,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutingContext HandlerExecutingContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -175,15 +175,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecuted : MvcDiagnostic
+    public sealed class BeforeOnPageHandlerExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecuted);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutedContext HandlerExecutedContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
@@ -192,6 +186,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutedContext HandlerExecutedContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -201,15 +201,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecuted : MvcDiagnostic
+    public sealed class AfterOnPageHandlerExecuted : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecuted);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerExecutedContext HandlerExecutedContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
@@ -218,6 +212,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerExecutedContext HandlerExecutedContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -227,15 +227,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerSelection : MvcDiagnostic
+    public sealed class BeforeOnPageHandlerSelection : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerSelection);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerSelectedContext HandlerSelectedContext { get; }
-        public IAsyncPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
@@ -244,6 +238,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerSelectedContext HandlerSelectedContext { get; }
+        public IAsyncPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -253,15 +253,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerSelection : MvcDiagnostic
+    public sealed class AfterOnPageHandlerSelection : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnPageHandlerSelection);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerSelectedContext HandlerSelectedContext { get; }
-        public IAsyncPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
@@ -270,6 +264,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerSelectedContext HandlerSelectedContext { get; }
+        public IAsyncPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -279,15 +279,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerSelected : MvcDiagnostic
+    public sealed class BeforeOnPageHandlerSelected : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerSelected);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerSelectedContext HandlerSelectedContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public BeforeOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
@@ -296,6 +290,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             Filter = filter;
         }
 
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerSelectedContext HandlerSelectedContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -305,15 +305,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerSelected : MvcDiagnostic
+    public sealed class AfterOnPageHandlerSelected : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterOnPageHandlerSelected);
-
-        public CompiledPageActionDescriptor ActionDescriptor { get; }
-        public PageHandlerSelectedContext HandlerSelectedContext { get; }
-        public IPageFilter Filter { get; }
-
-        protected override int Count => 3;
 
         public AfterOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
@@ -321,6 +315,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             HandlerSelectedContext = handlerSelectedContext;
             Filter = filter;
         }
+
+        public CompiledPageActionDescriptor ActionDescriptor { get; }
+        public PageHandlerSelectedContext HandlerSelectedContext { get; }
+        public IPageFilter Filter { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {

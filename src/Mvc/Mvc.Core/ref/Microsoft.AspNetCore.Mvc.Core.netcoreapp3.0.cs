@@ -1720,7 +1720,18 @@ namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure
 }
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed partial class AfterAction : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public abstract partial class EventData : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.IEnumerable
+    {
+        protected const string EventNamespace = "Microsoft.AspNetCore.Mvc.";
+        protected EventData() { }
+        protected abstract int Count { get; }
+        protected abstract System.Collections.Generic.KeyValuePair<string, object> this[int index] { get; }
+        int System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String, System.Object>>.Count { get { throw null; } }
+        System.Collections.Generic.KeyValuePair<string, object> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.String, System.Object>>.this[int index] { get { throw null; } }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.Object>>.GetEnumerator() { throw null; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+    }
+    public sealed partial class AfterAction : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterAction";
         public AfterAction(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteData routeData) { }
@@ -1730,18 +1741,18 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteData RouteData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterActionMethod : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterActionMethod : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterActionMethod";
-        public AfterActionMethod(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IDictionary<string, object> arguments, object controller, Microsoft.AspNetCore.Mvc.IActionResult result) { }
+        public AfterActionMethod(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IReadOnlyDictionary<string, object> arguments, object controller, Microsoft.AspNetCore.Mvc.IActionResult result) { }
         public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Controller { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override int Count { get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterActionResult : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterActionResult : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterActionResult";
         public AfterActionResult(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.IActionResult result) { }
@@ -1750,7 +1761,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnActionExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnActionExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted";
         public AfterOnActionExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext actionExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1760,7 +1771,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class AfterOnActionExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnActionExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnActionExecuting";
         public AfterOnActionExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext actionExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1770,7 +1781,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class AfterOnActionExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnActionExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnActionExecution";
         public AfterOnActionExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext actionExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1780,7 +1791,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class AfterOnAuthorization : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnAuthorization : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnAuthorization";
         public AfterOnAuthorization(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext authorizationContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1790,7 +1801,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class AfterOnException : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnException : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnException";
         public AfterOnException(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ExceptionContext exceptionContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1800,7 +1811,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class AfterOnResourceExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResourceExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted";
         public AfterOnResourceExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext resourceExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1810,7 +1821,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext ResourceExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnResourceExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResourceExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting";
         public AfterOnResourceExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext resourceExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1820,7 +1831,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext ResourceExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnResourceExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResourceExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResourceExecution";
         public AfterOnResourceExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext resourceExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1830,7 +1841,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext ResourceExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnResultExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResultExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResultExecuted";
         public AfterOnResultExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext resultExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1840,7 +1851,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext ResultExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnResultExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResultExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResultExecuting";
         public AfterOnResultExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext resultExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1850,7 +1861,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext ResultExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class AfterOnResultExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class AfterOnResultExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnResultExecution";
         public AfterOnResultExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext resultExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1860,7 +1871,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext ResultExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeAction : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeAction : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeAction";
         public BeforeAction(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteData routeData) { }
@@ -1870,17 +1881,17 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteData RouteData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeActionMethod : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeActionMethod : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeActionMethod";
-        public BeforeActionMethod(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IDictionary<string, object> arguments, object controller) { }
+        public BeforeActionMethod(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IReadOnlyDictionary<string, object> arguments, object controller) { }
         public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Controller { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override int Count { get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeActionResult : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeActionResult : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeActionResult";
         public BeforeActionResult(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.IActionResult result) { }
@@ -1889,7 +1900,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnActionExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnActionExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted";
         public BeforeOnActionExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext actionExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1899,7 +1910,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeOnActionExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnActionExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting";
         public BeforeOnActionExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext actionExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1909,7 +1920,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeOnActionExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnActionExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnActionExecution";
         public BeforeOnActionExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext actionExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1919,7 +1930,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeOnAuthorization : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnAuthorization : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization";
         public BeforeOnAuthorization(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext authorizationContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1929,7 +1940,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeOnException : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnException : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnException";
         public BeforeOnException(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ExceptionContext exceptionContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1939,7 +1950,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
-    public sealed partial class BeforeOnResourceExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResourceExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted";
         public BeforeOnResourceExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext resourceExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1949,7 +1960,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext ResourceExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnResourceExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResourceExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting";
         public BeforeOnResourceExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext resourceExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1959,7 +1970,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext ResourceExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnResourceExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResourceExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution";
         public BeforeOnResourceExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext resourceExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1969,7 +1980,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext ResourceExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnResultExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResultExecuted : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted";
         public BeforeOnResultExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext resultExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1979,7 +1990,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext ResultExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnResultExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResultExecuting : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting";
         public BeforeOnResultExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext resultExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }
@@ -1989,7 +2000,7 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext ResultExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class BeforeOnResultExecution : Microsoft.AspNetCore.Mvc.Diagnostics.MvcDiagnostic
+    public sealed partial class BeforeOnResultExecution : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnResultExecution";
         public BeforeOnResultExecution(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext resultExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata filter) { }

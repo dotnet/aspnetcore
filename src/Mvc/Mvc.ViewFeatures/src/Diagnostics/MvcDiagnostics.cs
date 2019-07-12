@@ -10,15 +10,9 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeViewComponent : MvcDiagnostic
+    public sealed class BeforeViewComponent : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeViewComponent);
-
-        public ActionDescriptor ActionDescriptor { get; }
-        public ViewComponentContext ViewComponentContext { get; }
-        public object ViewComponent { get; }
-
-        protected override int Count => 3;
 
         public BeforeViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, object viewComponent)
         {
@@ -26,6 +20,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewComponentContext = viewComponentContext;
             ViewComponent = viewComponent;
         }
+
+        public ActionDescriptor ActionDescriptor { get; }
+        public ViewComponentContext ViewComponentContext { get; }
+        public object ViewComponent { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -36,16 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterViewComponent : MvcDiagnostic
+    public sealed class AfterViewComponent : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterViewComponent);
-
-        public ActionDescriptor ActionDescriptor { get; }
-        public ViewComponentContext ViewComponentContext { get; }
-        public IViewComponentResult ViewComponentResult { get; }
-        public object ViewComponent { get; }
-
-        protected override int Count => 4;
 
         public AfterViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IViewComponentResult viewComponentResult, object viewComponent)
         {
@@ -54,6 +47,13 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewComponentResult = viewComponentResult;
             ViewComponent = viewComponent;
         }
+
+        public ActionDescriptor ActionDescriptor { get; }
+        public ViewComponentContext ViewComponentContext { get; }
+        public IViewComponentResult ViewComponentResult { get; }
+        public object ViewComponent { get; }
+
+        protected override int Count => 4;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -65,14 +65,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewComponentBeforeViewExecute : MvcDiagnostic
+    public sealed class ViewComponentBeforeViewExecute : EventData
     {
         public const string EventName = EventNamespace + nameof(ViewComponentBeforeViewExecute);
-        public ActionDescriptor ActionDescriptor { get; }
-        public ViewComponentContext ViewComponentContext { get; }
-        public IView View { get; }
-
-        protected override int Count => 3;
 
         public ViewComponentBeforeViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
@@ -80,6 +75,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewComponentContext = viewComponentContext;
             View = view;
         }
+        public ActionDescriptor ActionDescriptor { get; }
+        public ViewComponentContext ViewComponentContext { get; }
+        public IView View { get; }
+
+        protected override int Count => 3;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -90,15 +90,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewComponentAfterViewExecute : MvcDiagnostic
+    public sealed class ViewComponentAfterViewExecute : EventData
     {
         public const string EventName = EventNamespace + nameof(ViewComponentAfterViewExecute);
-
-        public ActionDescriptor ActionDescriptor { get; }
-        public ViewComponentContext ViewComponentContext { get; }
-        public IView View { get; }
-
-        protected override int Count => 3;
 
         public ViewComponentAfterViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
@@ -107,6 +101,12 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             View = view;
         }
 
+        public ActionDescriptor ActionDescriptor { get; }
+        public ViewComponentContext ViewComponentContext { get; }
+        public IView View { get; }
+
+        protected override int Count => 3;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionDescriptor), ActionDescriptor),
@@ -116,14 +116,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeView : MvcDiagnostic
+    public sealed class BeforeView : EventData
     {
         public const string EventName = EventNamespace + nameof(BeforeView);
-
-        public IView View { get; }
-        public ViewContext ViewContext { get; }
-
-        protected override int Count => 2;
 
         public BeforeView(IView view, ViewContext viewContext)
         {
@@ -131,6 +126,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewContext = viewContext;
         }
 
+        public IView View { get; }
+        public ViewContext ViewContext { get; }
+
+        protected override int Count => 2;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(View), View),
@@ -139,14 +139,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterView : MvcDiagnostic
+    public sealed class AfterView : EventData
     {
         public const string EventName = EventNamespace + nameof(AfterView);
-
-        public IView View { get; }
-        public ViewContext ViewContext { get; }
-
-        protected override int Count => 2;
 
         public AfterView(IView view, ViewContext viewContext)
         {
@@ -154,6 +149,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewContext = viewContext;
         }
 
+        public IView View { get; }
+        public ViewContext ViewContext { get; }
+
+        protected override int Count => 2;
+
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(View), View),
@@ -162,17 +162,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewFound : MvcDiagnostic
+    public sealed class ViewFound : EventData
     {
         public const string EventName = EventNamespace + nameof(ViewFound);
-
-        public ActionContext ActionContext { get; }
-        public bool IsMainPage { get; }
-        public ActionResult Result { get; }
-        public string ViewName { get; }
-        public IView View { get; }
-
-        protected override int Count => 5;
 
         public ViewFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IView view)
         {
@@ -182,6 +174,14 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewName = viewName;
             View = view;
         }
+
+        public ActionContext ActionContext { get; }
+        public bool IsMainPage { get; }
+        public ActionResult Result { get; }
+        public string ViewName { get; }
+        public IView View { get; }
+
+        protected override int Count => 5;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
@@ -194,17 +194,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewNotFound : MvcDiagnostic
+    public sealed class ViewNotFound : EventData
     {
         public const string EventName = EventNamespace + nameof(ViewNotFound);
-
-        public ActionContext ActionContext { get; }
-        public bool IsMainPage { get; }
-        public ActionResult Result { get; }
-        public string ViewName { get; }
-        public IEnumerable<string> SearchedLocations { get; }
-
-        protected override int Count => 5;
 
         public ViewNotFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IEnumerable<string> searchedLocations)
         {
@@ -214,6 +206,14 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
             ViewName = viewName;
             SearchedLocations = searchedLocations;
         }
+
+        public ActionContext ActionContext { get; }
+        public bool IsMainPage { get; }
+        public ActionResult Result { get; }
+        public string ViewName { get; }
+        public IEnumerable<string> SearchedLocations { get; }
+
+        protected override int Count => 5;
 
         protected override KeyValuePair<string, object> this[int index] => index switch
         {
