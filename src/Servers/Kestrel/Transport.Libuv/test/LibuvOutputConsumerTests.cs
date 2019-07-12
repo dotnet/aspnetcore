@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -741,8 +740,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
 
-            var concurrentPipeWriter = new ConcurrentPipeWriter(pair.Transport.Output, _memoryPool);
-
             var http1Connection = new Http1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
@@ -750,7 +747,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 ConnectionFeatures = connectionFeatures,
                 MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Transport = new DuplexPipe(pair.Transport.Input, concurrentPipeWriter)
+                Transport = pair.Transport
             });
 
             if (cts != null)
@@ -763,8 +760,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var processor = new LibuvOuputProcessor
             {
                 ProcessingTask = outputTask,
-                OutputProducer = (Http1OutputProducer)http1Connection.Output,
-                RawPipeWriter = pair.Transport.Output,
+                OutputProducer = (Http1OutputProducer)http1Connection.Output
             };
 
             return processor;
@@ -772,14 +768,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         private class LibuvOuputProcessor
         {
-            public PipeWriter RawPipeWriter { get; set; }
             public Http1OutputProducer OutputProducer { get; set; }
             public Task ProcessingTask { get; set; }
 
             public async ValueTask DisposeAsync()
             {
-                ((ConcurrentPipeWriter)OutputProducer.PipeWriter).Abort();
-                RawPipeWriter.Complete();
+                OutputProducer.PipeWriter.Complete();
 
                 await ProcessingTask;
             }
