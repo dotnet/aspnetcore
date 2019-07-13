@@ -113,6 +113,9 @@
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects);@(NodeJsProjectsForManagedProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
+        <!-- If explicitly disabling NodeJS builds, do not build NodeJsProjectsForManagedProjects, if BuildNodeJS is empty, let managed projects determine whether NodeJsProjectsForManagedProjects is built -->
+        <ProjectToExclude Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjectsForManagedProjects)" />
+
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 
