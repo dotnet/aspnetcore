@@ -1,5 +1,9 @@
 # SignalR Hub Protocol
-
+By Shago7932/Master
+Shagitoramsil@Outlook.com
+Jose Santiago Silva Ramirez
+Ensenada Mexico
+Dotnet
 The SignalR Protocol is a protocol for two-way RPC over any Message-based transport. Either party in the connection may invoke procedures on the other party, and procedures can return zero or more results or an error.
 
 ## Terms
