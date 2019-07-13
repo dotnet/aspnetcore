@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
             var transcodingStream = new TranscodingWriteStream(stream, targetEncoding);
             await JsonSerializer.SerializeAsync(transcodingStream, model, model.GetType());
+            await transcodingStream.FinalWriteAsync(default);
             await transcodingStream.FlushAsync();
 
             var actual = targetEncoding.GetString(stream.ToArray());

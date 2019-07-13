@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
-            await WriteAsync(ArraySegment<byte>.Empty, flush: true, cancellationToken);
             await _stream.FlushAsync(cancellationToken);
         }
 
@@ -73,12 +72,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         {
             ThrowArgumentException(buffer, offset, count);
             var bufferSegment = new ArraySegment<byte>(buffer, offset, count);
-            return WriteAsync(bufferSegment, flush: false, cancellationToken);
+            return WriteAsync(bufferSegment, cancellationToken);
         }
 
         private async Task WriteAsync(
             ArraySegment<byte> bufferSegment,
-            bool flush,
             CancellationToken cancellationToken)
         {
             var decoderCompleted = false;
@@ -87,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 _decoder.Convert(
                     bufferSegment,
                     _charBuffer.AsSpan(_charsDecoded),
-                    flush,
+                    flush: false,
                     out var bytesDecoded,
                     out var charsDecoded,
                     out decoderCompleted);
@@ -95,41 +93,34 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 _charsDecoded += charsDecoded;
                 bufferSegment = bufferSegment.Slice(bytesDecoded);
 
-                if (flush || !decoderCompleted)
+                if (!decoderCompleted)
                 {
-                    // This is being invoked from FlushAsync or the char buffer is not large enough
-                    // to accomodate all writes.
-                    await WriteBufferAsync(flush, cancellationToken);
+                    await WriteBufferAsync(cancellationToken);
                 }
             }
         }
 
-        private async Task WriteBufferAsync(bool flush, CancellationToken cancellationToken)
+        private async Task WriteBufferAsync(CancellationToken cancellationToken)
         {
-            var encoderCompletd = false;
+            var encoderCompleted = false;
             var charsWritten = 0;
             var byteBuffer = ArrayPool<byte>.Shared.Rent(_maxByteBufferSize);
 
-            try
+            while (!encoderCompleted && charsWritten < _charsDecoded)
             {
-                while (!encoderCompletd && charsWritten < _charsDecoded)
-                {
-                    _encoder.Convert(
-                        _charBuffer.AsSpan(charsWritten, _charsDecoded - charsWritten),
-                        byteBuffer,
-                        flush,
-                        out var charsEncoded,
-                        out var bytesUsed,
-                        out encoderCompletd);
+                _encoder.Convert(
+                    _charBuffer.AsSpan(charsWritten, _charsDecoded - charsWritten),
+                    byteBuffer,
+                    flush: false,
+                    out var charsEncoded,
+                    out var bytesUsed,
+                    out encoderCompleted);
 
-                    await _stream.WriteAsync(byteBuffer.AsMemory(0, bytesUsed), cancellationToken);
-                    charsWritten += charsEncoded;
-                }
+                await _stream.WriteAsync(byteBuffer.AsMemory(0, bytesUsed), cancellationToken);
+                charsWritten += charsEncoded;
             }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(byteBuffer);
-            }
+
+            ArrayPool<byte>.Shared.Return(byteBuffer);
 
             // At this point, we've written all the buffered chars to the underlying Stream.
             _charsDecoded = 0;
@@ -160,6 +151,31 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 _disposed = true;
                 ArrayPool<char>.Shared.Return(_charBuffer);
             }
+        }
+
+        public async Task FinalWriteAsync(CancellationToken cancellationToken)
+        {
+            // First write any buffered content
+            await WriteBufferAsync(cancellationToken);
+
+            // Now flush the encoder.
+            var byteBuffer = ArrayPool<byte>.Shared.Rent(_maxByteBufferSize);
+            var encoderCompleted = false;
+
+            while (!encoderCompleted)
+            {
+                _encoder.Convert(
+                    Array.Empty<char>(),
+                    byteBuffer,
+                    flush: true,
+                    out _,
+                    out var bytesUsed,
+                    out encoderCompleted);
+
+                await _stream.WriteAsync(byteBuffer.AsMemory(0, bytesUsed), cancellationToken);
+            }
+
+            ArrayPool<byte>.Shared.Return(byteBuffer);
         }
     }
 }
