@@ -10,9 +10,6 @@ namespace Microsoft.AspNetCore.Hosting.Server.Abstractions
     /// <typeparam name="TContext">The <see cref="IHttpApplication{TContext}"/> Host context</typeparam>
     public interface IHostContextContainer<TContext>
     {
-        /// <summary>
-        /// ref return as <typeparamref name="TContext"/> may be a struct
-        /// </summary>
-        ref TContext HostContext { get; }
+        TContext HostContext { get; set; }
     }
 }

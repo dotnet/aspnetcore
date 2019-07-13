@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext>
     {
         private readonly IHttpApplication<TContext> _application;
-        // Pooled Host context
-        private TContext _context;
 
         public Http2Stream(IHttpApplication<TContext> application, Http2StreamContext context) : base(context)
         {
@@ -24,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _ = ProcessRequestsAsync(_application);
         }
 
-        ref TContext IHostContextContainer<TContext>.HostContext => ref _context;
+        // Pooled Host context
+        TContext IHostContextContainer<TContext>.HostContext { get; set; }
     }
 }

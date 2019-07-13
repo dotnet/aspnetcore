@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Hosting.Server.Abstractions
 {
     public partial interface IHostContextContainer<TContext>
     {
-        ref TContext HostContext { get; }
+        TContext HostContext { get; set; }
     }
 }
 namespace Microsoft.AspNetCore.Hosting.Server.Features

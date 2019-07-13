@@ -7,11 +7,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed class Http1Connection<TContext> : Http1Connection, IHostContextContainer<TContext>
     {
-        // Pooled Host context
-        private TContext _context;
-
         public Http1Connection(HttpConnectionContext context) : base(context) { }
 
-        ref TContext IHostContextContainer<TContext>.HostContext => ref _context;
+        TContext IHostContextContainer<TContext>.HostContext { get; set; }
     }
 }
