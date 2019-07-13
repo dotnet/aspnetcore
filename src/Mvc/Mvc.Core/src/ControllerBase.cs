@@ -2227,6 +2227,14 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult();
 
         /// <summary>
+        /// Creates an <see cref="ForbiddenObjectResult"/> that produces a <see cref="StatusCodes.Status403Forbidden"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="ForbiddenObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbiddenObjectResult Forbidden([ActionResultObjectValue] object value)
+            => new ForbiddenObjectResult(value);
+
+        /// <summary>
         /// Creates a <see cref="ForbidResult"/> (<see cref="StatusCodes.Status403Forbidden"/> by default) with the
         /// specified authentication schemes.
         /// </summary>
