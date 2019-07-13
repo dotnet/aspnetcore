@@ -4,10 +4,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative>true</BuildNative>
-    <BuildManaged>true</BuildManaged>
-    <BuildNodeJS>true</BuildNodeJS>
-    <BuildJava>true</BuildJava>
+    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
+    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
+    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
+    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
@@ -114,7 +114,7 @@
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
         <!-- If explicitly disabling NodeJS builds, do not build NodeJsProjectsForManagedProjects, if BuildNodeJS is empty, let managed projects determine whether NodeJsProjectsForManagedProjects is built -->
-        <ProjectToExclude Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjectsForManagedProjects)" />
+        <ProjectToExclude Condition=" '$(BuildNodeJS)' == 'false'" Include="@(NodeJsProjectsForManagedProjects)" />
 
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
