@@ -3,8 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -15,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     /// <summary>
     /// Wraps a PipeWriter so you can start appending more data to the pipe prior to the previous flush completing.
     /// </summary>
-    internal class ConcurrentPipeWriter : PipeWriter, IThreadPoolWorkItem
+    internal class ConcurrentPipeWriter : PipeWriter
     {
         // The following constants were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
         // and the associated StreamPipeWriterOptions defaults.
@@ -137,11 +135,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                 // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
                 _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-                return FlushAsyncAwaited(flushTask, cancellationToken);
+                _ = FlushAsyncAwaited(flushTask, cancellationToken);
+                return new ValueTask<FlushResult>(_currentFlushTcs.Task);
             }
         }
 
-        private async ValueTask<FlushResult> FlushAsyncAwaited(ValueTask<FlushResult> flushTask, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(ValueTask<FlushResult> flushTask, CancellationToken cancellationToken)
         {
             try
             {
@@ -156,19 +155,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                         if (_bytesBuffered == 0 || _aborted)
                         {
                             CompleteFlushUnsynchronized(flushResult, null);
-                            return flushResult;
+                            return;
                         }
 
                         if (flushResult.IsCanceled)
                         {
                             // Complete anyone currently awaiting a flush since CancelPendingFlush() was called
                             CompleteFlushUnsynchronized(flushResult, null);
-
                             // Reset _currentFlushTcs, so we don't enter passthrough mode while we're still flushing.
                             _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-                            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-
-                            return flushResult;
                         }
 
                         CopyAndReturnSegmentsUnsynchronized();
@@ -182,10 +177,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 lock (_sync)
                 {
                     CompleteFlushUnsynchronized(default, ex);
-
-                    // Ensure the exception still gets observed by the original caller who started the flush loop
-                    // And is observing this method directly instead of through the TCS.
-                    throw;
                 }
             }
         }
@@ -233,15 +224,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     CleanupSegmentsUnsynchronized();
                 }
             }
-        }
-
-        public void Execute()
-        {
-            Debug.Assert(_currentFlushTcs != null);
-
-            // FlushAsyncAwaited is observed via the _currentFlushTcs. If we queued a new flush, it's because CancelPendingFlush() was called.
-            // That means that the caller that initiated the Flush, saw the flush complete, so any passed-in CancellationToken is irrelevant.
-            _ = FlushAsyncAwaited(default, default);
         }
 
         private void CleanupSegmentsUnsynchronized()

@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             int streamId,
             Http2FrameWriter frameWriter,
             StreamOutputFlowControl flowControl,
-            ITimeoutControl timeoutControl,
             MemoryPool<byte> pool,
             Http2Stream stream,
             IKestrelTrace log)
@@ -62,7 +61,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _pipeWriter = new ConcurrentPipeWriter(pipe.Writer, pool);
             _pipeReader = pipe.Reader;
 
-            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
+            // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
+            // The minimum output data rate is enforced at the connection level by Http2FrameWriter.
+            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl: null, log);
             _dataWriteProcessingTask = ProcessDataWrites();
         }
 
