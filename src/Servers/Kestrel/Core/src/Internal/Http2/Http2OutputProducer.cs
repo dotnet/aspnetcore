@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly MemoryPool<byte> _memoryPool;
         private readonly Http2Stream _stream;
         private readonly object _dataWriterLock = new object();
-        private readonly Pipe _dataPipe;
+        private readonly PipeWriter _pipeWriter;
+        private readonly PipeReader _pipeReader;
         private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
@@ -56,8 +57,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _stream = stream;
             _log = log;
 
-            _dataPipe = CreateDataPipe(pool);
-            _flusher = new TimingPipeFlusher(_dataPipe.Writer, timeoutControl, log);
+            var pipe = CreateDataPipe(pool);
+
+            _pipeWriter = new ConcurrentPipeWriter(pipe.Writer, pool);
+            _pipeReader = pipe.Reader;
+
+            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
             _dataWriteProcessingTask = ProcessDataWrites();
         }
 
@@ -194,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _startedWritingDataFrames = true;
 
-                _dataPipe.Writer.Write(data);
+                _pipeWriter.Write(data);
                 return _flusher.FlushAsync(this, cancellationToken).GetAsTask();
             }
         }
@@ -211,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _completed = true;
                 _suffixSent = true;
 
-                _dataPipe.Writer.Complete();
+                _pipeWriter.Complete();
                 return _dataWriteProcessingTask;
             }
         }
@@ -240,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _startedWritingDataFrames = true;
 
-                _dataPipe.Writer.Advance(bytes);
+                _pipeWriter.Advance(bytes);
             }
         }
 
@@ -255,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return GetFakeMemory(sizeHint).Span;
                 }
 
-                return _dataPipe.Writer.GetSpan(sizeHint);
+                return _pipeWriter.GetSpan(sizeHint);
             }
         }
 
@@ -270,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return GetFakeMemory(sizeHint);
                 }
 
-                return _dataPipe.Writer.GetMemory(sizeHint);
+                return _pipeWriter.GetMemory(sizeHint);
             }
         }
 
@@ -283,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return;
                 }
 
-                _dataPipe.Writer.CancelPendingFlush();
+                _pipeWriter.CancelPendingFlush();
             }
         }
 
@@ -307,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _startedWritingDataFrames = true;
 
-                _dataPipe.Writer.Write(data);
+                _pipeWriter.Write(data);
                 return _flusher.FlushAsync(this, cancellationToken);
             }
         }
@@ -346,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // Complete with an exception to prevent an end of stream data frame from being sent without an
                 // explicit call to WriteStreamSuffixAsync. ConnectionAbortedExceptions are swallowed, so the
                 // message doesn't matter
-                _dataPipe.Writer.Complete(new OperationCanceledException());
+                _pipeWriter.Complete(new OperationCanceledException());
 
                 _frameWriter.AbortPendingStreamDataWrites(_flowControl);
             }
@@ -365,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 do
                 {
-                    readResult = await _dataPipe.Reader.ReadAsync();
+                    readResult = await _pipeReader.ReadAsync();
 
                     if (readResult.IsCompleted && _stream.ResponseTrailers?.Count > 0)
                     {
@@ -394,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
                     }
 
-                    _dataPipe.Reader.AdvanceTo(readResult.Buffer.End);
+                    _pipeReader.AdvanceTo(readResult.Buffer.End);
                 } while (!readResult.IsCompleted);
             }
             catch (OperationCanceledException)
@@ -406,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _log.LogCritical(ex, nameof(Http2OutputProducer) + "." + nameof(ProcessDataWrites) + " observed an unexpected exception.");
             }
 
-            _dataPipe.Reader.Complete();
+            _pipeReader.Complete();
 
             return flushResult;
 

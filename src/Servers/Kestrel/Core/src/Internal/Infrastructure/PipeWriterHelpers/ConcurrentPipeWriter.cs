@@ -3,6 +3,8 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -13,13 +15,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
     /// <summary>
     /// Wraps a PipeWriter so you can start appending more data to the pipe prior to the previous flush completing.
     /// </summary>
-    internal class ConcurrentPipeWriter : PipeWriter
+    internal class ConcurrentPipeWriter : PipeWriter, IThreadPoolWorkItem
     {
         // The following constants were copied from https://github.com/dotnet/corefx/blob/de3902bb56f1254ec1af4bf7d092fc2c048734cc/src/System.IO.Pipelines/src/System/IO/Pipelines/StreamPipeWriter.cs
         // and the associated StreamPipeWriterOptions defaults.
         private const int InitialSegmentPoolSize = 4; // 16K
         private const int MaxSegmentPoolSize = 256; // 1MB
         private const int MinimumBufferSize = 4096; // 4K
+
+        private static readonly Exception _successfullyCompletedSentinel = new Exception();
 
         private readonly object _sync = new object();
         private readonly PipeWriter _innerPipeWriter;
@@ -44,9 +48,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
         private bool _bufferedWritePending;
 
-        // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling abort.
+        // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling Abort() or Complete()
         // If an abort occurs while a flush is in progress, we clean up after the flush completes, and don't flush again.
         private bool _aborted;
+        private Exception _completeException;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool)
         {
@@ -104,26 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        // This is not exposed to end users. Throw so we find out if we ever start calling this.
-        public override void CancelPendingFlush()
-        {
-            // If we wanted, we could propagate IsCanceled when we do multiple flushes in a loop.
-            // If FlushResult.IsCanceled is true with more data pending to flush, we could complete _currentFlushTcs with canceled flush task,
-            // but rekick the FlushAsync loop.
-            throw new NotImplementedException();
-        }
-
-        // This is not exposed to end users. Throw so we find out if we ever start calling this.
-        public override void Complete(Exception exception = null)
-        {
-            // If we wanted, we could store the complete exception or some sentinel exception instance in a field
-            // if a flush was ongoing. We'd just call the inner Complete() method after the flush loop ended.
-
-            // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
-            // called but not Advance(), or there's a flush pending), just call Abort().
-            throw new NotImplementedException();
-        }
-
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
             lock (_sync)
@@ -174,6 +159,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                             return flushResult;
                         }
 
+                        if (flushResult.IsCanceled)
+                        {
+                            // Complete anyone currently awaiting a flush since CancelPendingFlush() was called
+                            CompleteFlushUnsynchronized(flushResult, null);
+
+                            // Reset _currentFlushTcs, so we don't enter passthrough mode while we're still flushing.
+                            _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+
+                            return flushResult;
+                        }
+
                         CopyAndReturnSegmentsUnsynchronized();
 
                         flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
@@ -193,10 +190,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        // This is not exposed to end users. Throw so we find out if we ever start calling this.
         public override void OnReaderCompleted(Action<Exception, object> callback, object state)
         {
-            throw new NotImplementedException();
+            _innerPipeWriter.OnReaderCompleted(callback, state);
+        }
+
+        public override void CancelPendingFlush()
+        {
+            // We propagate IsCanceled when we do multiple flushes in a loop. If FlushResult.IsCanceled is true with more data pending to flush,
+            // _currentFlushTcs with canceled flush task, but rekick the FlushAsync loop.
+            _innerPipeWriter.CancelPendingFlush();
+        }
+
+        public override void Complete(Exception exception = null)
+        {
+            lock (_sync)
+            {
+                // We store the complete exception or  s sentinel exception instance in a field  if a flush was ongoing.
+                // We call the inner Complete() method after the flush loop ended.
+
+                // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
+                // called but not Advance(), or there's a flush pending), but you don't want to complete the inner pipe, just call Abort().
+                _completeException = exception ?? _successfullyCompletedSentinel;
+
+                if (_currentFlushTcs == null)
+                {
+                    CleanupSegmentsUnsynchronized();
+                    _innerPipeWriter.Complete(exception);
+                }
+            }
         }
 
         public void Abort()
@@ -211,6 +233,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                     CleanupSegmentsUnsynchronized();
                 }
             }
+        }
+
+        public void Execute()
+        {
+            Debug.Assert(_currentFlushTcs != null);
+
+            // FlushAsyncAwaited is observed via the _currentFlushTcs. If we queued a new flush, it's because CancelPendingFlush() was called.
+            // That means that the caller that initiated the Flush, saw the flush complete, so any passed-in CancellationToken is irrelevant.
+            _ = FlushAsyncAwaited(default, default);
         }
 
         private void CleanupSegmentsUnsynchronized()
@@ -270,9 +301,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private void CompleteFlushUnsynchronized(FlushResult flushResult, Exception flushEx)
         {
             // Ensure all blocks are returned prior to the last call to FlushAsync() completing.
-            if (_aborted)
+            if (_aborted || _completeException != null)
             {
                 CleanupSegmentsUnsynchronized();
+            }
+
+            if (_completeException != null)
+            {
+                if (_completeException == _successfullyCompletedSentinel)
+                {
+                    _innerPipeWriter.Complete();
+                }
+                else
+                {
+                    _innerPipeWriter.Complete(_completeException);
+                }
             }
 
             if (flushEx != null)
