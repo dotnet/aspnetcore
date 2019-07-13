@@ -960,12 +960,17 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ProblemDetails
     {
         public ProblemDetails() { }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("detail")]
         public string Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [System.Text.Json.Serialization.JsonExtensionDataAttribute]
         public System.Collections.Generic.IDictionary<string, object> Extensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("instance")]
         public string Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("status")]
         public int? Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("title")]
         public string Title { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("type")]
         public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
@@ -1249,6 +1254,7 @@ namespace Microsoft.AspNetCore.Mvc
         public ValidationProblemDetails() { }
         public ValidationProblemDetails(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { }
         public ValidationProblemDetails(System.Collections.Generic.IDictionary<string, string[]> errors) { }
+        [System.Text.Json.Serialization.JsonPropertyNameAttribute("errors")]
         public System.Collections.Generic.IDictionary<string, string[]> Errors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class VirtualFileResult : Microsoft.AspNetCore.Mvc.FileResult

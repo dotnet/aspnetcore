@@ -507,4 +507,10 @@
   <data name="ObjectResultExecutor_MaxEnumerationExceeded" xml:space="preserve">
     <value>'{0}' reached the configured maximum size of the buffer when enumerating a value of type '{1}'. This limit is in place to prevent infinite streams of 'IAsyncEnumerable&lt;&gt;' from continuing indefinitely. If this is not a programming mistake, consider ways to reduce the collection size, or consider manually converting '{1}' into a list rather than increasing the limit.</value>
   </data>
+  <data name="UnexceptedTokenType" xml:space="preserve">
+    <value>Unexpected token type {0} when reading JSON.</value>
+  </data>
+  <data name="UnexpectedJsonEnd" xml:space="preserve">
+    <value>Unexcepted end when reading JSON.</value>
+  </data>
 </root>
