@@ -400,6 +400,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         await _libuvThread.PostAsync(cb => cb(LibuvConstants.ECONNRESET.Value), triggerNextCompleted);
                     }
 
+                    await task2Success.DefaultTimeout();
+
                     // Second task is now completed
                     Assert.True(task2Success.IsCompleted);
                     Assert.False(task2Success.IsCanceled);
@@ -578,6 +580,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                     }
 
+                    await task1Waits.DefaultTimeout();
+
                     // First task is completed
                     Assert.True(task1Waits.IsCompleted);
                     Assert.False(task1Waits.IsCanceled);
@@ -597,6 +601,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     {
                         await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                     }
+
+                    await task3Success.DefaultTimeout();
 
                     Assert.True(task3Success.IsCompleted);
                     Assert.False(task3Success.IsCanceled);
