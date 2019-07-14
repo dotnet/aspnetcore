@@ -2208,9 +2208,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeRenderer : Renderer
         {
-            public FakeRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
+            public FakeRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
                 => throw new NotImplementedException();

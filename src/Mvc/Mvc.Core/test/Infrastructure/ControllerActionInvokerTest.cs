@@ -1457,7 +1457,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         #region Logs
 
         [Fact]
-        public async Task InvokeAsync_LogsControllerFactory()
+        public async Task InvokeAsync_Logs()
         {
             // Arrange
             var testSink = new TestSink();
@@ -1485,8 +1485,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Assert
             var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
             var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)}.{nameof(TestController.ActionMethod)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionResultName = $"{typeof(CommonResourceInvokerTest).FullName}+{nameof(TestResult)}";
+            Assert.Equal(13, messages.Count);
+            Assert.Contains($"Route matched with {{}}. Executing controller action with signature {typeof(IActionResult).FullName} {nameof(TestController.ActionMethod)}() on controller {controllerName}.", messages);
+            Assert.Contains("Execution plan of authorization filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of resource filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of action filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of exception filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of result filters (in the following order): None", messages);
             Assert.Contains($"Executing controller factory for controller {controllerName}", messages);
             Assert.Contains($"Executed controller factory for controller {controllerName}", messages);
+            Assert.Contains($"Executing action method {actionName} - Validation state: Valid", messages);
+            Assert.Contains(messages, m => m.Contains($"Executed action method {actionName}, returned result {actionResultName} in "));
+            Assert.Contains($"Before executing action result {actionResultName}.", messages);
+            Assert.Contains($"After executing action result {actionResultName}.", messages);
+            Assert.Contains(messages, m => m.Contains($"Executed action {actionName} in "));
         }
 
         #endregion

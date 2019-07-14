@@ -71,14 +71,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             var rendererRegistry = new RendererRegistry();
-            var dispatcher = Renderer.CreateDefaultDispatcher();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,
                 rendererRegistry,
                 jsRuntime,
                 client,
-                dispatcher,
                 encoder,
                 _loggerFactory.CreateLogger<RemoteRenderer>());
 
@@ -93,7 +91,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 rendererRegistry,
                 renderer,
                 components,
-                dispatcher,
                 jsRuntime,
                 circuitHandlers,
                 _loggerFactory.CreateLogger<CircuitHost>());

@@ -668,7 +668,8 @@ namespace Microsoft.AspNetCore.Identity
                                       ?? provider;
             return new ExternalLoginInfo(auth.Principal, provider, providerKey, providerDisplayName)
             {
-                AuthenticationTokens = auth.Properties.GetTokens()
+                AuthenticationTokens = auth.Properties.GetTokens(),
+                AuthenticationProperties = auth.Properties
             };
         }
 

@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                     var type = (INamedTypeSymbol)context.Symbol;
                     foreach (var member in type.GetMembers())
                     {
-                        if (member is IPropertySymbol property && ComponentFacts.IsAnyParameter(symbols, property))
+                        if (member is IPropertySymbol property && ComponentFacts.IsParameter(symbols, property))
                         {
-                            // Annotated with [Parameter] or [CascadingParameter]
+                            // Annotated with [Parameter]. We ignore [CascadingParameter]'s because they don't interact with tooling and don't currently have any analyzer restrictions.
                             properties.Add(property);
                         }
                     }

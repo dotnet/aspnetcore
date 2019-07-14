@@ -56,14 +56,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
             IList<ComponentDescriptor> descriptors,
-            IDispatcher dispatcher,
             RemoteJSRuntime jsRuntime,
             CircuitHandler[] circuitHandlers,
             ILogger logger)
         {
             CircuitId = circuitId;
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-            Dispatcher = dispatcher;
             Client = client;
             RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
@@ -96,11 +94,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IServiceProvider Services { get; }
 
-        public IDispatcher Dispatcher { get; }
-
         public Task<ComponentRenderedText> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
         {
-            return Dispatcher.InvokeAsync(async () =>
+            return Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 var result = await Renderer.RenderComponentAsync(componentType, parameters);
 
@@ -137,12 +133,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Dispatch any buffered renders we accumulated during a disconnect.
             // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
             // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-            var _ = Renderer.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+            var _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            await Renderer.InvokeAsync(async () =>
+            await Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 try
                 {
@@ -180,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                await Renderer.InvokeAsync(() =>
+                await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
                     DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
@@ -291,7 +287,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.DisposingCircuit(_logger, CircuitId);
 
-            await Renderer.InvokeAsync(async () =>
+            await Renderer.Dispatcher.InvokeAsync(async () =>
             {
                 try
                 {

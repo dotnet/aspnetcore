@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     public class HtmlHelperComponentExtensionsTests
     {
         private static readonly Regex ContentWrapperRegex = new Regex(
-            $"<!-- M.A.C.Component:{{\"circuitId\":\"[^\"]+\",\"rendererId\":\"0\",\"componentId\":\"0\"}} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
+            "<!-- M.A.C.Component: {\"circuitId\":\"[^\"]+\",\"rendererId\":0,\"componentId\":0} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
             RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
 
         [Fact]

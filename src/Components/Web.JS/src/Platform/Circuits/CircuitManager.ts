@@ -22,12 +22,15 @@ export function discoverPrerenderedCircuits(document: Document): CircuitDescript
   const discoveredCircuits = new Map<string, ComponentDescriptor[]>();
   for (let i = 0; i < commentPairs.length; i++) {
     const pair = commentPairs[i];
-    let circuit = discoveredCircuits.get(pair.start.circuitId);
+    // We replace '--' on the server with '..' when we prerender due to the fact that this
+    // is not allowed in HTML comments and doesn't get encoded by default.
+    const circuitId = pair.start.circuitId.replace('..', '--');
+    let circuit = discoveredCircuits.get(circuitId);
     if (!circuit) {
       circuit = [];
-      discoveredCircuits.set(pair.start.circuitId, circuit);
+      discoveredCircuits.set(circuitId, circuit);
     }
-    const entry = new ComponentDescriptor(pair.start.componentId, pair.start.circuitId, pair.start.rendererId, pair);
+    const entry = new ComponentDescriptor(pair.start.componentId, circuitId, pair.start.rendererId, pair);
     circuit.push(entry);
   }
   const circuits: CircuitDescriptor[] = [];
@@ -82,14 +85,14 @@ function getComponentStartComment(node: Node): StartComponentComment | undefined
     const json = definition && definition[1];
     if (json) {
       try {
-        const { componentId, circuitId, rendererId } = JSON.parse(json);
-        const allComponents = !!componentId && !!circuitId && !!rendererId;
+        const { componentId, rendererId, circuitId } = JSON.parse(json);
+        const allComponents = componentId !== undefined && rendererId !== undefined && !!circuitId;
         if (allComponents) {
           return {
             node: node as Comment,
             circuitId,
-            rendererId: Number.parseInt(rendererId),
-            componentId: Number.parseInt(componentId),
+            rendererId: rendererId,
+            componentId: componentId,
           };
         } else {
           throw new Error(`Found malformed start component comment at ${node.textContent}`);

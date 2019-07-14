@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var serviceScope = new Mock<IServiceScope>();
-            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
                 Guid.NewGuid().ToString(),
                 serviceScope.Object,
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             handler
                 .Setup(h => h.OnCircuitClosedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
                 .Throws<InvalidTimeZoneException>();
-            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
                 Guid.NewGuid().ToString(),
                 serviceScope.Object,
@@ -77,13 +76,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var serviceScope = new Mock<IServiceScope>();
-            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
                 Guid.NewGuid().ToString(),
                 serviceScope.Object,
                 remoteRenderer);
 
-            var component = new DispatcherComponent(circuitHost.Dispatcher);
+            var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
             circuitHost.Renderer.AssignRootComponentId(component);
             var original = SynchronizationContext.Current;
             SynchronizationContext.SetSynchronizationContext(null);
@@ -229,20 +228,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             handler2.VerifyAll();
         }
 
-        private static TestRemoteRenderer GetRemoteRenderer(IDispatcher dispatcher)
+        private static TestRemoteRenderer GetRemoteRenderer()
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
                 new RendererRegistry(),
-                dispatcher,
                 Mock.Of<IJSRuntime>(),
                 Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IDispatcher dispatcher, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, rendererRegistry, jsRuntime, new CircuitClientProxy(client, "connection"), dispatcher, HtmlEncoder.Default, NullLogger.Instance)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client)
+                : base(serviceProvider, NullLoggerFactory.Instance, rendererRegistry, jsRuntime, new CircuitClientProxy(client, "connection"), HtmlEncoder.Default, NullLogger.Instance)
             {
             }
 
@@ -257,12 +255,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private class DispatcherComponent : ComponentBase, IDisposable
         {
-            public DispatcherComponent(IDispatcher dispatcher)
+            public DispatcherComponent(Dispatcher dispatcher)
             {
                 Dispatcher = dispatcher;
             }
 
-            public IDispatcher Dispatcher { get; }
+            public Dispatcher Dispatcher { get; }
             public bool Called { get; private set; }
 
             public void Dispose()

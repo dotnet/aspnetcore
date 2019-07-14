@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
+            var renderTask = renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
 
             // Assert
             Assert.False(renderTask.IsCompleted);
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2017,7 +2017,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
             var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
-            renderHandle.InvokeAsync(() => renderHandle.Render(builder
+            renderHandle.Dispatcher.InvokeAsync(() => renderHandle.Render(builder
                 => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
@@ -2906,7 +2906,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             var asyncExceptionTcs = new TaskCompletionSource<object>();
             taskToAwait = asyncExceptionTcs.Task;
-            await renderer.InvokeAsync(component.TriggerRender);
+            await renderer.Dispatcher.InvokeAsync(component.TriggerRender);
 
             // Act
             var exception = new InvalidOperationException();
@@ -3373,9 +3373,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class NoOpRenderer : Renderer
         {
-            public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance, new RendererSynchronizationContext())
+            public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             public new int AssignRootComponentId(IComponent component)
                 => base.AssignRootComponentId(component);
@@ -3410,7 +3412,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
             {
-                var t = _renderHandle.InvokeAsync(() => _renderHandle.Render(_renderFragment));
+                var t = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
                 // This should always be run synchronously
                 Assert.True(t.IsCompleted);
                 if (t.IsFaulted)
@@ -3660,7 +3662,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.InvokeAsync(() => renderHandle.Render(builder =>
+                    renderHandle.Dispatcher.InvokeAsync(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     }));
@@ -3821,7 +3823,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return TriggerRenderAsync();
             }
 
-            public Task TriggerRenderAsync() => _renderHandle.InvokeAsync(() => _renderHandle.Render(RenderFragment));
+            public Task TriggerRenderAsync() => _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)

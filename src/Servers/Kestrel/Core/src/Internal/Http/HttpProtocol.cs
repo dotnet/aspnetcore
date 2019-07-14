@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 while (onStarting.TryPop(out var entry))
                 {
                     var task = entry.Key.Invoke(entry.Value);
-                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    if (!task.IsCompletedSuccessfully)
                     {
                         return FireOnStartingAwaited(task, onStarting);
                     }
@@ -817,7 +817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 try
                 {
                     var task = entry.Key.Invoke(entry.Value);
-                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    if (!task.IsCompletedSuccessfully)
                     {
                         return FireOnCompletedAwaited(task, onCompleted);
                     }
@@ -953,8 +953,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public Task InitializeResponseAsync(int firstWriteByteCount)
         {
             var startingTask = FireOnStarting();
-            // If return is Task.CompletedTask no awaiting is required
-            if (!ReferenceEquals(startingTask, Task.CompletedTask))
+            if (!startingTask.IsCompletedSuccessfully)
             {
                 return InitializeResponseAwaited(startingTask, firstWriteByteCount);
             }
@@ -1397,8 +1396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!HasResponseStarted)
             {
                 var initializeTask = InitializeResponseAsync(0);
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
+                if (!initializeTask.IsCompletedSuccessfully)
                 {
                     return FlushAsyncAwaited(initializeTask, cancellationToken);
                 }
@@ -1509,8 +1507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Debug.Assert(!HasResponseStarted);
 
             var startingTask = FireOnStarting();
-
-            if (!ReferenceEquals(startingTask, Task.CompletedTask))
+            if (!startingTask.IsCompletedSuccessfully)
             {
                 return FirstWriteAsyncAwaited(startingTask, data, cancellationToken);
             }
