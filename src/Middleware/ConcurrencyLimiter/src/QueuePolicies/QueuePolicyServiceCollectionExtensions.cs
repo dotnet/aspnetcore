@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">Set the options used by the queue.
         /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
         /// <returns></returns>
-        public static IServiceCollection AddTailDropQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
+        public static IServiceCollection AddFIFOQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
             services.AddSingleton<IQueuePolicy, FIFOQueuePolicy>();
@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configure">Set the options used by the queue.
         /// Mandatory, since <see cref="QueuePolicyOptions.MaxConcurrentRequests"></see> must be provided.</param>
         /// <returns></returns>
-        public static IServiceCollection AddStackQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
+        public static IServiceCollection AddLIFOQueue(this IServiceCollection services, Action<QueuePolicyOptions> configure)
         {
             services.Configure(configure);
             services.AddSingleton<IQueuePolicy, LIFOQueuePolicy>();
