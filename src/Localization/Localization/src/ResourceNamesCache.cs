@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -13,6 +13,13 @@ namespace Microsoft.Extensions.Localization
     public class ResourceNamesCache : IResourceNamesCache
     {
         private readonly ConcurrentDictionary<string, IList<string>> _cache = new ConcurrentDictionary<string, IList<string>>();
+
+        /// <summary>
+        /// Creates a new <see cref="ResourceNamesCache" />
+        /// </summary>
+        public ResourceNamesCache()
+        {
+        }
 
         /// <inheritdoc />
         public IList<string> GetOrAdd(string name, Func<string, IList<string>> valueFactory)

@@ -147,7 +147,7 @@ module DotNet {
      * @param identifier Identifies the globally-reachable function to be returned.
      * @returns A Function instance.
      */
-    findJSFunction,
+    findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself
 
     /**
      * Invokes the specified synchronous JavaScript function.
@@ -227,8 +227,10 @@ module DotNet {
 
     let result: any = window;
     let resultIdentifier = 'window';
+    let lastSegmentValue: any;
     identifier.split('.').forEach(segment => {
       if (segment in result) {
+        lastSegmentValue = result;
         result = result[segment];
         resultIdentifier += '.' + segment;
       } else {
@@ -237,6 +239,8 @@ module DotNet {
     });
 
     if (result instanceof Function) {
+      result = result.bind(lastSegmentValue);
+      cachedJSFunctions[identifier] = result;
       return result;
     } else {
       throw new Error(`The value '${resultIdentifier}' is not a function.`);

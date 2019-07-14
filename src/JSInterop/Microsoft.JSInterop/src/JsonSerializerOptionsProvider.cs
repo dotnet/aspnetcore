@@ -9,7 +9,9 @@ namespace Microsoft.JSInterop
     {
         public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
+            MaxDepth = 32,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
         };
     }
 }

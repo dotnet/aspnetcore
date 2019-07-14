@@ -75,19 +75,20 @@ namespace Microsoft.JSInterop
             // code has to implement its own way of returning async results.
             var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
 
-            var targetInstance = (object)null;
-            if (dotNetObjectId != default)
-            {
-                targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
-            }
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
+            object targetInstance = null;
 
             try
             {
+                if (dotNetObjectId != default)
+                {
+                    targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
+                }
+
                 syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
             }
             catch (Exception ex)
@@ -103,7 +104,7 @@ namespace Microsoft.JSInterop
             else if (syncException != null)
             {
                 // Threw synchronously, let's respond.
-                jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, syncException);
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, syncException, assemblyName, methodIdentifier);
             }
             else if (syncResult is Task task)
             {
@@ -114,16 +115,17 @@ namespace Microsoft.JSInterop
                     if (t.Exception != null)
                     {
                         var exception = t.Exception.GetBaseException();
-                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception));
+
+                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception), assemblyName, methodIdentifier);
                     }
 
                     var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result);
+                    jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result, assemblyName, methodIdentifier);
                 }, TaskScheduler.Current);
             }
             else
             {
-                jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, syncResult);
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, syncResult, assemblyName, methodIdentifier);
             }
         }
 
