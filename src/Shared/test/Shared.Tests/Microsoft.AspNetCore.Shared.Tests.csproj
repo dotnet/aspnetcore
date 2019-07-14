@@ -1,13 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <DebugType>portable</DebugType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
@@ -19,8 +21,11 @@
   <ItemGroup>
     <Reference Include="FSharp.Core" />
     <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="System.Threading.Tasks.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
   <ItemGroup>

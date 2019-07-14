@@ -35,7 +35,7 @@
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="GrpcService-CSharp.csproj.in" OutputPath="content/GrpcService-CSharp/GrpcService-CSharp.csproj" />
-    <GeneratedContent Include="RazorComponentsWeb-CSharp.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.csproj" />
+    <GeneratedContent Include="BlazorServerWeb-CSharp.csproj.in" OutputPath="content/BlazorServerWeb-CSharp/BlazorServerWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />

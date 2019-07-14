@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -398,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CannotAddEventHandlerAttributeAtRoot()
+        public void CannotAddDelegateAttributeAtRoot()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -406,7 +407,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute(0, "name", eventInfo => { });
+                builder.AddAttribute(0, "name", new Action<string>(text => { }));
             });
         }
 
@@ -436,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenElement(0, "some element");
                 builder.AddContent(1, "hello");
-                builder.AddAttribute(2, "name", eventInfo => { });
+                builder.AddAttribute(2, "name", new Action<UIEventArgs>(eventInfo => { }));
             });
         }
 
@@ -1794,9 +1795,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
+            public TestRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
                 => throw new NotImplementedException();

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Microsoft.Net.Http.Headers;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     public class HtmlHelperComponentExtensionsTests
     {
         private static readonly Regex ContentWrapperRegex = new Regex(
-            $"<!-- M.A.C.Component:{{\"circuitId\":\"[^\"]+\",\"rendererId\":\"0\",\"componentId\":\"0\"}} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
+            "<!-- M.A.C.Component: {\"circuitId\":\"[^\"]+\",\"rendererId\":0,\"componentId\":0} -->(?<content>.*)<!-- M.A.C.Component: 0 -->",
             RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
 
         [Fact]
@@ -296,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             [Parameter] public bool Force { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 UriHelper.NavigateTo(RedirectUri, Force);
             }
@@ -484,6 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
         {
             var services = new ServiceCollection();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             services.AddLogging();
             services.AddDataProtection();
             services.AddSingleton(HtmlEncoder.Default);

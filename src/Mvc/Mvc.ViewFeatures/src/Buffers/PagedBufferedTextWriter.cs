@@ -109,9 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             var flushTask = FlushAsyncCore();
 
-            // FlushAsyncCore will return CompletedTask if nothing sync buffered
-            // Fast-path and skip async state-machine if only a single async operation
-            return ReferenceEquals(flushTask, Task.CompletedTask) ? 
+            return flushTask.IsCompletedSuccessfully ? 
                 _inner.WriteAsync(value) :
                 WriteAsyncAwaited(flushTask, value);
         }
@@ -126,9 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             var flushTask = FlushAsyncCore();
 
-            // FlushAsyncCore will return CompletedTask if nothing sync buffered
-            // Fast-path and skip async state-machine if only a single async operation
-            return ReferenceEquals(flushTask, Task.CompletedTask) ?
+            return flushTask.IsCompletedSuccessfully ?
                 _inner.WriteAsync(buffer, index, count) :
                 WriteAsyncAwaited(flushTask, buffer, index, count);
         }
@@ -143,9 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         {
             var flushTask = FlushAsyncCore();
 
-            // FlushAsyncCore will return CompletedTask if nothing sync buffered
-            // Fast-path and skip async state-machine if only a single async operation
-            return ReferenceEquals(flushTask, Task.CompletedTask) ?
+            return flushTask.IsCompletedSuccessfully ?
                 _inner.WriteAsync(value) :
                 WriteAsyncAwaited(flushTask, value);
         }

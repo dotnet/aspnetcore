@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
@@ -151,15 +152,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             Assert.Equal(expectedValue, form[key]);
         }
-
-        public static TheoryData<Encoding> Encodings =>
-                 new TheoryData<Encoding>
-                 {
-                     { Encoding.UTF8 },
-                     { Encoding.UTF32 },
-                     { Encoding.ASCII },
-                     { Encoding.Unicode }
-                 };
 
         [Theory]
         [MemberData(nameof(Encodings))]
@@ -385,6 +377,67 @@ namespace Microsoft.AspNetCore.WebUtilities
                 pipe.Reset();
             }
         }
+
+        [Theory]
+        [MemberData(nameof(IncompleteFormKeys))]
+        public void ParseFormWithIncompleteKeyWhenIsFinalBlockSucceeds(ReadOnlySequence<byte> readOnlySequence)
+        {
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null)
+            {
+                KeyLengthLimit = 3
+            };
+
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
+
+            IDictionary<string, StringValues> values = accumulator.GetResults();
+            Assert.Single(values);
+            Assert.Contains("fo", values);
+            Assert.Equal("bar", values["fo"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(IncompleteFormValues))]
+        public void ParseFormWithIncompleteValueWhenIsFinalBlockSucceeds(ReadOnlySequence<byte> readOnlySequence)
+        {
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null)
+            {
+                ValueLengthLimit = 3
+            };
+
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: false);
+
+            IDictionary<string, StringValues> values = accumulator.GetResults();
+            Assert.Single(values);
+            Assert.Contains("fo", values);
+            Assert.Equal("bar", values["fo"]);
+        }
+
+        public static TheoryData<ReadOnlySequence<byte>> IncompleteFormKeys =>
+            new TheoryData<ReadOnlySequence<byte>>
+            {
+                { ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("fo=bar&b"), Encoding.UTF8.GetBytes("a"))  },
+                { new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("fo=bar&ba")) }
+            };
+
+        public static TheoryData<ReadOnlySequence<byte>> IncompleteFormValues =>
+            new TheoryData<ReadOnlySequence<byte>>
+            {
+                { ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("fo=bar&b"), Encoding.UTF8.GetBytes("="))  },
+                { new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("fo=bar&b=")) }
+            };
+
+        public static TheoryData<Encoding> Encodings =>
+                 new TheoryData<Encoding>
+                 {
+                     { Encoding.UTF8 },
+                     { Encoding.UTF32 },
+                     { Encoding.ASCII },
+                     { Encoding.Unicode }
+                 };
 
         internal virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormPipeReader reader)
         {

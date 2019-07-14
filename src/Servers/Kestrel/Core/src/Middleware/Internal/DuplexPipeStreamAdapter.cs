@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly Pipe _output;
         private Task _outputTask;
+        private bool _disposed;
+        private readonly object _disposeLock = new object();
 
         public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, Func<Stream, TStream> createStream) :
             this(duplexPipe, new StreamPipeReaderOptions(leaveOpen: true), new StreamPipeWriterOptions(leaveOpen: true), createStream)
@@ -63,17 +65,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public override async ValueTask DisposeAsync()
+        public override ValueTask DisposeAsync()
         {
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    return default;
+                }
+                _disposed = true;
+            }
+
             Input.Complete();
             _output.Writer.Complete();
 
-            if (_outputTask != null)
+            if (_outputTask == null || _outputTask.IsCompletedSuccessfully)
             {
                 // Wait for the output task to complete, this ensures that we've copied
                 // the application data to the underlying stream
-                await _outputTask;
+                return default;
             }
+
+            return new ValueTask(_outputTask);
         }
 
         private async Task WriteOutputAsync()

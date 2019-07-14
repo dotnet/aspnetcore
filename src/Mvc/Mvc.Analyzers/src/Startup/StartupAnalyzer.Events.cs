@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     public partial class StartupAnalzyer : DiagnosticAnalyzer
     {
-        internal event EventHandler<StartupComputedAnalysis> AnalysisStarted;
+        internal event EventHandler<StartupComputedAnalysis>? AnalysisStarted;
 
         private void OnAnalysisStarted(StartupComputedAnalysis analysis)
         {
             AnalysisStarted?.Invoke(this, analysis);
         }
 
-        internal event EventHandler<IMethodSymbol> ConfigureServicesMethodFound;
+        internal event EventHandler<IMethodSymbol>? ConfigureServicesMethodFound;
 
         private void OnConfigureServicesMethodFound(IMethodSymbol method)
         {
             ConfigureServicesMethodFound?.Invoke(this, method);
         }
 
-        internal event EventHandler<IMethodSymbol> ConfigureMethodFound;
+        internal event EventHandler<IMethodSymbol>? ConfigureMethodFound;
 
         private void OnConfigureMethodFound(IMethodSymbol method)
         {

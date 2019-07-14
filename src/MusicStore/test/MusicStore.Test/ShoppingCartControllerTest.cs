@@ -77,7 +77,7 @@ namespace MusicStore.Controllers
             Assert.Equal(0, model.CartTotal);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task Index_ReturnsCartItems_WhenItemsInCart()
         {
             // Arrange
@@ -113,7 +113,7 @@ namespace MusicStore.Controllers
             Assert.Equal(5 * 10, model.CartTotal);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task AddToCart_AddsItemToCart()
         {
             // Arrange
@@ -124,7 +124,16 @@ namespace MusicStore.Controllers
 
             // Creates the albums of AlbumId = 1 ~ 10.
             var dbContext = _fixture.Context;
-            var albums = CreateTestAlbums(itemPrice: 10);
+            var albums = CreateTestAlbums(
+                10,
+                new Artist
+                {
+                    ArtistId = 1, Name = "Kung Fu Kenny"
+                }, new Genre
+                {
+                    GenreId = 1, Name = "Rap"
+                });
+
             dbContext.AddRange(albums);
             dbContext.SaveChanges();
 
@@ -146,7 +155,7 @@ namespace MusicStore.Controllers
             Assert.Equal("Index", redirectResult.ActionName);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12097")]
         public async Task RemoveFromCart_RemovesItemFromCart()
         {
             // Arrange
@@ -204,7 +213,14 @@ namespace MusicStore.Controllers
 
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)
         {
-            var albums = CreateTestAlbums(itemPrice);
+            var albums = CreateTestAlbums(
+                itemPrice, new Artist
+                {
+                    ArtistId = 1, Name = "Kung Fu Kenny"
+                }, new Genre
+                {
+                    GenreId = 1, Name = "Rap"
+                });
 
             var cartItems = Enumerable.Range(1, numberOfItem).Select(n =>
                 new CartItem()
@@ -218,7 +234,7 @@ namespace MusicStore.Controllers
             return cartItems;
         }
 
-        private static Album[] CreateTestAlbums(decimal itemPrice)
+        private static Album[] CreateTestAlbums(decimal itemPrice, Artist artist, Genre genre)
         {
             return Enumerable.Range(1, 10).Select(n =>
                 new Album
@@ -226,16 +242,8 @@ namespace MusicStore.Controllers
                     Title = "Greatest Hits",
                     AlbumId = n,
                     Price = itemPrice,
-                    Artist = new Artist
-                    {
-                        ArtistId = 1,
-                        Name = "Kung Fu Kenny"
-                    },
-                    Genre = new Genre
-                    {
-                        GenreId = 1,
-                        Name = "Rap"
-                    }
+                    Artist = artist,
+                    Genre = genre
                 }).ToArray();
         }
 

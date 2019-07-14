@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Ignitor
 {
@@ -115,10 +116,17 @@ namespace Ignitor
                     }
                 }
 
-                result[i / 4] = new RenderTreeDiff(componentId, new ArraySegment<RenderTreeEdit>(edits));
+                result[i / 4] = new RenderTreeDiff(componentId, ToArrayBuilderSegment(edits));
             }
 
             return new ArrayRange<RenderTreeDiff>(result, result.Length);
+        }
+
+        private static ArrayBuilderSegment<T> ToArrayBuilderSegment<T>(T[] entries)
+        {
+            var builder = new ArrayBuilder<T>();
+            builder.Append(entries, 0, entries.Length);
+            return builder.ToSegment(0, entries.Length);
         }
 
         private static ArrayRange<RenderTreeFrame> ReadReferenceFrames(ReadOnlySpan<byte> data, string[] strings)
@@ -281,9 +289,11 @@ namespace Ignitor
         public class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

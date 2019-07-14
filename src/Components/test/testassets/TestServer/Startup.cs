@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -25,7 +26,12 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor()
+                .AddCircuitOptions(o =>
+                {
+                    var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
+                    o.JSInteropDetailedErrors = detailedErrors;
+                });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             services.AddAuthorization(options =>
@@ -58,17 +64,38 @@ namespace TestServer
             app.UseAuthentication();
 
             // Mount the server-side Blazor app on /subdir
-            app.Map("/subdir", subdirApp =>
+            app.Map("/subdir", app =>
             {
-                subdirApp.UseStaticFiles();
-                subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+                app.UseStaticFiles();
+                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
-                subdirApp.UseRouting();
+                app.UseRequestLocalization(options =>
+                {
+                    options.AddSupportedCultures("en-US", "fr-FR");
+                    options.AddSupportedUICultures("en-US", "fr-FR");
 
-                subdirApp.UseEndpoints(endpoints =>
+                    // Cookie culture provider is included by default.
+                });
+
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
                     endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                });
+            });
+
+            // Separately, mount a prerendered server-side Blazor app on /prerendered
+            app.Map("/prerendered", app =>
+            {
+                app.UsePathBase("/prerendered");
+                app.UseStaticFiles();
+                app.UseRouting();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapFallbackToPage("/PrerenderedHost");
+                    endpoints.MapBlazorHub();
                 });
             });
 
@@ -78,18 +105,12 @@ namespace TestServer
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-            });
 
-            // Separately, mount a prerendered server-side Blazor app on /prerendered
-            app.Map("/prerendered", subdirApp =>
-            {
-                subdirApp.UsePathBase("/prerendered");
-                subdirApp.UseStaticFiles();
-                subdirApp.UseRouting();
-                subdirApp.UseEndpoints(endpoints =>
+                // Redirect for convenience when testing locally since we're hosting the app at /subdir/
+                endpoints.Map("/", context =>
                 {
-                    endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub();
+                    context.Response.Redirect("/subdir");
+                    return Task.CompletedTask;
                 });
             });
         }

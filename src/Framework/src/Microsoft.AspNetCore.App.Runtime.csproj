@@ -8,6 +8,8 @@
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- Do not exclude this project from source build -->
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
@@ -361,8 +363,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   Targets related to creating .zip/.tar.gz
   #########################################
   -->
-  <Target Name="_DownloadAndExtractDotNetRuntime">
-   <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
+  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"
       DestinationFileName="$(DotNetRuntimeArchiveFileName)" />
@@ -412,7 +414,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
-  <Target Name="_InstallFrameworkIntoLocalDotNet"
+  <!-- This workaround is not needed in source build -->
+  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Name="_InstallFrameworkIntoLocalDotNet"
           Inputs="@(SharedFxContent)"
           Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
 
@@ -437,7 +441,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Condition="'$(ArchiveExtension)' == '.tar.gz'" />
   </Target>
 
-  <Target Name="_CreateRedistSharedFxArchive"
+  <!-- Redist tarball including the dotnet-runtime is not needed in source build -->
+  <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Name="_CreateRedistSharedFxArchive"
           Inputs="@(SharedFxContent)"
           Outputs="$(RedistArchiveOutputPath)">
     <Message Importance="High" Text="$(MSbuildProjectFile) -> $(RedistArchiveOutputPath)" />

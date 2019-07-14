@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 var endpointFeature = Context.GetHttpContext().Features.Get<IEndpointFeature>();
                 var endpoint = endpointFeature?.Endpoint;
 
-                _logger.LogDebug($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
+                Log.NoComponentsRegisteredInEndpoint(_logger, endpoint.DisplayName);
 
                 // No components preregistered so return. This is totally normal if the components were prerendered.
                 return null;
@@ -131,16 +131,18 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
-            _logger.LogDebug($"Received confirmation for batch {renderId}.");
+            Log.ReceivedConfirmationForBatch(_logger, renderId);
             EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var circuitHost = (CircuitHost)sender;
+            var circuitId = circuitHost?.CircuitId;
+
             try
             {
-                _logger.LogWarning((Exception)e.ExceptionObject, "Unhandled Server-Side exception");
+                Log.UnhandledExceptionInCircuit(_logger, circuitId, (Exception)e.ExceptionObject);
                 await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
 
                 // We generally can't abort the connection here since this is an async
@@ -149,7 +151,7 @@ namespace Microsoft.AspNetCore.Components.Server
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to transmit exception to client");
+                Log.FailedToTransmitException(_logger, circuitId, ex);
             }
         }
 
@@ -163,6 +165,41 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             return circuitHost;
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _noComponentsRegisteredInEndpoint =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "NoComponentsRegisteredInEndpoint"), "No components registered in the current endpoint '{Endpoint}'");
+
+            private static readonly Action<ILogger, long, Exception> _receivedConfirmationForBatch =
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(2, "ReceivedConfirmationForBatch"), "Received confirmation for batch {BatchId}");
+
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionInCircuit =
+                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, "UnhandledExceptionInCircuit"), "Unhandled exception in circuit {CircuitId}");
+
+            private static readonly Action<ILogger, string, Exception> _failedToTransmitException =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "FailedToTransmitException"), "Failed to transmit exception to client in circuit {CircuitId}");
+
+            public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
+            {
+                _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
+            }
+
+            public static void ReceivedConfirmationForBatch(ILogger logger, long batchId)
+            {
+                _receivedConfirmationForBatch(logger, batchId, null);
+            }
+
+            public static void UnhandledExceptionInCircuit(ILogger logger, string circuitId, Exception exception)
+            {
+                _unhandledExceptionInCircuit(logger, circuitId, exception);
+            }
+
+            public static void FailedToTransmitException(ILogger logger, string circuitId, Exception transmissionException)
+            {
+                _failedToTransmitException(logger, circuitId, transmissionException);
+            }
         }
     }
 }

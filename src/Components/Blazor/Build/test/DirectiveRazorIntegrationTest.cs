@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;

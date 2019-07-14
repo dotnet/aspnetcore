@@ -17,7 +17,7 @@
 
 @if (_toggleCapturedElementPresence)
 {
-    <input id="capturedElement" @ref="_myInput" />
+    <input id="capturedElement" @ref="_myInput" @ref:suppressField />
 }
 <button @onclick="MakeInteropCall">Click me</button>
 <label>

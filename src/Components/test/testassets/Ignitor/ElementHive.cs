@@ -77,7 +77,7 @@ namespace Ignitor
             }
         }
 
-        private void UpdateComponent(RenderBatch batch, int componentId, ArraySegment<RenderTreeEdit> edits)
+        private void UpdateComponent(RenderBatch batch, int componentId, ArrayBuilderSegment<RenderTreeEdit> edits)
         {
             if (!Components.TryGetValue(componentId, out var component))
             {
@@ -98,7 +98,7 @@ namespace Ignitor
 
         }
 
-        private void ApplyEdits(RenderBatch batch, ContainerNode parent, int childIndex, ArraySegment<RenderTreeEdit> edits)
+        private void ApplyEdits(RenderBatch batch, ContainerNode parent, int childIndex, ArrayBuilderSegment<RenderTreeEdit> edits)
         {
             var currentDepth = 0;
             var childIndexAtCurrentDepth = childIndex;

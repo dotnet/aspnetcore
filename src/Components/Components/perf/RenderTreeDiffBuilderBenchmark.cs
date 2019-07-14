@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Performance
 {
@@ -87,9 +88,11 @@ namespace Microsoft.AspNetCore.Components.Performance
         private class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new TestServiceProvider(), new RendererSynchronizationContext())
+                : base(new TestServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

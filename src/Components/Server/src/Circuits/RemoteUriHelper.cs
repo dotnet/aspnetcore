@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -59,8 +59,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Interop.ListenForNavigationEvents,
                 typeof(RemoteUriHelper).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
-
-            _logger.LogDebug($"{nameof(RemoteUriHelper)} initialized.");
         }
 
         /// <summary>
@@ -75,24 +73,43 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 var message = $"{nameof(NotifyLocationChanged)} called without a circuit.";
                 throw new InvalidOperationException(message);
             }
+
             var uriHelper = (RemoteUriHelper)circuit.Services.GetRequiredService<IUriHelper>();
+            Log.ReceivedLocationChangedNotification(uriHelper._logger, uriAbsolute, isInterceptedLink);
 
             uriHelper.SetAbsoluteUri(uriAbsolute);
-
-            uriHelper._logger.LogDebug($"Location changed to '{uriAbsolute}'.");
             uriHelper.TriggerOnLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            _logger.LogDebug($"{uri} force load {forceLoad}.");
+            Log.RequestingNavigation(_logger, uri, forceLoad);
 
             if (_jsRuntime == null)
             {
                 throw new NavigationException(uri);
             }
             _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, bool, Exception> _requestingNavigation =
+                LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(1, "RequestingNavigation"), "Requesting navigation to URI {Uri} with forceLoad={ForceLoad}");
+
+            private static readonly Action<ILogger, string, bool, Exception> _receivedLocationChangedNotification =
+                LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(2, "ReceivedLocationChangedNotification"), "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}");
+
+            public static void RequestingNavigation(ILogger logger, string uri, bool forceLoad)
+            {
+                _requestingNavigation(logger, uri, forceLoad, null);
+            }
+
+            public static void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted)
+            {
+                _receivedLocationChangedNotification(logger, uri, isIntercepted, null);
+            }
         }
     }
 }

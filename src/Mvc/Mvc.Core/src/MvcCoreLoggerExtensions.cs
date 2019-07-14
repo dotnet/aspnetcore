@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Mvc
         public const string ActionFilter = "Action Filter";
         private static readonly string[] _noFilters = new[] { "None" };
 
+        private static readonly Action<ILogger, string, string, Exception> _controllerFactoryExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _controllerFactoryExecuted;
+
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
@@ -152,6 +155,16 @@ namespace Microsoft.AspNetCore.Mvc
 
         static MvcCoreLoggerExtensions()
         {
+            _controllerFactoryExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(1, "ControllerFactoryExecuting"),
+                "Executing controller factory for controller {Controller} ({AssemblyName})");
+
+            _controllerFactoryExecuted = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                new EventId(2, "ControllerFactoryExecuted"),
+                "Executed controller factory for controller {Controller} ({AssemblyName})");
+
             _actionExecuting = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
                 new EventId(1, "ActionExecuting"),
@@ -711,13 +724,14 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     if (i == routeValues.Length - 1)
                     {
-                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\"}}");
+                        stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\"");
                     }
                     else
                     {
                         stringBuilder.Append($"{routeKeys[i]} = \"{routeValues[i]}\", ");
                     }
                 }
+                stringBuilder.Append("}");
 
                 if (action.RouteValues.TryGetValue("page", out var page) && page != null)
                 {
@@ -1626,6 +1640,30 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             _logFilterExecutionPlan(logger, filterType, filterList, null);
+        }
+
+        public static void ExecutingControllerFactory(this ILogger logger, ControllerContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
+            var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+            _controllerFactoryExecuting(logger, controllerName, controllerType.Assembly.GetName().Name, null);
+        }
+
+        public static void ExecutedControllerFactory(this ILogger logger, ControllerContext context)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
+            var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+            _controllerFactoryExecuted(logger, controllerName, controllerType.Assembly.GetName().Name, null);
         }
 
         private static string[] GetFilterList(IEnumerable<IFilterMetadata> filters)

@@ -70,7 +70,15 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 var req = context.Request;
 
-                req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                if (request.Version == HttpVersion.Version20)
+                {
+                    // https://tools.ietf.org/html/rfc7540
+                    req.Protocol = "HTTP/2";
+                }
+                else
+                {
+                    req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                }
                 req.Method = request.Method.ToString();
 
                 req.Scheme = request.RequestUri.Scheme;

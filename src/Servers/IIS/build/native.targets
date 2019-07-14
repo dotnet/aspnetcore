@@ -5,11 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup Condition="@(MessageFile->Count()) != 0">
-    <CustomBuild Include="@(MessageFile)">
+    <!-- Checking if the IntDir exists is a local development optimization. Normally, each time the build runs,
+      the aspnetcore_msg.h file is auto generated. The compiler notices that the file has been updated, and recompiles c++ files.
+      These files never update (they define message types, which aren't changed). Therefore, if the IntDir exists, don't recreate
+      the header file. -->
+    <CustomBuild Include="@(MessageFile)" Condition="!Exists('$(IntDir)MSG00001.bin')">
       <FileType>Document</FileType>
       <Command>mc "%(FullPath)" -h $(IntDir) -r $(IntDir)</Command>
       <Message>Compiling Event Messages ...</Message>
-      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG0409.bin</Outputs>
+      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG00001.bin</Outputs>
     </CustomBuild>
 
     <MessageFile Remove="@(MessageFile)" />

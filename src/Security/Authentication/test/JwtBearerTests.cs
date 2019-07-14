@@ -679,6 +679,77 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Assert.Equal(string.Empty, response.ResponseText);
         }
 
+        [Fact]
+        public async Task EventOnForbidden_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbiddenSkip_ResponseNotModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EventOnForbidden_ResponseModified()
+        {
+            var tokenData = CreateStandardTokenAndKey();
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = tokenData.key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        context.Response.StatusCode = 418;
+                        return context.Response.WriteAsync("You Shall Not Pass");
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenData.tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(418, (int)response.Response.StatusCode);
+            Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+        }
+
         class InvalidTokenValidator : ISecurityTokenValidator
         {
             public InvalidTokenValidator()
@@ -879,6 +950,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                             await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                         }
+                        else if (context.Request.Path == new PathString("/forbidden"))
+                        {
+                            // Simulate Forbidden
+                            await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
+                        }
                         else if (context.Request.Path == new PathString("/signIn"))
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
@@ -923,6 +999,27 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             return transaction;
+        }
+
+        private static (string tokenText, SymmetricSecurityKey key) CreateStandardTokenAndKey()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+            return (tokenText, key);
         }
     }
 }

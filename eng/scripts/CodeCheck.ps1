@@ -129,7 +129,7 @@ try {
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
             # These .sln files are used by the templating engine.
-            ($_.Name -ne "RazorComponentsWeb-CSharp.sln")
+            ($_.Name -ne "BlazorServerWeb_CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
@@ -166,9 +166,9 @@ try {
         & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
-    Write-Host "Re-generating Browser.JS files"
+    Write-Host "Re-generating Web.JS files"
     Invoke-Block {
-        & dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
+        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
     }
 
     Write-Host "Run git diff to check for pending changes"

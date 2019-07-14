@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1388,6 +1389,52 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         #endregion
 
+        #region Logs
+
+        [Fact]
+        public async Task InvokeAction_LogsPageFactory()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = CreateDescriptorForSimplePage();
+            var invoker = CreateInvoker(null, actionDescriptor, logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var pageName = $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)} ({typeof(PageActionInvokerTest).Assembly.GetName().Name})";
+            Assert.Contains($"Executing page factory for page {pageName}", messages);
+            Assert.Contains($"Executed page factory for page {pageName}", messages);
+        }
+
+        [Fact]
+        public async Task InvokeAction_LogsPageModelFactory()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = CreateDescriptorForPageModelPage();
+            var invoker = CreateInvoker(null, actionDescriptor, logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var pageName = $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)} ({typeof(PageActionInvokerTest).Assembly.GetName().Name})";
+            Assert.Contains($"Executing page model factory for page {pageName}", messages);
+            Assert.Contains($"Executed page model factory for page {pageName}", messages);
+        }
+
+        #endregion
+
         protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
@@ -1635,13 +1682,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     new HandlerMethodDescriptor()
                     {
                         HttpMethod = "GET",
-                        MethodInfo = typeof(PageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler1)),
+                        MethodInfo = typeof(TestPageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler1)),
                         Parameters = new List<HandlerParameterDescriptor>(),
                     },
                     new HandlerMethodDescriptor()
                     {
                         HttpMethod = "GET",
-                        MethodInfo = typeof(PageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler2)),
+                        MethodInfo = typeof(TestPageModel).GetTypeInfo().GetMethod(nameof(TestPageModel.OnGetHandler2)),
                         Parameters = new List<HandlerParameterDescriptor>(),
                     },
                 },

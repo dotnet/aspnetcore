@@ -110,6 +110,86 @@
     <input id="textbox-generic-guid-mirror" @bind="textboxGenericGuidValue" readonly />
 </p>
 
+<h2>Date Textboxes (type=text)</h2>
+<p>
+    DateTime:
+    <input id="textbox-datetime" @bind="textboxDateTimeValue" type="text" />
+    <span id="textbox-datetime-value">@textboxDateTimeValue</span>
+    <input id="textbox-datetime-mirror" @bind="textboxDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime:
+    <input id="textbox-nullable-datetime" @bind="textboxNullableDateTimeValue" type="text" />
+    <span id="textbox-nullable-datetime-value">@textboxNullableDateTimeValue</span>
+    <input id="textbox-nullable-datetime-mirror" @bind="textboxNullableDateTimeValue" readonly />
+</p>
+<p>
+    Nullable DateTime (invalid input):
+    <input id="textbox-nullable-datetime-invalid" @bind="textboxNullableDateTimeInvalidValue" type="text" />
+    <span id="textbox-nullable-datetime-invalid-value">@textboxNullableDateTimeInvalidValue</span>
+    <input id="textbox-nullable-datetime-invalid-mirror" @bind="textboxNullableDateTimeInvalidValue" readonly />
+</p>
+<p>
+    DateTimeOffset:
+    <input id="textbox-datetimeoffset" @bind="textboxDateTimeOffsetValue" type="text" />
+    <span id="textbox-datetimeoffset-value">@textboxDateTimeOffsetValue</span>
+    <input id="textbox-datetimeoffset-mirror" @bind="textboxDateTimeOffsetValue" readonly />
+</p>
+<p>
+    DateTimeOffset (invalid input):
+    <input id="textbox-datetimeoffset-invalid" @bind="textboxDateTimeOffsetInvalidValue" type="text" />
+    <span id="textbox-datetimeoffset-invalid-value">@textboxDateTimeOffsetInvalidValue</span>
+    <input id="textbox-datetimeoffset-invalid-mirror" @bind="textboxDateTimeOffsetInvalidValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset:
+    <input id="textbox-nullable-datetimeoffset" @bind="textboxNullableDateTimeOffsetValue" type="text" />
+    <span id="textbox-nullable-datetimeoffset-value">@textboxNullableDateTimeOffsetValue</span>
+    <input id="textbox-nullable-datetimeoffset-mirror" @bind="textboxNullableDateTimeOffsetValue" readonly />
+</p>
+<p>
+    DateTime (format):
+    <input id="textbox-datetime-format" @bind="textboxDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetime-format-value">@textboxDateTimeFormatValue</span>
+    <input id="textbox-datetime-format-mirror" @bind="textboxDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTime (format):
+    <input id="textbox-datetime-format-invalid" @bind="textboxDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatValue</span>
+    <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTime (format / invalid value):
+    <input id="textbox-datetime-format-invalid" @bind="textboxDateTimeFormatInvalidValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatInvalidValue</span>
+    <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatInvalidValue" readonly />
+</p>
+<p>
+    Nullable DateTime (format):
+    <input id="textbox-nullable-datetime-format" @bind="textboxNullableDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetime-format-value">@textboxNullableDateTimeFormatValue</span>
+    <input id="textbox-nullable-datetime-format-mirror" @bind="textboxNullableDateTimeFormatValue" readonly />
+</p>
+<p>
+    DateTimeOffset (format):
+    <input id="textbox-datetimeoffset-format" @bind="textboxDateTimeOffsetFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-datetimeoffset-format-value">@textboxDateTimeOffsetFormatValue</span>
+    <input id="textbox-datetimeoffset-format-mirror" @bind="textboxDateTimeOffsetFormatValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset (format):
+    <input id="textbox-nullable-datetimeoffset-format" @bind="textboxNullableDateTimeOffsetFormatValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetimeoffset-format-value">@textboxNullableDateTimeOffsetFormatValue</span>
+    <input id="textbox-nullable-datetimeoffset-format-mirror" @bind="textboxNullableDateTimeOffsetFormatValue" readonly />
+</p>
+<p>
+    Nullable DateTimeOffset (format / invalid value):
+    <input id="textbox-nullable-datetimeoffset-format-invalid" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" type="text" @bind:format="MM-dd" />
+    <span id="textbox-nullable-datetimeoffset-format-invalid-value">@textboxNullableDateTimeOffsetFormatInvalidValue</span>
+    <input id="textbox-nullable-datetimeoffset-format-invalid-mirror" @bind="textboxNullableDateTimeOffsetFormatInvalidValue" readonly />
+</p>
+
 <h2>Text Area</h2>
 <p>
     Initially blank:
@@ -145,7 +225,8 @@
 <h2>Select</h2>
 <p>
     <select id="select-box" @bind="selectValue">
-        <optgroup label="Some choices"> <!-- Show it also works with optgroup -->
+        <optgroup label="Some choices">
+            <!-- Show it also works with optgroup -->
             <option value=@SelectableValue.First>First choice</option>
             <option value=@SelectableValue.Second>Second choice</option>
             <option value=@SelectableValue.Third>Third choice</option>
@@ -172,40 +253,56 @@
 </p>
 
 @code {
-string textboxInitiallyBlankValue = null;
-string textboxInitiallyPopulatedValue = "Hello";
+    string textboxInitiallyBlankValue = null;
+    string textboxInitiallyPopulatedValue = "Hello";
 
-string textAreaInitiallyBlankValue = null;
-string textAreaInitiallyPopulatedValue = "Hello";
+    string textAreaInitiallyBlankValue = null;
+    string textAreaInitiallyPopulatedValue = "Hello";
 
-bool? checkboxInitiallyNullValue = null;
-bool checkboxInitiallyUncheckedValue = false;
-bool checkboxInitiallyCheckedValue = true;
+    bool? checkboxInitiallyNullValue = null;
+    bool checkboxInitiallyUncheckedValue = false;
+    bool checkboxInitiallyCheckedValue = true;
 
-int textboxIntValue = -42;
-int? textboxNullableIntValue = null;
-long textboxLongValue = 3_000_000_000;
-long? textboxNullableLongValue = null;
-float textboxFloatValue = 3.141f;
-float? textboxNullableFloatValue = null;
-double textboxDoubleValue = 3.14159265359d;
-double? textboxNullableDoubleValue = null;
-decimal textboxDecimalValue = 0.0000000000000000000000000001M;
-decimal? textboxNullableDecimalValue = null;
-decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
-decimal? textboxNullableDecimalInvalidValue = null;
+    int textboxIntValue = -42;
+    int? textboxNullableIntValue = null;
+    long textboxLongValue = 3_000_000_000;
+    long? textboxNullableLongValue = null;
+    float textboxFloatValue = 3.141f;
+    float? textboxNullableFloatValue = null;
+    double textboxDoubleValue = 3.14159265359d;
+    double? textboxNullableDoubleValue = null;
+    decimal textboxDecimalValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalValue = null;
+    decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalInvalidValue = null;
 
-int textboxGenericIntValue = -42;
-Guid textboxGenericGuidValue = Guid.Empty;
+    int textboxGenericIntValue = -42;
+    Guid textboxGenericGuidValue = Guid.Empty;
 
-bool includeFourthOption = false;
-enum SelectableValue { First, Second, Third, Fourth }
-SelectableValue selectValue = SelectableValue.Second;
-SelectableValue selectMarkupValue = SelectableValue.Second;
+    DateTime textboxDateTimeValue = new DateTime(1985, 3, 4);
+    DateTime? textboxNullableDateTimeValue = null;
+    DateTimeOffset textboxDateTimeOffsetValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+    DateTimeOffset? textboxNullableDateTimeOffsetValue = null;
 
-void AddAndSelectNewSelectOption()
-{
-    includeFourthOption = true;
-    selectValue = SelectableValue.Fourth;
-}
+    DateTime? textboxNullableDateTimeInvalidValue = null;
+    DateTimeOffset textboxDateTimeOffsetInvalidValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+
+    DateTime textboxDateTimeFormatValue = new DateTime(1985, 3, 4);
+    DateTime? textboxNullableDateTimeFormatValue = null;
+    DateTimeOffset textboxDateTimeOffsetFormatValue = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+    DateTimeOffset? textboxNullableDateTimeOffsetFormatValue = null;
+
+    DateTime textboxDateTimeFormatInvalidValue = new DateTime(1985, 3, 4);
+    DateTimeOffset? textboxNullableDateTimeOffsetFormatInvalidValue = null;
+
+    bool includeFourthOption = false;
+    enum SelectableValue { First, Second, Third, Fourth }
+    SelectableValue selectValue = SelectableValue.Second;
+    SelectableValue selectMarkupValue = SelectableValue.Second;
+
+    void AddAndSelectNewSelectOption()
+    {
+        includeFourthOption = true;
+        selectValue = SelectableValue.Fourth;
+    }
 }

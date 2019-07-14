@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Identity
     public partial class ExternalLoginInfo : Microsoft.AspNetCore.Identity.UserLoginInfo
     {
         public ExternalLoginInfo(System.Security.Claims.ClaimsPrincipal principal, string loginProvider, string providerKey, string displayName) : base (default(string), default(string), default(string)) { }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties AuthenticationProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authentication.AuthenticationToken> AuthenticationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }

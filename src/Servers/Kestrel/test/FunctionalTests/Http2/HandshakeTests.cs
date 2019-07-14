@@ -5,7 +5,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -55,6 +54,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             }));
 
             Assert.Equal("HTTP/2 over TLS is not supported on OSX due to missing ALPN support.", ex.Message);
+        }
+
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win8, WindowsVersions.Win81)]
+        // Win7 SslStream is missing ALPN support.
+        public void TlsAndHttp2NotSupportedOnWin7()
+        {
+            var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
+            {
+                throw new NotImplementedException();
+            }, new TestServiceContext(LoggerFactory),
+            kestrelOptions =>
+            {
+                kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(_x509Certificate2);
+                });
+            }));
+
+            Assert.Equal("HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.", ex.Message);
         }
 
         [ConditionalFact]

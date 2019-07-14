@@ -43,9 +43,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
-            if (options.HttpProtocols == HttpProtocols.Http2 && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (options.HttpProtocols == HttpProtocols.Http2)
             {
-                throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                {
+                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
+                }
             }
 
             _next = next;
@@ -234,8 +241,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                 // Disposing the stream will dispose the sslDuplexPipe
                 await using (sslStream)
+                await using (sslDuplexPipe)
                 {
                     await _next(context);
+                    // Dispose the inner stream (SslDuplexPipe) before disposing the SslStream
+                    // as the duplex pipe can hit an ODE as it still may be writing.
                 }
             }
             finally

@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.TestHost
         public static System.Net.Http.HttpClient GetTestClient(this Microsoft.Extensions.Hosting.IHost host) { throw null; }
         public static Microsoft.AspNetCore.TestHost.TestServer GetTestServer(this Microsoft.Extensions.Hosting.IHost host) { throw null; }
     }
+    public partial class HttpResetTestException : System.Exception
+    {
+        public HttpResetTestException(int errorCode) { }
+        public int ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class RequestBuilder
     {
         public RequestBuilder(Microsoft.AspNetCore.TestHost.TestServer server, string path) { }

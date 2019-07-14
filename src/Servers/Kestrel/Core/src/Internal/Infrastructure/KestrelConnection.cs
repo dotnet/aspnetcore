@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 try
                 {
                     var task = entry.Key.Invoke(entry.Value);
-                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    if (!task.IsCompletedSuccessfully)
                     {
                         return CompleteAsyncAwaited(task, onCompleted);
                     }

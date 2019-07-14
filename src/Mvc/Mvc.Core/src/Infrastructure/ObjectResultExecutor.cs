@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.CompletedTask;
             }
 
-            Logger.ObjectResultExecuting(result.Value);
+            Logger.ObjectResultExecuting(value);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);

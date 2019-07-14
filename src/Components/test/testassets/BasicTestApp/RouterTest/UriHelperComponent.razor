@@ -8,9 +8,8 @@
 @code{
     string UrlLocation;
 
-    protected override void OnInit()
+    protected override void OnInitialized()
     {
-        base.OnInit();
         UrlLocation = UriHelper.GetAbsoluteUri();
         UriHelper.OnLocationChanged += (_, __) =>
         {

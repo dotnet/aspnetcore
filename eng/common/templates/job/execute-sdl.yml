@@ -20,6 +20,16 @@ jobs:
       downloadType: specific files
       matchingPattern: "**"
       downloadPath: $(Build.SourcesDirectory)\artifacts
+  - powershell: eng/common/sdl/extract-artifact-packages.ps1
+      -InputPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
+      -ExtractPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
+    displayName: Extract Blob Artifacts
+    continueOnError: ${{ parameters.continueOnError }}
+  - powershell: eng/common/sdl/extract-artifact-packages.ps1
+      -InputPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
+      -ExtractPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
+    displayName: Extract Package Artifacts
+    continueOnError: ${{ parameters.continueOnError }}
   - task: NuGetToolInstaller@1
     displayName: 'Install NuGet.exe'
   - task: NuGetCommand@2
@@ -36,7 +46,7 @@ jobs:
       continueOnError: ${{ parameters.continueOnError }}
   - ${{ if eq(parameters.overrideParameters, '') }}:
     - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
-        -GuardianPackageName Microsoft.Guardian.Cli.0.3.2
+        -GuardianPackageName Microsoft.Guardian.Cli.0.6.0
         -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
         -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
         ${{ parameters.additionalParameters }}

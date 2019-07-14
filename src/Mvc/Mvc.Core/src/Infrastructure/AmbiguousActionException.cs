@@ -10,13 +10,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// An exception which indicates multiple matches in action selection.
     /// </summary>
     [Serializable]
-    internal class AmbiguousActionException : InvalidOperationException
+    public class AmbiguousActionException : InvalidOperationException
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="AmbiguousActionException" />.
+        /// </summary>
+        /// <param name="message">The exception message.</param>
         public AmbiguousActionException(string message)
             : base(message)
         {
         }
 
+        /// <summary>
+        /// Framework infrastructure. Do not call directly.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="context"></param>
         protected AmbiguousActionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

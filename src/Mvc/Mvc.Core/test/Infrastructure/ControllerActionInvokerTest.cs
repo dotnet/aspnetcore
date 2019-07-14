@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1449,6 +1450,57 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => invoker.InvokeAsync());
             Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        #endregion
+
+        #region Logs
+
+        [Fact]
+        public async Task InvokeAsync_Logs()
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                ControllerTypeInfo = typeof(TestController).GetTypeInfo(),
+                FilterDescriptors = new List<FilterDescriptor>(),
+                Parameters = new List<ParameterDescriptor>(),
+                BoundProperties = new List<ParameterDescriptor>(),
+                MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod)),
+            };
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[0],
+                actionDescriptor,
+                new TestController(),
+                logger: logger);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)}.{nameof(TestController.ActionMethod)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
+            var actionResultName = $"{typeof(CommonResourceInvokerTest).FullName}+{nameof(TestResult)}";
+            Assert.Equal(13, messages.Count);
+            Assert.Contains($"Route matched with {{}}. Executing controller action with signature {typeof(IActionResult).FullName} {nameof(TestController.ActionMethod)}() on controller {controllerName}.", messages);
+            Assert.Contains("Execution plan of authorization filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of resource filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of action filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of exception filters (in the following order): None", messages);
+            Assert.Contains("Execution plan of result filters (in the following order): None", messages);
+            Assert.Contains($"Executing controller factory for controller {controllerName}", messages);
+            Assert.Contains($"Executed controller factory for controller {controllerName}", messages);
+            Assert.Contains($"Executing action method {actionName} - Validation state: Valid", messages);
+            Assert.Contains(messages, m => m.Contains($"Executed action method {actionName}, returned result {actionResultName} in "));
+            Assert.Contains($"Before executing action result {actionResultName}.", messages);
+            Assert.Contains($"After executing action result {actionResultName}.", messages);
+            Assert.Contains(messages, m => m.Contains($"Executed action {actionName} in "));
         }
 
         #endregion

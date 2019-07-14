@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -21,11 +22,10 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             builder.OpenElement(0, "select");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "id", Id);
-            builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
-            builder.AddContent(6, ChildContent);
+            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddContent(5, ChildContent);
             builder.CloseElement();
         }
 
@@ -40,14 +40,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else if (typeof(T).IsEnum)
             {
-                // There's no non-generic Enum.TryParse (https://github.com/dotnet/corefx/issues/692)
-                try
+                var success = BindConverter.TryConvertTo<T>(value, CultureInfo.CurrentCulture, out var parsedValue);
+                if (success)
                 {
-                    result = (T)Enum.Parse(typeof(T), value);
+                    result = parsedValue;
                     validationErrorMessage = null;
                     return true;
                 }
-                catch (ArgumentException)
+                else
                 {
                     result = default;
                     validationErrorMessage = $"The {FieldIdentifier.FieldName} field is not valid.";

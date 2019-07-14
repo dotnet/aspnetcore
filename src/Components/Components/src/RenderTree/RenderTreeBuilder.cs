@@ -226,23 +226,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         /// <summary>
         /// <para>
-        /// Appends a frame representing an <see cref="Action{UIEventArgs}"/>-valued attribute.
-        /// </para>
-        /// <para>
-        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
-        /// current element is not a component, the frame will be omitted.
-        /// </para>
-        /// </summary>
-        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, Action<UIEventArgs> value)
-        {
-            AddAttribute(sequence, name, (MulticastDelegate)value);
-        }
-
-        /// <summary>
-        /// <para>
         /// Appends a frame representing a <see cref="Func{Task}"/>-valued attribute.
         /// </para>
         /// <para>
@@ -260,23 +243,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         /// <summary>
         /// <para>
-        /// Appends a frame representing a <see cref="Func{UIEventArgs, Task}"/>-valued attribute.
-        /// </para>
-        /// <para>
-        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
-        /// current element is not a component, the frame will be omitted.
-        /// </para>
-        /// </summary>
-        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, Func<UIEventArgs, Task> value)
-        {
-            AddAttribute(sequence, name, (MulticastDelegate)value);
-        }
-
-        /// <summary>
-        /// <para>
         /// Appends a frame representing a delegate-valued attribute.
         /// </para>
         /// <para>
@@ -287,14 +253,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        /// <remarks>
-        /// This method is provided for infrastructure purposes, and is used to be
-        /// <see cref="UIEventArgsRenderTreeBuilderExtensions"/> to provide support for delegates of specific
-        /// types. For a good programming experience when using a custom delegate type, define an
-        /// extension method similar to
-        /// <see cref="UIEventArgsRenderTreeBuilderExtensions.AddAttribute(RenderTreeBuilder, int, string, Action{UIChangeEventArgs})"/>
-        /// that calls this method.
-        /// </remarks>
         public void AddAttribute(int sequence, string name, MulticastDelegate value)
         {
             AssertCanAddAttribute();

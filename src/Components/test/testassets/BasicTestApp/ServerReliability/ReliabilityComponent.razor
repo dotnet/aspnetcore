@@ -1,0 +1,40 @@
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@namespace BasicTestApp
+<h1>Server reliability</h1>
+<p>This component is used on the server-side execution model to validate that the circuit is resilient to failures, intentional or not.
+    The tests that use this component trigger invalid .NET calls to which the server replies with proper JS interop messages indicating a
+    failure to perform the call.
+
+    We include a counter to ensure that the circuit is still alive and working fine after the error.
+</p>
+
+<p>Current count: @currentCount</p>
+<p id="errormessage">Error = @error</p>
+<button id="triggerjsinterop" @onclick="@TriggerJSInterop"></button>
+
+<button id="thecounter" @onclick="@IncrementCount">Click me</button>
+
+@code
+{
+    int currentCount = 0;
+    string error = "";
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    async Task TriggerJSInterop()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<int>(
+                "sendMalformedCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (Exception e)
+        {
+            error = e.Message;
+        }
+    }
+}

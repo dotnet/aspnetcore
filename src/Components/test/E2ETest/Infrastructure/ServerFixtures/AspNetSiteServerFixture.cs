@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 
@@ -17,6 +19,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         public BuildWebHost BuildWebHostMethod { get; set; }
 
         public AspNetEnvironment Environment { get; set; } = AspNetEnvironment.Production;
+
+        public List<string> AdditionalArguments { get; set; } = new List<string>();
 
         protected override IWebHost CreateWebHost()
         {
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 "--urls", "http://127.0.0.1:0",
                 "--contentroot", sampleSitePath,
                 "--environment", Environment.ToString(),
-            });
+            }.Concat(AdditionalArguments).ToArray());
         }
     }
 }

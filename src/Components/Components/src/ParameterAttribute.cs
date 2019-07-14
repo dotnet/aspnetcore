@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Denotes the target member as a component parameter.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class ParameterAttribute : Attribute
     {
         /// <summary>

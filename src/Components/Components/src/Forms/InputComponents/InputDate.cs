@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputDate<T> : InputBase<T>
     {
-        const string dateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
+        private const string DateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
 
         /// <summary>
         /// Gets or sets the error message used when displaying an a parsing error.
@@ -25,10 +26,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "date");
-            builder.AddAttribute(3, "id", Id);
-            builder.AddAttribute(4, "class", CssClass);
-            builder.AddAttribute(5, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(3, "class", CssClass);
+            builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValueAsString));
+            builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             switch (value)
             {
                 case DateTime dateTimeValue:
-                    return dateTimeValue.ToString(dateFormat);
+                    return BindConverter.FormatValue(dateTimeValue, DateFormat, CultureInfo.InvariantCulture);
                 case DateTimeOffset dateTimeOffsetValue:
-                    return dateTimeOffsetValue.ToString(dateFormat);
+                    return BindConverter.FormatValue(dateTimeOffsetValue, DateFormat, CultureInfo.InvariantCulture);
                 default:
                     return string.Empty; // Handles null for Nullable<DateTime>, etc.
             }
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTime(string value, out T result)
         {
-            var success = DateTime.TryParse(value, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDateTimeOffset(string value, out T result)
         {
-            var success = DateTimeOffset.TryParse(value, out var parsedValue);
+            var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;

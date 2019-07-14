@@ -12,10 +12,24 @@
   <ItemGroup>
     <Reference Include="System.ComponentModel" />
     <Reference Include="Microsoft.AspNetCore.Blazor" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.HttpClient" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

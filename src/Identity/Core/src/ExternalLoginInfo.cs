@@ -35,5 +35,10 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="AuthenticationToken"/>s associated with this login.
         /// </summary>
         public IEnumerable<AuthenticationToken> AuthenticationTokens { get; set; }
+
+        /// <summary>
+        /// The <see cref="Authentication.AuthenticationProperties"/> associated with this login.
+        /// </summary>
+        public AuthenticationProperties AuthenticationProperties { get; set; }
     }
 }

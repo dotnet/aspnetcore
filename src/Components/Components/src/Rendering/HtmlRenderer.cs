@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -26,13 +28,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Initializes a new instance of <see cref="HtmlRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        /// <param name="dispatcher"></param>
-        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher)
-            : base(serviceProvider, dispatcher)
+        public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Func<string, string> htmlEncoder)
+            : base(serviceProvider, loggerFactory)
         {
             _htmlEncoder = htmlEncoder;
         }
+
+        public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

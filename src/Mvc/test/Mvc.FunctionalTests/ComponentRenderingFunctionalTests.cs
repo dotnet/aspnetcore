@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         private static readonly Regex ContentWrapperRegex = new Regex(
-            $"<!-- M.A.C.Component:{{\"circuitId\":\"[^\"]+\",\"rendererId\":\"\\d+\",\"componentId\":\"\\d+\"}} -->(?<content>.*)<!-- M.A.C.Component: \\d+ -->",
+            "<!-- M.A.C.Component: {\"circuitId\":\"[^\"]+\",\"rendererId\":\\d+,\"componentId\":\\d+} -->(?<content>.*)<!-- M.A.C.Component: \\d+ -->",
             RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(1)); // Treat the entire input string as a single line
 
         public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)

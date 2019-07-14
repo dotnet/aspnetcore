@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -129,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             {
                 RedirectUri = "http://localhost/redirect"
             }));
-            
+
             Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
                             "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                             "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
@@ -224,6 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
             services.AddSingleton<IUriHelper,HttpUriHelper>();
             services.AddSingleton<StaticComponentRenderer>();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
 
             configureServices?.Invoke(services);
 
@@ -274,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
             [Parameter] public bool Force { get; set; }
 
-            protected override void OnInit()
+            protected override void OnInitialized()
             {
                 UriHelper.NavigateTo(RedirectUri, Force);
             }

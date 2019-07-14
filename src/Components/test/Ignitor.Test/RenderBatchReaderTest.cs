@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Ignitor
@@ -101,11 +103,13 @@ namespace Ignitor
                 RenderTreeEdit.UpdateMarkup(108, 109),
                 RenderTreeEdit.RemoveAttribute(110, "Some removed attribute"), // To test deduplication
             };
+            var editsBuilder = new ArrayBuilder<RenderTreeEdit>();
+            editsBuilder.Append(edits, 0, edits.Length);
+            var editsSegment = editsBuilder.ToSegment(1, edits.Length); // Skip first to show offset is respected
             var bytes = RoundTripSerialize(new RenderBatch(
                 new ArrayRange<RenderTreeDiff>(new[]
                 {
-                    new RenderTreeDiff(123, new ArraySegment<RenderTreeEdit>(
-                        edits, 1, edits.Length - 1)) // Skip first to show offset is respected
+                    new RenderTreeDiff(123, editsSegment)
                 }, 1),
                 default,
                 default,
@@ -331,9 +335,11 @@ namespace Ignitor
         class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
+                : base(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
             {
             }
+
+            public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
             protected override void HandleException(Exception exception)
             {

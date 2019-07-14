@@ -640,5 +640,383 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(newValue, () => boundValue.Text);
             Assert.Equal(newValue, mirrorValue.GetAttribute("value"));
         }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTime()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetime"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetime-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetime-mirror"));
+            var expected = new DateTime(1985, 3, 4);
+            Assert.Equal(expected, DateTime.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Clear textbox; value updates to 01/01/0001 because that's the default
+            target.Clear();
+            expected = default;
+            Browser.Equal(expected, () => DateTime.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01/02/2000 00:00:00\t");
+            expected = new DateTime(2000, 1, 2);
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateTime()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetime"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetime-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetime-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var expected = new DateTime(2000, 1, 2);
+            target.SendKeys("01/02/2000 00:00:00\t");
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTimeOffset()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetimeoffset"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetimeoffset-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetimeoffset-mirror"));
+            var expected = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+            Assert.Equal(expected, DateTimeOffset.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Clear textbox; value updates to 01/01/0001 because that's the default
+            target.Clear();
+            expected = default;
+            Browser.Equal(expected, () => DateTimeOffset.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01/02/2000 00:00:00 +08:00\t");
+            expected = new DateTimeOffset(new DateTime(2000, 1, 2), TimeSpan.FromHours(8));
+            Browser.Equal(expected, () => DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateTimeOffset()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("01/02/2000 00:00:00 +08:00" + "\t");
+            var expected = new DateTimeOffset(new DateTime(2000, 1, 2), TimeSpan.FromHours(8));
+            Browser.Equal(expected, () => DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTimeWithFormat()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetime-format"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetime-format-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetime-format-mirror"));
+            var expected = new DateTime(1985, 3, 4);
+            Assert.Equal("03-04", target.GetAttribute("value"));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            target.Clear();
+            target.SendKeys("\t");
+            expected = default;
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01-02\t");
+            expected = new DateTime(DateTime.Now.Year, 1, 2);
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateTimeWithFormat()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetime-format"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetime-format-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetime-format-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("01-02\t");
+            var expected = new DateTime(DateTime.Now.Year, 1, 2);
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTimeOffsetWithFormat()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetimeoffset-format"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetimeoffset-format-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetimeoffset-format-mirror"));
+            var expected = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+            Assert.Equal("03-04", target.GetAttribute("value"));
+            Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            target.Clear();
+            expected = default;
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01-02\t");
+            expected = new DateTimeOffset(new DateTime(DateTime.Now.Year, 1, 2), TimeSpan.FromHours(0));
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        //
+        // Guess what! Client-side and server-side also understand timezones differently. So for now we're comparing
+        // the parsed output without consideration for the timezone
+        [Fact]
+        public void CanBindTextboxNullableDateTimeOffsetWithFormat()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("01-02" + "\t");
+            var expected = new DateTimeOffset(new DateTime(DateTime.Now.Year, 1, 2), TimeSpan.FromHours(0));
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateTime_InvalidValue()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetime-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetime-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetime-invalid-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var expected = new DateTime(2000, 1, 2);
+            target.SendKeys("01/02/2000 00:00:00\t");
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06A");
+            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal(expected, () => DateTime.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06\t");
+            expected = new DateTime(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTimeOffset_InvalidValue()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetimeoffset-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetimeoffset-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetimeoffset-invalid-mirror"));
+            var expected = new DateTimeOffset(new DateTime(1985, 3, 4), TimeSpan.FromHours(8));
+            Assert.Equal(expected, DateTimeOffset.Parse(target.GetAttribute("value")));
+            Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            expected = new DateTime(2000, 1, 2);
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01/02/2000 00:00:00\t");
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06A");
+            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(target.GetAttribute("value")).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06\t");
+            expected = new DateTime(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxDateTimeWithFormat_InvalidValue()
+        {
+            var target = Browser.FindElement(By.Id("textbox-datetime-format-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-datetime-format-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-datetime-format-invalid-mirror"));
+            var expected = new DateTime(1985, 3, 4);
+            Assert.Equal("03-04", target.GetAttribute("value"));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06");
+            Browser.Equal("05/06", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal("03-04", () => target.GetAttribute("value"));
+            Assert.Equal(expected, DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05-06\t");
+            expected = new DateTime(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected, () => DateTime.Parse(boundValue.Text));
+            Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
+        }
+
+        // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
+        // Blazor have different formatting behaviour by default.
+        [Fact]
+        public void CanBindTextboxNullableDateTimeOffsetWithFormat_InvalidValue()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-format-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-format-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-datetimeoffset-format-invalid-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var expected = new DateTimeOffset(new DateTime(DateTime.Now.Year, 1, 2));
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("01-02\t");
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+
+            // Modify target to something invalid - the invalid change is reverted
+            // back to the last valid value
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05/06");
+            Browser.Equal("05/06", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(target.GetAttribute("value")).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+
+            // Now change it to something valid
+            target.SendKeys(Keys.Control + "a"); // select all
+            target.SendKeys("05-06\t");
+            expected = new DateTime(DateTime.Now.Year, 5, 6);
+            Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(boundValue.Text).DateTime);
+            Assert.Equal(expected.DateTime, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")).DateTime);
+        }
     }
 }

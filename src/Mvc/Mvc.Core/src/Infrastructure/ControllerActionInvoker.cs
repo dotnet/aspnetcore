@@ -64,7 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         _cursor.Reset();
 
+                        _logger.ExecutingControllerFactory(controllerContext);
+
                         _instance = _cacheEntry.ControllerFactory(controllerContext);
+
+                        _logger.ExecutedControllerFactory(controllerContext);
 
                         _arguments = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -469,7 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception ex)
             {
-                // Wrap non task-wrapped exceptions in a Task, 
+                // Wrap non task-wrapped exceptions in a Task,
                 // as this isn't done automatically since the method is not async.
                 return Task.FromException(ex);
             }

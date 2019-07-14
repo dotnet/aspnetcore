@@ -167,7 +167,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR", "..\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj", "{F2002E05-8FDD-4F55-A5E4-25A52B46D692}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser", "..\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj", "{EEB670DC-9FE2-45A2-B7E9-9BCF7D1056E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web", "..\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{EEB670DC-9FE2-45A2-B7E9-9BCF7D1056E4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components", "..\Components\Components\src\Microsoft.AspNetCore.Components.csproj", "{81B96508-D920-45F6-9534-0D348B11DFAB}"
 EndProject

@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -420,7 +421,6 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(1, component.Count);
         }
 
-        // For now format is only supported by this specific method.
         [Fact]
         public async Task CreateBinder_DateTime_Format()
         {
@@ -428,6 +428,104 @@ namespace Microsoft.AspNetCore.Components
             var value = DateTime.Now;
             var component = new EventCountingComponent();
             Action<DateTime> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTime_Format()
+        {
+            // Arrange
+            var value = (DateTime?)DateTime.Now;
+            var component = new EventCountingComponent();
+            Action<DateTime?> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_DateTimeOffset()
+        {
+            // Arrange
+            var value = DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTimeOffset()
+        {
+            // Arrange
+            var value = (DateTimeOffset?)DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = new DateTime(2018, 3, 4, 1, 2, 3);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_DateTimeOffset_Format()
+        {
+            // Arrange
+            var value = DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset> setter = (_) => value = _;
+            var format = "ddd yyyy-MM-dd";
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
+
+            var expectedValue = new DateTime(2018, 3, 4);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = expectedValue.ToString(format), });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableDateTimeOffset_Format()
+        {
+            // Arrange
+            var value = (DateTimeOffset?)DateTimeOffset.Now;
+            var component = new EventCountingComponent();
+            Action<DateTimeOffset?> setter = (_) => value = _;
             var format = "ddd yyyy-MM-dd";
 
             var binder = EventCallback.Factory.CreateBinder(component, setter, value, format);
@@ -513,6 +611,45 @@ namespace Microsoft.AspNetCore.Components
                 $"The type '{typeof(ClassWithoutTypeConverter).FullName}' does not have an associated TypeConverter that supports conversion from a string. " +
                 $"Apply 'TypeConverterAttribute' to the type to register a converter.",
                 ex.Message);
+        }
+
+        [Fact]
+        [ReplaceCulture("fr-FR", "fr-FR")]
+        public async Task CreateBinder_NumericType_WithCurrentCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, culture: null);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42 000,00", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NumericType_WithInvariantCulture()
+        {
+            // Arrange
+            var value = 17_000;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value, CultureInfo.InvariantCulture);
+
+            var expectedValue = 42_000;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42,000.00", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
         }
 
         private class EventCountingComponent : IComponent, IHandleEvent
