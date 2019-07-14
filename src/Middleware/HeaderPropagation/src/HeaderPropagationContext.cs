@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
@@ -14,32 +14,22 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         /// <summary>
         /// Initializes a new instance of <see cref="HeaderPropagationContext"/> with the provided
-        /// <paramref name="httpContext"/>, <paramref name="headerName"/> and <paramref name="headerValue"/>.
+        /// <paramref name="requestHeaders"/>, <paramref name="headerName"/> and <paramref name="headerValue"/>.
         /// </summary>
-        /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
+        /// <param name="requestHeaders">The headers associated with the current request.</param>
         /// <param name="headerName">The header name.</param>
         /// <param name="headerValue">The header value present in the current request.</param>
-        public HeaderPropagationContext(HttpContext httpContext, string headerName, StringValues headerValue)
+        public HeaderPropagationContext(IDictionary<string, StringValues> requestHeaders, string headerName, StringValues headerValue)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (headerName == null)
-            {
-                throw new ArgumentNullException(nameof(headerName));
-            }
-
-            HttpContext = httpContext;
-            HeaderName = headerName;
+            RequestHeaders = requestHeaders ?? throw new ArgumentNullException(nameof(requestHeaders));
+            HeaderName = headerName ?? throw new ArgumentNullException(nameof(headerName));
             HeaderValue = headerValue;
         }
 
         /// <summary>
-        /// Gets the <see cref="Http.HttpContext"/> associated with the current request.
+        /// Gets the headers associated with the current request.
         /// </summary>
-        public HttpContext HttpContext { get; }
+        public IDictionary<string, StringValues> RequestHeaders { get; }
 
         /// <summary>
         /// Gets the header name.

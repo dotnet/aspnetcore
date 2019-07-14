@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     /// </summary>
     public class HeaderPropagationMessageHandler : DelegatingHandler
     {
-        private readonly HeaderPropagationValues _values;
         private readonly HeaderPropagationMessageHandlerOptions _options;
+        private readonly HeaderPropagationValues _values;
 
         /// <summary>
         /// Creates a new instance of the <see cref="HeaderPropagationMessageHandler"/>.
@@ -47,9 +47,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             if (captured == null)
             {
                 var message =
-                    $"The {nameof(HeaderPropagationValues)}.{nameof(HeaderPropagationValues.Headers)} property has not been " +
-                    $"initialized. Register the header propagation middleware by adding 'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}() " +
-                    $"in the 'Configure(...)' method.";
+                    $"The {nameof(HeaderPropagationValues)}.{nameof(HeaderPropagationValues.Headers)} property has not been initialized. " +
+                    $"If using this {nameof(HttpClient)} as part of an http request, register the header propagation middleware by adding " +
+                    $"'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}() in the 'Configure(...)' method. " +
+                    $"Otherwise, use {nameof(HeaderPropagationProcessor)}.{nameof(HeaderPropagationProcessor.ProcessRequest)}() before using the {nameof(HttpClient)}.";
                 throw new InvalidOperationException(message);
             }
 

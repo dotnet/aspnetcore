@@ -63,8 +63,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.IsType<InvalidOperationException>(captured);
             Assert.Equal(
-                "The HeaderPropagationValues.Headers property has not been initialized. Register the header propagation middleware " +
-                "by adding 'app.UseHeaderPropagation() in the 'Configure(...)' method.",
+                "The HeaderPropagationValues.Headers property has not been initialized. If using this HttpClient as part of an http request, " +
+                "register the header propagation middleware by adding 'app.UseHeaderPropagation() in the 'Configure(...)' method. " +
+                "Otherwise, use HeaderPropagationProcessor.ProcessRequest() before using the HttpClient.",
                 captured.Message);
         }
 

@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public readonly partial struct HeaderPropagationContext
     {
         private readonly object _dummy;
-        public HeaderPropagationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string headerName, Microsoft.Extensions.Primitives.StringValues headerValue) { throw null; }
+        public HeaderPropagationContext(System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> requestHeaders, string headerName, Microsoft.Extensions.Primitives.StringValues headerValue) { throw null; }
         public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.Extensions.Primitives.StringValues HeaderValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> RequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class HeaderPropagationEntry
     {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     }
     public partial class HeaderPropagationMiddleware
     {
-        public HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
+        public HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.HeaderPropagation.IHeaderPropagationProcessor processor) { }
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class HeaderPropagationOptions
@@ -66,10 +66,19 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public HeaderPropagationOptions() { }
         public Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntryCollection Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class HeaderPropagationProcessor : Microsoft.AspNetCore.HeaderPropagation.IHeaderPropagationProcessor
+    {
+        public HeaderPropagationProcessor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
+        public void ProcessRequest(System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> requestHeaders) { }
+    }
     public partial class HeaderPropagationValues
     {
         public HeaderPropagationValues() { }
         public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } set { } }
+    }
+    public partial interface IHeaderPropagationProcessor
+    {
+        void ProcessRequest(System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> requestHeaders);
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
