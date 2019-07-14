@@ -25,6 +25,53 @@ namespace Microsoft.AspNetCore.Components
     public static partial class BindAttributes
     {
     }
+    public static partial class BindConverter
+    {
+        public static bool FormatValue(bool value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(decimal value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(double value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(int value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(long value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static bool? FormatValue(bool? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(decimal? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(double? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(int? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(long? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(float? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(float value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(string value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static object FormatValue<T>(T value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static bool TryConvertToBool(object obj, System.Globalization.CultureInfo culture, out bool value) { throw null; }
+        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDecimal(object obj, System.Globalization.CultureInfo culture, out decimal value) { throw null; }
+        public static bool TryConvertToDouble(object obj, System.Globalization.CultureInfo culture, out double value) { throw null; }
+        public static bool TryConvertToFloat(object obj, System.Globalization.CultureInfo culture, out float value) { throw null; }
+        public static bool TryConvertToInt(object obj, System.Globalization.CultureInfo culture, out int value) { throw null; }
+        public static bool TryConvertToLong(object obj, System.Globalization.CultureInfo culture, out long value) { throw null; }
+        public static bool TryConvertToNullableBool(object obj, System.Globalization.CultureInfo culture, out bool? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDecimal(object obj, System.Globalization.CultureInfo culture, out decimal? value) { throw null; }
+        public static bool TryConvertToNullableDouble(object obj, System.Globalization.CultureInfo culture, out double? value) { throw null; }
+        public static bool TryConvertToNullableFloat(object obj, System.Globalization.CultureInfo culture, out float? value) { throw null; }
+        public static bool TryConvertToNullableInt(object obj, System.Globalization.CultureInfo culture, out int? value) { throw null; }
+        public static bool TryConvertToNullableLong(object obj, System.Globalization.CultureInfo culture, out long? value) { throw null; }
+        public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
+        public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindElementAttribute : System.Attribute
     {
