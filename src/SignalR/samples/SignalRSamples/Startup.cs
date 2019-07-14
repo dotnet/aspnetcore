@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using SignalRSamples.ConnectionHandlers;
 using SignalRSamples.Hubs;
 
@@ -18,6 +18,9 @@ namespace SignalRSamples
 {
     public class Startup
     {
+
+        private readonly JsonWriterOptions _jsonWriterOptions = new JsonWriterOptions { Indented = true };
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -57,20 +60,19 @@ namespace SignalRSamples
 
                 endpoints.MapConnectionHandler<MessagesConnectionHandler>("/chat");
 
-                endpoints.MapGet("/deployment", context =>
+                endpoints.MapGet("/deployment", async context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
                     context.Response.ContentType = "application/json";
-                    using (var textWriter = new StreamWriter(context.Response.Body))
-                    using (var writer = new JsonTextWriter(textWriter))
+                    await using (var writer = new Utf8JsonWriter(context.Response.BodyWriter, _jsonWriterOptions))
                     {
-                        var json = new JObject();
+                        writer.WriteStartObject();
                         var commitHash = string.Empty;
 
                         foreach (var attribute in attributes)
                         {
-                            json.Add(attribute.Key, attribute.Value);
+                            writer.WriteString(attribute.Key, attribute.Value);
 
                             if (string.Equals(attribute.Key, "CommitHash"))
                             {
@@ -80,13 +82,12 @@ namespace SignalRSamples
 
                         if (!string.IsNullOrEmpty(commitHash))
                         {
-                            json.Add("GitHubUrl", $"https://github.com/aspnet/SignalR/commit/{commitHash}");
+                            writer.WriteString("GitHubUrl", $"https://github.com/aspnet/SignalR/commit/{commitHash}");
                         }
 
-                        json.WriteTo(writer);
+                        writer.WriteEndObject();
+                        await writer.FlushAsync();
                     }
-
-                    return Task.CompletedTask;
                 });
             });
         }
