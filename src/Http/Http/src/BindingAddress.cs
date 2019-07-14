@@ -34,9 +34,16 @@ namespace Microsoft.AspNetCore.Http
                     throw new InvalidOperationException("Binding address is not a unix pipe.");
                 }
 
-                return Host.Substring(UnixPipeHostPrefix.Length - 1);
+                var unixPipeHostPrefixLength = UnixPipeHostPrefix.Length;
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // "/" character in unix refers to root. Windows has drive letters and volume separator (c:)
+                    unixPipeHostPrefixLength--;
+                }
+                return Host.Substring(unixPipeHostPrefixLength);
             }
         }
+
 
         public override string ToString()
         {

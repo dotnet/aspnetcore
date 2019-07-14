@@ -86,6 +86,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(https);
         }
 
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win8, WindowsVersions.Win81, WindowsVersions.Win2008R2, SkipReason = "UnixDomainSocketEndPoint is not supported on older versions of Windows")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows has drive letters and volume separator (c:), testing this url on unix or osx provides completely different output.")]
+        [ConditionalFact]
+        public void ParseAddressUnixPipeOnWindows()
+        {
+            var listenOptions = AddressBinder.ParseAddress(@"http://unix:/c:/foo/bar/pipe.socket", out var https);
+            Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
+            Assert.Equal("c:/foo/bar/pipe.socket", listenOptions.SocketPath);
+            Assert.False(https);
+        }
+
         [Theory]
         [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000, false)]
         [InlineData("http://[::1]:5000", "::1", 5000, false)]
