@@ -217,6 +217,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">false</CopyRefAssembliesToPublishDirectory>
     <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='false'">true</CopyRefAssembliesToPublishDirectory>
 
+    <!-- Use PreserveCompilationReferences to determine the behavior of CopyRefAssembliesToPublishDirectory if not explicitly specified by the project. -->
+    <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">$(PreserveCompilationReferences)</CopyRefAssembliesToPublishDirectory>
+
+    <!-- For 2.x projects desktop and .NET Core projects, if they're opting in to runtime compilation (indicated by PreserveCompilationContext=true), set PreserveCompilationReferences = true -->
+    <PreserveCompilationReferences Condition="'$(PreserveCompilationContext)' == 'true' AND (('$(TargetFrameworkIdentifier)' == '.NETFramework') OR ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'))">true</PreserveCompilationReferences>
+
     <!--
       We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
 
@@ -279,9 +285,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Back-compat for PrecompilationTool -->
   <PropertyGroup>
     <!--
-      Always enable PreserveCompilationReferences for non 3.0 projects. This preserves parity with the 2.x SDK's behavior.
+      For 2.x desktop targeting projects using MvcPrecompilation, ref assemblies are required to compile the PrecompiledViews.dll,
+      but are removed by the tool once done. Set PreserveCompilationReferences = true, ignoring any value configured in the project,
+      if the project is using the precompilation tool.
     -->
-    <PreserveCompilationReferences Condition="'$(_TargetingNETCoreApp30OrLater)' != 'true'">true</PreserveCompilationReferences>
+    <PreserveCompilationReferences Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'">true</PreserveCompilationReferences>
   </PropertyGroup>
 
   <!--
@@ -801,10 +809,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RazorRemoveRefAssembliesFromPublish"
     BeforeTargets="PrepareForPublish"
-    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' AND '$(CopyRefAssembliesToPublishDirectory)'!=''">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' AND '$(CopyRefAssembliesToPublishDirectory)' != ''">
     <!--
       Setting PreserveCompilationReferences affects both Build and Publish, but we want CopyRefAssembliesToPublishDirectory to only affect publishing.
-      If CopyRefAssembliesToPublishDirectory is disabled, clear PreserveCompilationReferences to stop publishing ref assemblies.
+      Use the value of CopyRefAssembliesToPublishDirectory to determine PreserveCompilationReferences during publish.
     -->
     <PropertyGroup>
       <PreserveCompilationReferences>$(CopyRefAssembliesToPublishDirectory)</PreserveCompilationReferences>

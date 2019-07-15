@@ -74,6 +74,36 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, OutputPath, "ComponentLibrary.Views.pdb");
         }
 
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Build_DoesNotProduceRefsDirectory()
+        {
+            TargetFramework = "netstandard2.0";
+
+            // Build
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.dll");
+           Assert.FileCountEquals(result, 0, Path.Combine(OutputPath, "refs"), "*.dll");
+        }
+
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Publish_DoesNotProduceRefsDirectory()
+        {
+            TargetFramework = "netstandard2.0";
+
+            // Build
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "ComponentLibrary.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+        }
+
         private async Task Build_ComponentsWorks(MSBuildProcessKind msBuildProcessKind)
         {
             var result = await DotnetMSBuild("Build", msBuildProcessKind: msBuildProcessKind);

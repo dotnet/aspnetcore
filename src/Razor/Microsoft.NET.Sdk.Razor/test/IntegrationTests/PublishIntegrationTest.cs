@@ -144,8 +144,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
         }
 
-
-
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Publish_NoopsWith_RazorCompileOnPublishFalse()
