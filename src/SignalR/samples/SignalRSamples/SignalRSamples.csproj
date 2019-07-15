@@ -19,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Reactive.Linq" />
   </ItemGroup>
 
