@@ -66,16 +66,19 @@ namespace Templates.Test.Helpers
                 argString += $" --no-https";
             }
 
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    argString += " " + arg;
+                }
+            }
+
             // Save a copy of the arguments used for better diagnostic error messages later.
             // We omit the hive argument and the template output dir as they are not relevant and add noise.
             ProjectArguments = argString.Replace(hiveArg, "");
 
             argString += $" -o {TemplateOutputDir}";
-
-            foreach(var arg in args)
-            {
-                argString += " " + arg;
-            }
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
