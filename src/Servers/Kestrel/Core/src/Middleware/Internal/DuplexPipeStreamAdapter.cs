@@ -72,39 +72,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task ReadInputAsync()
-        {
-            try
-            {
-                while (true)
-                {
-                    var memory = _input.Writer.GetMemory();
-
-                    var result = await Stream.ReadAsync(memory);
-
-                    if (result == 0)
-                    {
-                        break;
-                    }
-
-                    _input.Writer.Advance(result);
-                    var flushResult = await _input.Writer.FlushAsync();
-                    if (flushResult.IsCompleted)
-                    {
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log?.LogCritical(0, ex, $"{GetType().Name}.{nameof(ReadInputAsync)}");
-            }
-            finally
-            {
-                _input.Writer.Complete();
-            }
-        }
-
         public PipeWriter Output
         {
             get
@@ -140,6 +107,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return new ValueTask(_outputTask);
+        }
+
+        private async Task ReadInputAsync()
+        {
+            try
+            {
+                while (true)
+                {
+                    var memory = _input.Writer.GetMemory();
+
+                    var result = await Stream.ReadAsync(memory);
+
+                    if (result == 0)
+                    {
+                        break;
+                    }
+
+                    _input.Writer.Advance(result);
+                    var flushResult = await _input.Writer.FlushAsync();
+                    if (flushResult.IsCompleted)
+                    {
+                        // flushResult should not be canceled.
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogCritical(0, ex, $"{GetType().Name}.{nameof(ReadInputAsync)}");
+            }
+            finally
+            {
+                _input.Writer.Complete();
+            }
         }
 
         private async Task WriteOutputAsync()
