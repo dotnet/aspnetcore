@@ -135,6 +135,11 @@ namespace Microsoft.AspNetCore.Components.Server
             var _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
+        public void EndInvokeDotNetFromJS(string arguments)
+        {
+            var _ = EnsureCircuitHost().EndInvokeDotNetFromJS(arguments);
+        }
+
         public void DispatchBrowserEvent(string args)
         {
             try
@@ -174,6 +179,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 throw;
             }
         }
+
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.

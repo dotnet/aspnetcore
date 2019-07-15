@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using System.Text.Json;
+using Microsoft.JSInterop.Internal;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -134,6 +137,71 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
             // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
             var _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+        }
+
+        internal async Task EndInvokeDotNetFromJS(string arguments)
+        {
+            try
+            {
+                AssertInitialized();
+
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    var document = JsonDocument.Parse(arguments);
+                    if (document.RootElement.ValueKind != JsonValueKind.Array)
+                    {
+                        // Log error and return
+                        return;
+                    }
+                    var length = document.RootElement.GetArrayLength();
+                    if (length != 3)
+                    {
+                        // Log error and return
+                        return;
+                    }
+                    long asyncHandle = 0;
+                    bool succeeded = false;
+                    JSAsyncCallResult result = null;
+                    var i = 0;
+                    foreach (var element in document.RootElement.EnumerateArray())
+                    {
+                        if (i == 0)
+                        {
+                            asyncHandle = element.GetInt64();
+                        }
+                        if (i == 1)
+                        {
+                            succeeded = element.GetBoolean();
+                        }
+
+                        if (i == 2 && element.ValueKind != JsonValueKind.Null)
+                        {
+                            result = (JSAsyncCallResult)typeof(JSAsyncCallResult).GetConstructor(
+                                BindingFlags.NonPublic | BindingFlags.Instance,
+                                binder: null,
+                                new Type[] { typeof(JsonDocument), typeof(JsonElement) },
+                                null).Invoke(new object[] { document, element });
+                        }
+
+                        i++;
+                    }
+
+                    DotNetDispatcher.EndInvoke(asyncHandle, succeeded, result);
+                });
+            }
+            catch (Exception ex)
+            {
+                var args = JsonSerializer.Serialize(
+                    new object[]
+                    {
+                        0,
+                        false,
+                        JSRuntime.SanitizeJSInteropException(ex, typeof(JSRuntimeBase).Assembly.GetName().Name, nameof(DotNetDispatcher.EndInvoke))
+                    },
+                    JsonSerializerOptionsProvider.Options);
+                var _ = JSRuntime.InvokeAsync<object>("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+            }
         }
 
         internal async Task DispatchEvent(RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgsJson)

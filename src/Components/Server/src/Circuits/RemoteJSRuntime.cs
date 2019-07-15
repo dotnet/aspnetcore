@@ -28,7 +28,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
         }
 
-        protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier)
+        protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier) =>
+            SanitizeJSInteropException(exception, assemblyName, methodIdentifier);
+
+        internal object SanitizeJSInteropException(Exception exception, string assemblyName, string methodIdentifier)
         {
             if (_options.DetailedErrors)
             {
