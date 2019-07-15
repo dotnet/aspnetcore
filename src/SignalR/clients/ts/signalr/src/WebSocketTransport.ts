@@ -80,7 +80,10 @@ export class WebSocketTransport implements ITransport {
                 // ErrorEvent is a browser only type we need to check if the type exists before using it
                 if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
                     error = event.error;
+                } else {
+                    error = new Error("There was an error with the transport.");
                 }
+
                 reject(error);
             };
 
