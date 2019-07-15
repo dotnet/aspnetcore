@@ -19,6 +19,11 @@
     <ExcludeFromSourceBuild Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true'">true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
+  <PropertyGroup Label="Resx settings">
+    <GenerateResxSource Condition="$(GenerateResxSource) == ''">true</GenerateResxSource>
+    <GenerateResxSourceEmitFormatMethods Condition="$(GenerateResxSourceEmitFormatMethods) == ''">true</GenerateResxSourceEmitFormatMethods>
+  </PropertyGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <!-- Properties which should be set after the project has been evaluated -->
 

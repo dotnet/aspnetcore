@@ -7,6 +7,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
+
+    <!-- Disable resx generation via Arcade due to https://github.com/dotnet/arcade/issues/3244 -->
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <ItemGroup>

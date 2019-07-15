@@ -26,6 +26,9 @@
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <DeployProjectOutput Condition="'$(ContinuousIntegrationBuild)' == 'true'">false</DeployProjectOutput>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!-- The Resources.resx is a embedded resource -->
+    <GenerateResxSource>true</GenerateResxSource>
   </PropertyGroup>
 
   <!--
