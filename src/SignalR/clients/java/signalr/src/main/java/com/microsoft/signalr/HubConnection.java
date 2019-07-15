@@ -109,6 +109,12 @@ public class HubConnection {
         this.tickRate = tickRateInMilliseconds;
     }
 
+    // For testing purposes
+    Map<String,Observable> getStreamMap() {
+        return this.streamMap;
+    }
+
+
     TransportEnum getTransportEnum() {
         return this.transportEnum;
     }
@@ -517,6 +523,7 @@ public class HubConnection {
             connectionId = null;
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
+            this.streamMap.clear();
         } finally {
             hubConnectionStateLock.unlock();
         }

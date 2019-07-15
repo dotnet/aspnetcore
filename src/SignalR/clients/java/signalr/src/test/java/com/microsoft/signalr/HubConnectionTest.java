@@ -516,6 +516,30 @@ class HubConnectionTest {
     }
 
     @Test
+    public void streamMapIsClearedOnClose() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream, 12);
+
+        stream.onNext("FirstItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertTrue(hubConnection.getStreamMap().isEmpty());
+    }
+
+    @Test
     public void useSameSubjectMultipleTimes() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
