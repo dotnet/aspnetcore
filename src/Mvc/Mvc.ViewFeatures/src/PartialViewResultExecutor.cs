@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (result.Success)
             {
-                DiagnosticSource.ViewFound(
+                DiagnosticListener.ViewFound(
                     actionContext,
                     isMainPage: false,
                     viewResult: viewResult,
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
             else
             {
-                DiagnosticSource.ViewNotFound(
+                DiagnosticListener.ViewNotFound(
                     actionContext,
                     isMainPage: false,
                     viewResult: viewResult,

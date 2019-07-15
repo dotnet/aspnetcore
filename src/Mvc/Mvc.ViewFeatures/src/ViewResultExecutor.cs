@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
             }
 
-            if (DiagnosticSource.IsEnabled())
+            if (DiagnosticListener.IsEnabled())
             {
                 OutputDiagnostics(actionContext, viewResult, viewName, stopwatch, result);
             }
@@ -128,35 +128,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (result.Success)
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNetCore.Mvc.ViewFound",
-                        new
-                        {
-                            actionContext,
-                            isMainPage = true,
-                            result = viewResult,
-                            viewName,
-                            view = result.View,
-                        });
-                }
+                DiagnosticListener.ViewFound(
+                    actionContext,
+                    isMainPage: true,
+                    viewResult,
+                    viewName,
+                    view: result.View);
             }
             else
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNetCore.Mvc.ViewNotFound",
-                        new
-                        {
-                            actionContext,
-                            isMainPage = true,
-                            result = viewResult,
-                            viewName,
-                            searchedLocations = result.SearchedLocations
-                        });
-                }
+                DiagnosticListener.ViewNotFound(
+                    actionContext,
+                    isMainPage: true,
+                    viewResult,
+                    viewName,
+                    searchedLocations: result.SearchedLocations);
             }
         }
 

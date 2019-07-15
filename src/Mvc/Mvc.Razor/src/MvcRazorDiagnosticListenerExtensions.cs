@@ -3,10 +3,12 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
-    internal static class MvcRazorDiagnosticSourceExtensions
+    internal static class MvcRazorDiagnosticListenerExtensions
     {
         public static void BeforeViewPage(
             this DiagnosticListener diagnosticListener,
@@ -25,17 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage"))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewPage.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage",
-                    new
-                    {
-                        page = page,
-                        viewContext = viewContext,
-                        actionDescriptor = viewContext.ActionDescriptor,
-                        httpContext = viewContext.HttpContext,
-                    });
+                    Diagnostics.BeforeViewPage.EventName,
+                    new BeforeViewPage(
+                        page,
+                        viewContext,
+                        viewContext.ActionDescriptor,
+                        viewContext.HttpContext
+                    ));
             }
         }
 
@@ -56,17 +57,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled("Microsoft.AspNetCore.Mvc.Razor.AfterViewPage"))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewPage.EventName))
             {
                 diagnosticListener.Write(
-                    "Microsoft.AspNetCore.Mvc.Razor.AfterViewPage",
-                    new
-                    {
-                        page = page,
-                        viewContext = viewContext,
-                        actionDescriptor = viewContext.ActionDescriptor,
-                        httpContext = viewContext.HttpContext,
-                    });
+                    Diagnostics.AfterViewPage.EventName,
+                    new AfterViewPage(
+                        page,
+                        viewContext,
+                        viewContext.ActionDescriptor,
+                        viewContext.HttpContext
+                    ));
             }
         }
     }

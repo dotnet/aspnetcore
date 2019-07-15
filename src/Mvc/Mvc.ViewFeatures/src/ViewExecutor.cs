@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
-        /// <param name="diagnosticListener">The <see cref="DiagnosticSource"/>.</param>
+        /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider" />.</param>
         public ViewExecutor(
             IOptions<MvcViewOptions> viewOptions,
@@ -91,13 +91,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             WriterFactory = writerFactory;
             ViewEngine = viewEngine;
-            DiagnosticSource = diagnosticListener;
+            DiagnosticListener = diagnosticListener;
         }
 
         /// <summary>
-        /// Gets the <see cref="DiagnosticSource"/>.
+        /// Gets the <see cref="DiagnosticListener"/>.
         /// </summary>
-        protected DiagnosticListener DiagnosticSource { get; }
+        protected DiagnosticListener DiagnosticListener { get; }
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionaryFactory"/>.
@@ -242,11 +242,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 {
                     viewContext.Writer = writer;
 
-                    DiagnosticSource.BeforeView(view, viewContext);
+                    DiagnosticListener.BeforeView(view, viewContext);
 
                     await view.RenderAsync(viewContext);
 
-                    DiagnosticSource.AfterView(view, viewContext);
+                    DiagnosticListener.AfterView(view, viewContext);
                 }
                 finally
                 {
