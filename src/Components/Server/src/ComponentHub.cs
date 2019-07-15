@@ -142,44 +142,8 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public void DispatchBrowserEvent(string args)
         {
-            try
-            {
-                var document = JsonDocument.Parse(args);
-                if (document.RootElement.ValueKind != JsonValueKind.Array)
-                {
-                    // Log not array
-                    return;
-                }
-                var length = document.RootElement.GetArrayLength();
-                if (length != 2)
-                {
-                    // Log invalid length
-                }
-                RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
-                string eventArgsJson = null;
-                foreach (var element in document.RootElement.EnumerateArray())
-                {
-                    if (eventDescriptor == null)
-                    {
-                        eventDescriptor = JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
-                            element.GetRawText(),
-                            JsonSerializerOptionsProvider.Options);
-                    }
-                    else
-                    {
-                        eventArgsJson = element.GetString();
-                    }
-                }
-                var _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgsJson);
-
-            }
-            catch (Exception e)
-            {
-                CircuitHost_UnhandledException(this, new UnhandledExceptionEventArgs(e, false));
-                throw;
-            }
+            var _ = EnsureCircuitHost().DispatchEvent(args);
         }
-
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.

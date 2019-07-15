@@ -148,43 +148,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
-                    var document = JsonDocument.Parse(arguments);
-                    if (document.RootElement.ValueKind != JsonValueKind.Array)
+                    var (asyncHandle, succeeded, result) = ParseEndInvokeResult(arguments);
+                    if ((asyncHandle, succeeded, result) == default)
                     {
-                        // Log error and return
                         return;
-                    }
-                    var length = document.RootElement.GetArrayLength();
-                    if (length != 3)
-                    {
-                        // Log error and return
-                        return;
-                    }
-                    long asyncHandle = 0;
-                    bool succeeded = false;
-                    JSAsyncCallResult result = null;
-                    var i = 0;
-                    foreach (var element in document.RootElement.EnumerateArray())
-                    {
-                        if (i == 0)
-                        {
-                            asyncHandle = element.GetInt64();
-                        }
-                        if (i == 1)
-                        {
-                            succeeded = element.GetBoolean();
-                        }
-
-                        if (i == 2 && element.ValueKind != JsonValueKind.Null)
-                        {
-                            result = (JSAsyncCallResult)typeof(JSAsyncCallResult).GetConstructor(
-                                BindingFlags.NonPublic | BindingFlags.Instance,
-                                binder: null,
-                                new Type[] { typeof(JsonDocument), typeof(JsonElement) },
-                                null).Invoke(new object[] { document, element });
-                        }
-
-                        i++;
                     }
 
                     DotNetDispatcher.EndInvoke(asyncHandle, succeeded, result);
@@ -192,32 +159,141 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             catch (Exception ex)
             {
-                var args = JsonSerializer.Serialize(
-                    new object[]
-                    {
-                        0,
-                        false,
-                        JSRuntime.SanitizeJSInteropException(ex, typeof(JSRuntimeBase).Assembly.GetName().Name, nameof(DotNetDispatcher.EndInvoke))
-                    },
-                    JsonSerializerOptionsProvider.Options);
-                var _ = JSRuntime.InvokeAsync<object>("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+                Log.EndInvokeDispatchException(_logger, ex);
+                NotifyClientException(ex);
             }
         }
 
-        internal async Task DispatchEvent(RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgsJson)
+        private void NotifyClientException(Exception ex)
+        {
+            var args = JsonSerializer.Serialize(
+                new object[]
+                {
+                        0,
+                        false,
+                        JSRuntime.SanitizeJSInteropException(ex, typeof(JSRuntimeBase).Assembly.GetName().Name, nameof(DotNetDispatcher.EndInvoke))
+                },
+                JsonSerializerOptionsProvider.Options);
+            var _ = JSRuntime.InvokeAsync<object>("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+        }
+
+        private (long asyncHandle, bool succeeded, JSAsyncCallResult result) ParseEndInvokeResult(string arguments)
+        {
+            try
+            {
+                var document = JsonDocument.Parse(arguments);
+                if (document.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    Log.EndInvokeDotNetInvalidArgumentsFormat(_logger, document.RootElement.ValueKind);
+                    return default;
+                }
+                var length = document.RootElement.GetArrayLength();
+                if (length != 3)
+                {
+                    Log.EndInvokeDotNetInvalidArgumentsLength(_logger, length);
+                    return default;
+                }
+
+                long asyncHandle = 0;
+                bool succeeded = false;
+                JSAsyncCallResult result = null;
+                var i = 0;
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    if (i == 0)
+                    {
+                        asyncHandle = element.GetInt64();
+                    }
+                    if (i == 1)
+                    {
+                        succeeded = element.GetBoolean();
+                    }
+
+                    if (i == 2 && element.ValueKind != JsonValueKind.Null)
+                    {
+                        result = (JSAsyncCallResult)typeof(JSAsyncCallResult).GetConstructor(
+                            BindingFlags.NonPublic | BindingFlags.Instance,
+                            binder: null,
+                            new Type[] { typeof(JsonDocument), typeof(JsonElement) },
+                            null).Invoke(new object[] { document, element });
+                    }
+
+                    i++;
+                }
+
+                return (asyncHandle, succeeded, result);
+            }
+            catch (Exception ex)
+            {
+                Log.InvalidEndInvokeCallbackFormat(_logger, ex);
+                NotifyClientException(ex);
+                return default;
+            }
+        }
+
+        internal async Task DispatchEvent(string args)
         {
             try
             {
                 AssertInitialized();
+
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
+                    var (eventDescriptor, eventArgsJson) = ParseEvent(args);
+                    if ((eventDescriptor, eventArgsJson) == default)
+                    {
+                        // Failed to parse the event
+                        return Task.CompletedTask;
+                    }
+
                     return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgsJson);
                 });
             }
             catch (Exception ex)
             {
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        private (RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgs) ParseEvent(string args)
+        {
+            try
+            {
+                var document = JsonDocument.Parse(args);
+                if (document.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    Log.BrowserEventInvalidArgumentsFormat(_logger, document.RootElement.ValueKind);
+                    return default;
+                }
+                var length = document.RootElement.GetArrayLength();
+                if (length != 2)
+                {
+                    Log.BrowserEventInvalidNumberOfArguments(_logger, length);
+                    return default;
+                }
+                RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
+                string eventArgsJson = null;
+                foreach (var element in document.RootElement.EnumerateArray())
+                {
+                    if (eventDescriptor == null)
+                    {
+                        eventDescriptor = JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
+                            element.GetRawText(),
+                            JsonSerializerOptionsProvider.Options);
+                    }
+                    else
+                    {
+                        eventArgsJson = element.GetString();
+                    }
+                }
+
+                return (eventDescriptor, eventArgsJson);
+            }
+            catch (Exception e)
+            {
+                Log.InvalidBrowserEventFormat(_logger, e);
+                return default;
             }
         }
 
@@ -414,6 +490,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, string, string, Exception> _onConnectionDown;
             private static readonly Action<ILogger, string, Exception> _onCircuitClosed;
 
+            private static readonly Action<ILogger, Exception> _invalidBrowserEventFormat;
+            private static readonly Action<ILogger, int, Exception> _browserEventInvalidNumberOfArguments;
+            private static readonly Action<ILogger, JsonValueKind, Exception> _browserEventInvalidArgumentsFormat;
+            private static readonly Action<ILogger, JsonValueKind, Exception> _endInvokeInvalidArgumentsformat;
+            private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
+            private static readonly Action<ILogger, int, Exception> _endInvokeDotNetInvalidArgumentsLength;
+            private static readonly Action<ILogger, Exception> _invalidEndInvokeCallbackFormat;
+
             private static class EventIds
             {
                 public static readonly EventId ExceptionInvokingCircuitHandlerMethod = new EventId(100, "ExceptionInvokingCircuitHandlerMethod");
@@ -422,6 +506,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId OnConnectionUp = new EventId(103, "OnConnectionUp");
                 public static readonly EventId OnConnectionDown = new EventId(104, "OnConnectionDown");
                 public static readonly EventId OnCircuitClosed = new EventId(105, "OnCircuitClosed");
+                public static readonly EventId InvalidBrowserEventFormat = new EventId(106, "InvalidBrowserEventFormat");
+                public static readonly EventId BrowserEventInvalidNumberOfArguments = new EventId(107, "BrowserEventInvalidNumberOfArguments");
+                public static readonly EventId BrowserEventInvalidArgumentsFormat = new EventId(108, "BrowserEventInvalidArgumentsFormat");
+                public static readonly EventId EndInvokeInvalidArgumentsformat = new EventId(109, "EndInvokeInvalidArgumentsformat");
+                public static readonly EventId EndInvokeDispatchException = new EventId(110, "EndInvokeDispatchException");
+                public static readonly EventId EndInvokeDotNetInvalidArgumentsLength = new EventId(111, "EndInvokeDotNetInvalidArgumentsLength");
+                public static readonly EventId InvalidEndInvokeCallbackFormat = new EventId(112, "InvalidEndInvokeCallbackFormat");
             }
 
             static Log()
@@ -455,6 +546,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                    LogLevel.Debug,
                    EventIds.OnCircuitClosed,
                    "Closing circuit with id {CircuitId}.");
+
+                _invalidBrowserEventFormat = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.InvalidBrowserEventFormat,
+                    "There was an error parsing the browser event arguments for 'DispatchEvent'.");
+
+                _browserEventInvalidNumberOfArguments = LoggerMessage.Define<int>(
+                    LogLevel.Debug,
+                    EventIds.BrowserEventInvalidArgumentsFormat,
+                    "Expected an array with two items when parsing arguments for 'DispatchEvent'. Found '{Length}'.");
+
+                _browserEventInvalidArgumentsFormat = LoggerMessage.Define<JsonValueKind>(
+                    LogLevel.Debug,
+                    EventIds.BrowserEventInvalidArgumentsFormat,
+                    "Expected an array. Found '{ValueKind}'.");
+
+                _endInvokeInvalidArgumentsformat = LoggerMessage.Define<JsonValueKind>(
+                    LogLevel.Debug,
+                    EventIds.EndInvokeInvalidArgumentsformat,
+                    "Expected an array. Found '{ValueKind}'.");
+
+                _endInvokeDispatchException = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.EndInvokeDispatchException,
+                    "There was an error invoking Microsoft.JSInterop.DotNetDispatcher.EndInvoke");
+
+                _endInvokeDotNetInvalidArgumentsLength = LoggerMessage.Define<int>(
+                    LogLevel.Debug,
+                    EventIds.EndInvokeDotNetInvalidArgumentsLength,
+                    "Expected an array with three items when parsing arguments for 'DotNetDispatcher.EndInvoke'. Found '{Length}'.");
+
+                _invalidEndInvokeCallbackFormat = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.InvalidEndInvokeCallbackFormat,
+                    "There was an error parsing the arguments for 'DotNetDispatcher.EndInvoke'.");
             }
 
             public static void UnhandledExceptionInvokingCircuitHandler(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
@@ -479,6 +605,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public static void CircuitClosed(ILogger logger, string circuitId) =>
                 _onCircuitClosed(logger, circuitId, null);
+
+            internal static void InvalidBrowserEventFormat(ILogger logger, Exception e) => _invalidBrowserEventFormat(logger, e);
+
+            internal static void BrowserEventInvalidNumberOfArguments(ILogger logger, int length) => _browserEventInvalidNumberOfArguments(logger, length, null);
+
+            internal static void BrowserEventInvalidArgumentsFormat(ILogger logger, JsonValueKind valueKind) => _browserEventInvalidArgumentsFormat(logger, valueKind, null);
+
+            internal static void EndInvokeDotNetInvalidArgumentsFormat(ILogger logger, JsonValueKind valueKind) => _endInvokeInvalidArgumentsformat(logger, valueKind, null);
+
+            internal static void EndInvokeDispatchException(ILogger logger, Exception ex) => _endInvokeDispatchException(logger, ex);
+
+            internal static void EndInvokeDotNetInvalidArgumentsLength(ILogger logger, int length) => _endInvokeDotNetInvalidArgumentsLength(logger, length, null);
+
+            internal static void InvalidEndInvokeCallbackFormat(ILogger logger, Exception ex) => _invalidEndInvokeCallbackFormat(logger, ex);
         }
     }
 }

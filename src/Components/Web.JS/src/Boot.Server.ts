@@ -141,6 +141,7 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
     if (methodIdentifier === 'DotNetDispatcher.EndInvoke' && assemblyName === 'Microsoft.JSInterop'){
       connection.send('EndInvokeDotNetFromJS', argsJson);
+      return;
     }
 
     connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
