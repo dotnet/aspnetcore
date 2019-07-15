@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "C:\\Users\\t-dygra\\Desktop\\AspNetCore\\src\\Middleware\\Middleware.sln",
+    "path": "..\\Middleware.sln",
     "projects": [
       "..\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
       "..\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",

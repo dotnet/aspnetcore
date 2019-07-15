@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         /// <summary>
         /// Maximum number of queued requests before the server starts rejecting connections with '503 Service Unavailible'.
-        /// Defaults to 5000 queued requests.
+        /// This option is highly application dependant, and must be configured by the application.
         /// </summary>
         public int RequestQueueLimit { get; set; }
     }
