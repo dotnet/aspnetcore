@@ -81,10 +81,10 @@ stages:
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
+            /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
+            /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
+            /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
             /p:MaestroApiEndpoint='https://maestro-prod.westus2.cloudapp.azure.com'
             /p:BuildAssetRegistryToken='$(MaestroAccessToken)' 
