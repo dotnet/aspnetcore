@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         // Offset   Type
         // ------   ----
         // 0-3      Int32 (sequence number)
-        // 4-7      Int32 (frame type)
-        // 8-15     Value types (usage varies by frame type)
+        // 4-5      Int16 (frame type)
+        // 6-15     Value types (usage varies by frame type)
         // 16-23    Reference type (usage varies by frame type)
         // 24-31    Reference type (usage varies by frame type)
         // 32-39    Reference type (usage varies by frame type)

@@ -114,6 +114,10 @@ export const monoPlatform: Platform = {
     return (referenceTypedObject as any as number + 8) as any as Pointer;
   },
 
+  readInt16Field: function readHeapInt16(baseAddress: Pointer, fieldOffset?: number): number {
+    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i16');
+  },
+
   readInt32Field: function readHeapInt32(baseAddress: Pointer, fieldOffset?: number): number {
     return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
   },

@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 {
                     // Assume enums are represented as ints
                     var expectedEntry = expectedEntryIterationVar.GetType().IsEnum
-                        ? (int)expectedEntryIterationVar
+                        ? Convert.ToInt32(expectedEntryIterationVar)
                         : expectedEntryIterationVar;
 
                     if (expectedEntry is int expectedInt)

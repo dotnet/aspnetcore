@@ -99,7 +99,7 @@ const editReader = {
 // Keep in sync with memory layout in RenderTreeFrame.cs
 const frameReader = {
   structLength: 36,
-  frameType: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 4) as FrameType,
+  frameType: (frame: RenderTreeFrame) => platform.readInt16Field(frame as any, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
   elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   componentId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 12),
