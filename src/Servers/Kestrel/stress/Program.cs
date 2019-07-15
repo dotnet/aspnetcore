@@ -130,7 +130,7 @@ public class Program
                 }
             }),
 
-            // TODO re-enable after HttpClient fixes.
+            // TODO re-enable after HttpClient fixes. https://github.com/dotnet/corefx/issues/39461
             //("GET Partial",
             //async ctx =>
             //{
@@ -514,8 +514,7 @@ public class Program
             // Spin up a thread dedicated to outputting stats for each defined interval
             new Thread(() =>
             {
-                // 10 second delay * 180 = 1800 seconds or 30 minutes
-                for (var j = 0 ; j < 180; j++)
+                while (true)
                 {
                     Thread.Sleep(DisplayIntervalMilliseconds);
                     lock (Console.Out)
@@ -556,8 +555,8 @@ public class Program
             Task.WaitAll(Enumerable.Range(0, concurrentRequests).Select(taskNum => Task.Run(async () =>
             {
                 var clientContext = new ClientContext(client, taskNum: taskNum, seed: seed);
-
-                for (long i = taskNum; ; i++)
+                // TODO make 50000 configurable based on time.
+                for (long i = taskNum; i < 50000; i++)
                 {
                     long opIndex = i % clientOperations.Length;
                     (string operation, Func<ClientContext, Task> func) = clientOperations[opIndex];
