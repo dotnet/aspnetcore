@@ -8,6 +8,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
@@ -236,6 +239,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
+            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
+            var messages = new List<(LogLevel, string)>();
+            void CaptureMessages(WriteContext wc) => messages.Add((wc.LogLevel, wc.Message));
+            sink.MessageLogged += CaptureMessages;
+            using var disposable = new Finally(() => sink.MessageLogged -= CaptureMessages);
+
             // Act
             await Client.ClickAsync("triggerjsinterop");
 
@@ -332,6 +341,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var batches = new List<(int, int, byte[])>();
             Client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
             return (interopCalls, batches);
+        }
+
+        private class Finally : IDisposable
+        {
+            private Action _disposableAction;
+
+            public Finally(Action action)
+            {
+                _disposableAction = action;
+            }
+
+            public void Dispose()
+            {
+                _disposableAction();
+            }
         }
     }
 }
