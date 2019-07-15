@@ -110,6 +110,10 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
   const connection = connectionBuilder.build();
 
+  setRendererEventDispatcher((descriptor, args) => {
+    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
+  });
+
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.RenderBatch', (browserRendererId: number, batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
@@ -146,10 +150,6 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
       connection.send('EndInvokeDotNetFromJS', asyncHandle, succeeded, serializedArgs);
     },
-  });
-
-  setRendererEventDispatcher((descriptor, args) => {
-    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
 
   return connection;

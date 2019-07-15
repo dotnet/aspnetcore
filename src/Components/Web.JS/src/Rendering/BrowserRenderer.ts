@@ -10,13 +10,6 @@ const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 
-export interface EventDescriptor{
-  browserRendererId: number;
-  eventHandlerId: number;
-  eventArgsType: EventArgsType;
-  eventFieldInfo: EventFieldInfo | null;
-}
-
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
 
@@ -24,7 +17,7 @@ export class BrowserRenderer {
 
   private browserRendererId: number;
 
-  private eventDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>;
+  public eventDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>;
 
   public constructor(browserRendererId: number, eventDispatcher: ((EventDescriptor, UIEventArgs) => Promise<void>)) {
     this.browserRendererId = browserRendererId;
@@ -32,6 +25,10 @@ export class BrowserRenderer {
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
       raiseEvent(this.eventDispatcher, event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
     });
+  }
+
+  public updateEventDispatcher(newDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>): void{
+    this.eventDispatcher = newDispatcher;
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
@@ -408,6 +405,13 @@ export interface ComponentDescriptor {
   end: Node;
 }
 
+export interface EventDescriptor {
+  browserRendererId: number;
+  eventHandlerId: number;
+  eventArgsType: EventArgsType;
+  eventFieldInfo: EventFieldInfo | null;
+}
+
 function parseMarkup(markup: string, isSvg: boolean) {
   if (isSvg) {
     sharedSvgElemForParsing.innerHTML = markup || ' ';
@@ -464,7 +468,7 @@ function clearElement(element: Element) {
 
 function clearBetween(start: Node, end: Node): void {
   const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if (!logicalParent){
+  if (!logicalParent) {
     throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
   }
   const children = getLogicalChildrenArray(logicalParent);

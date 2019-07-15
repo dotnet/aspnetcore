@@ -39,6 +39,10 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
 
 export function setRendererEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => Promise<void>): void {
   eventDispatcher = newDispatcher;
+  for (const browserRenderer of Object.keys(browserRenderers)) {
+    const renderer = browserRenderers[browserRenderer] as BrowserRenderer;
+    renderer.updateEventDispatcher(newDispatcher);
+  }
 }
 
 export function renderBatch(browserRendererId: number, batch: RenderBatch): void {

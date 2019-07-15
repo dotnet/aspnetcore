@@ -28,20 +28,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _clientProxy = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
         }
 
-        protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier) =>
-            SanitizeJSInteropException(exception, assemblyName, methodIdentifier);
-
-        internal object SanitizeJSInteropException(Exception exception, string assemblyName, string methodIdentifier)
+        protected override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
         {
-            if (_options.DetailedErrors)
+            if (!success)
             {
-                return base.OnDotNetInvocationException(exception, assemblyName, methodIdentifier);
+                Log.InvokeDotNetMethodException(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId, resultOrError as Exception);
+                if (_options.DetailedErrors)
+                {
+                    base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
+                }
+                else
+                {
+                    var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
+                        $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
+
+                    base.EndInvokeDotNet(callId, success, message, assemblyName, methodIdentifier, dotNetObjectId);
+                }
             }
-
-            var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
-                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
-
-            return message;
+            else
+            {
+                Log.InvokeDotnetmethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+                base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
+            }
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
@@ -54,7 +62,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "attempted during prerendering or while the client is disconnected.");
             }
 
-            Log.BeginInvokeJS(_logger, asyncHandle, identifier);
+            if (identifier != "DotNet.jsCallDispatcher.endInvokeDotNetFromJS")
+            {
+                // Filter the default implementation of endInvokeDotNetFromJS, we could change this to dispatch to a client method directly
+                // instead of going through JS interop.
+                Log.BeginInvokeJS(_logger, asyncHandle, identifier);
+            }
+
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson);
         }
 
@@ -66,9 +80,57 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new EventId(1, "BeginInvokeJS"),
                     "Begin invoke JS interop '{AsyncHandle}': '{FunctionIdentifier}'");
 
-            internal static void BeginInvokeJS(ILogger logger, long asyncHandle, string identifier)
-            {
+            private static readonly Action<ILogger, string, string, string, Exception> _invokeStaticDotNetMethodException =
+                LoggerMessage.Define<string, string, string>(
+                LogLevel.Debug,
+                new EventId(2, "InvokeDotNetMethodException"),
+                "There was an error invoking the static method '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}'.");
+
+            private static readonly Action<ILogger, string, long, string, Exception> _invokeInstanceDotNetMethodException =
+                LoggerMessage.Define<string, long, string>(
+                LogLevel.Debug,
+                new EventId(2, "InvokeDotNetMethodException"),
+                "There was an error invoking the instance method '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}'.");
+
+            private static readonly Action<ILogger, string, string, string, Exception> _invokeStaticDotNetMethodSuccess =
+                LoggerMessage.Define<string, string, string>(
+                LogLevel.Debug,
+                new EventId(3, "InvokeDotNetMethodSuccess"),
+                "Invocation of '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}' completed successfully.");
+
+            private static readonly Action<ILogger, string, long, string, Exception> _invokeInstanceDotNetMethodSuccess =
+                LoggerMessage.Define<string, long, string>(
+                LogLevel.Debug,
+                new EventId(3, "InvokeDotNetMethodSuccess"),
+                "Invocation of '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}' completed successfully.");
+
+
+            internal static void BeginInvokeJS(ILogger logger, long asyncHandle, string identifier) =>
                 _beginInvokeJS(logger, asyncHandle, identifier, null);
+
+            internal static void InvokeDotNetMethodException(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectReference, Exception exception)
+            {
+                if (assemblyName != null)
+                {
+                    _invokeStaticDotNetMethodException(logger, assemblyName, methodIdentifier, callId, exception);
+                }
+                else
+                {
+                    _invokeInstanceDotNetMethodException(logger, methodIdentifier, dotNetObjectReference, callId, exception);
+                }
+            }
+
+            internal static void InvokeDotnetmethodSuccess(ILogger<RemoteJSRuntime> logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            {
+                if (assemblyName != null)
+                {
+                    _invokeStaticDotNetMethodSuccess(logger, assemblyName, methodIdentifier, callId, null);
+                }
+                else
+                {
+                    _invokeInstanceDotNetMethodSuccess(logger, methodIdentifier, dotNetObjectId, callId, null);
+                }
+
             }
         }
     }

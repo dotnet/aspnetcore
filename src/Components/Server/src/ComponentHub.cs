@@ -136,18 +136,17 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-            var _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
-        public void EndInvokeDotNetFromJS(long asyncHandle, bool succeeded, string arguments)
+        public void EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
         {
-            var _ = EnsureCircuitHost().EndInvokeDotNetFromJS(asyncHandle, succeeded, arguments);
+            _ = EnsureCircuitHost().EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
         }
 
         public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
-            var _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgs);
+            _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgs);
         }
 
         /// <summary>
@@ -169,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 Log.UnhandledExceptionInCircuit(_logger, circuitId, (Exception)e.ExceptionObject);
                 if (_options.DetailedErrors)
                 {
-                    await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                    await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject.ToString());
                 }
                 else
                 {
@@ -215,18 +214,6 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _failedToTransmitException =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "FailedToTransmitException"), "Failed to transmit exception to client in circuit {CircuitId}");
 
-            private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStatic =
-                LoggerMessage.Define<string, string, string>(
-                    LogLevel.Debug,
-                    new EventId(5, "BeginInvokeDotNet"),
-                    "Invoking static method '[{Assembly}]::{MethodIdentifier}' with callback id '{CallId}'");
-
-            private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstance =
-                LoggerMessage.Define<string, long, string>(
-                    LogLevel.Debug,
-                    new EventId(5, "BeginInvokeDotNet"),
-                    "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'");
-
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
                 _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
@@ -245,18 +232,6 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void FailedToTransmitException(ILogger logger, string circuitId, Exception transmissionException)
             {
                 _failedToTransmitException(logger, circuitId, transmissionException);
-            }
-
-            internal static void BeginInvokeDotNet(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
-            {
-                if (assemblyName != null)
-                {
-                    _beginInvokeDotNetStatic(logger, assemblyName, methodIdentifier, callId, null);
-                }
-                else
-                {
-                    _beginInvokeDotNetInstance(logger, methodIdentifier, dotNetObjectId, callId, null);
-                }
             }
         }
     }

@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "Reverse",
                 3, // non existing ref
                 JsonSerializer.Serialize(Array.Empty<object>()));
-            
+
             Assert.Single(interopCalls, (0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", expectedError));
 
             await ValidateClientKeepsWorking(Client, batches);
@@ -335,21 +335,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var batches = new List<(int, int, byte[])>();
             Client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
             return (interopCalls, batches);
-        }
-
-        private class Finally : IDisposable
-        {
-            private Action _disposableAction;
-
-            public Finally(Action action)
-            {
-                _disposableAction = action;
-            }
-
-            public void Dispose()
-            {
-                _disposableAction();
-            }
         }
     }
 }
