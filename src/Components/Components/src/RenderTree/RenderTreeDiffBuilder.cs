@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 keyedItemInfos = BuildKeyToInfoLookup(diffContext, origOldStartIndex, oldEndIndexExcl, origNewStartIndex, newEndIndexExcl);
                             }
 
-                            var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1, false);
-                            var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1, false);
-                            var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
-                            var newKeyIsInOldTree = newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
+                            var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1);
+                            var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1);
+                            var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0;
+                            var newKeyIsInOldTree = newKeyItemInfo.OldIndex >= 0;
 
                             // If either key is not in the other tree, we can handle it as an insert or a delete
                             // on this iteration. We're only forced to use the move logic that's not the case
@@ -306,15 +306,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var key = KeyValue(ref frame);
                 if (key != null)
                 {
-                    var isUnique = !result.ContainsKey(key);
-                    if (isUnique || KeyIsLoose(ref frame))
-                    {
-                        result[key] = new KeyedItemInfo(oldStartIndex, -1, isUnique);
-                    }
-                    else
+                    if (result.ContainsKey(key))
                     {
                         ThrowExceptionForDuplicateKey(key);
                     }
+
+                    result[key] = new KeyedItemInfo(oldStartIndex, -1);
                 }
 
                 oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
@@ -328,19 +325,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     if (!result.TryGetValue(key, out var existingEntry))
                     {
-                        result[key] = new KeyedItemInfo(-1, newStartIndex, isUnique: true);
+                        result[key] = new KeyedItemInfo(-1, newStartIndex);
                     }
                     else
                     {
-                        var isUnique = existingEntry.NewIndex < 0;
-                        if (isUnique || KeyIsLoose(ref frame))
-                        {
-                            result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex, isUnique);
-                        }
-                        else
+                        if (existingEntry.NewIndex >= 0)
                         {
                             ThrowExceptionForDuplicateKey(key);
                         }
+
+                        result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex);
                     }
                 }
 
@@ -352,7 +346,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void ThrowExceptionForDuplicateKey(object key)
         {
-            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique, or 'loose' key mode must be used.");
+            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
         }
 
         private static object KeyValue(ref RenderTreeFrame frame)
@@ -365,19 +359,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return frame.ComponentKey;
                 default:
                     return null;
-            }
-        }
-
-        private static bool KeyIsLoose(ref RenderTreeFrame frame)
-        {
-            switch (frame.FrameType)
-            {
-                case RenderTreeFrameType.Element:
-                    return frame.ElementFlags.HasFlag(ElementFlags.LooseKey);
-                case RenderTreeFrameType.Component:
-                    return frame.ComponentFlags.HasFlag(ComponentFlags.LooseKey);
-                default:
-                    return false;
             }
         }
 

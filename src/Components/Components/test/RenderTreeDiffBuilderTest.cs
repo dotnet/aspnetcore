@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void HandlesClashingKeysInOldTree_Strict()
+        public void RejectsClashingKeysInOldTree()
         {
             // Arrange
             AddWithKey(oldTree, "key1", "attrib1a");
@@ -328,11 +328,11 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique, or 'loose' key mode must be used.", ex.Message);
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
-        public void HandlesClashingKeysInNewTree_Strict()
+        public void RejectsClashingKeysInNewTree()
         {
             // Arrange
             AddWithKey(oldTree, "key1", "attrib1a");
@@ -345,100 +345,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique, or 'loose' key mode must be used.", ex.Message);
-        }
-
-        [Fact]
-        public void HandlesClashingKeys_Loose_FirstUsage()
-        {
-            // This scenario is problematic for the algorithm if it uses a "first key
-            // usage wins" policy for duplicate keys. It would not end up with attrib1b
-            // anywhere in the output, because whenever it sees key1 in oldTree, it tries
-            // to diff against the first usage of key1 in newTree, which has attrib1a.
-
-            // However, because of the actual "duplicated keys are excluded from the
-            // dictionary match" policy, we don't preserve any of the key1 items, and
-            // the diff is valid.
-
-            // Since we only pass the "loose" flag for the key that would otherwise
-            // trigger an exception due to a clash, this shows that "loose" only matters
-            // in that case. It would be fine to pass loose:true for all the others too,
-            // as would normally be done in .razor, but it makes no difference.
-
-            // Arrange
-            AddWithKey(oldTree, "key3", "attrib3");
-            AddWithKey(oldTree, "key1", "attrib1a");
-            AddWithKey(oldTree, "key1", "attrib1a", looseKey: true);
-            AddWithKey(oldTree, "key2", "attrib2");
-
-            AddWithKey(newTree, "key1", "attrib1a");
-            AddWithKey(newTree, "key2", "attrib2");
-            AddWithKey(newTree, "key1", "attrib1b", looseKey: true);
-
-            // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent();
-
-            // Assert
-            Assert.Collection(result.Edits,
-                // Insert key1+attrib1a at the top
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                },
-                // Delete key3+attrib3
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Delete key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Delete the other key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1),
-                // Insert key1+attrib1b at the bottom
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal("attrib1b", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                });
-        }
-
-        [Fact]
-        public void HandlesClashingKeys_Loose_LastUsage()
-        {
-            // This scenario is problematic for the algorithm if it uses a "last key
-            // usage wins" policy for duplicate keys. It would not end up with attrib1b
-            // anywhere in the output, because when it sees key1 in oldTree, it tries
-            // to diff against the last usage of key1 in newTree, which has attrib1a.
-
-            // However, because of the actual "duplicated keys are excluded from the
-            // dictionary match" policy, we don't preserve any of the key1 items, and
-            // the diff is valid.
-
-            // Since we only pass the "loose" flag for the key that would otherwise
-            // trigger an exception due to a clash, this shows that "loose" only matters
-            // in that case. It would be fine to pass loose:true for all the others too,
-            // as would normally be done in .razor, but it makes no difference.
-
-            // Arrange
-            AddWithKey(oldTree, "key1", "attrib1a");
-            AddWithKey(oldTree, "key2", "attrib2");
-            AddWithKey(oldTree, "key1", "attrib1b", looseKey: true);
-
-            AddWithKey(newTree, "key2", "attrib2");
-            AddWithKey(newTree, "key1", "attrib1b");
-            AddWithKey(newTree, "key1", "attrib1a", looseKey: true);
-
-            // Act
-            var (result, referenceFrames) = GetSingleUpdatedComponent();
-
-            // Assert
-            Assert.Collection(result.Edits,
-                // Delete key1+attrib1a
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
-                // Insert a new key1+attrib1a at the bottom
-                edit =>
-                {
-                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal("attrib1a", referenceFrames[edit.ReferenceFrameIndex + 1].AttributeValue);
-                });
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -2237,19 +2144,10 @@ namespace Microsoft.AspNetCore.Components.Test
                 .Select(x => (T)x.Component)
                 .ToList();
 
-        private static void AddWithKey(RenderTreeBuilder builder, object key, string attributeValue = null, bool looseKey = false)
+        private static void AddWithKey(RenderTreeBuilder builder, object key, string attributeValue = null)
         {
             builder.OpenElement(0, "el");
-
-            if (looseKey)
-            {
-                builder.SetKey(key, looseKey: true);
-            }
-            else
-            {
-                // Using this overload here (not explicitly passing any flag) to show that the default is strict
-                builder.SetKey(key);
-            }
+            builder.SetKey(key);
 
             if (attributeValue != null)
             {
