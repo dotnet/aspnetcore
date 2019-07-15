@@ -7,6 +7,9 @@
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <!-- Must be defined before ReferenceFromSource.props is imported -->
     <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
+
+    <!-- Resx generation is custom, preserve current logic -->
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <ItemGroup>

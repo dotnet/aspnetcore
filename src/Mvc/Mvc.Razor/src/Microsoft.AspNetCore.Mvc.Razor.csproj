@@ -7,6 +7,9 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>
+
+    <!-- Disable resx generation via Arcade due to https://github.com/dotnet/arcade/issues/3244 -->
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <ItemGroup>
