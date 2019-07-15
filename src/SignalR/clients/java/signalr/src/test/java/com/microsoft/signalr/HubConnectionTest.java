@@ -1609,6 +1609,15 @@ class HubConnectionTest {
     }
 
     @Test
+    public void cannotStreamBeforeStart()  {
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.stream(String.class, "inc", "arg1"));
+        assertEquals("The 'stream' method cannot be called if the connection is not active.", exception.getMessage());
+    }
+
+    @Test
     public void doesNotErrorWhenReceivingInvokeWithIncorrectArgumentLength()  {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -2036,7 +2045,7 @@ class HubConnectionTest {
 
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate", (req) -> {
-                    if(redirectCount.get() == 0){
+                    if (redirectCount.get() == 0) {
                         redirectCount.incrementAndGet();
                         redirectToken.set(req.getHeaders().get("Authorization"));
                         return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}"));
