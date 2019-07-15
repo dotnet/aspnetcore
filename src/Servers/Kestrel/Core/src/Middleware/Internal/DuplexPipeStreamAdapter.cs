@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     /// <typeparam name="TStream"></typeparam>
     internal class DuplexPipeStreamAdapter<TStream> : DuplexPipeStream, IDuplexPipe where TStream : Stream
     {
+        private readonly Pipe _input;
         private readonly Pipe _output;
+        private Task _inputTask;
         private Task _outputTask;
         private bool _disposed;
         private readonly object _disposeLock = new object();
@@ -30,6 +32,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             Stream = createStream(this);
 
+            var inputOptions = new PipeOptions(pool: readerOptions.Pool,
+                readerScheduler: PipeScheduler.ThreadPool,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                minimumSegmentSize: readerOptions.Pool.GetMinimumSegmentSize(),
+                useSynchronizationContext: false);
+
             var outputOptions = new PipeOptions(pool: writerOptions.Pool,
                                                 readerScheduler: PipeScheduler.Inline,
                                                 writerScheduler: PipeScheduler.Inline,
@@ -38,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                                                 minimumSegmentSize: writerOptions.MinimumBufferSize,
                                                 useSynchronizationContext: false);
 
-            Input = PipeReader.Create(Stream, readerOptions);
+            _input = new Pipe(inputOptions);
 
             // We're using a pipe here because the HTTP/2 stack in Kestrel currently makes assumptions
             // about when it is ok to write to the PipeWriter. This should be reverted back to PipeWriter.Create once
@@ -50,7 +60,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public TStream Stream { get; }
 
-        public PipeReader Input { get; }
+        public PipeReader Input
+        {
+            get
+            {
+                if (_inputTask == null)
+                {
+                    _inputTask = ReadInputAsync();
+                }
+                return _input.Reader;
+            }
+        }
+
+        private async Task ReadInputAsync()
+        {
+            try
+            {
+                while (true)
+                {
+                    var memory = _input.Writer.GetMemory();
+
+                    var result = await Stream.ReadAsync(memory);
+
+                    if (result == 0)
+                    {
+                        break;
+                    }
+
+                    _input.Writer.Advance(result);
+                    var flushResult = await _input.Writer.FlushAsync();
+                    if (flushResult.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log?.LogCritical(0, ex, $"{GetType().Name}.{nameof(ReadInputAsync)}");
+            }
+            finally
+            {
+                _input.Writer.Complete();
+            }
+        }
 
         public PipeWriter Output
         {
