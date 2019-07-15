@@ -17,7 +17,7 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddStackQueue((options) => {
+            services.AddLIFOQueue((options) => {
                 options.MaxConcurrentRequests = Environment.ProcessorCount;
                 options.RequestQueueLimit = 50;
             });
@@ -39,6 +39,7 @@ namespace ConcurrencyLimiterSample
         {
             new WebHostBuilder()
                 .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory()) // for cert file
                 .UseStartup<Startup>()
                 .Build()
                 .Run();
