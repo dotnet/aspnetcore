@@ -34,7 +34,7 @@
           "exclude": [
             "Component1.razor",
             "ExampleJsInterop.cs",
-            "content/exampleJsInterop.js"
+            "wwwroot/**"
           ]
         }
       ]

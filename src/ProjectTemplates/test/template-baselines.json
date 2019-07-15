@@ -875,9 +875,9 @@
       "Template": "razorclasslib",
       "Arguments": "new razorclasslib",
       "Files": [
-        "content/background.png",
-        "content/exampleJsInterop.js",
-        "content/styles.css",
+        "wwwroot/background.png",
+        "wwwroot/exampleJsInterop.js",
+        "wwwroot/styles.css",
         "Component1.razor",
         "ExampleJsInterop.cs"
       ]
@@ -886,8 +886,6 @@
       "Template": "razorclasslib",
       "Arguments": "new razorclasslib --support-pages-and-views true",
       "Files": [
-        "content/background.png",
-        "content/styles.css",
         "Areas/MyFeature/Pages/Page1.cshtml",
         "Areas/MyFeature/Pages/Page1.cshtml.cs"
       ]
