@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -298,7 +299,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// to JSON.
         /// </summary>
         /// <param name="data">The object to serialize.</param>
-        /// <param name="serializerSettings">The serializer settings to be used by the formatter.</param>
+        /// <param name="serializerSettings">The serializer settings to be used by the formatter.
+        /// <para>
+        /// When using <c>System.Text.Json</c>, this should be an instance of <see cref="JsonSerializerOptions" />.
+        /// </para>
+        /// <para>
+        /// When using <c>Newtonsoft.Json</c>, this should be an instance of <c>JsonSerializerSettings</c>.
+        /// </para>
+        /// </param>
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// as JSON format for the response.</returns>
         /// <remarks>Callers should cache an instance of serializer settings to avoid
@@ -306,11 +314,6 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual JsonResult Json(object data, object serializerSettings)
         {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
             return new JsonResult(data, serializerSettings);
         }
 
