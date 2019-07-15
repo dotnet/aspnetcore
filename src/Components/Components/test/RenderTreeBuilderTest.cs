@@ -1475,10 +1475,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanAddKeyToElement(bool looseKey)
+        [Fact]
+        public void CanAddKeyToElement()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -1487,7 +1485,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attribute before", "before value");
-            builder.SetKey(keyValue, looseKey);
+            builder.SetKey(keyValue);
             builder.AddAttribute(2, "attribute after", "after value");
             builder.CloseElement();
 
@@ -1498,16 +1496,13 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     AssertFrame.Element(frame, "elem", 3, 0);
                     Assert.Same(keyValue, frame.ElementKey);
-                    Assert.Equal(looseKey, frame.ElementFlags.HasFlag(ElementFlags.LooseKey));
                 },
                 frame => AssertFrame.Attribute(frame, "attribute before", "before value", 1),
                 frame => AssertFrame.Attribute(frame, "attribute after", "after value", 2));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanAddKeyToComponent(bool looseKey)
+        [Fact]
+        public void CanAddKeyToComponent()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -1516,7 +1511,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenComponent<TestComponent>(0);
             builder.AddAttribute(1, "param before", 123);
-            builder.SetKey(keyValue, looseKey);
+            builder.SetKey(keyValue);
             builder.AddAttribute(2, "param after", 456);
             builder.CloseComponent();
 
@@ -1527,7 +1522,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     AssertFrame.Component<TestComponent>(frame, 3, 0);
                     Assert.Same(keyValue, frame.ComponentKey);
-                    Assert.Equal(looseKey, frame.ComponentFlags.HasFlag(ComponentFlags.LooseKey));
                 },
                 frame => AssertFrame.Attribute(frame, "param before", 123, 1),
                 frame => AssertFrame.Attribute(frame, "param after", 456, 2));
@@ -1564,33 +1558,14 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CannotAddNullKey()
-        {
-            // Although we could translate 'null' into either some default "null key"
-            // instance, or just no-op the call, it almost certainly indicates a programming
-            // error so it's better to fail.
-
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act/Assert
-            var ex = Assert.Throws<ArgumentNullException>(() =>
-            {
-                builder.OpenElement(0, "elem");
-                builder.SetKey(null);
-            });
-            Assert.Equal("value", ex.ParamName);
-        }
-
-        [Fact]
-        public void IgnoresNullElementKeyIfLoose()
+        public void IgnoresNullElementKey()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenElement(0, "elem");
-            builder.SetKey(null, looseKey: true);
+            builder.SetKey(null);
             builder.CloseElement();
 
             // Assert
@@ -1604,14 +1579,14 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void IgnoresNullComponentKeyIfLoose()
+        public void IgnoresNullComponentKey()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenComponent<TestComponent>(0);
-            builder.SetKey(null, looseKey: true);
+            builder.SetKey(null);
             builder.CloseComponent();
 
             // Assert

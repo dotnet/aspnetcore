@@ -4,10 +4,6 @@
         <p>Model</p>
         <textarea @bind="modelJson" id="key-model"></textarea>
         <button @onclick="Update">Update</button>
-        <label>
-            <input type="checkbox" @bind="@renderContext.UseLooseKeys" id="key-loose" />
-            Use loose keys
-        </label>
     </div>
     <div class="render-output">
         <p>Output</p>
@@ -73,7 +69,5 @@
         // This is so the descendants can detect and display whether they are
         // newly-instantiated on any given render
         public int UpdateCount { get; set; }
-
-        public bool UseLooseKeys { get; set; }
     }
 }

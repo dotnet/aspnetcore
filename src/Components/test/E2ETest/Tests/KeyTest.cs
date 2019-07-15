@@ -207,25 +207,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanDuplicateKeysInLooseMode()
-        {
-            PerformTest(
-               useLooseKeys: true,
-               before: new[]
-               {
-                    new Node("orig1", "A"),
-                    new Node("orig2", "B"),
-               },
-               after: new[]
-               {
-                   new Node("orig1", "A edited"),
-                   new Node("orig1", "A inserted") { IsNew = true },
-                   new Node("orig2", "B edited"),
-                   new Node("orig2", "B inserted") { IsNew = true },
-               });
-        }
-
-        [Fact]
         public async Task CanRetainFocusWhileMovingTextBox()
         {
             var appElem = MountTestComponent<ReorderingFocusComponent>();
@@ -291,7 +272,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(Array.Empty<bool>(), completeItemStates);
         }
 
-        private void PerformTest(Node[] before, Node[] after, bool useLooseKeys = false)
+        private void PerformTest(Node[] before, Node[] after)
         {
             var rootBefore = new Node(null, "root", before);
             var rootAfter = new Node(null, "root", after);
@@ -301,11 +282,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElem = MountTestComponent<KeyCasesComponent>();
             var textbox = appElem.FindElement(By.TagName("textarea"));
             var updateButton = appElem.FindElement(By.TagName("button"));
-
-            if (useLooseKeys)
-            {
-                appElem.FindElement(By.Id("key-loose")).Click();
-            }
 
             SetTextAreaValueFast(textbox, jsonBefore);
             updateButton.Click();

@@ -54,12 +54,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         // --------------------------------------------------------------------------------
 
         /// <summary>
-        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
-        /// gets the flags associated with the frame.
-        /// </summary>
-        [FieldOffset(6)] public readonly ElementFlags ElementFlags;
-
-        /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>
         /// gets the number of frames in the subtree for which this frame is the root.
         /// The value is zero if the frame has not yet been closed.
@@ -121,12 +115,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Component
         // --------------------------------------------------------------------------------
-
-        /// <summary>
-        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
-        /// gets the flags associated with the frame.
-        /// </summary>
-        [FieldOffset(6)] public readonly ComponentFlags ComponentFlags;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
@@ -225,24 +213,22 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         [FieldOffset(16)] public readonly string MarkupContent;
 
         // Element constructor
-        private RenderTreeFrame(int sequence, ElementFlags elementFlags, int elementSubtreeLength, string elementName, object elementKey)
+        private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)
             : this()
         {
             Sequence = sequence;
             FrameType = RenderTreeFrameType.Element;
-            ElementFlags = elementFlags;
             ElementSubtreeLength = elementSubtreeLength;
             ElementName = elementName;
             ElementKey = elementKey;
         }
 
         // Component constructor
-        private RenderTreeFrame(int sequence, ComponentFlags componentFlags, int componentSubtreeLength, Type componentType, ComponentState componentState, object componentKey)
+        private RenderTreeFrame(int sequence, int componentSubtreeLength, Type componentType, ComponentState componentState, object componentKey)
             : this()
         {
             Sequence = sequence;
             FrameType = RenderTreeFrameType.Component;
-            ComponentFlags = componentFlags;
             ComponentSubtreeLength = componentSubtreeLength;
             ComponentType = componentType;
             ComponentKey = componentKey;
@@ -313,7 +299,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         internal static RenderTreeFrame Element(int sequence, string elementName)
-            => new RenderTreeFrame(sequence, elementFlags: default, elementSubtreeLength: 0, elementName, null);
+            => new RenderTreeFrame(sequence, elementSubtreeLength: 0, elementName, null);
 
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, isMarkup: false, textOrMarkup: textContent);
@@ -325,10 +311,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0, attributeEventUpdatesAttributeName: null);
 
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
-            => new RenderTreeFrame(sequence, componentFlags: default, componentSubtreeLength: 0, componentType, null, null);
+            => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
 
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
-            => new RenderTreeFrame(0, componentFlags: default, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
+            => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
 
         internal static RenderTreeFrame Region(int sequence)
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
@@ -340,16 +326,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
 
         internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
-            => new RenderTreeFrame(Sequence, elementFlags: ElementFlags, elementSubtreeLength: elementSubtreeLength, ElementName, ElementKey);
+            => new RenderTreeFrame(Sequence, elementSubtreeLength: elementSubtreeLength, ElementName, ElementKey);
 
         internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
-            => new RenderTreeFrame(Sequence, componentFlags: ComponentFlags, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
             => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
 
         internal RenderTreeFrame WithComponent(ComponentState componentState)
-            => new RenderTreeFrame(Sequence, componentFlags: ComponentFlags, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
 
         internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
             => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId, AttributeEventUpdatesAttributeName);
@@ -366,17 +352,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal RenderTreeFrame WithElementReferenceCaptureId(string elementReferenceCaptureId)
             => new RenderTreeFrame(Sequence, elementReferenceCaptureAction: ElementReferenceCaptureAction, elementReferenceCaptureId);
 
-        internal RenderTreeFrame WithElementKey(object elementKey, bool looseKey)
-        {
-            var flags = looseKey ? (ElementFlags | ElementFlags.LooseKey) : ElementFlags;
-            return new RenderTreeFrame(Sequence, elementFlags: flags, elementSubtreeLength: ElementSubtreeLength, ElementName, elementKey);
-        }            
+        internal RenderTreeFrame WithElementKey(object elementKey)
+            => new RenderTreeFrame(Sequence, elementSubtreeLength: ElementSubtreeLength, ElementName, elementKey);
 
-        internal RenderTreeFrame WithComponentKey(object componentKey, bool looseKey)
-        {
-            var flags = looseKey ? (ComponentFlags | ComponentFlags.LooseKey) : ComponentFlags;
-            return new RenderTreeFrame(Sequence, componentFlags: flags, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState, componentKey);
-        }
+        internal RenderTreeFrame WithComponentKey(object componentKey)
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState, componentKey);
 
         /// <inheritdoc />
         // Just to be nice for debugging and unit tests.
