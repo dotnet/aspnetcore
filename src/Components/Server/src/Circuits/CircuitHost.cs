@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
-        internal async Task EndInvokeDotNetFromJS(string arguments)
+        internal async Task EndInvokeDotNetFromJS(bool succeded, string arguments)
         {
             try
             {

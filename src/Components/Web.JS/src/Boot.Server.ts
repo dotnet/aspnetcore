@@ -140,8 +140,10 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
   function serverDispatcher(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void {
 
+    // This bit is temporary until we get the proper changes in the JSInterop library.
     if (methodIdentifier === 'DotNetDispatcher.EndInvoke' && assemblyName === 'Microsoft.JSInterop'){
-      connection.send('EndInvokeDotNetFromJS', argsJson);
+      const [, succeeded] = JSON.parse(argsJson);
+      connection.send('EndInvokeDotNetFromJS', succeeded, argsJson);
       return;
     }
 
