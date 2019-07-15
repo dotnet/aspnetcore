@@ -520,10 +520,25 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="value">The value for the key.</param>
         public void SetKey(object value)
+            => SetKey(value, looseKey: false);
+
+        /// <summary>
+        /// Assigns the specified key value to the current element or component.
+        /// </summary>
+        /// <param name="value">The value for the key.</param>
+        /// <param name="looseKey">If true, null values and duplicates will be ignored. If false, null values and duplicates will be treated as an error.</param>
+        public void SetKey(object value, bool looseKey)
         {
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value));
+                if (looseKey)
+                {
+                    return;
+                }
+                else
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
             }
 
             var parentFrameIndex = GetCurrentParentFrameIndex();
@@ -537,10 +552,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             switch (parentFrame.FrameType)
             {
                 case RenderTreeFrameType.Element:
-                    parentFrame = parentFrame.WithElementKey(value); // It's a ref var, so this writes to the array
+                    parentFrame = parentFrame.WithElementKey(value, looseKey); // It's a ref var, so this writes to the array
                     break;
                 case RenderTreeFrameType.Component:
-                    parentFrame = parentFrame.WithComponentKey(value); // It's a ref var, so this writes to the array
+                    parentFrame = parentFrame.WithComponentKey(value, looseKey); // It's a ref var, so this writes to the array
                     break;
                 default:
                     throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");

@@ -1475,8 +1475,10 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
-        [Fact]
-        public void CanAddKeyToElement()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CanAddKeyToElement(bool looseKey)
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -1485,7 +1487,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attribute before", "before value");
-            builder.SetKey(keyValue);
+            builder.SetKey(keyValue, looseKey);
             builder.AddAttribute(2, "attribute after", "after value");
             builder.CloseElement();
 
@@ -1496,13 +1498,16 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     AssertFrame.Element(frame, "elem", 3, 0);
                     Assert.Same(keyValue, frame.ElementKey);
+                    Assert.Equal(looseKey, frame.ElementFlags.HasFlag(ElementFlags.LooseKey));
                 },
                 frame => AssertFrame.Attribute(frame, "attribute before", "before value", 1),
                 frame => AssertFrame.Attribute(frame, "attribute after", "after value", 2));
         }
 
-        [Fact]
-        public void CanAddKeyToComponent()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CanAddKeyToComponent(bool looseKey)
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -1511,7 +1516,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenComponent<TestComponent>(0);
             builder.AddAttribute(1, "param before", 123);
-            builder.SetKey(keyValue);
+            builder.SetKey(keyValue, looseKey);
             builder.AddAttribute(2, "param after", 456);
             builder.CloseComponent();
 
@@ -1522,6 +1527,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     AssertFrame.Component<TestComponent>(frame, 3, 0);
                     Assert.Same(keyValue, frame.ComponentKey);
+                    Assert.Equal(looseKey, frame.ComponentFlags.HasFlag(ComponentFlags.LooseKey));
                 },
                 frame => AssertFrame.Attribute(frame, "param before", 123, 1),
                 frame => AssertFrame.Attribute(frame, "param after", 456, 2));
@@ -1574,6 +1580,48 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.SetKey(null);
             });
             Assert.Equal("value", ex.ParamName);
+        }
+
+        [Fact]
+        public void IgnoresNullElementKeyIfLoose()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.SetKey(null, looseKey: true);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Element(frame, "elem", 1, 0);
+                    Assert.Null(frame.ElementKey);
+                });
+        }
+
+        [Fact]
+        public void IgnoresNullComponentKeyIfLoose()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenComponent<TestComponent>(0);
+            builder.SetKey(null, looseKey: true);
+            builder.CloseComponent();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Component<TestComponent>(frame, 1, 0);
+                    Assert.Null(frame.ComponentKey);
+                });
         }
 
         [Fact]
