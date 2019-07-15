@@ -9,6 +9,7 @@ import RenderQueue from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, ILogger } from './Platform/Logging/ILogger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
+import { setRendererEventDispatcher } from './Rendering/Renderer';
 
 
 type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
@@ -133,11 +134,11 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
     beginInvokeDotNetFromJS: serverDispatcher,
   });
 
+  setRendererEventDispatcher((descriptor, args) =>{
+    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
+  });
+
   function serverDispatcher(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void {
-    if (methodIdentifier === 'DispatchEvent' && assemblyName === 'Microsoft.AspNetCore.Components.Web'){
-      connection.send('DispatchBrowserEvent', argsJson);
-      return;
-    }
 
     if (methodIdentifier === 'DotNetDispatcher.EndInvoke' && assemblyName === 'Microsoft.JSInterop'){
       connection.send('EndInvokeDotNetFromJS', argsJson);

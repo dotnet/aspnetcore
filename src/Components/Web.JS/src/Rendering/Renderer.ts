@@ -2,19 +2,25 @@
 import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { RenderBatch } from './RenderBatch/RenderBatch';
-import { BrowserRenderer } from './BrowserRenderer';
+import { BrowserRenderer, EventDescriptor } from './BrowserRenderer';
 import { toLogicalElement, LogicalElement } from './LogicalElements';
+import { UIEventArgs } from './EventForDotNet';
 
 interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
 }
 const browserRenderers: BrowserRendererRegistry = {};
 
+let eventDispatcher = (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs): Promise<void> => {
+  return DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.Web', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs));
+};
+
+
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
 
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
-    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
+    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId, eventDispatcher);
   }
 
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement);
@@ -29,6 +35,10 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId);
+}
+
+export function setRendererEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => Promise<void>): void {
+  eventDispatcher = newDispatcher;
 }
 
 export function renderBatch(browserRendererId: number, batch: RenderBatch): void {

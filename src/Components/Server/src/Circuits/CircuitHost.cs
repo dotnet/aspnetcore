@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        internal async Task DispatchEvent(string args)
+        internal async Task DispatchEvent(string eventDescriptorJson, string eventArgs)
         {
             try
             {
@@ -240,60 +240,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
-                    var (eventDescriptor, eventArgsJson) = ParseEvent(args);
-                    if ((eventDescriptor, eventArgsJson) == default)
-                    {
-                        // Failed to parse the event
-                        return Task.CompletedTask;
-                    }
 
-                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgsJson);
+                    var eventDescriptor = JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
+                            eventDescriptorJson,
+                            JsonSerializerOptionsProvider.Options);
+
+                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgs);
                 });
             }
             catch (Exception ex)
             {
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
-
-        private (RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgs) ParseEvent(string args)
-        {
-            try
-            {
-                var document = JsonDocument.Parse(args);
-                if (document.RootElement.ValueKind != JsonValueKind.Array)
-                {
-                    Log.BrowserEventInvalidArgumentsFormat(_logger, document.RootElement.ValueKind);
-                    return default;
-                }
-                var length = document.RootElement.GetArrayLength();
-                if (length != 2)
-                {
-                    Log.BrowserEventInvalidNumberOfArguments(_logger, length);
-                    return default;
-                }
-                RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
-                string eventArgsJson = null;
-                foreach (var element in document.RootElement.EnumerateArray())
-                {
-                    if (eventDescriptor == null)
-                    {
-                        eventDescriptor = JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
-                            element.GetRawText(),
-                            JsonSerializerOptionsProvider.Options);
-                    }
-                    else
-                    {
-                        eventArgsJson = element.GetString();
-                    }
-                }
-
-                return (eventDescriptor, eventArgsJson);
-            }
-            catch (Exception e)
-            {
-                Log.InvalidBrowserEventFormat(_logger, e);
-                return default;
             }
         }
 

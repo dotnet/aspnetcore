@@ -1,6 +1,6 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
-import { EventForDotNet, UIEventArgs } from './EventForDotNet';
+import { EventForDotNet, UIEventArgs, EventArgsType } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
@@ -10,6 +10,13 @@ const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
 const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 
+export interface EventDescriptor{
+  browserRendererId: number;
+  eventHandlerId: number;
+  eventArgsType: EventArgsType;
+  eventFieldInfo: EventFieldInfo | null;
+}
+
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
 
@@ -17,10 +24,13 @@ export class BrowserRenderer {
 
   private browserRendererId: number;
 
-  public constructor(browserRendererId: number) {
+  private eventDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>;
+
+  public constructor(browserRendererId: number, eventDispatcher: ((EventDescriptor, UIEventArgs) => Promise<void>)) {
     this.browserRendererId = browserRendererId;
+    this.eventDispatcher = eventDispatcher;
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
-      raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
+      raiseEvent(this.eventDispatcher, event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
     });
   }
 
@@ -423,7 +433,14 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>, eventFieldInfo: EventFieldInfo | null) {
+function raiseEvent(
+  eventDispatcher: ((descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>),
+  event: Event,
+  browserRendererId: number,
+  eventHandlerId: number,
+  eventArgs: EventForDotNet<UIEventArgs>,
+  eventFieldInfo: EventFieldInfo | null
+): Promise<void> {
   if (preventDefaultEvents[event.type]) {
     event.preventDefault();
   }
@@ -435,12 +452,7 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
     eventFieldInfo: eventFieldInfo,
   };
 
-  return DotNet.invokeMethodAsync(
-    'Microsoft.AspNetCore.Components.Web',
-    'DispatchEvent',
-    eventDescriptor,
-    JSON.stringify(eventArgs.data)
-  );
+  return eventDispatcher(eventDescriptor, eventArgs.data);
 }
 
 function clearElement(element: Element) {

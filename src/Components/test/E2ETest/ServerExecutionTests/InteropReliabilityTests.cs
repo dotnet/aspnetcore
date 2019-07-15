@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -239,6 +240,34 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
+            // Act
+            await Client.ClickAsync("triggerjsinterop");
+
+            Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
+
+            await Client.InvokeDotNetMethod(
+                0,
+                "Microsoft.JSInterop",
+                "DotNetDispatcher.EndInvoke",
+                null,
+                "[4, true, \"{\"]");
+
+            var text = Assert.Single(
+                Client.FindElementById("errormessage").Children.OfType<TextNode>(),
+                e => expectedError == e.TextContent);
+
+            await ValidateClientKeepsWorking(Client, batches);
+        }
+
+        [Fact]
+        public async Task ContinuesWorkingAfterInvalidAsyncRoutedThroughHubMethod()
+        {
+            // Arrange
+            var expectedError = "An exception occurred executing JS interop: The JSON value could not be converted to System.Int32. Path: $ | LineNumber: 0 | BytePositionInLine: 3.. See InnerException for more details.";
+
+            var (interopCalls, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
+
             var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
             var messages = new List<(LogLevel, string)>();
             void CaptureMessages(WriteContext wc) => messages.Add((wc.LogLevel, wc.Message));
@@ -250,11 +279,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
 
-            await Client.InvokeDotNetMethod(
-                0,
-                "Microsoft.JSInterop",
-                "DotNetDispatcher.EndInvoke",
-                null,
+            await Client.HubConnection.InvokeAsync<object>(
+                "EndInvokeDotNetFromJS",
                 "[4, true, \"{\"]");
 
             var text = Assert.Single(
