@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.Components.RenderTree
 <div class="node">
     <strong class="label">@Data.Label</strong>
     &nbsp;&nbsp;[
@@ -16,19 +17,9 @@
 
     @if (Data.Children?.Any() ?? false)
     {
-        <div class="children">@{
-            foreach (var child in Data.Children)
-            {
-                if (child.Key != null)
-                {
-                    <KeyCasesTreeNode @key="@child.Key" Data="@child" />
-                }
-                else
-                {
-                    <KeyCasesTreeNode Data="@child" />
-                }
-            }
-        }</div>
+        <div class="children">
+            @((RenderFragment)RenderKeyCasesTreeNodes)
+        </div>
     }
 </div>
 
@@ -49,5 +40,32 @@
     protected override void OnInitialized()
     {
         firstCreatedOnUpdateCount = RenderContext.UpdateCount;
+    }
+
+    void RenderKeyCasesTreeNodes(RenderTreeBuilder builder)
+    {
+        // This is equivalent to:
+        // @foreach (var child in Data.Children)
+        // {
+        //     if (key != null)
+        //     {
+        //        <KeyCasesTreeNode @key="@child.Key" @key:loose="@looseKey" Data="@child" />
+        //     }
+        //     else
+        //     {
+        //        <KeyCasesTreeNode Data="@child" />
+        //     }
+        // }
+        // TODO: Once the compiler supports @key:loose, eliminate this and just use regular Razor syntax
+        foreach (var child in Data.Children)
+        {
+            builder.OpenComponent<KeyCasesTreeNode>(0);
+            if (child.Key != null)
+            {
+                builder.SetKey(child.Key, looseKey: RenderContext.UseLooseKeys);
+            }
+            builder.AddAttribute(1, nameof(Data), child);
+            builder.CloseComponent();
+        }
     }
 }

@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // if you plan to refactor this, be sure to benchmark the old and new versions
             // on Mono WebAssembly.
 
+            var origOldStartIndex = oldStartIndex;
+            var origNewStartIndex = newStartIndex;
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
             var prevOldSeq = -1;
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                             // Keys don't match
                             if (keyedItemInfos == null)
                             {
-                                keyedItemInfos = BuildKeyToInfoLookup(diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
+                                keyedItemInfos = BuildKeyToInfoLookup(diffContext, origOldStartIndex, oldEndIndexExcl, origNewStartIndex, newEndIndexExcl);
                             }
 
                             var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1, false);
@@ -304,7 +306,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var key = KeyValue(ref frame);
                 if (key != null)
                 {
-                    result[key] = new KeyedItemInfo(oldStartIndex, -1, isUnique: !result.ContainsKey(key));
+                    var isUnique = !result.ContainsKey(key);
+                    if (isUnique || KeyIsLoose(ref frame))
+                    {
+                        result[key] = new KeyedItemInfo(oldStartIndex, -1, isUnique);
+                    }
+                    else
+                    {
+                        ThrowExceptionForDuplicateKey(key);
+                    }
                 }
 
                 oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
@@ -316,15 +326,33 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var key = KeyValue(ref frame);
                 if (key != null)
                 {
-                    result[key] = result.TryGetValue(key, out var existingEntry)
-                        ? new KeyedItemInfo(existingEntry.OldIndex, newStartIndex, isUnique: existingEntry.NewIndex < 0)
-                        : new KeyedItemInfo(-1, newStartIndex, isUnique: true);
+                    if (!result.TryGetValue(key, out var existingEntry))
+                    {
+                        result[key] = new KeyedItemInfo(-1, newStartIndex, isUnique: true);
+                    }
+                    else
+                    {
+                        var isUnique = existingEntry.NewIndex < 0;
+                        if (isUnique || KeyIsLoose(ref frame))
+                        {
+                            result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex, isUnique);
+                        }
+                        else
+                        {
+                            ThrowExceptionForDuplicateKey(key);
+                        }
+                    }
                 }
 
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);
             }
 
             return result;
+        }
+
+        private static void ThrowExceptionForDuplicateKey(object key)
+        {
+            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique, or 'loose' key mode must be used.");
         }
 
         private static object KeyValue(ref RenderTreeFrame frame)
@@ -337,6 +365,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return frame.ComponentKey;
                 default:
                     return null;
+            }
+        }
+
+        private static bool KeyIsLoose(ref RenderTreeFrame frame)
+        {
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    return frame.ElementFlags.HasFlag(ElementFlags.LooseKey);
+                case RenderTreeFrameType.Component:
+                    return frame.ComponentFlags.HasFlag(ComponentFlags.LooseKey);
+                default:
+                    return false;
             }
         }
 
