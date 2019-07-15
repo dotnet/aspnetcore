@@ -131,24 +131,26 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
   }
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: serverDispatcher,
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
+      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    },
+    endInvokeDotNetFromJS: (asyncHandle, succeeded, argsJson, replacer): void => {
+      const serializedArgs = JSON.stringify(
+        [
+          asyncHandle,
+          succeeded,
+          argsJson,
+        ],
+        replacer
+      );
+
+      connection.send('EndInvokeDotNetFromJS', asyncHandle, succeeded, serializedArgs);
+    },
   });
 
-  setRendererEventDispatcher((descriptor, args) =>{
+  setRendererEventDispatcher((descriptor, args) => {
     return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
-
-  function serverDispatcher(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void {
-
-    // This bit is temporary until we get the proper changes in the JSInterop library.
-    if (methodIdentifier === 'DotNetDispatcher.EndInvoke' && assemblyName === 'Microsoft.JSInterop'){
-      const [, succeeded] = JSON.parse(argsJson);
-      connection.send('EndInvokeDotNetFromJS', succeeded, argsJson);
-      return;
-    }
-
-    connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-  }
 
   return connection;
 }

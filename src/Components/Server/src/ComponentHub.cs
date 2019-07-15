@@ -140,9 +140,9 @@ namespace Microsoft.AspNetCore.Components.Server
             var _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
-        public void EndInvokeDotNetFromJS(bool succeeded, string arguments)
+        public void EndInvokeDotNetFromJS(long asyncHandle, bool succeeded, string arguments)
         {
-            var _ = EnsureCircuitHost().EndInvokeDotNetFromJS(succeeded, arguments);
+            var _ = EnsureCircuitHost().EndInvokeDotNetFromJS(asyncHandle, succeeded, arguments);
         }
 
         public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)

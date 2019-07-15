@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027WriteAllText\\u0027 on assembly \\u0027System.IO.FileSystem\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027WriteAllText\\u0027 on assembly \\u0027System.IO.FileSystem\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027MadeUpMethod\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027Reverse\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027Reverse\\u0027 on assembly \\u0027\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedImportantDotNetObjectRef = "[\"1\",true,{\"__dotNetObject\":1}]";
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -245,42 +245,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
 
-            await Client.InvokeDotNetMethod(
-                0,
-                "Microsoft.JSInterop",
-                "DotNetDispatcher.EndInvoke",
-                null,
-                "[4, true, \"{\"]");
-
-            var text = Assert.Single(
-                Client.FindElementById("errormessage").Children.OfType<TextNode>(),
-                e => expectedError == e.TextContent);
-
-            await ValidateClientKeepsWorking(Client, batches);
-        }
-
-        [Fact]
-        public async Task ContinuesWorkingAfterInvalidAsyncRoutedThroughHubMethod()
-        {
-            // Arrange
-            var expectedError = "An exception occurred executing JS interop: The JSON value could not be converted to System.Int32. Path: $ | LineNumber: 0 | BytePositionInLine: 3.. See InnerException for more details.";
-
-            var (interopCalls, batches) = ConfigureClient();
-            await GoToTestComponent(batches);
-
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var messages = new List<(LogLevel, string)>();
-            void CaptureMessages(WriteContext wc) => messages.Add((wc.LogLevel, wc.Message));
-            sink.MessageLogged += CaptureMessages;
-            using var disposable = new Finally(() => sink.MessageLogged -= CaptureMessages);
-
-            // Act
-            await Client.ClickAsync("triggerjsinterop");
-
-            Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
-
-            await Client.HubConnection.InvokeAsync<object>(
+            await Client.HubConnection.InvokeAsync(
                 "EndInvokeDotNetFromJS",
+                4,
+                true,
                 "[4, true, \"{\"]");
 
             var text = Assert.Single(
@@ -296,7 +264,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027NotifyLocationChanged\\u0027 on assembly \\u0027Microsoft.AspNetCore.Components.Server\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
@@ -320,7 +288,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             var expectedError = "[\"1\"," +
                 "false," +
-                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.JSInteropDetailedErrors\\u0027\"]";
+                "\"There was an exception invoking \\u0027ReceiveTrivial\\u0027 on assembly \\u0027BasicTestApp\\u0027. For more details turn on detailed exceptions in \\u0027CircuitOptions.DetailedErrors\\u0027\"]";
 
             var (interopCalls, batches) = ConfigureClient();
             await GoToTestComponent(batches);
