@@ -556,7 +556,7 @@ public class Program
             {
                 var clientContext = new ClientContext(client, taskNum: taskNum, seed: seed);
                 // TODO make 50000 configurable based on time.
-                for (long i = taskNum; i < 50000; i++)
+                for (long i = taskNum; i < 500000; i++)
                 {
                     long opIndex = i % clientOperations.Length;
                     (string operation, Func<ClientContext, Task> func) = clientOperations[opIndex];
@@ -588,6 +588,14 @@ public class Program
                     }
                 }
             })).ToArray());
+
+            for (var i = 0; i < fail.Length; i++)
+            {
+                if (fail[i] > 0)
+                {
+                    throw new Exception("There was a failure in the stress run. See logs for exact time of failure");
+                }
+            }
         }
 
         // Make sure our EventListener doesn't go away.
