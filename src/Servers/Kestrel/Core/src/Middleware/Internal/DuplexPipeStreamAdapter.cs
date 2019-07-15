@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private Task _outputTask;
         private bool _disposed;
         private readonly object _disposeLock = new object();
+        private readonly int _minAllocBufferSize;
 
         public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, Func<Stream, TStream> createStream) :
             this(duplexPipe, new StreamPipeReaderOptions(leaveOpen: true), new StreamPipeWriterOptions(leaveOpen: true), createStream)
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         public DuplexPipeStreamAdapter(IDuplexPipe duplexPipe, StreamPipeReaderOptions readerOptions, StreamPipeWriterOptions writerOptions, Func<Stream, TStream> createStream) :
-            base(duplexPipe.Input, duplexPipe.Output)
+            base(duplexPipe.Input, duplexPipe.Output, throwOnCancelled: true)
         {
             Stream = createStream(this);
 
@@ -48,6 +50,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                                                 minimumSegmentSize: writerOptions.MinimumBufferSize,
                                                 useSynchronizationContext: false);
 
+            _minAllocBufferSize = writerOptions.MinimumBufferSize;
+
             _input = new Pipe(inputOptions);
 
             // We're using a pipe here because the HTTP/2 stack in Kestrel currently makes assumptions
@@ -66,8 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (_inputTask == null)
                 {
-                    _inputTask = ReadInputAsync();
+                    RunAsync();
                 }
+
                 return _input.Reader;
             }
         }
@@ -78,68 +83,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (_outputTask == null)
                 {
-                    _outputTask = WriteOutputAsync();
+                    RunAsync();
                 }
 
                 return _output.Writer;
             }
         }
 
-        public override ValueTask DisposeAsync()
+        public void RunAsync()
+        {
+            _inputTask = ReadInputAsync();
+            _outputTask = WriteOutputAsync();
+        }
+
+        public override async ValueTask DisposeAsync()
         {
             lock (_disposeLock)
             {
                 if (_disposed)
                 {
-                    return default;
+                    return;
                 }
                 _disposed = true;
             }
 
-            Input.Complete();
             _output.Writer.Complete();
+            _input.Reader.Complete();
 
-            if (_outputTask == null || _outputTask.IsCompletedSuccessfully)
+            if (_outputTask == null)
             {
-                // Wait for the output task to complete, this ensures that we've copied
-                // the application data to the underlying stream
-                return default;
+                return;
             }
 
-            return new ValueTask(_outputTask);
+            await _outputTask;
+
+            CancelPendingRead();
+
+            await _inputTask;
         }
 
         private async Task ReadInputAsync()
         {
+            Exception error = null;
             try
             {
                 while (true)
                 {
-                    var memory = _input.Writer.GetMemory();
+                    var outputBuffer = _input.Writer.GetMemory(_minAllocBufferSize);
 
-                    var result = await Stream.ReadAsync(memory);
+                    var bytesRead = await Stream.ReadAsync(outputBuffer);
+                    _input.Writer.Advance(bytesRead);
 
-                    if (result == 0)
+                    if (bytesRead == 0)
                     {
+                        // FIN
                         break;
                     }
 
-                    _input.Writer.Advance(result);
-                    var flushResult = await _input.Writer.FlushAsync();
-                    if (flushResult.IsCompleted)
+                    var result = await _input.Writer.FlushAsync();
+
+                    if (result.IsCompleted)
                     {
                         // flushResult should not be canceled.
                         break;
                     }
                 }
+
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Propagate the exception if it's ConnectionAbortedException	
+                error = ex as ConnectionAbortedException;
             }
             catch (Exception ex)
             {
-                Log?.LogCritical(0, ex, $"{GetType().Name}.{nameof(ReadInputAsync)}");
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.	
+                error = ex;
             }
             finally
             {
-                _input.Writer.Complete();
+                _input.Writer.Complete(error);
             }
         }
 
