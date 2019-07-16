@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _systemClock = _context.ServiceContext.SystemClock;
 
             _timeoutControl = new TimeoutControl(this);
+
+            // Tests override the timeout control sometimes
+            _context.TimeoutControl ??= _timeoutControl;
         }
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
@@ -48,31 +51,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 IRequestProcessor requestProcessor = null;
 
-                var httpConnectionContext = new HttpConnectionContext
-                {
-                    ConnectionId = _context.ConnectionId,
-                    ConnectionFeatures = _context.ConnectionFeatures,
-                    MemoryPool = _context.MemoryPool,
-                    LocalEndPoint = _context.LocalEndPoint,
-                    RemoteEndPoint = _context.RemoteEndPoint,
-                    ServiceContext = _context.ServiceContext,
-                    ConnectionContext = _context.ConnectionContext,
-                    TimeoutControl = _timeoutControl,
-                    Transport = _context.Transport
-                };
-
                 switch (SelectProtocol())
                 {
                     case HttpProtocols.Http1:
                         // _http1Connection must be initialized before adding the connection to the connection manager
-                        requestProcessor = _http1Connection = new Http1Connection(httpConnectionContext);
+                        requestProcessor = _http1Connection = new Http1Connection(_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.Http2:
                         // _http2Connection must be initialized before yielding control to the transport thread,
                         // to prevent a race condition where _http2Connection.Abort() is called just as
                         // _http2Connection is about to be initialized.
-                        requestProcessor = new Http2Connection(httpConnectionContext);
+                        requestProcessor = new Http2Connection(_context);
                         _protocolSelectionState = ProtocolSelectionState.Selected;
                         break;
                     case HttpProtocols.None:
