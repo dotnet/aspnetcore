@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,21 +35,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Log.InvokeDotNetMethodException(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId, resultOrError as Exception);
                 if (_options.DetailedErrors)
                 {
-                    base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
+                    EndInvokeDotNetCore(callId, success, resultOrError);
                 }
                 else
                 {
                     var message = $"There was an exception invoking '{methodIdentifier}' on assembly '{assemblyName}'. For more details turn on " +
                         $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
 
-                    base.EndInvokeDotNet(callId, success, message, assemblyName, methodIdentifier, dotNetObjectId);
+                    EndInvokeDotNetCore(callId, success, message);
                 }
             }
             else
             {
-                Log.InvokeDotNetMethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
+                Log.InvokeDotnetmethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+                EndInvokeDotNetCore(callId, success, resultOrError);
             }
+        }
+
+        private void EndInvokeDotNetCore(string callId, bool success, object resultOrError)
+        {
+            _clientProxy.SendAsync(
+                "JS.EndInvokeDotNet",
+                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptionsProvider.Options));
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
@@ -61,12 +69,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "attempted during prerendering or while the client is disconnected.");
             }
 
-            if (identifier != "DotNet.jsCallDispatcher.endInvokeDotNetFromJS")
-            {
-                // Filter the default implementation of endInvokeDotNetFromJS, we could change this to dispatch to a client method directly
-                // instead of going through JS interop.
-                Log.BeginInvokeJS(_logger, asyncHandle, identifier);
-            }
+            Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson);
         }
