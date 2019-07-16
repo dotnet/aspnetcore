@@ -99,7 +99,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static class RuntimeHelpers
         {
-            public static readonly string TypeCheck = "Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck";
+            public static readonly string TypeCheck = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck";
+            public static readonly string CreateInferredEventCallback = "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback";
         }
 
         public static class RouteAttribute
@@ -115,17 +116,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static class BindInputElementAttribute
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.BindInputElementAttribute";
-        }
-
-        public static class BindMethods
-        {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.BindMethods";
-
-            public static readonly string GetValue = "Microsoft.AspNetCore.Components.BindMethods.GetValue";
-
-            public static readonly string GetEventHandlerValue = "Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue";
-
-            public static readonly string SetValueHandler = "Microsoft.AspNetCore.Components.BindMethods.SetValueHandler";
         }
 
         public static class EventHandlerAttribute
@@ -154,8 +144,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static class EventCallbackFactory
         {
             public static readonly string CreateMethod = "Create";
-            public static readonly string CreateInferredMethod = "CreateInferred";
             public static readonly string CreateBinderMethod = "CreateBinder";
+        }
+
+        public static class BindConverter
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.BindConverter";
+            public static readonly string FormatValue = "Microsoft.AspNetCore.Components.BindConverter.FormatValue";
         }
     }
 }

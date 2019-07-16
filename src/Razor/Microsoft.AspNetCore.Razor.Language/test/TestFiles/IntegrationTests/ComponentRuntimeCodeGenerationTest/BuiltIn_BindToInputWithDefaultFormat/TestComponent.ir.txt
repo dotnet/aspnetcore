@@ -13,7 +13,7 @@ Document -
                             IntermediateToken - (13:0,13 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - custom
                     HtmlAttribute - (28:0,28 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
                             IntermediateToken -  - CSharp - , format: 
                             IntermediateToken -  - CSharp - "MM/dd"

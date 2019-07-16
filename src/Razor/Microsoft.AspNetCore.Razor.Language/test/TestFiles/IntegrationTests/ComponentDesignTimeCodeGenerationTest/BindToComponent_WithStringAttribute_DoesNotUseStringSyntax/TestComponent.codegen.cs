@@ -20,7 +20,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.String>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         person.Name
@@ -28,7 +28,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ));
+            );
             __o = new System.Action<System.String>(
             __value => person.Name = __value);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {

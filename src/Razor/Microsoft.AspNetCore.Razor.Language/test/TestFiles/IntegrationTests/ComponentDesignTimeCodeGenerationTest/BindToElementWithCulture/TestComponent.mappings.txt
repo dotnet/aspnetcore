@@ -5,19 +5,19 @@ Generated Location: (320:12,0 [26] )
 
 Source Location: (48:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |ParentValue|
-Generated Location: (1084:32,19 [11] )
+Generated Location: (1089:32,19 [11] )
 |ParentValue|
 
 Source Location: (115:1,86 [28] x:\dir\subdir\Test\TestComponent.cshtml)
 |CultureInfo.InvariantCulture|
-Generated Location: (1328:40,86 [28] )
+Generated Location: (1333:40,86 [28] )
 |CultureInfo.InvariantCulture|
 
 Source Location: (156:2,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentValue { get; set; } = "hi";
 |
-Generated Location: (1729:51,7 [55] )
+Generated Location: (1734:51,7 [55] )
 |
     public string ParentValue { get; set; } = "hi";
 |

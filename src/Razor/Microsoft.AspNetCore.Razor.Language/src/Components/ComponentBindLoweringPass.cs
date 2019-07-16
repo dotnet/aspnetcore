@@ -596,20 +596,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
-            // Now rewrite the content of the value node to look like:
-            //
-            // BindMethods.GetValue(<code>)
-            valueExpressionTokens.Add(new IntermediateToken()
-            {
-                Content = $"{ComponentsApi.BindMethods.GetValue}(",
-                Kind = TokenKind.CSharp
-            });
             valueExpressionTokens.Add(original);
-            valueExpressionTokens.Add(new IntermediateToken()
-            {
-                Content = ")",
-                Kind = TokenKind.CSharp,
-            });
 
             // Now rewrite the content of the change-handler node. Since it's a component attribute,
             // we don't use the 'BindMethods' wrapper. We expect component attributes to always 'match' on type.
@@ -631,41 +618,53 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
-            // Now rewrite the content of the value node to look like:
-            //
-            // BindMethods.GetValue(<code>, format: <format>, culture: <culture>)
-            valueExpressionTokens.Add(new IntermediateToken()
+            if (changeAttribute == null)
             {
-                Content = $"{ComponentsApi.BindMethods.GetValue}(",
-                Kind = TokenKind.CSharp
-            });
-            valueExpressionTokens.Add(original);
-
-            if (!string.IsNullOrEmpty(format?.Content))
-            {
+                // This is bind on a markup element. We use FormatValue to transform the value in the correct way
+                // according to format and culture.
+                //
+                // Now rewrite the content of the value node to look like:
+                //
+                // BindConverter.FormatValue(<code>, format: <format>, culture: <culture>)
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = ", format: ",
-                    Kind = TokenKind.CSharp,
+                    Content = $"{ComponentsApi.BindConverter.FormatValue}(",
+                    Kind = TokenKind.CSharp
                 });
-                valueExpressionTokens.Add(format);
-            }
+                valueExpressionTokens.Add(original);
 
-            if (!string.IsNullOrEmpty(culture?.Content))
-            {
+                if (!string.IsNullOrEmpty(format?.Content))
+                {
+                    valueExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = ", format: ",
+                        Kind = TokenKind.CSharp,
+                    });
+                    valueExpressionTokens.Add(format);
+                }
+
+                if (!string.IsNullOrEmpty(culture?.Content))
+                {
+                    valueExpressionTokens.Add(new IntermediateToken()
+                    {
+                        Content = ", culture: ",
+                        Kind = TokenKind.CSharp,
+                    });
+                    valueExpressionTokens.Add(culture);
+                }
+
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = ", culture: ",
+                    Content = ")",
                     Kind = TokenKind.CSharp,
                 });
-                valueExpressionTokens.Add(culture);
             }
-
-            valueExpressionTokens.Add(new IntermediateToken()
+            else
             {
-                Content = ")",
-                Kind = TokenKind.CSharp,
-            });
+                // This is a component. We can just use the value as-is, since we know its type
+                // we can type-check it.
+                valueExpressionTokens.Add(original);
+            }
 
             // Now rewrite the content of the change-handler node. There are two cases we care about
             // here. If it's a component attribute, then don't use the 'CreateBinder' wrapper. We expect
@@ -676,7 +675,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // since the generic type lowering pass runs after this. To keep this simple we're relying on
             // the compiler to resolve overloads for us.
             //
-            // EventCallbackFactory.CreateInferred(this, __value => <code> = __value, <code>)
+            // RuntimeHelpers.CreateInferredEventCallback(this, __value => <code> = __value, <code>)
             //
             // For general DOM attributes, we need to be able to create a delegate that accepts UIEventArgs
             // so we use 'CreateBinder'
@@ -727,7 +726,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Component
                 changeExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateInferredMethod}(this, __value => {original.Content} = __value, {original.Content})",
+                    Content = $"{ComponentsApi.RuntimeHelpers.CreateInferredEventCallback}(this, __value => {original.Content} = __value, {original.Content})",
                     Kind = TokenKind.CSharp
                 });
             }

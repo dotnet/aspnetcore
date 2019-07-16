@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent<string>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      Value

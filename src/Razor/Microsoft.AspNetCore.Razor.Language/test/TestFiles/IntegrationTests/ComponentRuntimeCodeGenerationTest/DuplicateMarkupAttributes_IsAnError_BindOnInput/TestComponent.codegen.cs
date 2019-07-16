@@ -26,7 +26,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                    text

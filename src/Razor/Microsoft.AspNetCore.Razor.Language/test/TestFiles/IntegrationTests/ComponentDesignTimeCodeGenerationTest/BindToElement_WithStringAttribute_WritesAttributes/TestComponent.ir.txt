@@ -17,7 +17,7 @@ Document -
                 MarkupElement - (0:0,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlAttribute - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "

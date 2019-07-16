@@ -10,9 +10,7 @@ Document -
                 Component - (0:0,0 [45] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParam - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value

@@ -18,7 +18,7 @@ namespace Test
             builder.OpenElement(2, "input");
             builder.AddAttribute(3, "type", "text");
             builder.AddAttribute(4, "Value", "17");
-            builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                         text

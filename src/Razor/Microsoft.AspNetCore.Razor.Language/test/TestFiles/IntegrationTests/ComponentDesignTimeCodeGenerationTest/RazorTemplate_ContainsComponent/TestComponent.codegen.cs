@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             (builder2) => {
-                __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(
+                __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.String>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                      person.Name

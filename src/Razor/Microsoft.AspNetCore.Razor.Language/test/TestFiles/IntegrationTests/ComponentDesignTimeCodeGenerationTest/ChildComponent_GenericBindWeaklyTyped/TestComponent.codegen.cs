@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            __o = Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      Value

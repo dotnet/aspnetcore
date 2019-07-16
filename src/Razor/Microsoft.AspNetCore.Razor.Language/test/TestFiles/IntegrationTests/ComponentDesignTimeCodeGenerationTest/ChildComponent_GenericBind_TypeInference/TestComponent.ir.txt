@@ -17,9 +17,7 @@ Document -
                 Component - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
@@ -28,9 +26,7 @@ Document -
                 Component - (33:1,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value

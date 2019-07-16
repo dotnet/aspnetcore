@@ -15,7 +15,7 @@ namespace Test
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "AttributeBefore", "before");
-            builder.AddMultipleAttributes(2, Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>>>(
+            builder.AddMultipleAttributes(2, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>>>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                      someAttributes

@@ -19,7 +19,7 @@ Document -
                                 IntermediateToken - (35:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 17
                         HtmlAttribute - (46:1,39 [5] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                             CSharpExpressionAttributeValue -  - 
-                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                                 IntermediateToken - (47:1,40 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - text
                                 IntermediateToken -  - CSharp - )
                         HtmlAttribute - (46:1,39 [5] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "

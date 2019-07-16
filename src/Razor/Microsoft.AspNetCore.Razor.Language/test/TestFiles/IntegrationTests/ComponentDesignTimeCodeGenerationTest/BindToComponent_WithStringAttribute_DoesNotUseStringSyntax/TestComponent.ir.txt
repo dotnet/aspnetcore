@@ -17,9 +17,7 @@ Document -
                 Component - (0:0,0 [39] x:\dir\subdir\Test\TestComponent.cshtml) - InputText
                     ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => person.Name = __value

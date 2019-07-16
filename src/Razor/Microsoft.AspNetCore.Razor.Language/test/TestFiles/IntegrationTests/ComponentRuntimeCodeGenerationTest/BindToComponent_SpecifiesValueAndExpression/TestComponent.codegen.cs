@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Int32>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                           ParentValue
@@ -22,9 +22,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            )));
+            ));
             builder.AddAttribute(2, "ValueChanged", new System.Action<System.Int32>(__value => ParentValue = __value));
-            builder.AddAttribute(3, "ValueExpression", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Linq.Expressions.Expression<System.Func<System.Int32>>>(() => ParentValue));
+            builder.AddAttribute(3, "ValueExpression", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Linq.Expressions.Expression<System.Func<System.Int32>>>(() => ParentValue));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

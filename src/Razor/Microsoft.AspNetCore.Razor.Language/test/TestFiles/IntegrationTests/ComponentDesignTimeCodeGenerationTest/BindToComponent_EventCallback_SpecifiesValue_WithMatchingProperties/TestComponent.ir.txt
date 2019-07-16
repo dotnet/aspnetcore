@@ -17,12 +17,10 @@ Document -
                 Component - (0:0,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateInferred(this, __value => ParentValue = __value, ParentValue)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => ParentValue = __value, ParentValue)
                 HtmlContent - (41:0,41 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (41:0,41 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (50:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)

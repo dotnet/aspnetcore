@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<string>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      Value
@@ -37,7 +37,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ));
+            );
             __o = new System.Action<string>(
             __value => Value = __value);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {

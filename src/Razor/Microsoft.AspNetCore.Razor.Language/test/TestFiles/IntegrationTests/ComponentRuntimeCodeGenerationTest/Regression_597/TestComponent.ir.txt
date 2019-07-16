@@ -10,7 +10,7 @@ Document -
                 Component - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
                     ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes

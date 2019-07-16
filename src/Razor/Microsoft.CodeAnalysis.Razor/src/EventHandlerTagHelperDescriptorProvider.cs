@@ -27,10 +27,10 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.BindMethods.FullTypeName);
+            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.FullTypeName);
             if (bindMethods == null)
             {
-                // If we can't find BindMethods, then just bail. We won't be able to compile the
+                // If we can't find IComponent, then just bail. We won't be able to compile the
                 // generated code anyway.
                 return;
             }

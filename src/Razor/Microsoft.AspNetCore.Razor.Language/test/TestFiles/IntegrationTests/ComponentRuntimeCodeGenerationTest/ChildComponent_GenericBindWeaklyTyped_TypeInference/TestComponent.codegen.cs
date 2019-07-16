@@ -21,7 +21,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 2, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            , 2, Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         Value

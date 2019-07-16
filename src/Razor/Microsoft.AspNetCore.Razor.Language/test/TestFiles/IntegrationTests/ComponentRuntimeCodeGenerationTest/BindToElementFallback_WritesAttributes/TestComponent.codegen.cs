@@ -15,7 +15,7 @@ namespace Test
         {
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "text");
-            builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                  ParentValue

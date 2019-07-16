@@ -12,7 +12,7 @@ Document -
                         IntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
                     ComponentAttribute - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes

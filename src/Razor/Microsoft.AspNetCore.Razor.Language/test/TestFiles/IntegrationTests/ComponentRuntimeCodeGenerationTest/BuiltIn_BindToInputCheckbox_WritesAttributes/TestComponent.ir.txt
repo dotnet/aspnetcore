@@ -13,7 +13,7 @@ Document -
                             IntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
                     HtmlAttribute - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - checked=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (31:0,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "

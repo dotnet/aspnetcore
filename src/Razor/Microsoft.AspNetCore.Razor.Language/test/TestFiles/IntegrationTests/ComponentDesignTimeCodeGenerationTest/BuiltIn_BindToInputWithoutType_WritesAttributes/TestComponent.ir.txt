@@ -17,7 +17,7 @@ Document -
                 MarkupElement - (0:0,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (14:0,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (15:0,15 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (14:0,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "

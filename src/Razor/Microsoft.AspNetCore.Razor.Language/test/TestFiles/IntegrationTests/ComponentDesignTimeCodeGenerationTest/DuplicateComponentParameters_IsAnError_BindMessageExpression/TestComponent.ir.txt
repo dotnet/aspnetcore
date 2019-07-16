@@ -20,12 +20,10 @@ Document -
                             IntermediateToken - (59:0,59 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
                     ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateInferred(this, __value => message = __value, message)
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => message = __value, message)
                     ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message

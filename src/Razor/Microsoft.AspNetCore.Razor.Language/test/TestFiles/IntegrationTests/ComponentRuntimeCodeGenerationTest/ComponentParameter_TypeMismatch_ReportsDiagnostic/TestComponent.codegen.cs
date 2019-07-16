@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.CoolnessMeter>(0);
-            builder.AddAttribute(1, "Coolness", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Int32>(
+            builder.AddAttribute(1, "Coolness", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                            "very-cool"

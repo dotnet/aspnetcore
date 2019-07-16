@@ -21,7 +21,7 @@ using System.Globalization;
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                    ParentValue

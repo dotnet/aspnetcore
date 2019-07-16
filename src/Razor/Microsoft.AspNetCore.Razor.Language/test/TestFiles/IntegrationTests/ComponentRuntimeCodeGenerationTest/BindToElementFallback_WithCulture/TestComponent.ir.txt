@@ -11,7 +11,7 @@ Document -
                 MarkupElement - (29:1,0 [114] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlAttribute - (47:1,18 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (48:1,19 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - , culture: 
                             IntermediateToken - (111:1,82 [28] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CultureInfo.InvariantCulture

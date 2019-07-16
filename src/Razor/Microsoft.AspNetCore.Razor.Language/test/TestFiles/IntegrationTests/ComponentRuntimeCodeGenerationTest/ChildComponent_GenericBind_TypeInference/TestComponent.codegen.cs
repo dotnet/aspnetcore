@@ -13,7 +13,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         Value
@@ -21,9 +21,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ), 2, __value => Value = __value);
+            , 2, __value => Value = __value);
             builder.AddMarkupContent(3, "\r\n");
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 4, 5, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 4, 5, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                         Value
@@ -31,7 +31,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ), 6, __value => Value = __value);
+            , 6, __value => Value = __value);
         }
         #pragma warning restore 1998
 #nullable restore

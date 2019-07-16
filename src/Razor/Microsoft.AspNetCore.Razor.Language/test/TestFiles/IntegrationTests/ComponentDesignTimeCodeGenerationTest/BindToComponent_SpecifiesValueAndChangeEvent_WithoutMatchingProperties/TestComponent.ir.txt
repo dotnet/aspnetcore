@@ -17,7 +17,7 @@ Document -
                 Component - (0:0,0 [71] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
                     ComponentAttribute - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - OnChanged - AttributeStructure.DoubleQuotes

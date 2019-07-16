@@ -5,14 +5,14 @@ Generated Location: (889:25,19 [6] )
 
 Source Location: (37:0,37 [5] x:\dir\subdir\Test\TestComponent.cshtml)
 |Value|
-Generated Location: (1208:34,37 [5] )
+Generated Location: (1172:34,37 [5] )
 |Value|
 
 Source Location: (53:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string Value;
 |
-Generated Location: (1797:56,7 [21] )
+Generated Location: (1760:56,7 [21] )
 |
     string Value;
 |
