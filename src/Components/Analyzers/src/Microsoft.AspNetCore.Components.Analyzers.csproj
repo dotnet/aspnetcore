@@ -20,14 +20,4 @@
     <None Include="build/netstandard2.0/*" Pack="true" PackagePath="build/netstandard2.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-
-    <EmbeddedResource Update="Resources.resx" />
-  </ItemGroup>
-
 </Project>

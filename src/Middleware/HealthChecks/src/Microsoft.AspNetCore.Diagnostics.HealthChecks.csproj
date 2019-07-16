@@ -24,8 +24,4 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources.resx" />
-  </ItemGroup>
-
 </Project>
