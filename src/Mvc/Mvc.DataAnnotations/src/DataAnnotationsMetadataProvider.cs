@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -464,8 +465,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         {
             // [Nullable] is compiler synthesized, comparing by name.
             var nullableAttribute = attributes
-                .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal))
-                .FirstOrDefault();
+                .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal));
             if (nullableAttribute == null)
             {
                 isNullable = false;
@@ -494,19 +494,30 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
         internal static bool IsNullableBasedOnContext(Type containingType, MemberInfo member)
         {
-            var attributes = member?.GetCustomAttributes(inherit: true) ?? Array.Empty<object>();
+            // The [Nullable] and [NullableContext] attributes are not inherited.
+            //
+            // The [NullableContext] attribute can appear on a method or on the module.
+            var attributes = member?.GetCustomAttributes(inherit: false) ?? Array.Empty<object>();
             var isNullable = AttributesHasNullableContext(attributes);
             if (isNullable != null)
             {
                 return isNullable.Value;
             }
 
-            attributes = containingType.GetCustomAttributes(inherit: false);
-            isNullable = AttributesHasNullableContext(attributes);
-            if (isNullable != null)
+            // Check on the containing type
+            var type = containingType;
+            do
             {
-                return isNullable.Value;
-            }
+                attributes = type.GetCustomAttributes(inherit: false);
+                isNullable = AttributesHasNullableContext(attributes);
+                if (isNullable != null)
+                {
+                    return isNullable.Value;
+                }
+
+                type = type.DeclaringType;
+            } 
+            while (type != null);
 
             // If we don't find the attribute on the declaring type then repeat at the module level
             attributes = containingType.Module.GetCustomAttributes(inherit: false);
@@ -516,8 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             bool? AttributesHasNullableContext(object[] attributes)
             {
                 var nullableContextAttribute = attributes
-                    .Where(a => string.Equals(a.GetType().FullName, NullableContextAttributeFullName, StringComparison.Ordinal))
-                    .FirstOrDefault();
+                    .FirstOrDefault(a => string.Equals(a.GetType().FullName, NullableContextAttributeFullName, StringComparison.Ordinal));
                 if (nullableContextAttribute != null)
                 {
                     if (nullableContextAttribute.GetType().GetField(NullableContextFlagsFieldName) is FieldInfo field &&
