@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     // Nothing to do here.
                 }
-                else if (reader.TokenType == JsonTokenType.Number)
+                else
                 {
                     value.Status = reader.GetInt32();
                 }
@@ -94,11 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (!reader.Read())
             {
                 throw new InvalidDataException(Resources.UnexpectedJsonEnd);
-            }
-
-            if (reader.TokenType != JsonTokenType.String)
-            {
-                throw new InvalidDataException(Resources.FormatUnexpectedJsonToken(reader.TokenType));
             }
 
             value = reader.GetString();

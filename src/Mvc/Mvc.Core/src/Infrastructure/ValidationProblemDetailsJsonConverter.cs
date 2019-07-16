@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
                 {
-                    var errors = JsonSerializer.Deserialize<IDictionary<string, string[]>>(ref reader, options);
+                    var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(ref reader, options);
                     foreach (var item in errors)
                     {
                         problemDetails.Errors[item.Key] = item.Value;
