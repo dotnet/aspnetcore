@@ -14,5 +14,8 @@ variables:
   # Whether the build is internal or not
   IsInternalBuild: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
 
+  # Storage account name for proxy-backed feeds
+  ProxyBackedFeedsAccountName: dotnetfeed
+
   SourceLinkCLIVersion: 3.0.0
   SymbolToolVersion: 1.0.1
