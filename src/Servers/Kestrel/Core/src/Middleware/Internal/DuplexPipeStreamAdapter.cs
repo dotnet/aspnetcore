@@ -115,11 +115,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return;
             }
 
-            await _outputTask;
-
+            if (_outputTask != null)
+            {
+                await _outputTask;
+            }
+            
             CancelPendingRead();
-
-            await _inputTask;
+            
+            if (_inputTask != null)
+            {
+                await _inputTask;
+            }
         }
 
         private async Task ReadInputAsync()
