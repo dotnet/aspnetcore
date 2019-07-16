@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Publish_PublishesAssembly()
+        public async Task Publish_PublishesAssemblyAndContent()
         {
             var result = await DotnetMSBuild("Publish");
 
@@ -49,11 +49,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
             Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
+            Assert.FileExists(result, OutputPath, "appsettings.json");
+            Assert.FileExists(result, OutputPath, "appsettings.Development.json");
+            Assert.FileDoesNotExist(result, OutputPath, Path.Combine("Properties", "launchSettings.json"));
 
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.pdb");
+            Assert.FileExists(result, PublishOutputPath, "appsettings.json");
+            Assert.FileExists(result, PublishOutputPath, "appsettings.Development.json");
+            Assert.FileDoesNotExist(result, PublishOutputPath, Path.Combine("Properties", "launchSettings.json"));
 
             // By default refs and .cshtml files will not be copied on publish
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
