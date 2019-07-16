@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
     public class EnvironmentVariableSkipConditionTest
     {
         private readonly string _skipReason = "Test skipped on environment variable with name '{0}' and value '{1}'" +
-            $" for the '{nameof(EnvironmentVariableSkipConditionAttribute.SkipOnMatch)}' value of '{{2}}'.";
+            $" for the '{nameof(EnvironmentVariableSkipConditionAttribute.RunOnMatch)}' value of '{{2}}'.";
 
         [Theory]
         [InlineData("false")]
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable(environmentVariableValue),
+                new TestEnvironmentVariable("Run", environmentVariableValue),
                 "Run",
                 "true");
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable(environmentVariableValue),
+                new TestEnvironmentVariable("Run", environmentVariableValue),
                 "Run",
                 "true");
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Assert
             Assert.True(isMet);
             Assert.Equal(
-                string.Format(_skipReason, "Run", environmentVariableValue, attribute.SkipOnMatch),
+                string.Format(_skipReason, "Run", environmentVariableValue, attribute.RunOnMatch),
                 attribute.SkipReason);
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable(null),
+                new TestEnvironmentVariable("Run", null),
                 "Run",
                 "true", null); // skip the test when the variable 'Run' is explicitly set to 'true' or is null (default)
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Assert
             Assert.True(isMet);
             Assert.Equal(
-                string.Format(_skipReason, "Run", "(null)", attribute.SkipOnMatch),
+                string.Format(_skipReason, "Run", "(null)", attribute.RunOnMatch),
                 attribute.SkipReason);
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable(environmentVariableValue),
+                new TestEnvironmentVariable("Run", environmentVariableValue),
                 "Run",
                 "false", "", null);
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable("100"),
+                new TestEnvironmentVariable("Build", "100"),
                 "Build",
                 "125", "126");
 
@@ -109,16 +109,16 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [InlineData("CentOS")]
         [InlineData(null)]
         [InlineData("")]
-        public void IsMet_Matches_WhenSkipOnMatchIsFalse(string environmentVariableValue)
+        public void IsMet_Matches_WhenRunOnMatchIsFalse(string environmentVariableValue)
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable(environmentVariableValue),
+                new TestEnvironmentVariable("LinuxFlavor", environmentVariableValue),
                 "LinuxFlavor",
                 "Ubuntu14.04")
             {
                 // Example: Run this test on all OSes except on "Ubuntu14.04"
-                SkipOnMatch = false
+                RunOnMatch = false
             };
 
             // Act
@@ -129,16 +129,16 @@ namespace Microsoft.AspNetCore.Testing.xunit
         }
 
         [Fact]
-        public void IsMet_DoesNotMatch_WhenSkipOnMatchIsFalse()
+        public void IsMet_DoesNotMatch_WhenRunOnMatchIsFalse()
         {
             // Arrange
             var attribute = new EnvironmentVariableSkipConditionAttribute(
-                new TestEnvironmentVariable("Ubuntu14.04"),
+                new TestEnvironmentVariable("LinuxFlavor", "Ubuntu14.04"),
                 "LinuxFlavor",
                 "Ubuntu14.04")
             {
                 // Example: Run this test on all OSes except on "Ubuntu14.04"
-                SkipOnMatch = false
+                RunOnMatch = false
             };
 
             // Act
@@ -150,8 +150,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         private struct TestEnvironmentVariable : IEnvironmentVariable
         {
-            public TestEnvironmentVariable(string value)
+            private readonly string _varName;
+
+            public TestEnvironmentVariable(string varName, string value)
             {
+                _varName = varName;
                 Value = value;
             }
 
@@ -159,7 +162,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
             public string Get(string name)
             {
-                return Value;
+                if(string.Equals(name, _varName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return Value;
+                }
+                return string.Empty;
             }
         }
     }

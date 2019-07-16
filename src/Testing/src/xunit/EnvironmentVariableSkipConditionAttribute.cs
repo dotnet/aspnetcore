@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Testing.xunit
         }
 
         /// <summary>
-        /// Skips the test only if the value of the variable matches any of the supplied values. Default is <c>True</c>.
+        /// Runs the test only if the value of the variable matches any of the supplied values. Default is <c>True</c>.
         /// </summary>
-        public bool SkipOnMatch { get; set; } = true;
+        public bool RunOnMatch { get; set; } = true;
 
         public bool IsMet
         {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 _currentValue = _environmentVariable.Get(_variableName);
                 var hasMatched = _values.Any(value => string.Compare(value, _currentValue, ignoreCase: true) == 0);
 
-                if (SkipOnMatch)
+                if (RunOnMatch)
                 {
                     return hasMatched;
                 }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             {
                 var value = _currentValue == null ? "(null)" : _currentValue;
                 return $"Test skipped on environment variable with name '{_variableName}' and value '{value}' " +
-                    $"for the '{nameof(SkipOnMatch)}' value of '{SkipOnMatch}'.";
+                    $"for the '{nameof(RunOnMatch)}' value of '{RunOnMatch}'.";
             }
         }
 
