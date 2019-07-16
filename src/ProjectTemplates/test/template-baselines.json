@@ -902,6 +902,7 @@
         "Data/Migrations/00000000000000_CreateIdentitySchema.Designer.cs",
         "Data/Migrations/ApplicationDbContextModelSnapshot.cs",
         "Pages/Counter.razor",
+        "Pages/Error.razor",
         "Pages/FetchData.razor",
         "Pages/Index.razor",
         "Pages/_Host.cshtml",
