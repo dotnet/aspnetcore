@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components
         private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
         {
             var authorizeData = GetAuthorizeData();
-            EnsureNoAuthorizationSchemeSpecified(authorizeData);
+            EnsureNoAuthenticationSchemeSpecified(authorizeData);
 
             var policy = await AuthorizationPolicy.CombineAsync(
                 AuthorizationPolicyProvider, authorizeData);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components
             return result.Succeeded;
         }
 
-        private static void EnsureNoAuthorizationSchemeSpecified(IAuthorizeData[] authorizeData)
+        private static void EnsureNoAuthenticationSchemeSpecified(IAuthorizeData[] authorizeData)
         {
             // It's not meaningful to specify a nonempty scheme, since by the time Components
             // authorization runs, we already have a specific ClaimsPrincipal (we're stateful).
