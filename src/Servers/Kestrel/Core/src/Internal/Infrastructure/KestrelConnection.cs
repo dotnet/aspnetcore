@@ -175,9 +175,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _connectionClosingCts.Dispose();
         }
 
-        public void Execute()
+        void IThreadPoolWorkItem.Execute()
         {
             _ = ExecuteAsync(this);
+        }
+
+        internal Task ExecuteAsync()
+        {
+            return ExecuteAsync(this);
         }
 
         private async Task ExecuteAsync(KestrelConnection connection)
