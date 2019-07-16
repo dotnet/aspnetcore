@@ -62,10 +62,10 @@ namespace Test
 
     public class MyComponent : ComponentBase
     {
-        [Parameter] int IntProperty { get; set; }
-        [Parameter] bool BoolProperty { get; set; }
-        [Parameter] string StringProperty { get; set; }
-        [Parameter] SomeType ObjectProperty { get; set; }
+        [Parameter] public int IntProperty { get; set; }
+        [Parameter] public bool BoolProperty { get; set; }
+        [Parameter] public string StringProperty { get; set; }
+        [Parameter] public SomeType ObjectProperty { get; set; }
     }
 }
 "));
@@ -135,7 +135,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string StringProperty { get; set; }
+        public string StringProperty { get; set; }
     }
 }
 "));
@@ -208,7 +208,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIMouseEventArgs> OnClick { get; set; }
+        public Action<UIMouseEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -253,7 +253,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        Action<UIEventArgs> OnClick { get; set; }
+        public Action<UIEventArgs> OnClick { get; set; }
     }
 }
 "));
@@ -298,7 +298,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        bool BoolProperty { get; set; }
+        public bool BoolProperty { get; set; }
     }
 }"));
 
@@ -326,10 +326,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        string MyAttr { get; set; }
+        public string MyAttr { get; set; }
 
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -370,7 +370,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -416,7 +416,7 @@ namespace Test
 {
     public class SurveyPrompt : ComponentBase
     {
-        [Parameter] private string Title { get; set; }
+        [Parameter] public string Title { get; set; }
     }
 }
 "));
@@ -508,7 +508,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
     }
 }
 "));
@@ -571,9 +571,9 @@ namespace Test
 {
     public class Repeater : ComponentBase
     {
-        [Parameter] int Count { get; set; }
-        [Parameter] RenderFragment<string> Template { get; set; }
-        [Parameter] string Value { get; set; }
+        [Parameter] public int Count { get; set; }
+        [Parameter] public RenderFragment<string> Template { get; set; }
+        [Parameter] public string Value { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
