@@ -260,6 +260,22 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithPreserveCompilationReferencesEnabled_ProducesRefsDirectory()
+        {
+            // This simulates the behavior of 3.0 with RuntimeCompilation enabled
+            AddProjectFileContent(@"
+            <PropertyGroup>
+                <PreserveCompilationReferences>true</PreserveCompilationReferences>
+            </PropertyGroup>");
+
+            var result = await DotnetMSBuild("Build");
+
+            // Verify no refs folder is produced
+            Assert.FileExists(result, OutputPath, "refs", "mscorlib.dll");
+        }
+
+        [Fact]
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_CodeGensAssemblyInfoUsingValuesFromProject()
         {
