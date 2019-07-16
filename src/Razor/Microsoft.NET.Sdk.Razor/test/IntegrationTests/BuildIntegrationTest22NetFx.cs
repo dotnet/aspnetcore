@@ -3,10 +3,12 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public class BuildIntegrationTest22NetFx : BuildIntegrationTestLegacy
     {
         public BuildIntegrationTest22NetFx(LegacyBuildServerTestFixture buildServer)

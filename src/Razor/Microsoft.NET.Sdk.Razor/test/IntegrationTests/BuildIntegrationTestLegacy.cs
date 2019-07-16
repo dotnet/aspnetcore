@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -29,8 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             return new Disposable();
         }
 
-        [Fact]
-        public async Task Building_Project()
+        [ConditionalFact]
+        public virtual async Task Building_Project()
         {
             using (CreateTestProject())
             {
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public virtual async Task BuildingProject_CopyToOutputDirectoryFiles()
         {
             using (CreateTestProject())
@@ -71,8 +72,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        public async Task Publish_Project()
+        [ConditionalFact]
+        public virtual async Task Publish_Project()
         {
             using (CreateTestProject())
             {
@@ -91,8 +92,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        public async Task Publish_NoopsWithMvcRazorCompileOnPublish_False()
+        [ConditionalFact]
+        public virtual async Task Publish_NoopsWithMvcRazorCompileOnPublish_False()
         {
             using (CreateTestProject())
             {
@@ -108,8 +109,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact] // This will use the old precompilation tool, RazorSDK shouldn't get involved.
-        public async Task Build_WithMvcRazorCompileOnPublish_Noops()
+        [ConditionalFact] // This will use the old precompilation tool, RazorSDK shouldn't get involved.
+        public virtual async Task Build_WithMvcRazorCompileOnPublish_Noops()
         {
             using (CreateTestProject())
             {
@@ -124,8 +125,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        public async Task Build_DoesNotAddRelatedAssemblyPart_IfToolSetIsNotRazorSdk()
+        [ConditionalFact]
+        public virtual async Task Build_DoesNotAddRelatedAssemblyPart_IfToolSetIsNotRazorSdk()
         {
             using (CreateTestProject())
             {
@@ -139,8 +140,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        public async Task Build_DoesNotPrintsWarnings_IfProjectFileContainsRazorFiles()
+        [ConditionalFact]
+        public virtual async Task Build_DoesNotPrintsWarnings_IfProjectFileContainsRazorFiles()
         {
             using (CreateTestProject())
             {
@@ -152,8 +153,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
-        public async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
+        [ConditionalFact]
+        public virtual async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             using (CreateTestProject())
             {
