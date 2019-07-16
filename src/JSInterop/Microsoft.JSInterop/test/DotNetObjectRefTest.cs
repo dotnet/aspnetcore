@@ -4,8 +4,9 @@
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using static Microsoft.JSInterop.TestJSRuntime;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class DotNetObjectRefTest
     {
@@ -21,21 +22,14 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var objRef = DotNetObjectRef.Create(new object());
-            var trackingId = objRef.__dotNetObject;
 
             // Act
             objRef.Dispose();
 
             // Assert
-            var ex = Assert.Throws<ArgumentException>(() => jsRuntime.ObjectRefManager.FindDotNetObject(trackingId));
+            var ex = Assert.Throws<ArgumentException>(() => jsRuntime.ObjectRefManager.FindDotNetObject(objRef.ObjectId));
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
         });
-
-        class TestJSRuntime : JSRuntimeBase
-        {
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
-            {
-                throw new NotImplementedException();
             }
 
             protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)

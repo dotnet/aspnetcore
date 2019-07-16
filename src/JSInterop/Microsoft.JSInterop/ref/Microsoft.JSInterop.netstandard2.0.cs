@@ -17,12 +17,8 @@ namespace Microsoft.JSInterop
     }
     public sealed partial class DotNetObjectRef<TValue> : System.IDisposable where TValue : class
     {
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public DotNetObjectRef() { }
-        [System.Text.Json.Serialization.JsonIgnoreAttribute]
+        internal DotNetObjectRef() { }
         public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public long __dotNetObject { get { throw null; } set { } }
         public void Dispose() { }
     }
     public partial interface IJSInProcessRuntime : Microsoft.JSInterop.IJSRuntime

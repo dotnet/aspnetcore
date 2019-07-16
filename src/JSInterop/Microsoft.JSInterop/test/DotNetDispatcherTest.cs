@@ -142,7 +142,7 @@ namespace Microsoft.JSInterop.Tests
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.StringVal), out _));
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.IntVal), out _));
 
-            Assert.True(resultDto2Ref.TryGetProperty(DotNetDispatcher.DotNetObjectRefKey, out var property));
+            Assert.True(resultDto2Ref.TryGetProperty(DotNetDispatcher.DotNetObjectRefKey.EncodedUtf8Bytes, out var property));
             var resultDto2 = Assert.IsType<TestDTO>(DotNetObjectRefManager.Current.FindDotNetObject(property.GetInt64()));
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(1299, resultDto2.IntVal);

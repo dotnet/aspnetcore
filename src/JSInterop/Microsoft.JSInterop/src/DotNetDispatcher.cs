@@ -17,7 +17,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class DotNetDispatcher
     {
-        internal const string DotNetObjectRefKey = nameof(DotNetObjectRef<object>.__dotNetObject);
+        internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
         private static readonly Type[] EndInvokeParameterTypes = new Type[] { typeof(long), typeof(bool), typeof(JSAsyncCallResult) };
 
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
@@ -238,7 +238,7 @@ namespace Microsoft.JSInterop
                 // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
                 // but we aren't assigning to DotNetObjectRef{T}.
                 return item.ValueKind == JsonValueKind.Object &&
-                    item.TryGetProperty(DotNetObjectRefKey, out _) &&
+                    item.TryGetProperty(DotNetObjectRefKey.EncodedUtf8Bytes, out _) &&
                      !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
             }
         }
