@@ -1880,5 +1880,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             RunParseTreeRewriterTest("<input>Foo</input>");
         }
+
+        public static TagHelperDescriptor[] CaseSensitive_Descriptors = new TagHelperDescriptor[]
+        {
+            TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                .SetCaseSensitive()
+                .BoundAttributeDescriptor(attribute =>
+                    attribute
+                    .Name("bound")
+                    .PropertyName("Bound")
+                    .TypeName(typeof(bool).FullName))
+                .TagMatchingRuleDescriptor(rule =>
+                    rule
+                    .RequireTagName("p")
+                    .RequireAttributeDescriptor(attribute => attribute.Name("class")))
+                .Build(),
+            TagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule =>
+                    rule
+                    .RequireTagName("*")
+                    .RequireAttributeDescriptor(attribute => attribute.Name("catchAll")))
+                .Build(),
+        };
+
+        [Fact]
+        public void HandlesCaseSensitiveTagHelpersCorrectly1()
+        {
+            EvaluateData(CaseSensitive_Descriptors, "<p class='foo' catchAll></p>");
+        }
+
+        [Fact]
+        public void HandlesCaseSensitiveTagHelpersCorrectly2()
+        {
+            EvaluateData(CaseSensitive_Descriptors, "<p CLASS='foo' CATCHAll></p>");
+        }
+
+        [Fact]
+        public void HandlesCaseSensitiveTagHelpersCorrectly3()
+        {
+            EvaluateData(CaseSensitive_Descriptors, "<P class='foo' CATCHAll></P>");
+        }
+
+        [Fact]
+        public void HandlesCaseSensitiveTagHelpersCorrectly4()
+        {
+            EvaluateData(CaseSensitive_Descriptors, "<P class='foo'></P>");
+        }
+
+        [Fact]
+        public void HandlesCaseSensitiveTagHelpersCorrectly5()
+        {
+            EvaluateData(CaseSensitive_Descriptors, "<p Class='foo'></p>");
+        }
     }
 }

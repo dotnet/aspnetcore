@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public NameComparisonMode NameComparison { get; protected set; }
 
+        public bool CaseSensitive { get; protected set; }
+
         public string Value { get; protected set; }
 
         public ValueComparisonMode ValueComparison { get; protected set; }

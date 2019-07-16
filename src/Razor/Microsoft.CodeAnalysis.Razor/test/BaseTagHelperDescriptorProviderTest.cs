@@ -35,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.Bind")
                 .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.BindAttributes")
                 .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.EventHandlers")
+                .Where(c => !c.GetTypeName().StartsWith("Microsoft.AspNetCore.Components.Routing"))
                 .OrderBy(c => c.Name)
                 .ToArray();
         }

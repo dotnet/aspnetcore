@@ -140,8 +140,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             bool expectedResult)
         {
             // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            var tagMatchingRuleBuilder = new DefaultTagMatchingRuleDescriptorBuilder(tagHelperBuilder);
+            var builder = new DefaultRequiredAttributeDescriptorBuilder(tagMatchingRuleBuilder);
 
-            var builder = new DefaultRequiredAttributeDescriptorBuilder();
             configure(builder);
 
             var requiredAttibute = builder.Build();

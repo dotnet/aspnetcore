@@ -4,17 +4,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultTagMatchingRuleDescriptorBuilder : TagMatchingRuleDescriptorBuilder
     {
+        private DefaultTagHelperDescriptorBuilder _parent;
         private List<DefaultRequiredAttributeDescriptorBuilder> _requiredAttributeBuilders;
         private RazorDiagnosticCollection _diagnostics;
 
-        internal DefaultTagMatchingRuleDescriptorBuilder()
+        internal DefaultTagMatchingRuleDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent)
         {
+            _parent = parent;
         }
 
         public override string TagName { get; set; }
@@ -22,6 +23,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override string ParentTag { get; set; }
 
         public override TagStructure TagStructure { get; set; }
+
+        internal bool CaseSensitive => _parent.CaseSensitive;
 
         public override RazorDiagnosticCollection Diagnostics
         {
@@ -55,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             EnsureRequiredAttributeBuilders();
 
-            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+            var builder = new DefaultRequiredAttributeDescriptorBuilder(this);
             configure(builder);
             _requiredAttributeBuilders.Add(builder);
         }
@@ -85,6 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TagName,
                 ParentTag,
                 TagStructure,
+                CaseSensitive,
                 requiredAttributes,
                 diagnostics.ToArray());
 

@@ -91,7 +91,10 @@ namespace Microsoft.CodeAnalysis.Razor
         private TagHelperDescriptor CreateShortNameMatchingDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
         {
             var builder = CreateDescriptorBuilder(symbols, type);
-            builder.TagMatchingRule(r => r.TagName = type.Name);
+            builder.TagMatchingRule(r =>
+            {
+                r.TagName = type.Name;
+            });
 
             return builder.Build();
         }
@@ -101,7 +104,10 @@ namespace Microsoft.CodeAnalysis.Razor
             var builder = CreateDescriptorBuilder(symbols, type);
             var containingNamespace = type.ContainingNamespace.ToDisplayString();
             var fullName = $"{containingNamespace}.{type.Name}";
-            builder.TagMatchingRule(r => r.TagName = fullName);
+            builder.TagMatchingRule(r =>
+            {
+                r.TagName = fullName;
+            });
             builder.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
 
             return builder.Build();
@@ -114,6 +120,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, typeName, assemblyName);
             builder.SetTypeName(typeName);
+            builder.CaseSensitive = true;
 
             // This opts out this 'component' tag helper for any processing that's specific to the default
             // Razor ITagHelper runtime.
@@ -264,6 +271,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.ChildContent.TagHelperKind, typeName, assemblyName);
             builder.SetTypeName(typeName);
+            builder.CaseSensitive = true;
 
             // This opts out this 'component' tag helper for any processing that's specific to the default
             // Razor ITagHelper runtime.

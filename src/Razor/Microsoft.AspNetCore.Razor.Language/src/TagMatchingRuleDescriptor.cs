@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public TagStructure TagStructure { get; protected set; }
 
+        public bool CaseSensitive { get; protected set; }
+
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
         public bool HasErrors

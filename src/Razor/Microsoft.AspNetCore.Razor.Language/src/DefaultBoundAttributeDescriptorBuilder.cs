@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
+        internal bool CaseSensitive => _parent.CaseSensitive;
+
         public override void BindAttributeParameter(Action<BoundAttributeParameterDescriptorBuilder> configure)
         {
             if (configure == null)
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (_attributeParameterBuilders != null)
             {
                 // Attribute parameters are case-sensitive.
-                var parameterset = new HashSet<BoundAttributeParameterDescriptor>(BoundAttributeParameterDescriptorComparer.CaseSensitive);
+                var parameterset = new HashSet<BoundAttributeParameterDescriptor>(BoundAttributeParameterDescriptorComparer.Default);
                 for (var i = 0; i < _attributeParameterBuilders.Count; i++)
                 {
                     parameterset.Add(_attributeParameterBuilders[i].Build());
@@ -120,6 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 IndexerValueTypeName,
                 Documentation,
                 GetDisplayName(),
+                CaseSensitive,
                 parameters,
                 new Dictionary<string, string>(Metadata),
                 diagnostics.ToArray());

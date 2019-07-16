@@ -1162,7 +1162,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
 
                     // Could be empty while the tag is being typed in.
-                    TagName = node.StartTag?.GetTagNameWithOptionalBang() ?? node.EndTag?.GetTagNameWithOptionalBang() ?? string.Empty,
+                    TagName = node.StartTag?.Name?.Content ?? node.EndTag?.Name?.Content ?? string.Empty,
                 };
 
                 if (node.StartTag != null && node.EndTag != null && node.StartTag.IsVoidElement())
@@ -1182,6 +1182,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                     element.Diagnostics.Add(
                         ComponentDiagnosticFactory.Create_UnexpectedClosingTag(
                             BuildSourceSpanFromNode(node.EndTag), node.EndTag.GetTagNameWithOptionalBang()));
+                }
+
+                if (node.StartTag != null && !_document.Options.SuppressPrimaryMethodBody)
+                {
+                    // We only want this error during the second phase of the two phase compilation.
+                    var startTagName = node.StartTag.GetTagNameWithOptionalBang();
+                    if (startTagName != null && startTagName.Length > 0 && char.IsUpper(startTagName, 0))
+                    {
+                        // A markup element that starts with an uppercase character.
+                        // It is most likely intended to be a component. Add a warning.
+                        element.Diagnostics.Add(
+                            ComponentDiagnosticFactory.Create_UnexpectedMarkupElement(startTagName, BuildSourceSpanFromNode(node.StartTag)));
+                    }
                 }
 
                 _builder.Push(element);
@@ -1640,6 +1653,19 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 // We don't want to track attributes from a previous tag helper element.
                 _renderedBoundAttributeNames.Clear();
+
+                if (node.StartTag != null && node.EndTag != null)
+                {
+                    var startTagName = node.StartTag.Name?.Content;
+                    var endTagName = node.EndTag.Name?.Content;
+                    if (!string.Equals(startTagName, endTagName, StringComparison.Ordinal))
+                    {
+                        // This is most likely a case mismatch in start and end tags. Otherwise the parser wouldn't have grouped them together.
+                        // But we can't have case mismatch in start and end tags in components. Add a diagnostic.
+                        tagHelperNode.Diagnostics.Add(
+                            ComponentDiagnosticFactory.Create_InconsistentStartAndEndTagName(startTagName, endTagName, BuildSourceSpanFromNode(node.EndTag)));
+                    }
+                }
             }
 
             public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)

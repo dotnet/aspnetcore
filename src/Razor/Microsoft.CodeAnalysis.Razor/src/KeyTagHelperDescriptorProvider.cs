@@ -41,6 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private TagHelperDescriptor CreateKeyTagHelper()
         {
             var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Key.TagHelperKind, "Key", ComponentsApi.AssemblyName);
+            builder.CaseSensitive = true;
             builder.Documentation = ComponentResources.KeyTagHelper_Documentation;
 
             builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Key.TagHelperKind);

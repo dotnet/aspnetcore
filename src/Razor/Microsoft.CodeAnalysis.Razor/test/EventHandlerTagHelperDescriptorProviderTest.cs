@@ -57,6 +57,7 @@ namespace Test
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
             Assert.False(item.IsComponentOrChildContentTagHelper());
+            Assert.True(item.CaseSensitive);
 
             Assert.Equal(
                 "Sets the '@onclick' attribute to the provided string or delegate value. " +

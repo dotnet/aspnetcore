@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             bool isEnum,
             string documentation,
             string displayName,
+            bool caseSensitive,
             Dictionary<string, string> metadata,
             RazorDiagnostic[] diagnostics)
             : base(kind)
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             IsEnum = isEnum;
             Documentation = documentation;
             DisplayName = displayName;
+            CaseSensitive = caseSensitive;
 
             Metadata = metadata;
             Diagnostics = diagnostics;

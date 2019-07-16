@@ -55,6 +55,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        public static TagHelperDescriptorBuilder SetCaseSensitive(this TagHelperDescriptorBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.CaseSensitive = true;
+
+            return builder;
+        }
+
         public static TagHelperDescriptorBuilder Documentation(this TagHelperDescriptorBuilder builder, string documentation)
         {
             if (builder == null)

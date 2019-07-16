@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -16,27 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static readonly AllowedChildTagDescriptorComparer Default =
             new AllowedChildTagDescriptorComparer();
 
-        /// <summary>
-        /// A default instance of the <see cref="AllowedChildTagDescriptorComparer"/> that does case-sensitive comparison.
-        /// </summary>
-        internal static readonly AllowedChildTagDescriptorComparer CaseSensitive =
-            new AllowedChildTagDescriptorComparer(caseSensitive: true);
-
-        private readonly StringComparer _stringComparer;
-        private readonly StringComparison _stringComparison;
-
-        private AllowedChildTagDescriptorComparer(bool caseSensitive = false)
+        private AllowedChildTagDescriptorComparer()
         {
-            if (caseSensitive)
-            {
-                _stringComparer = StringComparer.Ordinal;
-                _stringComparison = StringComparison.Ordinal;
-            }
-            else
-            {
-                _stringComparer = StringComparer.OrdinalIgnoreCase;
-                _stringComparison = StringComparison.OrdinalIgnoreCase;
-            }
         }
 
         /// <inheritdoc />
@@ -55,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return
-                string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
+                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal);
         }
 
@@ -63,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual int GetHashCode(AllowedChildTagDescriptor descriptor)
         {
             var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Name, _stringComparer);
+            hash.Add(descriptor.Name, StringComparer.Ordinal);
 
             return hash.CombinedHash;
         }

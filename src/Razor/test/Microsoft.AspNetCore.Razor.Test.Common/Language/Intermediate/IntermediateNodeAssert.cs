@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 Assert.Equal(tagName, tagHelperNode.TagName);
                 Assert.Equal(tagMode, tagHelperNode.TagMode);
 
-                Assert.Equal(tagHelpers, tagHelperNode.TagHelpers, TagHelperDescriptorComparer.CaseSensitive);
+                Assert.Equal(tagHelpers, tagHelperNode.TagHelpers, TagHelperDescriptorComparer.Default);
             }
             catch (XunitException e)
             {

@@ -10,4 +10,6 @@ Document -
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (55:2,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                MarkupBlock -  - \n<SomeComponent></SomeComponent>
+                HtmlContent - (70:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (70:2,15 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (72:3,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - SomeComponent

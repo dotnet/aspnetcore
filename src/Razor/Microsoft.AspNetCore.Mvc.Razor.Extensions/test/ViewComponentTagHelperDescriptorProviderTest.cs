@@ -1,9 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -66,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             provider.Execute(context);
 
             // Assert
-            Assert.Single(context.Results, d => TagHelperDescriptorComparer.CaseSensitive.Equals(d, expectedDescriptor));
+            Assert.Single(context.Results, d => TagHelperDescriptorComparer.Default.Equals(d, expectedDescriptor));
         }
     }
 }

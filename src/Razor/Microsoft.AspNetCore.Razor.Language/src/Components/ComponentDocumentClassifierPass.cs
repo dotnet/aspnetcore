@@ -64,6 +64,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 computedClass = $"AspNetCore_{checksum}";
             }
 
+            var documentNode = codeDocument.GetDocumentIntermediateNode();
+            if (char.IsLower(computedClass, 0))
+            {
+                // We don't allow component names to start with a lowercase character.
+                documentNode.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_ComponentNamesCannotStartWithLowerCase(computedClass, documentNode.Source));
+            }
+
             if (MangleClassNames)
             {
                 computedClass = ComponentMetadata.MangleClassName(computedClass);
@@ -91,7 +99,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
 
-                var documentNode = codeDocument.GetDocumentIntermediateNode();
                 var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
                 for (var i = 0; i < typeParamReferences.Count; i++)
                 {

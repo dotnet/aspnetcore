@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_DisplayNameIsName_NameComparisonFullMatch()
         {
             // Arrange
-            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            var tagMatchingRuleBuilder = new DefaultTagMatchingRuleDescriptorBuilder(tagHelperBuilder);
+            var builder = new DefaultRequiredAttributeDescriptorBuilder(tagMatchingRuleBuilder);
 
             builder
                 .Name("asp-action")
@@ -28,7 +30,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_DisplayNameIsNameWithDots_NameComparisonPrefixMatch()
         {
             // Arrange
-            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            var tagMatchingRuleBuilder = new DefaultTagMatchingRuleDescriptorBuilder(tagHelperBuilder);
+            var builder = new DefaultRequiredAttributeDescriptorBuilder(tagMatchingRuleBuilder);
 
             builder
                 .Name("asp-route-")

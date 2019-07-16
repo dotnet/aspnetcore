@@ -161,8 +161,10 @@ Some Content
 </RenderChildContent>");
 
             // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(ComponentDiagnosticFactory.ChildContentMixedWithExplicitChildContent.Id, diagnostic.Id);
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ10014", d.Id),
+                d => Assert.Equal("RZ9996", d.Id));
         }
 
         [Fact]

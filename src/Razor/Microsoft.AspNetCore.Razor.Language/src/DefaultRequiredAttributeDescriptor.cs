@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public DefaultRequiredAttributeDescriptor(
             string name,
             NameComparisonMode nameComparison,
+            bool caseSensitive,
             string value,
             ValueComparisonMode valueComparison,
             string displayName,
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             Name = name;
             NameComparison = nameComparison;
+            CaseSensitive = caseSensitive;
             Value = value;
             ValueComparison = valueComparison;
             DisplayName = displayName;

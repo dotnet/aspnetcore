@@ -29,7 +29,9 @@ using Foo = Test3;
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.CloseComponent();
-            builder.AddMarkupContent(1, "\r\n<SomeComponent></SomeComponent>");
+            builder.AddMarkupContent(1, "\r\n");
+            builder.OpenElement(2, "SomeComponent");
+            builder.CloseElement();
         }
         #pragma warning restore 1998
     }

@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             provider.Execute(context);
 
             // Assert
-            Assert.Single(context.Results, d => TagHelperDescriptorComparer.CaseSensitive.Equals(d, expectedDescriptor));
+            Assert.Single(context.Results, d => TagHelperDescriptorComparer.Default.Equals(d, expectedDescriptor));
         }
     }
 }

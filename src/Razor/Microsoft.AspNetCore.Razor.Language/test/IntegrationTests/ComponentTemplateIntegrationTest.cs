@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     {
         internal override string FileKind => FileKinds.Component;
 
+        internal override bool UseTwoPhaseCompilation => true;
+
         // Razor doesn't parse this as a template, we don't need much special handling for
         // it because it will just be invalid in general.
         [Fact]
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
 
             // Act
-            var generated = CompileToCSharp(@"<div attr=""@<div></div>"" />");
+            var generated = CompileToCSharp(@"<div attr=""@<div></div>"" />", throwOnFailure: false);
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
@@ -55,11 +57,13 @@ namespace Test
 "));
 
             // Act
-            var generated = CompileToCSharp(@"<MyComponent attr=""@<div></div>"" />");
+            var generated = CompileToCSharp(@"<MyComponent attr=""@<div></div>"" />", throwOnFailure: false);
 
             // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ1005", diagnostic.Id);
+            Assert.Collection(
+                generated.Diagnostics,
+                d => Assert.Equal("RZ9986", d.Id),
+                d => Assert.Equal("RZ1005", d.Id));
         }
 
         [Fact]

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (rule.TagName != ElementCatchAllName &&
                 rule.TagName != null &&
-                !string.Equals(tagNameWithoutPrefix, rule.TagName, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(tagNameWithoutPrefix, rule.TagName, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(rule));
             }
 
-            if (rule.ParentTag != null && !string.Equals(parentTagNameWithoutPrefix, rule.ParentTag, StringComparison.OrdinalIgnoreCase))
+            if (rule.ParentTag != null && !string.Equals(parentTagNameWithoutPrefix, rule.ParentTag, rule.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return descriptor.IndexerNamePrefix != null &&
                 !SatisfiesBoundAttributeName(name, descriptor) &&
-                name.StartsWith(descriptor.IndexerNamePrefix, StringComparison.OrdinalIgnoreCase);
+                name.StartsWith(descriptor.IndexerNamePrefix, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool SatisfiesBoundAttributeWithParameter(string name, BoundAttributeDescriptor parent, BoundAttributeParameterDescriptor descriptor)
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var satisfiesBoundAttributeName = SatisfiesBoundAttributeName(attributeName, parent);
                 var satisfiesBoundAttributeIndexer = SatisfiesBoundAttributeIndexer(attributeName, parent);
-                var matchesParameter = string.Equals(descriptor.Name, parameterName, StringComparison.Ordinal);
+                var matchesParameter = string.Equals(descriptor.Name, parameterName, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
                 return (satisfiesBoundAttributeName || satisfiesBoundAttributeIndexer) && matchesParameter;
             }
 
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private static bool SatisfiesBoundAttributeName(string name, BoundAttributeDescriptor descriptor)
         {
-            return string.Equals(descriptor.Name, name, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(descriptor.Name, name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         // Internal for testing
@@ -229,13 +230,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var nameMatches = false;
             if (descriptor.NameComparison == RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
             {
-                nameMatches = string.Equals(descriptor.Name, attributeName, StringComparison.OrdinalIgnoreCase);
+                nameMatches = string.Equals(descriptor.Name, attributeName, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
             }
             else if (descriptor.NameComparison == RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
             {
                 // attributeName cannot equal the Name if comparing as a PrefixMatch.
                 nameMatches = attributeName.Length != descriptor.Name.Length &&
-                    attributeName.StartsWith(descriptor.Name, StringComparison.OrdinalIgnoreCase);
+                    attributeName.StartsWith(descriptor.Name, descriptor.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
             }
             else
             {

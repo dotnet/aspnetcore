@@ -999,6 +999,24 @@ namespace Test
         }
 
         [Fact]
+        public void BuiltIn_BindToInputWithoutType_IsCaseSensitive()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @BIND=""@ParentValue"" />
+@code {
+    public int ParentValue { get; set; } = 42;
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void BuiltIn_BindToInputText_WithFormat_WritesAttributes()
         {
             // Arrange
@@ -1829,12 +1847,12 @@ namespace Test3
 @using static Test2.SomeComponent
 @using Foo = Test3
 <MyComponent />
-<SomeComponent /> <!-- Not a component -->");
+<SomeComponent /> <!-- Not a component -->", throwOnFailure: false);
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            var result = CompileToAssembly(generated);
+            CompileToAssembly(generated, throwOnFailure: false);
         }
 
         [Fact]
@@ -2650,6 +2668,25 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void EventHandler_AttributeNameIsCaseSensitive()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<input @onCLICK=""OnClick"" />
+@code {
+    void OnClick(UIMouseEventArgs e) {
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Generics
@@ -3448,6 +3485,24 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Element_WithKey_AttributeNameIsCaseSensitive()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @KEY=""someObject"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private object someObject = new object();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Splat
@@ -3627,6 +3682,24 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Element_WithSplat_AttributeNameIsCaseSensitive()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @ATTributes=""someAttributes"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private Dictionary<string, object> someAttributes = new Dictionary<string, object>();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Ref
@@ -3766,6 +3839,19 @@ namespace Test
     MyComponent myInstance;
     void DoStuff() { GC.KeepAlive(myInstance); }
 }");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithRef_AttributeNameIsCaseSensitive()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" @rEF=""myElem"" attributeafter=""after"">Hello</elem>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -4431,6 +4517,29 @@ namespace New.Test
         }
 
         [Fact]
+        public void DuplicateMarkupAttributes_DifferentCasing_IsAnError_BindValue()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <input type=""text"" Value=""17"" @bind=""@text""></input>
+</div>
+@functions {
+    private string text = ""hi"";
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
         public void DuplicateMarkupAttributes_IsAnError_BindOnInput()
         {
             // Arrange
@@ -4864,6 +4973,81 @@ namespace Test
     <text>This text is rendered</text>
 }
 ");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_MatchingIsCaseSensitive()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public int IntProperty { get; set; }
+        [Parameter] public bool BoolProperty { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent />
+<mycomponent />
+<MyComponent intproperty='1' BoolProperty='true' />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_MultipleComponentsDifferByCase()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public int IntProperty { get; set; }
+    }
+
+    public class Mycomponent : ComponentBase
+    {
+        [Parameter] public int IntProperty { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent IntProperty='1' />
+<Mycomponent IntProperty='2' />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void ElementWithUppercaseTagName_CanHideWarningWithBang()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<!NotAComponent />
+<!DefinitelyNotAComponent></!DefinitelyNotAComponent>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

@@ -76,6 +76,7 @@ namespace Test
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
             Assert.False(bind.IsComponentOrChildContentTagHelper());
+            Assert.True(bind.CaseSensitive);
 
             Assert.Equal("MyProperty", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
             Assert.Equal("MyPropertyChanged", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
@@ -197,6 +198,7 @@ namespace Test
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
             Assert.False(bind.IsComponentOrChildContentTagHelper());
+            Assert.True(bind.CaseSensitive);
 
             Assert.Equal("MyProperty", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
             Assert.Equal("MyPropertyChanged", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
@@ -349,6 +351,7 @@ namespace Test
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
             Assert.False(bind.IsComponentOrChildContentTagHelper());
+            Assert.True(bind.CaseSensitive);
 
             Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
             Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
@@ -778,6 +781,7 @@ namespace Test
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
             Assert.False(bind.IsComponentOrChildContentTagHelper());
+            Assert.True(bind.CaseSensitive);
 
             Assert.False(bind.Metadata.ContainsKey(ComponentMetadata.Bind.ValueAttribute));
             Assert.False(bind.Metadata.ContainsKey(ComponentMetadata.Bind.ChangeAttribute));

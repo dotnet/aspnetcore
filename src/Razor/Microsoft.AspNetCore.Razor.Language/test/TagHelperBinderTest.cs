@@ -32,12 +32,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 parentIsTagHelper: false);
 
             // Assert
-            Assert.Equal(expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.Default);
             Assert.Equal("th:div", bindingResult.TagName);
             Assert.Equal("body", bindingResult.ParentTagName);
             Assert.Equal(expectedAttributes, bindingResult.Attributes);
             Assert.Equal("th:", bindingResult.TagHelperPrefix);
-            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.Mappings[divTagHelper], TagMatchingRuleDescriptorComparer.CaseSensitive);
+            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.Mappings[divTagHelper], TagMatchingRuleDescriptorComparer.Default);
         }
 
         public static TheoryData RequiredParentData
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 parentIsTagHelper: false);
 
             // Assert
-            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData RequiredAttributeData
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(tagName, providedAttributes, parentTagName: "p", parentIsTagHelper: false);
 
             // Assert
-            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult?.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult?.Descriptors, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -597,6 +597,60 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.False(bindingResult.IsAttributeMatch);
+        }
+
+        [Fact]
+        public void GetBinding_CaseSensitiveRule_CaseMismatch_ReturnsNull()
+        {
+            // Arrange
+            var divTagHelper = TagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                .SetCaseSensitive()
+                .Build();
+            var expectedDescriptors = new[] { divTagHelper };
+            var expectedAttributes = new[]
+            {
+                new KeyValuePair<string, string>("class", "something")
+            };
+            var tagHelperBinder = new TagHelperBinder("th:", expectedDescriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "th:Div",
+                attributes: expectedAttributes,
+                parentTagName: "body",
+                parentIsTagHelper: false);
+
+            // Assert
+            Assert.Null(bindingResult);
+        }
+
+        [Fact]
+        public void GetBinding_CaseSensitiveRequiredAttribute_CaseMismatch_ReturnsNull()
+        {
+            // Arrange
+            var divTagHelper = TagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule
+                    .RequireTagName("div")
+                    .RequireAttributeDescriptor(attribute => attribute.Name("class")))
+                .SetCaseSensitive()
+                .Build();
+            var expectedDescriptors = new[] { divTagHelper };
+            var expectedAttributes = new[]
+            {
+                new KeyValuePair<string, string>("CLASS", "something")
+            };
+            var tagHelperBinder = new TagHelperBinder(null, expectedDescriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "div",
+                attributes: expectedAttributes,
+                parentTagName: "body",
+                parentIsTagHelper: false);
+
+            // Assert
+            Assert.Null(bindingResult);
         }
     }
 }

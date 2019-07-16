@@ -65,6 +65,7 @@ namespace Test
             Assert.False(component.IsDefaultKind());
             Assert.False(component.KindUsesDefaultTagHelperRuntime());
             Assert.True(component.IsComponentOrChildContentTagHelper());
+            Assert.True(component.CaseSensitive);
 
             // No documentation in this test
             Assert.Null(component.Documentation);
@@ -108,6 +109,7 @@ namespace Test
             Assert.Null(attribute.IndexerTypeName);
             Assert.False(attribute.IsIndexerBooleanProperty);
             Assert.False(attribute.IsIndexerStringProperty);
+            Assert.True(component.CaseSensitive);
 
             // No documentation in this test
             Assert.Null(attribute.Documentation);

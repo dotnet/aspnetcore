@@ -36,6 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
             Assert.False(item.IsComponentOrChildContentTagHelper());
+            Assert.True(item.CaseSensitive);
 
             Assert.Equal(
                 "Ensures that the component or element will be preserved across renders if (and only if) the supplied key value matches.",

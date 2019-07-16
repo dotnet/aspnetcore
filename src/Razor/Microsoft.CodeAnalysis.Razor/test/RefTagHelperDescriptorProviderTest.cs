@@ -36,6 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
             Assert.False(item.IsComponentOrChildContentTagHelper());
+            Assert.True(item.CaseSensitive);
 
             Assert.Equal(
                 "Generates the specified field, and populates it during rendering with a reference to the element or component.",

@@ -15,27 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         public static readonly BoundAttributeParameterDescriptorComparer Default = new BoundAttributeParameterDescriptorComparer();
 
-        /// <summary>
-        /// A default instance of the <see cref="BoundAttributeParameterDescriptorComparer"/> that does case-sensitive comparison.
-        /// </summary>
-        internal static readonly BoundAttributeParameterDescriptorComparer CaseSensitive =
-            new BoundAttributeParameterDescriptorComparer(caseSensitive: true);
-
-        private readonly StringComparer _stringComparer;
-        private readonly StringComparison _stringComparison;
-
-        private BoundAttributeParameterDescriptorComparer(bool caseSensitive = false)
+        private BoundAttributeParameterDescriptorComparer()
         {
-            if (caseSensitive)
-            {
-                _stringComparer = StringComparer.Ordinal;
-                _stringComparison = StringComparison.Ordinal;
-            }
-            else
-            {
-                _stringComparer = StringComparer.OrdinalIgnoreCase;
-                _stringComparison = StringComparison.OrdinalIgnoreCase;
-            }
         }
 
         public virtual bool Equals(BoundAttributeParameterDescriptor descriptorX, BoundAttributeParameterDescriptor descriptorY)
@@ -53,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return
                 string.Equals(descriptorX.Kind, descriptorY.Kind, StringComparison.Ordinal) &&
                 descriptorX.IsEnum == descriptorY.IsEnum &&
-                string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
+                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.Documentation, descriptorY.Documentation, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
@@ -71,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var hash = HashCodeCombiner.Start();
             hash.Add(descriptor.Kind);
-            hash.Add(descriptor.Name, _stringComparer);
+            hash.Add(descriptor.Name, StringComparer.Ordinal);
 
             return hash.CombinedHash;
         }

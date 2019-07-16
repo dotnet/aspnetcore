@@ -421,5 +421,48 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             return RazorDiagnostic.Create(RefSuppressFieldRequiredForGeneric, source ?? SourceSpan.Undefined);
         }
+
+        public static readonly RazorDiagnosticDescriptor ComponentNamesCannotStartWithLowerCase =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10013",
+                () => "Component '{0}' starts with a lowercase character. Component names cannot start with a lowercase character.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_ComponentNamesCannotStartWithLowerCase(string componentName, SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(
+                ComponentNamesCannotStartWithLowerCase,
+                source ?? SourceSpan.Undefined,
+                componentName);
+        }
+
+        public static readonly RazorDiagnosticDescriptor UnexpectedMarkupElement =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10014",
+                () => "Found markup element with unexpected name '{0}'. If this is intended to be a component, add a @using directive for its namespace.",
+                RazorDiagnosticSeverity.Warning);
+
+        public static RazorDiagnostic Create_UnexpectedMarkupElement(string elementName, SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(
+                UnexpectedMarkupElement,
+                source ?? SourceSpan.Undefined,
+                elementName);
+        }
+
+        public static readonly RazorDiagnosticDescriptor InconsistentStartAndEndTagName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10015",
+                () => "The start tag name '{0}' does not match the end tag name '{1}'. Components must have matching start and end tag names (case-sensitive).",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_InconsistentStartAndEndTagName(string startTagName, string endTagName, SourceSpan? source = null)
+        {
+            return RazorDiagnostic.Create(
+                InconsistentStartAndEndTagName,
+                source ?? SourceSpan.Undefined,
+                startTagName,
+                endTagName);
+        }
     }
 }

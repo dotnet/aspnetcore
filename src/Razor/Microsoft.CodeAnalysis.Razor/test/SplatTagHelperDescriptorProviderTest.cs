@@ -35,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Equal(ComponentMetadata.Splat.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
+            Assert.True(item.CaseSensitive);
 
             Assert.Equal(
                 "Merges a collection of attributes into the current element or component.",

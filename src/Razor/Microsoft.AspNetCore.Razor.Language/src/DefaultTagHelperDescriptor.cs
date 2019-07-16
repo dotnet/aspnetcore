@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string displayName,
             string documentation,
             string tagOutputHint,
+            bool caseSensitive,
             TagMatchingRuleDescriptor[] tagMatchingRules,
             BoundAttributeDescriptor[] attributeDescriptors,
             AllowedChildTagDescriptor[] allowedChildTags,
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             DisplayName = displayName;
             Documentation = documentation;
             TagOutputHint = tagOutputHint;
+            CaseSensitive = caseSensitive;
             TagMatchingRules = tagMatchingRules;
             BoundAttributes = attributeDescriptors;
             AllowedChildTags = allowedChildTags;

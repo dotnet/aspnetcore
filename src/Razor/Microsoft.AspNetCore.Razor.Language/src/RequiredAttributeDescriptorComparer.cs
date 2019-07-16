@@ -19,27 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static readonly RequiredAttributeDescriptorComparer Default =
             new RequiredAttributeDescriptorComparer();
 
-        /// <summary>
-        /// A default instance of the <see cref="RequiredAttributeDescriptorComparer"/> that does case-sensitive comparison.
-        /// </summary>
-        internal static readonly RequiredAttributeDescriptorComparer CaseSensitive =
-            new RequiredAttributeDescriptorComparer(caseSensitive: true);
-
-        private readonly StringComparer _stringComparer;
-        private readonly StringComparison _stringComparison;
-
-        private RequiredAttributeDescriptorComparer(bool caseSensitive = false)
+        private RequiredAttributeDescriptorComparer()
         {
-            if (caseSensitive)
-            {
-                _stringComparer = StringComparer.Ordinal;
-                _stringComparison = StringComparison.Ordinal;
-            }
-            else
-            {
-                _stringComparer = StringComparer.OrdinalIgnoreCase;
-                _stringComparison = StringComparison.OrdinalIgnoreCase;
-            }
         }
 
         /// <inheritdoc />
@@ -58,9 +39,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return
+                descriptorX.CaseSensitive == descriptorY.CaseSensitive &&
                 descriptorX.NameComparison == descriptorY.NameComparison &&
                 descriptorX.ValueComparison == descriptorY.ValueComparison &&
-                string.Equals(descriptorX.Name, descriptorY.Name, _stringComparison) &&
+                string.Equals(descriptorX.Name, descriptorY.Name, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.Value, descriptorY.Value, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal);
         }
@@ -68,8 +50,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <inheritdoc />
         public virtual int GetHashCode(RequiredAttributeDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
             var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Name, _stringComparer);
+            hash.Add(descriptor.Name, StringComparer.Ordinal);
 
             return hash.CombinedHash;
         }

@@ -106,6 +106,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var eventArgType = entry.EventArgsType.ToDisplayString();
 
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
+                builder.CaseSensitive = true;
                 builder.Documentation = string.Format(
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     attributeName,

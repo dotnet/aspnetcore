@@ -41,6 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private TagHelperDescriptor CreateSplatTagHelper()
         {
             var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Splat.TagHelperKind, "Attributes", ComponentsApi.AssemblyName);
+            builder.CaseSensitive = true;
             builder.Documentation = ComponentResources.SplatTagHelper_Documentation;
 
             builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Splat.TagHelperKind);

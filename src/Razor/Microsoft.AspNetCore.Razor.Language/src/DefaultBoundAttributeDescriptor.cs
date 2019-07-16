@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string indexerTypeName,
             string documentation,
             string displayName,
+            bool caseSensitive,
             BoundAttributeParameterDescriptor[] parameterDescriptors,
             Dictionary<string, string> metadata,
             RazorDiagnostic[] diagnostics) 
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             IndexerTypeName = indexerTypeName;
             Documentation = documentation;
             DisplayName = displayName;
+            CaseSensitive = caseSensitive;
             BoundAttributeParameters = parameterDescriptors;
 
             Metadata = metadata;

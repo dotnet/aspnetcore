@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             var descriptor = factory.CreateDescriptor(viewComponent);
 
             // Assert
-            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             var descriptor = factory.CreateDescriptor(viewComponent);
 
             // Assert
-            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             var descriptor = factory.CreateDescriptor(viewComponent);
 
             // Assert
-            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedDescriptor, descriptor, TagHelperDescriptorComparer.Default);
         }
 
         [Fact]

@@ -125,6 +125,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private TagHelperDescriptor CreateFallbackBindTagHelper()
         {
             var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, "Bind", ComponentsApi.AssemblyName);
+            builder.CaseSensitive = true;
             builder.Documentation = ComponentResources.BindTagHelper_Fallback_Documentation;
 
             builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind);
@@ -292,6 +293,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var eventName = entry.Suffix == null ? "Event_" + entry.ValueAttribute : "Event_" + entry.Suffix;
 
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
+                builder.CaseSensitive = true;
                 builder.Documentation = string.Format(
                     ComponentResources.BindTagHelper_Element_Documentation,
                     entry.ValueAttribute,
@@ -469,6 +471,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, tagHelper.Name, tagHelper.AssemblyName);
                     builder.DisplayName = tagHelper.DisplayName;
+                    builder.CaseSensitive = true;
                     builder.Documentation = string.Format(
                         ComponentResources.BindTagHelper_Component_Documentation,
                         valueAttribute.Name,
