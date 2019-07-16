@@ -1,0 +1,41 @@
+{
+  "solution": {
+    "path": "..\\..\\Extensions.sln",
+    "projects": [
+      "src\\Caching\\Abstractions\\src\\Microsoft.Extensions.Caching.Abstractions.csproj",
+      "src\\Caching\\Memory\\src\\Microsoft.Extensions.Caching.Memory.csproj",
+      "src\\Caching\\Memory\\test\\Microsoft.Extensions.Caching.Memory.Tests.csproj",
+      "src\\Caching\\SqlServer\\src\\Microsoft.Extensions.Caching.SqlServer.csproj",
+      "src\\Caching\\SqlServer\\test\\Microsoft.Extensions.Caching.SqlServer.Tests.csproj",
+      "src\\Caching\\StackExchangeRedis\\src\\Microsoft.Extensions.Caching.StackExchangeRedis.csproj",
+      "src\\Caching\\StackExchangeRedis\\test\\Microsoft.Extensions.Caching.StackExchangeRedis.Tests.csproj",
+      "src\\Caching\\samples\\MemoryCacheConcurencySample\\MemoryCacheConcurencySample.csproj",
+      "src\\Caching\\samples\\MemoryCacheFileWatchSample\\MemoryCacheFileWatchSample.csproj",
+      "src\\Caching\\samples\\MemoryCacheSample\\MemoryCacheSample.csproj",
+      "src\\Caching\\samples\\ProfilingSample\\ProfilingSample.csproj",
+      "src\\Caching\\samples\\RedisCacheSample\\RedisCacheSample.csproj",
+      "src\\Caching\\samples\\SqlServerCacheConcurencySample\\SqlServerCacheConcurencySample.csproj",
+      "src\\Caching\\samples\\SqlServerCacheSample\\SqlServerCacheSample.csproj",
+      "src\\Configuration\\Config.Abstractions\\src\\Microsoft.Extensions.Configuration.Abstractions.csproj",
+      "src\\Configuration\\Config.Binder\\src\\Microsoft.Extensions.Configuration.Binder.csproj",
+      "src\\Configuration\\Config.EnvironmentVariables\\src\\Microsoft.Extensions.Configuration.EnvironmentVariables.csproj",
+      "src\\Configuration\\Config.FileExtensions\\src\\Microsoft.Extensions.Configuration.FileExtensions.csproj",
+      "src\\Configuration\\Config.Json\\src\\Microsoft.Extensions.Configuration.Json.csproj",
+      "src\\Configuration\\Config\\src\\Microsoft.Extensions.Configuration.csproj",
+      "src\\DependencyInjection\\DI.Abstractions\\src\\Microsoft.Extensions.DependencyInjection.Abstractions.csproj",
+      "src\\DependencyInjection\\DI\\src\\Microsoft.Extensions.DependencyInjection.csproj",
+      "src\\FileProviders\\Abstractions\\src\\Microsoft.Extensions.FileProviders.Abstractions.csproj",
+      "src\\FileProviders\\Physical\\src\\Microsoft.Extensions.FileProviders.Physical.csproj",
+      "src\\FileSystemGlobbing\\src\\Microsoft.Extensions.FileSystemGlobbing.csproj",
+      "src\\Logging\\Logging.Abstractions\\src\\Microsoft.Extensions.Logging.Abstractions.csproj",
+      "src\\Logging\\Logging.Configuration\\src\\Microsoft.Extensions.Logging.Configuration.csproj",
+      "src\\Logging\\Logging.Console\\src\\Microsoft.Extensions.Logging.Console.csproj",
+      "src\\Logging\\Logging.Testing\\src\\Microsoft.Extensions.Logging.Testing.csproj",
+      "src\\Logging\\Logging\\src\\Microsoft.Extensions.Logging.csproj",
+      "src\\Options\\ConfigurationExtensions\\src\\Microsoft.Extensions.Options.ConfigurationExtensions.csproj",
+      "src\\Options\\Options\\src\\Microsoft.Extensions.Options.csproj",
+      "src\\Primitives\\src\\Microsoft.Extensions.Primitives.csproj",
+      "src\\TestingUtils\\Microsoft.AspNetCore.Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+    ]
+  }
+}
