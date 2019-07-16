@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientDisposalAbortsRequest()
         {
             // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             RequestDelegate appDelegate = async ctx =>
             {
                 // Write Headers
@@ -399,30 +399,26 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task ClientCancellationAbortsRequest()
         {
-            // Arrange
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
-            RequestDelegate appDelegate = async ctx =>
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
             {
-                var sem = new SemaphoreSlim(0);
                 try
                 {
-                    await sem.WaitAsync(ctx.RequestAborted);
+                    await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
+                    tcs.SetResult(0);
                 }
                 catch (Exception e)
                 {
                     tcs.SetException(e);
+                    return;
                 }
-            };
-
-            // Act
-            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(500);
+                throw new InvalidOperationException("The request was not aborted");
+            }));
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
             var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
 
-            // Assert
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
         }
 
