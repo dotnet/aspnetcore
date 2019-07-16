@@ -3,16 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -46,16 +42,8 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                var supportsAlpn =
-                    // "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support"
-                    new MinimumOSVersionAttribute(OperatingSystems.Windows, WindowsVersions.Win81).IsMet
-                    // "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492"
-                    && new OSSkipConditionAttribute(OperatingSystems.MacOSX).IsMet
-                    // Debian 8 uses OpenSSL 1.0.1 which does not support ALPN
-                    && new SkipOnHelixAttribute("https://github.com/aspnet/AspNetCore/issues/10428") { Queues = "Debian.8.Amd64.Open" }.IsMet;
-
                 // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
-                if (supportsAlpn)
+                if (Utilities.CurrentPlatformSupportsAlpn())
                 {
                     list.Add(new[] { "https" });
                 }
@@ -77,7 +65,7 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
             using var client = CreateClient();
             var response = await client.GetAsync(url);
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -101,16 +89,12 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
             client.DefaultRequestHeaders.ExpectContinue = true;
 
-            using var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Version = HttpVersion.Version20,
-                Content = new BulkContent()
-            };
+            using var request = CreateRequestMessage(HttpMethod.Post, url, new BulkContent());
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -144,7 +128,7 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
 
@@ -191,7 +175,7 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
             client.DefaultRequestHeaders.ExpectContinue = true;
@@ -204,11 +188,7 @@ namespace Interop.FunctionalTests
 
             async Task RunRequest(string url)
             {
-                using var request = new HttpRequestMessage(HttpMethod.Post, url)
-                {
-                    Version = HttpVersion.Version20,
-                    Content = new BulkContent()
-                };
+                using var request = CreateRequestMessage(HttpMethod.Post, url, new BulkContent());
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
                 Assert.Equal(HttpVersion.Version20, response.Version);
@@ -237,7 +217,7 @@ namespace Interop.FunctionalTests
             {
                 for (var i = 0; i < Repititions; i++)
                 {
-                    using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(50000)))
+                    using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
                         await stream.WriteAsync(Content, 0, Content.Length, timer.Token);
                     }
@@ -257,7 +237,7 @@ namespace Interop.FunctionalTests
                 var totalRead = 0;
                 var patternOffset = 0;
                 int read = 0;
-                using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(5000)))
+                using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                 {
                     read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token);
                 }
@@ -273,7 +253,7 @@ namespace Interop.FunctionalTests
                         patternOffset++;
                     }
 
-                    using var timer = new CancellationTokenSource(TimeSpan.FromSeconds(5000));
+                    using var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                     read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token);
                 }
 
@@ -315,17 +295,13 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
             client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Version = HttpVersion.Version20,
-                Content = streamingContent,
-            };
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
             var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
             // The server won't send headers until it gets the first message
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
@@ -333,21 +309,13 @@ namespace Interop.FunctionalTests
 
             Assert.Equal(HttpVersion.Version20, response.Version);
             var stream = await response.Content.ReadAsStreamAsync();
-            var responseBuffer = new byte["Hello World".Length];
-
-            var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(responseBuffer.Length, read);
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
+            await ReadStreamHelloWorld(stream);
 
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
             streamingContent.Complete();
 
-            read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(responseBuffer.Length, read);
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
-
-            read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length);
-            Assert.Equal(0, read);
+            await ReadStreamHelloWorld(stream);
+            Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
             await host.StopAsync();
         }
 
@@ -404,17 +372,13 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
             client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Version = HttpVersion.Version20,
-                Content = streamingContent,
-            };
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
             var responseTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
             // The server doesn't respond until we send the first set of data
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
@@ -422,14 +386,9 @@ namespace Interop.FunctionalTests
 
             Assert.Equal(HttpVersion.Version20, response.Version);
             var stream = await response.Content.ReadAsStreamAsync();
-            var responseBuffer = new byte["Hello World".Length];
+            await ReadStreamHelloWorld(stream);
 
-            var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(responseBuffer.Length, read);
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
-
-            read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(0, read);
+            Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
             stream.Dispose(); // https://github.com/dotnet/corefx/issues/39404 can be worked around by commenting out this Dispose
 
             // Send one more message after the server has finished.
@@ -476,17 +435,13 @@ namespace Interop.FunctionalTests
                 });
             using var host = await hostBuilder.StartAsync();
 
-            var url = $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
+            var url = host.MakeUrl(scheme);
 
             using var client = CreateClient();
             // client.DefaultRequestHeaders.ExpectContinue = true;
 
             var streamingContent = new StreamingContent();
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Version = HttpVersion.Version20,
-                Content = streamingContent,
-            };
+            var request = CreateRequestMessage(HttpMethod.Post, url, streamingContent);
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -497,14 +452,9 @@ namespace Interop.FunctionalTests
             Assert.Equal("Hello World", read);
             */
             var stream = await response.Content.ReadAsStreamAsync();
-            var responseBuffer = new byte["Hello World".Length];
+            await ReadStreamHelloWorld(stream);
 
-            var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(responseBuffer.Length, read);
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
-
-            read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
-            Assert.Equal(0, read);
+            Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
             stream.Dispose(); // https://github.com/dotnet/corefx/issues/39404 can be worked around by commenting out this Dispose
 
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
@@ -576,6 +526,15 @@ namespace Interop.FunctionalTests
             return client;
         }
 
+        private static HttpRequestMessage CreateRequestMessage(HttpMethod method, string url, HttpContent content)
+        {
+            return new HttpRequestMessage(method, url)
+            {
+                Version = HttpVersion.Version20,
+                Content = content,
+            };
+        }
+
         private static void ConfigureKestrel(IWebHostBuilder webHostBuilder, string scheme)
         {
             webHostBuilder.UseKestrel(options =>
@@ -589,6 +548,14 @@ namespace Interop.FunctionalTests
                     }
                 });
             });
+        }
+
+        private static async Task ReadStreamHelloWorld(Stream stream)
+        {
+            var responseBuffer = new byte["Hello World".Length];
+            var read = await stream.ReadAsync(responseBuffer, 0, responseBuffer.Length).DefaultTimeout();
+            Assert.Equal(responseBuffer.Length, read);
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(responseBuffer));
         }
     }
 }

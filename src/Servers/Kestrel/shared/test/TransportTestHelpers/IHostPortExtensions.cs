@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -28,6 +29,11 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses
                 .Select(a => new Uri(a));
+        }
+
+        public static string MakeUrl(this IHost host, string scheme)
+        {
+            return $"{scheme}://127.0.0.1:{host.GetPort().ToString(CultureInfo.InvariantCulture)}/";
         }
     }
 }
