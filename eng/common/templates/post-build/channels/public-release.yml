@@ -2,18 +2,18 @@ parameters:
   enableSymbolValidation: true
 
 stages:
-- stage: Publish
+- stage: PubRel_Publish
   dependsOn: validate
   variables:
     - template: ../common-variables.yml
-  displayName: Developer Channel
+  displayName: Public Release
   jobs:
   - template: ../setup-maestro-vars.yml
 
   - job:
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicRelease_30_Channel_Id)
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
@@ -36,7 +36,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:Configuration=Release
 
-  - job:
+  - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
     variables:
@@ -47,7 +47,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicRelease_30_Channel_Id)
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -70,28 +70,27 @@ stages:
           artifactName: AssetManifests
 
       - task: PowerShell@2
-        displayName: Add Assets Location
+        displayName: Publish
         env:
           AZURE_DEVOPS_EXT_PAT: $(dn-bot-dnceng-unviersal-packages-rw)
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet 
-            /p:ChannelId=$(PublicDevRelease_30_Channel_Id)
-            /p:ArtifactsCategory=.NetCore
+            /p:ChannelId=$(PublicRelease_30_Channel_Id)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
             /p:CommitSha=$(Build.SourceVersion)
+            /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
+            /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
+            /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
-            /p:AzdoTargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:TargetFeedPAT='$(dn-bot-dnceng-unviersal-packages-rw)' 
-            /p:AzureStorageTargetFeedPAT='$(dotnetfeed-storage-access-key-1)' 
             /p:BARBuildId=$(BARBuildId) 
             /p:MaestroApiEndpoint='https://maestro-prod.westus2.cloudapp.azure.com'
             /p:BuildAssetRegistryToken='$(MaestroAccessToken)' 
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
-            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
-            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
+            /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
+            /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
             /p:Configuration=Release 
         
       - task: NuGetCommand@2
@@ -112,8 +111,11 @@ stages:
             -PersonalAccessToken $(dn-bot-dnceng-unviersal-packages-rw)
         enabled: false
 
+      - template: ../trigger-subscription.yml
+        parameters:
+          ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}
 
-- stage: PublishValidation
+- stage: PubRel_PublishValidation
   displayName: Publish Validation
   variables:
     - template: ../common-variables.yml  
@@ -124,7 +126,7 @@ stages:
     - job:
       displayName: Symbol Availability
       dependsOn: setupMaestroVars
-      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+      condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicRelease_30_Channel_Id)
       pool:
         vmImage: 'windows-2019'
       steps:
@@ -145,7 +147,7 @@ stages:
     dependsOn: setupMaestroVars
     variables:
       BARBuildId: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicDevRelease_30_Channel_Id)
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicRelease_30_Channel_Id)
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -161,7 +163,8 @@ stages:
           targetType: inline
           script: |
             darc gather-drop --non-shipping --continue-on-error --id $(BARBuildId) --output-dir $(Agent.BuildDirectory)/Temp/Drop/ --bar-uri https://maestro-prod.westus2.cloudapp.azure.com/ --password $(MaestroAccessToken) --latest-location
+        enabled: false
 
-  - template: ../promote-build.yml	
-    parameters:	
-      ChannelId: ${{ variables.PublicDevRelease_30_Channel_Id }}
+  - template: ../promote-build.yml
+    parameters:
+      ChannelId: ${{ variables.PublicRelease_30_Channel_Id }}

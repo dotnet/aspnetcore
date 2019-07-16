@@ -28,10 +28,8 @@ jobs:
           $Channels = ""            
           $Content | Select -Index 1 | ForEach-Object { $Channels += "$_ ," }
             
-          $IsInternalBuild = $Content | Select -Index 2
-          $IsStableBuild = $Content | Select -Index 3
+          $IsStableBuild = $Content | Select -Index 2
 
           Write-PipelineSetVariable -Name 'BARBuildId' -Value $BarId
           Write-PipelineSetVariable -Name 'InitialChannels' -Value "$Channels"
-          Write-PipelineSetVariable -Name 'IsInternalBuild' -Value $IsInternalBuild
           Write-PipelineSetVariable -Name 'IsStableBuild' -Value $IsStableBuild
