@@ -114,7 +114,6 @@ public class HubConnection {
         return this.streamMap;
     }
 
-
     TransportEnum getTransportEnum() {
         return this.transportEnum;
     }
@@ -601,7 +600,7 @@ public class HubConnection {
 
         return params.toArray();
     }
-    
+
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
      *
