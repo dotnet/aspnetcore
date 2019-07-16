@@ -601,8 +601,7 @@ public class HubConnection {
 
         return params.toArray();
     }
-
-
+    
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
      *
