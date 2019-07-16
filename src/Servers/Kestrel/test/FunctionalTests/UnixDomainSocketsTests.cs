@@ -146,7 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         });
                     });
 
-
                 using (var host = hostBuilder.Build())
                 {
                     await host.StartAsync();
@@ -164,7 +163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         httpRequest.AppendLine();
                         httpRequest.AppendLine(data);
 
-
                         // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.networkstream.dataavailable?view=netcore-3.0
                         using (var stream = new NetworkStream(socket))
                         {
@@ -173,7 +171,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                             if (stream.CanRead)
                             {
-
                                 byte[] myReadBuffer = new byte[1024];
                                 StringBuilder myCompleteMessage = new StringBuilder();
                                 int numberOfBytesRead = 0;
@@ -182,9 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                 do
                                 {
                                     numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
-
                                     myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
-
                                 }
                                 while (stream.DataAvailable);
 
@@ -198,7 +193,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             }
                         }
                     }
-
                     await host.StopAsync();
                 }
             }
