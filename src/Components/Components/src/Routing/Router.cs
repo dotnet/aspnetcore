@@ -70,8 +70,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
-            var types = ComponentResolver.ResolveComponents(AppAssembly);
-            Routes = RouteTable.Create(types);
+            Routes = RouteTableFactory.Create(AppAssembly);
             Refresh(isNavigationIntercepted: false);
             return Task.CompletedTask;
         }

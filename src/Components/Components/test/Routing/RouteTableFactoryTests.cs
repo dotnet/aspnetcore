@@ -9,13 +9,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
 {
-    public class RouteTableTests
+    public class RouteTableFactoryTests
     {
         [Fact]
         public void CanDiscoverRoute()
         {
             // Arrange & Act
-            var routes = RouteTable.Create(new[] { typeof(MyComponent), });
+            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), });
 
             // Assert
             Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanDiscoverRoutes_WithInheritance()
         {
             // Arrange & Act
-            var routes = RouteTable.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+            var routes = RouteTableFactory.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
 
             // Assert
             Assert.Collection(
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 {
                     return new RouteTable(_routeTemplates
                         .Select(rt => new RouteEntry(TemplateParser.ParseTemplate(rt.Item1), rt.Item2))
-                        .OrderBy(id => id, RouteTable.RoutePrecedence)
+                        .OrderBy(id => id, RouteTableFactory.RoutePrecedence)
                         .ToArray());
                 }
                 catch (InvalidOperationException ex) when (ex.InnerException is InvalidOperationException)

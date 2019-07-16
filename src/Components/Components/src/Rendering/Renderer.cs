@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     public abstract partial class Renderer : IDisposable
     {
-        private readonly ComponentFactory _componentFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
@@ -61,9 +61,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _componentFactory = new ComponentFactory(serviceProvider);
+            _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
-            _componentFactory = new ComponentFactory(serviceProvider);
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => _componentFactory.InstantiateComponent(componentType);
+            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
