@@ -9,7 +9,7 @@ import RenderQueue from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, ILogger } from './Platform/Logging/ILogger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
-import { setRendererEventDispatcher } from './Rendering/Renderer';
+import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 
 
 type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
@@ -110,7 +110,7 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
   const connection = connectionBuilder.build();
 
-  setRendererEventDispatcher((descriptor, args) => {
+  setEventDispatcher((descriptor, args) => {
     return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
 

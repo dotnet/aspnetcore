@@ -11,16 +11,11 @@ interface BrowserRendererRegistry {
 }
 const browserRenderers: BrowserRendererRegistry = {};
 
-let eventDispatcher = (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs): Promise<void> => {
-  return DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.Web', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs));
-};
-
-
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
 
   let browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
-    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId, eventDispatcher);
+    browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
 
   browserRenderer.attachRootComponentToLogicalElement(componentId, logicalElement);
@@ -35,14 +30,6 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId);
-}
-
-export function setRendererEventDispatcher(newDispatcher: (eventDescriptor: EventDescriptor, eventArgs: UIEventArgs) => Promise<void>): void {
-  eventDispatcher = newDispatcher;
-  for (const browserRenderer of Object.keys(browserRenderers)) {
-    const renderer = browserRenderers[browserRenderer] as BrowserRenderer;
-    renderer.updateEventDispatcher(newDispatcher);
-  }
 }
 
 export function renderBatch(browserRendererId: number, batch: RenderBatch): void {

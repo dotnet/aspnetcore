@@ -4,6 +4,7 @@ import { EventForDotNet, UIEventArgs, EventArgsType } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
+import { eventDispatcher } from './RendererEventDispatcher';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -17,18 +18,11 @@ export class BrowserRenderer {
 
   private browserRendererId: number;
 
-  public eventDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>;
-
-  public constructor(browserRendererId: number, eventDispatcher: ((EventDescriptor, UIEventArgs) => Promise<void>)) {
+  public constructor(browserRendererId: number) {
     this.browserRendererId = browserRendererId;
-    this.eventDispatcher = eventDispatcher;
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs, eventFieldInfo) => {
-      raiseEvent(this.eventDispatcher, event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
+      raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs, eventFieldInfo);
     });
-  }
-
-  public updateEventDispatcher(newDispatcher: (descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>): void{
-    this.eventDispatcher = newDispatcher;
   }
 
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
@@ -438,7 +432,6 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
 }
 
 function raiseEvent(
-  eventDispatcher: ((descriptor: EventDescriptor, args: UIEventArgs) => Promise<void>),
   event: Event,
   browserRendererId: number,
   eventHandlerId: number,
