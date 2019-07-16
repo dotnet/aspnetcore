@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Components
     {
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        protected Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString

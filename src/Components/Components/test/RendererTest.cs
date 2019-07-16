@@ -3434,7 +3434,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class MessageComponent : AutoRenderComponent
         {
             [Parameter]
-            internal string Message { get; set; }
+            public string Message { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -3444,9 +3444,9 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class MyStrongComponent : AutoRenderComponent
         {
-            [Parameter(CaptureUnmatchedValues = true)] internal IDictionary<string, object> Attributes { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> Attributes { get; set; }
 
-            [Parameter] internal string Text { get; set; }
+            [Parameter] public string Text { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -3460,13 +3460,13 @@ namespace Microsoft.AspNetCore.Components.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            internal int IntProperty { get; private set; }
+            public int IntProperty { get; private set; }
 
             [Parameter]
-            internal string StringProperty { get; private set; }
+            public string StringProperty { get; private set; }
 
             [Parameter]
-            internal object ObjectProperty { get; set; }
+            public object ObjectProperty { get; set; }
 
             public RenderHandle RenderHandle { get; private set; }
 
@@ -3483,28 +3483,28 @@ namespace Microsoft.AspNetCore.Components.Test
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
             [Parameter]
-            internal Action<UIEventArgs> OnTest { get; set; }
+            public Action<UIEventArgs> OnTest { get; set; }
 
             [Parameter]
-            internal Func<UIEventArgs, Task> OnTestAsync { get; set; }
+            public Func<UIEventArgs, Task> OnTestAsync { get; set; }
 
             [Parameter]
-            internal Action<UIMouseEventArgs> OnClick { get; set; }
+            public Action<UIMouseEventArgs> OnClick { get; set; }
 
             [Parameter]
-            internal Func<UIMouseEventArgs, Task> OnClickAsync { get; set; }
+            public Func<UIMouseEventArgs, Task> OnClickAsync { get; set; }
 
             [Parameter]
-            internal Action OnClickAction { get; set; }
+            public Action OnClickAction { get; set; }
 
             [Parameter]
-            internal Func<Task> OnClickAsyncAction { get; set; }
+            public Func<Task> OnClickAsyncAction { get; set; }
 
             [Parameter]
-            internal EventCallback OnClickEventCallback { get; set; }
+            public EventCallback OnClickEventCallback { get; set; }
 
             [Parameter]
-            internal EventCallback<UIMouseEventArgs> OnClickEventCallbackOfT { get; set; }
+            public EventCallback<UIMouseEventArgs> OnClickEventCallbackOfT { get; set; }
 
             public bool SkipElement { get; set; }
             private int renderCount = 0;
@@ -3568,10 +3568,10 @@ namespace Microsoft.AspNetCore.Components.Test
         private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent
         {
             [Parameter]
-            internal bool IncludeChild { get; set; }
+            public bool IncludeChild { get; set; }
 
             [Parameter]
-            internal IDictionary<string, object> ChildParameters { get; set; }
+            public IDictionary<string, object> ChildParameters { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -3596,7 +3596,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class ReRendersParentComponent : AutoRenderComponent
         {
             [Parameter]
-            internal TestComponent Parent { get; private set; }
+            public TestComponent Parent { get; private set; }
 
             private bool _isFirstTime = true;
 
@@ -3615,7 +3615,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class RendersSelfAfterEventComponent : IComponent, IHandleEvent
         {
             [Parameter]
-            Action<object> OnClick { get; set; }
+            public Action<object> OnClick { get; set; }
 
             private RenderHandle _renderHandle;
 

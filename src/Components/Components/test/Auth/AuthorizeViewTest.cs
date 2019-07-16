@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Components
         // recurse into all descendants because we're passing ChildContent
         class NeverReRenderComponent : ComponentBase
         {
-            [Parameter] RenderFragment ChildContent { get; set; }
+            [Parameter] public RenderFragment ChildContent { get; set; }
 
             protected override bool ShouldRender() => false;
 

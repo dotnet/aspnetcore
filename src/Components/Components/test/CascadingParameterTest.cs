@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public int NumRenders { get; private set; }
 
             [CascadingParameter] T CascadingParameter { get; set; }
-            [Parameter] string RegularParameter { get; set; }
+            [Parameter] public string RegularParameter { get; set; }
 
             public override async Task SetParametersAsync(ParameterCollection parameters)
             {
