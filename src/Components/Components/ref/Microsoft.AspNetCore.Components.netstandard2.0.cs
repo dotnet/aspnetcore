@@ -828,17 +828,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         PermutationListEntry = 9,
         PermutationListEnd = 10,
     }
-    public enum RenderTreeFrameType
+    public enum RenderTreeFrameType : short
     {
-        None = 0,
-        Element = 1,
-        Text = 2,
-        Attribute = 3,
-        Component = 4,
-        Region = 5,
-        ElementReferenceCapture = 6,
-        ComponentReferenceCapture = 7,
-        Markup = 8,
+        None = (short)0,
+        Element = (short)1,
+        Text = (short)2,
+        Attribute = (short)3,
+        Component = (short)4,
+        Region = (short)5,
+        ElementReferenceCapture = (short)6,
+        ComponentReferenceCapture = (short)7,
+        Markup = (short)8,
     }
 }
 namespace Microsoft.AspNetCore.Components.Routing
