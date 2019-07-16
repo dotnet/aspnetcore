@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
                     EventIds.BeginInvokeDotNet,
-                    "Invoking static method '[{Assembly}]::{MethodIdentifier}' with callback id '{CallId}'");
+                    "Invoking static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'");
 
                 _beginInvokeDotNetInstance =
                 LoggerMessage.Define<string, long, string>(

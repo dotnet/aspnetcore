@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 }
                 else
                 {
-                    var message = $"There was an error on the current session. For more details turn on " +
+                    var message = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
                         $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
 
                     await circuitHost.Client.SendAsync("JS.Error", message);

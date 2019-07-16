@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                Log.InvokeDotnetmethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+                Log.InvokeDotNetMethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                 base.EndInvokeDotNet(callId, success, resultOrError, assemblyName, methodIdentifier, dotNetObjectId);
             }
         }
