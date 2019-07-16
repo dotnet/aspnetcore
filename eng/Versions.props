@@ -57,6 +57,7 @@
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview8-27914-06</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.0.0-preview8-27914-06</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.0.0-preview8-27914-06</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNetCoreDotNetAppHostPackageVersion>3.0.0-preview8-27914-06</MicrosoftNetCoreDotNetAppHostPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0-preview8-27914-06</NETStandardLibraryRefPackageVersion>
 
     <!-- Packages from dotnet/corefx -->

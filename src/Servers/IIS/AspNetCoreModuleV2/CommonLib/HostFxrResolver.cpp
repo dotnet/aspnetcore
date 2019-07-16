@@ -87,8 +87,9 @@ HostFxrResolver::GetHostFxrParameters(
                     arguments,
                     true);
 
-                // argument[0] will contain the dll path.
                 get_host_fxr_path(hostfxrPath.data(), &size, arguments[0].c_str());
+
+                // If this fails, path probe
 
                 hostfxrPath.resize(size);
                 hostFxrDllPath = hostfxrPath;

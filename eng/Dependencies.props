@@ -179,33 +179,12 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
     <LatestPackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
     <LatestPackageReference Include="System.Reactive.Linq" Version="$(SystemReactiveLinqPackageVersion)" />
-    <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
-    <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-    <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
-    <LatestPackageReference Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
-    <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
-    <LatestPackageReference Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <LatestPackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
-    <LatestPackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
-    <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
-    <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
-    <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
     <LatestPackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
 
-    <!-- Runtime packages required for crossgen -->
-    <LatestPackageReference Include="runtime.win-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.win-x86.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.win-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.osx-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-musl-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
-    <LatestPackageReference Include="runtime.linux-musl-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
     <LatestPackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNetCoreDotNetAppHostPackageVersion)" />
     <LatestPackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNetCoreDotNetAppHostPackageVersion)" />
   </ItemGroup>
