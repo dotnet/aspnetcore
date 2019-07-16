@@ -138,17 +138,8 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
     beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
       connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
     },
-    endInvokeDotNetFromJS: (asyncHandle, succeeded, argsJson, replacer): void => {
-      const serializedArgs = JSON.stringify(
-        [
-          asyncHandle,
-          succeeded,
-          argsJson,
-        ],
-        replacer
-      );
-
-      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, serializedArgs);
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
     },
   });
 
