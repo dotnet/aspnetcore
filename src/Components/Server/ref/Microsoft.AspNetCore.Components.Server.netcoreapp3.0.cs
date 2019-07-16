@@ -3,22 +3,27 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    public sealed partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder, Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder
+    {
+        internal ComponentEndpointConventionBuilder() { }
+        public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
+    }
     public static partial class ComponentEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder AddComponent(this Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder builder, System.Type componentType, string selector) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder AddComponent(this Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder builder, System.Type componentType, string selector) { throw null; }
     }
     public static partial class ComponentEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type type, string selector) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type type, string selector, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type type, string selector) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type type, string selector, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Server
@@ -30,11 +35,6 @@ namespace Microsoft.AspNetCore.Components.Server
         public System.TimeSpan JSInteropDefaultCallTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool JSInteropDetailedErrors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int MaxRetainedDisconnectedCircuits { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public sealed partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder, Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder
-    {
-        internal ComponentEndpointConventionBuilder() { }
-        public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
     }
     public partial class ComponentPrerenderingContext
     {
