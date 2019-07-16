@@ -262,7 +262,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   });
 
   module.postRun.push(() => {
-    MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE","true");
+    MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
     const load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     load_runtime(appBinDirName, hasDebuggingEnabled() ? 1 : 0);
     MONO.mono_wasm_runtime_is_ready = true;
@@ -279,7 +279,7 @@ function toAbsoluteUrl(possiblyRelativeUrl: string) {
   return anchorTagForAbsoluteUrlConversions.href;
 }
 
-function asyncLoad(url) {
+function asyncLoad(url: string) {
   return new Promise<Uint8Array>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, /* async: */ true);
@@ -301,26 +301,39 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
 
-function attachInteropInvoker() {
+function attachInteropInvoker(): void {
   const dotNetDispatcherInvokeMethodHandle = findMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop', 'MonoWebAssemblyJSRuntime', 'InvokeDotNet');
   const dotNetDispatcherBeginInvokeMethodHandle = findMethod('Mono.WebAssembly.Interop', 'Mono.WebAssembly.Interop', 'MonoWebAssemblyJSRuntime', 'BeginInvokeDotNet');
 
+  const beginInvokeDotNetFromJS = (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
+    if (!dotNetObjectId && !assemblyName) {
+      throw new Error('Either assemblyName or dotNetObjectId must have a non null value.');
+    }
+    // As a current limitation, we can only pass 4 args. Fortunately we only need one of
+    // 'assemblyName' or 'dotNetObjectId', so overload them in a single slot
+    const assemblyNameOrDotNetObjectId: string = dotNetObjectId
+      ? dotNetObjectId.toString()
+      : assemblyName;
+
+    monoPlatform.callMethod(dotNetDispatcherBeginInvokeMethodHandle, null, [
+      callId ? monoPlatform.toDotNetString(callId.toString()) : null,
+      monoPlatform.toDotNetString(assemblyNameOrDotNetObjectId),
+      monoPlatform.toDotNetString(methodIdentifier),
+      monoPlatform.toDotNetString(argsJson),
+    ]);
+  };
+
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
-      // As a current limitation, we can only pass 4 args. Fortunately we only need one of
-      // 'assemblyName' or 'dotNetObjectId', so overload them in a single slot
-      const assemblyNameOrDotNetObjectId = dotNetObjectId
-        ? dotNetObjectId.toString()
-        : assemblyName;
-
-      monoPlatform.callMethod(dotNetDispatcherBeginInvokeMethodHandle, null, [
-        callId ? monoPlatform.toDotNetString(callId.toString()) : null,
-        monoPlatform.toDotNetString(assemblyNameOrDotNetObjectId!),
-        monoPlatform.toDotNetString(methodIdentifier),
-        monoPlatform.toDotNetString(argsJson),
-      ]);
+    beginInvokeDotNetFromJS,
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, resultOrError): void => {
+      beginInvokeDotNetFromJS(
+        0,
+        'Microsoft.JSInterop',
+        'DotNetDispatcher.EndInvoke',
+        null,
+        resultOrError
+      );
     },
-
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
       const resultJsonStringPtr = monoPlatform.callMethod(dotNetDispatcherInvokeMethodHandle, null, [
         assemblyName ? monoPlatform.toDotNetString(assemblyName) : null,

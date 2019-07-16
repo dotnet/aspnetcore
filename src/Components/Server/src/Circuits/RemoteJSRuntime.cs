@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
-
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)

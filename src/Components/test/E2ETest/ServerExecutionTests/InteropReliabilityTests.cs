@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
 
             await Client.HubConnection.InvokeAsync(
-                "EndInvokeDotNetFromJS",
+                "EndInvokeJSFromDotNet",
                 4,
                 true,
                 "[4, true, \"{\"]");

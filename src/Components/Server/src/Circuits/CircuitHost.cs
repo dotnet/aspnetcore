@@ -452,14 +452,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                    EventIds.OnCircuitClosed,
                    "Closing circuit with id {CircuitId}.");
 
-                _beginInvokeDotNetStatic =
-                    LoggerMessage.Define<string, string, string>(
+                _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
                     EventIds.BeginInvokeDotNet,
                     "Invoking static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'");
 
-                _beginInvokeDotNetInstance =
-                LoggerMessage.Define<string, long, string>(
+                _beginInvokeDotNetInstance = LoggerMessage.Define<string, long, string>(
                     LogLevel.Debug,
                     EventIds.BeginInvokeDotNet,
                     "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'");

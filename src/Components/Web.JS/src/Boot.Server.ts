@@ -148,7 +148,7 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
         replacer
       );
 
-      connection.send('EndInvokeDotNetFromJS', asyncHandle, succeeded, serializedArgs);
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, serializedArgs);
     },
   });
 
