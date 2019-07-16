@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     internal static class RouteTableFactory
     {
-        private static readonly string ComponentAssemblyName = typeof(IComponent).Assembly.FullName;
         private static readonly ConcurrentDictionary<Assembly, RouteTable> Cache =
             new ConcurrentDictionary<Assembly, RouteTable>();
         public static readonly IComparer<RouteEntry> RoutePrecedence = Comparer<RouteEntry>.Create(RouteComparison);
@@ -27,16 +26,17 @@ namespace Microsoft.AspNetCore.Components
                 return resolvedComponents;
             }
 
-            var componentTypes = DiscoverComponentTypes(appAssembly);
-            var routeTable = Create(componentTypes);
+            var routeTable = CreateUncached(appAssembly);
             Cache.TryAdd(appAssembly, routeTable);
             return routeTable;
         }
 
-        internal static RouteTable Create(IEnumerable<Type> types)
+        internal static RouteTable CreateUncached(Assembly appAssembly)
         {
+            var componentTypes = appAssembly.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t));
+
             var routes = new List<RouteEntry>();
-            foreach (var type in types)
+            foreach (var type in componentTypes)
             {
                 // We're deliberately using inherit = false here.
                 //
@@ -53,27 +53,6 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return new RouteTable(routes.OrderBy(id => id, RoutePrecedence).ToArray());
-        }
-
-        private static IEnumerable<Type> DiscoverComponentTypes(Assembly assembly)
-        {
-            var candidateAssemblies = new List<Assembly> { assembly };
-
-            var references = assembly.GetReferencedAssemblies();
-            foreach (var referencedAssemblyName in assembly.GetReferencedAssemblies())
-            {
-                var referencedAssembly = Assembly.Load(referencedAssemblyName);
-                if (referencedAssembly.GetReferencedAssemblies().Any(r => string.Equals(r.FullName, ComponentAssemblyName, StringComparison.Ordinal)))
-                {
-                    // The referenced assembly references components. We'll use it as a candidate for component discovery
-                    candidateAssemblies.Add(referencedAssembly);
-                }
-            }
-
-            var componentTypes = candidateAssemblies.SelectMany(c => c.ExportedTypes)
-                .Where(t => typeof(IComponent).IsAssignableFrom(t));
-
-            return componentTypes;
         }
 
         /// <summary>

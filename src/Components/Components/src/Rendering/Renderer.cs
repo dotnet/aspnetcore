@@ -63,7 +63,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
-            _componentFactory = new ComponentFactory(serviceProvider);
         }
 
         /// <summary>
