@@ -52,13 +52,6 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Server.ComponentPrerenderResult> PrerenderComponentAsync(Microsoft.AspNetCore.Components.Server.ComponentPrerenderingContext context);
     }
-    public static partial class WasmMediaTypeNames
-    {
-        public static partial class Application
-        {
-            public const string Wasm = "application/wasm";
-        }
-    }
 }
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
