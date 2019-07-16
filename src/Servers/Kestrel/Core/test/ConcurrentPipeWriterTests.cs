@@ -261,6 +261,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
+        [Fact]
+        public async Task CancelPendingFlushInterruptsFlushLoop()
+        {
+            using (var slabPool = new SlabMemoryPool())
+            using (var diagnosticPool = new DiagnosticMemoryPool(slabPool))
+            {
+                var pipeWriterFlushTcsArray = new[] {
+                    new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
+                    new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
+                };
+
+                var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+
+                var memory = concurrentPipeWriter.GetMemory();
+                Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
+
+                concurrentPipeWriter.Advance(memory.Length);
+                Assert.Equal(1, mockPipeWriter.AdvanceCallCount);
+
+                var flushTask0 = concurrentPipeWriter.FlushAsync();
+                Assert.Equal(1, mockPipeWriter.FlushCallCount);
+
+                Assert.False(flushTask0.IsCompleted);
+                
+                // Since the flush was not awaited, the following API calls are queued.
+                memory = concurrentPipeWriter.GetMemory();
+                concurrentPipeWriter.Advance(memory.Length);
+                var flushTask1 = concurrentPipeWriter.FlushAsync();
+
+                Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
+                Assert.Equal(1, mockPipeWriter.AdvanceCallCount);
+                Assert.Equal(1, mockPipeWriter.FlushCallCount);
+
+                Assert.False(flushTask0.IsCompleted);
+                Assert.False(flushTask1.IsCompleted);
+
+                // CancelPendingFlush() does not get queued.
+                concurrentPipeWriter.CancelPendingFlush();
+                Assert.Equal(1, mockPipeWriter.CancelPendingFlushCallCount);
+
+                pipeWriterFlushTcsArray[0].SetResult(new FlushResult(isCanceled: true, isCompleted: false));
+
+                Assert.True((await flushTask0.DefaultTimeout()).IsCanceled);
+                Assert.True((await flushTask1.DefaultTimeout()).IsCanceled);
+
+                var flushTask2 = concurrentPipeWriter.FlushAsync();
+                Assert.False(flushTask2.IsCompleted);
+
+                pipeWriterFlushTcsArray[1].SetResult(default);
+                await flushTask2.DefaultTimeout();
+
+                // We do not need to flush the final bytes, since the incomplete flush will pick it up.
+                Assert.Equal(2, mockPipeWriter.GetMemoryCallCount);
+                Assert.Equal(2, mockPipeWriter.AdvanceCallCount);
+                Assert.Equal(2, mockPipeWriter.FlushCallCount);
+
+                var completeEx = new Exception();
+                await concurrentPipeWriter.CompleteAsync(completeEx);
+                Assert.Same(completeEx, mockPipeWriter.CompleteException);
+            }
+        }
+
         private class MockPipeWriter : PipeWriter
         {
             // It's important that this matches SlabMemoryPool._blockSize for all the tests to pass.
@@ -276,6 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public int GetMemoryCallCount { get; set; }
             public int AdvanceCallCount { get; set; }
             public int FlushCallCount { get; set; }
+            public int CancelPendingFlushCallCount { get; set; }
 
             public TaskCompletionSource<object> FlushTcs { get; set; }
 
@@ -311,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public override void CancelPendingFlush()
             {
-                throw new NotImplementedException();
+                CancelPendingFlushCallCount++;
             }
 
             public override void OnReaderCompleted(Action<Exception, object> callback, object state)
