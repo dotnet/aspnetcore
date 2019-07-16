@@ -13,7 +13,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.DevServer" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
   </ItemGroup>
-  </ItemGroup>
   <!--#if Hosted -->
   <ItemGroup>
     <ProjectReference Include="..\Shared\BlazorWasm-CSharp.Shared.csproj" />
