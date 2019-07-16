@@ -26,15 +26,14 @@ namespace Microsoft.AspNetCore.Components
                 return resolvedComponents;
             }
 
-            var routeTable = CreateUncached(appAssembly);
+            var componentTypes = appAssembly.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t));
+            var routeTable = Create(componentTypes);
             Cache.TryAdd(appAssembly, routeTable);
             return routeTable;
         }
 
-        internal static RouteTable CreateUncached(Assembly appAssembly)
+        internal static RouteTable Create(IEnumerable<Type> componentTypes)
         {
-            var componentTypes = appAssembly.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t));
-
             var routes = new List<RouteEntry>();
             foreach (var type in componentTypes)
             {
