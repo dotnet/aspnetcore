@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "StandaloneApp.dll",
                 "StandaloneApp.pdb",
                 "System.dll",
+                "System.Buffers.dll",
                 "System.Collections.Concurrent.dll",
                 "System.Collections.dll",
                 "System.ComponentModel.Composition.dll",

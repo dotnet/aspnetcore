@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
-    public partial class RenderTreeBuilder
+    public partial class RenderTreeBuilder : System.IDisposable
     {
         public const string ChildContent = "ChildContent";
         public RenderTreeBuilder(Microsoft.AspNetCore.Components.Rendering.Renderer renderer) { }
@@ -794,6 +794,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void OpenElement(int sequence, string elementName) { }
         public void SetKey(object value) { }
         public void SetUpdatesAttributeName(string updatesAttributeName) { }
+        void System.IDisposable.Dispose() { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
