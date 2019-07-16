@@ -21,7 +21,13 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
 
-    <ProjectReference Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" />
+    <!-- Add a project dependency without reference output assemblies to enforce build order -->
+    <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 -->
+    <ProjectReference
+      Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <PropertyGroup>

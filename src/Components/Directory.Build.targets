@@ -5,8 +5,6 @@
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="." />
-
-    <ProjectReference Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" Condition="'$(ReferenceBlazorBuildLocally)' == 'true'" />
   </ItemGroup>
 
   <Import Project="Blazor\Build\src\ReferenceFromSource.props" Condition="'$(ReferenceBlazorBuildLocally)' == 'true'" />
