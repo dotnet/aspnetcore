@@ -1436,5 +1436,72 @@ namespace Test
 
             Assert.Empty(component.BoundAttributes);
         }
+
+        [Fact] // Testing multilevel overrides with the [Parameter] attribute on different levels.
+        public void Execute_MultiLevelOverriddenProperties_CreatesDescriptorCorrectly()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public abstract class MyBaseComponent : ComponentBase
+    {
+        [Parameter]
+        public virtual string Header { get; set; }
+
+        public virtual string Footer { get; set; }
+    }
+
+    public abstract class MyDerivedComponent1 : MyBaseComponent
+    {
+        public override string Header { get; set; }
+
+        [Parameter]
+        public override string Footer { get; set; }
+    }
+
+    public class MyDerivedComponent2 : MyDerivedComponent1
+    {
+        public override string Header { get; set; }
+
+        public override string Footer { get; set; }
+    }
+}
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            components = AssertAndExcludeFullyQualifiedNameMatchComponents(components, expectedCount: 1);
+            var component = Assert.Single(components, c => c.IsComponentTagHelper());
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyDerivedComponent2", component.Name);
+
+            Assert.Collection(
+                component.BoundAttributes.OrderBy(a => a.Name),
+                a =>
+                {
+                    Assert.Equal("Footer", a.Name);
+                    Assert.Equal("System.String", a.TypeName);
+                },
+                a =>
+                {
+                    Assert.Equal("Header", a.Name);
+                    Assert.Equal("System.String", a.TypeName);
+                });
+        }
     }
 }

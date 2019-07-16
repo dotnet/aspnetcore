@@ -386,6 +386,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     if (!property.GetAttributes().Any(a => a.AttributeClass == symbols.ParameterAttribute))
                     {
+                        if (property.IsOverride)
+                        {
+                            // This property does not contain [Parameter] attribute but it was overridden. Don't ignore it for now.
+                            // We can ignore it if the base class does not contains a [Parameter] as well.
+                            continue;
+                        }
+
                         // Does not have [Parameter]
                         kind = PropertyKind.Ignored;
                     }
