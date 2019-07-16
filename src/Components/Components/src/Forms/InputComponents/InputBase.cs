@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -166,12 +165,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-
         /// <inheritdoc />
-        public override Task SetParametersAsync(ParameterCollection parameters)
+        protected override void OnParametersSet()
         {
-            parameters.SetParameterProperties(this);
-
             if (EditContext == null)
             {
                 // This is the first run
@@ -204,9 +200,6 @@ namespace Microsoft.AspNetCore.Components.Forms
                 throw new InvalidOperationException($"{GetType()} does not support changing the " +
                     $"{nameof(Forms.EditContext)} dynamically.");
             }
-
-            // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-            return base.SetParametersAsync(ParameterCollection.Empty);
         }
     }
 }

@@ -48,10 +48,9 @@ else
 
     WeatherForecast[] forecasts;
 
-    public override Task SetParametersAsync(ParameterCollection parameters)
+    protected override void OnParametersSetting()
     {
         StartDate = DateTime.Now;
-        return base.SetParametersAsync(parameters);
     }
 
     protected override async Task OnParametersSetAsync()

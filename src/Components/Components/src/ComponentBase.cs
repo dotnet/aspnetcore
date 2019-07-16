@@ -78,7 +78,22 @@ namespace Microsoft.AspNetCore.Components
 
         /// <summary>
         /// Method invoked when the component has received parameters from its parent in
-        /// the render tree, and the incoming values have been assigned to properties.
+        /// the render tree, before the incoming values have been assigned to properties.
+        /// </summary>
+        protected virtual void OnParametersSetting()
+        {
+        }
+
+        /// <summary>
+        /// Method invoked when the component has received parameters from its parent in
+        /// the render tree, before the incoming values have been assigned to properties.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
+        protected virtual Task OnParametersSettingAsync() => Task.CompletedTask;
+
+        /// <summary>
+        /// Method invoked when the component has received parameters from its parent in
+        /// the render tree, after the incoming values have been assigned to properties.
         /// </summary>
         protected virtual void OnParametersSet()
         {
@@ -86,7 +101,7 @@ namespace Microsoft.AspNetCore.Components
 
         /// <summary>
         /// Method invoked when the component has received parameters from its parent in
-        /// the render tree, and the incoming values have been assigned to properties.
+        /// the render tree, after the incoming values have been assigned to properties.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
         protected virtual Task OnParametersSetAsync()
@@ -175,22 +190,22 @@ namespace Microsoft.AspNetCore.Components
         /// Method invoked to apply initial or updated parameters to the component.
         /// </summary>
         /// <param name="parameters">The parameters to apply.</param>
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterCollection parameters)
         {
-            parameters.SetParameterProperties(this);
             if (!_initialized)
             {
                 _initialized = true;
 
-                return RunInitAndSetParametersAsync();
+                return RunInitAndSetParametersAsync(parameters);
             }
             else
             {
-                return CallOnParametersSetAsync();
+                
+                return SetParametersCoreAsync(parameters);
             }
         }
 
-        private async Task RunInitAndSetParametersAsync()
+        private async Task RunInitAndSetParametersAsync(ParameterCollection parameters)
         {
            OnInitialized();
             var task = OnInitializedAsync();
@@ -223,7 +238,33 @@ namespace Microsoft.AspNetCore.Components
                 // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
             }
 
+            await SetParametersCoreAsync(parameters);
+        }
+
+        private async Task SetParametersCoreAsync(ParameterCollection parameters)
+        {
+            await CallOnParametersSettingAsync();
+            parameters.SetParameterProperties(this);
             await CallOnParametersSetAsync();
+        }
+
+        private Task CallOnParametersSettingAsync()
+        {
+            OnParametersSetting();
+            var task = OnParametersSettingAsync();
+            // If no async work is to be performed, i.e. the task has already ran to completion
+            // or was canceled by the time we got to inspect it, avoid going async and re-invoking
+            // StateHasChanged at the culmination of the async work.
+            var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
+                task.Status != TaskStatus.Canceled;
+
+            // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
+            // the synchronous part of OnParametersSetAsync has run.
+            StateHasChanged();
+
+            return shouldAwaitTask ?
+                CallStateHasChangedOnAsyncCompletion(task) :
+                Task.CompletedTask;
         }
 
         private Task CallOnParametersSetAsync()
