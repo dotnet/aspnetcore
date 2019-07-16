@@ -13,6 +13,11 @@ namespace Microsoft.JSInterop
             throw new NotImplementedException();
         }
 
+        protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
+        {
+            throw new NotImplementedException();
+        }
+
         public static async Task WithJSRuntime(Action<JSRuntimeBase> testCode)
         {
             // Since the tests rely on the asynclocal JSRuntime.Current, ensure we

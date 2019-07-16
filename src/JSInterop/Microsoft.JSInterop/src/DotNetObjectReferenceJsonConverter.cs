@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -14,27 +13,31 @@ namespace Microsoft.JSInterop
 
         public override DotNetObjectRef<TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (!reader.Read())
+            long dotNetObjectId = 0;
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                throw new InvalidDataException("Invalid DotNetObjectRef JSON.");
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    if (reader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        dotNetObjectId = reader.GetInt64();
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                    }
+                }
+                else
+                {
+                    throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
+                }
             }
 
-            if (reader.TokenType != JsonTokenType.PropertyName || !reader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+            if (dotNetObjectId is 0)
             {
-                throw new InvalidDataException("Invalid DotNetObjectRef JSON.");
-            }
-
-            if (!reader.Read())
-            {
-                throw new InvalidDataException("Invalid DotNetObjectRef JSON.");
-            }
-
-            var dotNetObjectId = reader.GetInt64();
-
-            if (!reader.Read())
-            {
-                // We need to read all the data that was given to us.
-                throw new InvalidDataException("Invalid DotNetObjectRef JSON.");
+                throw new JsonException($"Required property {DotNetObjectRefKey} not found.");
             }
 
             var value = (TValue)DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
