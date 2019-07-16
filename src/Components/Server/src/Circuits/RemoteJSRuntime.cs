@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                Log.InvokeDotnetmethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+                Log.InvokeDotNetMethodSuccess(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                 EndInvokeDotNetCore(callId, success, resultOrError);
             }
         }
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
             }
 
-            internal static void InvokeDotnetmethodSuccess(ILogger<RemoteJSRuntime> logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            internal static void InvokeDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
             {
                 if (assemblyName != null)
                 {

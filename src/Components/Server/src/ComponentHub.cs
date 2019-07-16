@@ -129,11 +129,6 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            if (assemblyName == "Microsoft.JSInterop" && methodIdentifier == "DotNetDispatcher.EndInvoke")
-            {
-                return;
-            }
-
             _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 

@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
-        internal async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
+        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
         {
             try
             {
@@ -165,23 +165,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        internal async Task DispatchEvent(string eventDescriptorJson, string eventArgs)
+        public async Task DispatchEvent(string eventDescriptorJson, string eventArgs)
         {
+            RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
             try
             {
                 AssertInitialized();
+                eventDescriptor = ParseEventDescriptor(eventDescriptorJson);
 
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
 
-                    var eventDescriptor = ParseEventDescriptor(eventDescriptorJson);
-                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgs);
+                    if (eventDescriptor != null)
+                    {
+                        return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgs);
+                    }
+
+                    return Task.CompletedTask;
                 });
             }
             catch (Exception ex)
             {
-                Log.DispatchEventFailedToDispatchEvent(_logger, ex);
+                Log.DispatchEventFailedToDispatchEvent(_logger, eventDescriptor != null ? eventDescriptor.EventHandlerId.ToString() : null, ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -400,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventDescriptor;
-            private static readonly Action<ILogger, Exception> _dispatchEventFailedToDispatchEvent;
+            private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
 
 
             private static class EventIds
@@ -482,10 +488,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.DispatchEventFailedToParseEventDescriptor,
                     "Failed to parse the event descriptor data when trying to dispatch an event.");
 
-                _dispatchEventFailedToDispatchEvent = LoggerMessage.Define(
+                _dispatchEventFailedToDispatchEvent = LoggerMessage.Define<string>(
                     LogLevel.Debug,
                     EventIds.DispatchEventFailedToDispatchEvent,
-                    "There was an error dispatching the event to the application.");
+                    "There was an error dispatching the event '{EventHandlerId}' to the application.");
             }
 
             public static void UnhandledExceptionInvokingCircuitHandler(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
@@ -519,13 +525,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public static void DispatchEventFailedToParseEventDescriptor(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventDescriptor(logger, ex);
 
-            public static void DispatchEventFailedToDispatchEvent(ILogger logger, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, ex);
+            public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 
             public static void BeginInvokeDotNet(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
             {
                 if (assemblyName != null)
                 {
-                    _beginInvokeDotNetStatic(logger, assemblyName, methodIdentifier, callId, null);
+                    _beginInvokeDotNetStatic(logger, methodIdentifier, assemblyName, callId, null);
                 }
                 else
                 {
