@@ -759,7 +759,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
         public void CanBindTextboxDateTimeWithFormat()
         {
             var target = Browser.FindElement(By.Id("textbox-datetime-format"));
@@ -818,7 +818,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // For date comparisons, we parse (non-formatted) values to compare them. Client-side and server-side
         // Blazor have different formatting behaviour by default.
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
         public void CanBindTextboxDateTimeOffsetWithFormat()
         {
             var target = Browser.FindElement(By.Id("textbox-datetimeoffset-format"));
