@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static ReadOnlySpan<byte> _continueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
-        private readonly object _writeLock = new object();
         private readonly Http2Frame _outgoingFrame;
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly ConcurrentPipeWriter _outputWriter;
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void UpdateMaxFrameSize(uint maxFrameSize)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_maxFrameSize != maxFrameSize)
                 {
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Complete()
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Abort(ConnectionAbortedException error)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_aborted)
                 {
@@ -114,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -130,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> Write100ContinueAsync(int streamId)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -161,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public void WriteResponseHeaders(int streamId, int statusCode, Http2HeadersFrameFlags headerFrameFlags, IHeaderDictionary headers)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -186,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> WriteResponseTrailers(int streamId, HttpResponseTrailers headers)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -244,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
 
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed || flowControl.IsAborted)
                 {
@@ -358,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 OutputFlowControlAwaitable availabilityAwaitable;
                 var writeTask = default(ValueTask<FlushResult>);
 
-                lock (_writeLock)
+                lock (_outputWriter.Sync)
                 {
                     if (_completed || flowControl.IsAborted)
                     {
@@ -433,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public ValueTask<FlushResult> WriteWindowUpdateAsync(int streamId, int sizeIncrement)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -456,7 +455,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public ValueTask<FlushResult> WriteRstStreamAsync(int streamId, Http2ErrorCode errorCode)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -483,7 +482,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public ValueTask<FlushResult> WriteSettingsAsync(IList<Http2PeerSetting> settings)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -516,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // No payload
         public ValueTask<FlushResult> WriteSettingsAckAsync()
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -538,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public ValueTask<FlushResult> WritePingAsync(Http2PingFrameFlags flags, in ReadOnlySequence<byte> payload)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -568,7 +567,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         */
         public ValueTask<FlushResult> WriteGoAwayAsync(int lastStreamId, Http2ErrorCode errorCode)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 if (_completed)
                 {
@@ -634,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public bool TryUpdateConnectionWindow(int bytes)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 return _connectionOutputFlowControl.TryUpdateWindow(bytes);
             }
@@ -642,7 +641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public bool TryUpdateStreamWindow(StreamOutputFlowControl flowControl, int bytes)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 return flowControl.TryUpdateWindow(bytes);
             }
@@ -650,7 +649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void AbortPendingStreamDataWrites(StreamOutputFlowControl flowControl)
         {
-            lock (_writeLock)
+            lock (_outputWriter.Sync)
             {
                 flowControl.Abort();
             }
