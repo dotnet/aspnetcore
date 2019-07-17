@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // should always be on the libuv thread
             if (ReferenceEquals(_callback, _callbackCompleted))
             {
-                Debug.Assert(false, $"{typeof(LibuvAwaitable<TRequest>)}.{nameof(OnCompleted)} raced with {nameof(IsCompleted)}, scheduling callback.");
+                Debug.Fail($"{typeof(LibuvAwaitable<TRequest>)}.{nameof(OnCompleted)} raced with {nameof(IsCompleted)}, scheduling callback.");
             }
 
             _callback = continuation;
