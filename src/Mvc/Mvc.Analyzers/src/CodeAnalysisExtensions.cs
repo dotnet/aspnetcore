@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Microsoft.CodeAnalysis
         public static IEnumerable<AttributeData> GetAttributes(this IMethodSymbol methodSymbol, ITypeSymbol attribute, bool inherit)
         {
             Debug.Assert(methodSymbol != null);
-            Debug.Assert(attribute != null);
+            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
 
             IMethodSymbol? current = methodSymbol;
             while (current != null)
@@ -50,8 +51,8 @@ namespace Microsoft.CodeAnalysis
 
         public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol typeSymbol, ITypeSymbol attribute, bool inherit)
         {
-            Debug.Assert(typeSymbol != null);
-            Debug.Assert(attribute != null);
+            typeSymbol = typeSymbol ?? throw new ArgumentNullException(nameof(typeSymbol));
+            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
 
             foreach (var type in GetTypeHierarchy(typeSymbol))
             {
@@ -69,8 +70,8 @@ namespace Microsoft.CodeAnalysis
 
         public static bool HasAttribute(this IPropertySymbol propertySymbol, ITypeSymbol attribute, bool inherit)
         {
-            Debug.Assert(propertySymbol != null);
-            Debug.Assert(attribute != null);
+            propertySymbol = propertySymbol ?? throw new ArgumentNullException(nameof(propertySymbol));
+            attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
 
             if (!inherit)
             {
@@ -93,8 +94,8 @@ namespace Microsoft.CodeAnalysis
 
         public static bool IsAssignableFrom(this ITypeSymbol source, ITypeSymbol target)
         {
-            Debug.Assert(source != null);
-            Debug.Assert(target != null);
+            source = source ?? throw new ArgumentNullException(nameof(source));
+            target = target ?? throw new ArgumentNullException(nameof(target));
 
             if (source == target)
             {
