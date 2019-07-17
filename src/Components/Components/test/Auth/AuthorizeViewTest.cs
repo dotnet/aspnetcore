@@ -427,6 +427,24 @@ namespace Microsoft.AspNetCore.Components
             });
         }
 
+        [Fact]
+        public void RejectsNonemptyScheme()
+        {
+            // Arrange
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
+            var rootComponent = new TestAuthStateProviderComponent(builder =>
+            {
+                builder.OpenComponent<AuthorizeViewCoreWithScheme>(0);
+                builder.CloseComponent();
+            });
+            renderer.AssignRootComponentId(rootComponent);
+
+            // Act/Assert
+            var ex = Assert.Throws<NotSupportedException>(rootComponent.TriggerRender);
+            Assert.Equal("The authorization data specifies an authentication scheme with value 'test scheme'. Authentication schemes cannot be specified for components.", ex.Message);
+        }
+
         private static TestAuthStateProviderComponent WrapInAuthorizeView(
             RenderFragment<AuthenticationState> childContent = null,
             RenderFragment<AuthenticationState> authorizedContent = null,
@@ -556,6 +574,12 @@ namespace Microsoft.AspNetCore.Components
         public class TestPolicyRequirement : IAuthorizationRequirement
         {
             public string PolicyName { get; set; }
+        }
+
+        public class AuthorizeViewCoreWithScheme : AuthorizeViewCore
+        {
+            protected override IAuthorizeData[] GetAuthorizeData()
+                => new[] { new AuthorizeAttribute { AuthenticationSchemes = "test scheme" } };
         }
     }
 }
