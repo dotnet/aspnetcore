@@ -308,11 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
-                ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: int.MaxValue,
-                Http2ErrorCode.INTERNAL_ERROR,
-                null);
+            Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
 
             _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
                  e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -366,11 +362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            await WaitForConnectionErrorAsync<ConnectionAbortedException>(
-                ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: int.MaxValue,
-                Http2ErrorCode.INTERNAL_ERROR,
-                null);
+            Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
 
             _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
                  e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
