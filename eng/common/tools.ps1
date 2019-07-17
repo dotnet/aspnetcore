@@ -169,7 +169,7 @@ function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $arc
   InstallDotNet $dotnetRoot $version $architecture
 }
 
-function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtime = "", [bool] $skipNonVersionedFiles = $false) {  $installScript = GetDotNetInstallScript $dotnetRoot
+function InstallDotNet([string] $dotnetRoot, [string] $version, [string] $architecture = "", [string] $runtime = "", [bool] $skipNonVersionedFiles = $false) {
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
