@@ -6,13 +6,13 @@ using System;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Builds conventions that will be used for customization of ComponentHub <see cref="EndpointBuilder"/> instances.
+    /// Builds conventions that will be used for customization of Connection <see cref="EndpointBuilder"/> instances.
     /// </summary>
-    public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionBuilder
+    public sealed class ConnectionEndpointRouteBuilder : IEndpointConventionBuilder
     {
         private readonly IEndpointConventionBuilder _endpointConventionBuilder;
 
-        internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder endpointConventionBuilder)
+        internal ConnectionEndpointRouteBuilder(IEndpointConventionBuilder endpointConventionBuilder)
         {
             _endpointConventionBuilder = endpointConventionBuilder;
         }

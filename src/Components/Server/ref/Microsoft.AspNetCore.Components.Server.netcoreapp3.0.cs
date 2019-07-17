@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public sealed partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder, Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder
+    public sealed partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder, Microsoft.AspNetCore.Builder.IHubEndpointConventionBuilder
     {
         internal ComponentEndpointConventionBuilder() { }
         public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
