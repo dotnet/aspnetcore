@@ -38,4 +38,26 @@
 
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
 
+  <!--
+    NOTE, BELOW
+
+    These bits are a temporary workaround until we're able to get on the latest SDK which includes the latest Roslyn bits.
+    Without them we can't properly publish testapps in a standalone fashion without investing in temporary infrastructure.
+  -->
+  <PropertyGroup>
+    <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta2-19365-06</MicrosoftNetCompilersToolsetPackageVersion>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+
 </Project>
