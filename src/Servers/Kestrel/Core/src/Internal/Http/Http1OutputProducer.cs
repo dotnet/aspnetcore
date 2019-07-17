@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             MemoryPool<byte> memoryPool)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
-            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool);
+            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
             _log = log;

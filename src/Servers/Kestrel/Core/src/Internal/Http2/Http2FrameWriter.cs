@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             IKestrelTrace log)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
-            _outputWriter = new ConcurrentPipeWriter(outputPipeWriter, memoryPool);
+            _outputWriter = new ConcurrentPipeWriter(outputPipeWriter, memoryPool, _writeLock);
             _connectionContext = connectionContext;
             _http2Connection = http2Connection;
             _connectionOutputFlowControl = connectionOutputFlowControl;

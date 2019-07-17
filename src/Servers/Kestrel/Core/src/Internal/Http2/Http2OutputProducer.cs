@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var pipe = CreateDataPipe(pool);
 
-            _pipeWriter = new ConcurrentPipeWriter(pipe.Writer, pool);
+            _pipeWriter = new ConcurrentPipeWriter(pipe.Writer, pool, _dataWriterLock);
             _pipeReader = pipe.Reader;
 
             // No need to pass in timeoutControl here, since no minDataRates are passed to the TimingPipeFlusher.
