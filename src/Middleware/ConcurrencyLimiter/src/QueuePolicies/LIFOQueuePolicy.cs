@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
@@ -7,14 +8,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
     internal class LIFOQueuePolicy : IQueuePolicy
     {
-        private readonly List<TaskCompletionSource<bool>> _buffer;
+        private readonly List<ResettableBooleanTCS> _buffer;
         private readonly int _maxQueueCapacity;
         private readonly int _maxConcurrentRequests;
         private bool _hasReachedCapacity;
         private int _head;
         private int _queueLength;
-
-        private static readonly Task<bool> _trueTask = Task.FromResult(true);
 
         private readonly object _bufferLock = new Object();
 
@@ -22,40 +21,41 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         public LIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
-            _buffer = new List<TaskCompletionSource<bool>>();
+            _buffer = new List<ResettableBooleanTCS>();
             _maxQueueCapacity = options.Value.RequestQueueLimit;
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             _freeServerSpots = options.Value.MaxConcurrentRequests;
         }
 
-        public Task<bool> TryEnterAsync()
+        public async Task<bool> TryEnterAsync()
         {
+            ResettableBooleanTCS tcs;
+
             lock (_bufferLock)
             {
                 if (_freeServerSpots > 0)
                 {
                     _freeServerSpots--;
-                    return _trueTask;
+                    return true;
                 }
 
                 // if queue is full, cancel oldest request
                 if (_queueLength == _maxQueueCapacity)
                 {
                     _hasReachedCapacity = true;
-                    _buffer[_head].SetResult(false);
+                    _buffer[_head].CompleteFalse();
                     _queueLength--;
                 }
 
                 // enqueue request with a tcs
-                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                if (_hasReachedCapacity || _queueLength < _buffer.Count)
+                //var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                if (!_hasReachedCapacity && _queueLength >= _buffer.Count)
                 {
-                    _buffer[_head] = tcs;
+                    _buffer.Add(new ResettableBooleanTCS());
                 }
-                else
-                {
-                    _buffer.Add(tcs);
-                }
+
+                tcs = _buffer[_head];
                 _queueLength++;
 
                 // increment _head for next time
@@ -64,8 +64,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 {
                     _head = 0;
                 }
-                return tcs.Task;
             }
+
+            return await tcs;
         }
 
         public void OnExit()
@@ -95,8 +96,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                     _head--;
                 }
 
-                _buffer[_head].SetResult(true);
-                _buffer[_head] = null;
+                _buffer[_head].CompleteTrue();
                 _queueLength--;
             }
         }

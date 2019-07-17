@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
-    public class TailDropTests
+    public class FIFOQueueTests
     {
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()

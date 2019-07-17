@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
-    public static class StackQueueTests
+    public static class LIFOQueueTests
     {
         [Fact]
         public static void BaseFunctionality()
