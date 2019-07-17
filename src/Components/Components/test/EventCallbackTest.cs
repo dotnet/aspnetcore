@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Components
                 return item.InvokeAsync(arg);
             }
 
-            public void Configure(RenderHandle renderHandle) => throw new NotImplementedException();
+            public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
 
             public Task SetParametersAsync(ParameterCollection parameters) => throw new NotImplementedException();
         }

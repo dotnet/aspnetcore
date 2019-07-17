@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
     {
         private RenderHandle _renderHandle;
 
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }

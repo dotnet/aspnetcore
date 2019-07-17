@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         class FakeComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
             public Task SetParametersAsync(ParameterCollection parameters)

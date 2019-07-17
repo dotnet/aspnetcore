@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
-        void Microsoft.AspNetCore.Components.IComponent.Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
         protected virtual void OnAfterRender() { }
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IComponent
     {
-        void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
+        void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters);
     }
     public partial interface IComponentContext

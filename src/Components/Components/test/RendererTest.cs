@@ -3399,7 +3399,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 _renderFragment = renderFragment;
             }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
@@ -3470,7 +3470,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public RenderHandle RenderHandle { get; private set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => RenderHandle = renderHandle;
 
             public Task SetParametersAsync(ParameterCollection parameters)
@@ -3619,7 +3619,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             private RenderHandle _renderHandle;
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => _renderHandle = renderHandle;
 
             public Task SetParametersAsync(ParameterCollection parameters)
@@ -3650,7 +3650,7 @@ namespace Microsoft.AspNetCore.Components.Test
             private readonly List<RenderHandle> _renderHandles
                 = new List<RenderHandle>();
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => _renderHandles.Add(renderHandle);
 
             public Task SetParametersAsync(ParameterCollection parameters)
@@ -3764,7 +3764,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public int Number { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandler = renderHandle;
             }
@@ -3806,7 +3806,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 SomeMethodCallCount++;
             }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }

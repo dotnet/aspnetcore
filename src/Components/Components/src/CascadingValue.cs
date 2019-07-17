@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components
         bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }

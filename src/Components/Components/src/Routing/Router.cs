@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _logger = LoggerFactory.CreateLogger<Router>();
             _renderHandle = renderHandle;

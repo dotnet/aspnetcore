@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             [Parameter]
             RenderFragment Body { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
             }
 
