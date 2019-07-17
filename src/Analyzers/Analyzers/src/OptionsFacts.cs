@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Analyzers;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers
@@ -14,8 +13,8 @@ namespace Microsoft.AspNetCore.Analyzers
             for (var i = 0; i < analysis.Options.Length; i++)
             {
                 var item = analysis.Options[i];
-                if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions) &&
-                    string.Equals(item.Property.Name, SymbolNames.EnableEndpointRoutingProperty, StringComparison.Ordinal))
+                if (string.Equals(item.OptionsType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat), SymbolNames.MvcOptions.MetadataName) &&
+                    string.Equals(item.Property.Name, SymbolNames.MvcOptions.EnableEndpointRoutingPropertyName, StringComparison.Ordinal))
                 {
                     return item.ConstantValue as bool? == false;
                 }

@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Analyzers
 
         public TestSource Read(string source)
         {
+            if (!source.EndsWith(".cs"))
+            {
+                source = source + ".cs";
+            }
+
             var filePath = Path.Combine(ProjectDirectory, "TestFiles", GetType().Name, source);
             if (!File.Exists(filePath))
             {

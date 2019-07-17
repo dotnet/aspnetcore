@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             IApplicationBuilder = compilation.GetTypeByMetadataName(SymbolNames.IApplicationBuilder.MetadataName);
             IServiceCollection = compilation.GetTypeByMetadataName(SymbolNames.IServiceCollection.MetadataName);
+            MvcOptions = compilation.GetTypeByMetadataName(SymbolNames.MvcOptions.MetadataName);
         }
 
         public bool HasRequiredSymbols => IApplicationBuilder != null && IServiceCollection != null;
@@ -18,5 +19,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public INamedTypeSymbol IApplicationBuilder { get; }
 
         public INamedTypeSymbol IServiceCollection { get; }
+
+        public INamedTypeSymbol MvcOptions { get; }
     }
 }
