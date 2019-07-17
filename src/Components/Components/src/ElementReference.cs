@@ -64,10 +64,21 @@ namespace Microsoft.AspNetCore.Components
                 string id = null;
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    if (reader.ValueTextEquals(IdProperty.EncodedUtf8Bytes))
+                    if (reader.TokenType == JsonTokenType.PropertyName)
                     {
-                        reader.Read();
-                        id = reader.GetString();
+                        if (reader.ValueTextEquals(IdProperty.EncodedUtf8Bytes))
+                        {
+                            reader.Read();
+                            id = reader.GetString();
+                        }
+                        else
+                        {
+                            throw new JsonException($"Unexpected JSON property '{reader.GetString()}'.");
+                        }
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
                     }
                 }
 

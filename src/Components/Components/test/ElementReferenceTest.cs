@@ -54,10 +54,23 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void Deserializing_Throws_IfIdIsNotSpecified()
+        public void Deserializing_Throws_IfUnknownPropertyAppears()
         {
             // Arrange
             var json = "{\"id\":\"some-value\"}";
+
+            // Act
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options));
+
+            // Assert
+            Assert.Equal("Unexpected JSON property 'id'.", ex.Message);
+        }
+
+        [Fact]
+        public void Deserializing_Throws_IfIdIsNotSpecified()
+        {
+            // Arrange
+            var json = "{}";
 
             // Act
             var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options));
