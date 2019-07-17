@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamOutputFlowControl _flowControl;
         private readonly MemoryPool<byte> _memoryPool;
         private readonly Http2Stream _stream;
-        private readonly object _dataWriterLock = new object();
-        private readonly PipeWriter _pipeWriter;
+        private readonly ConcurrentPipeWriter _pipeWriter;
         private readonly PipeReader _pipeReader;
         private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Dispose()
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 if (_disposed)
                 {
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
             }
 
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -133,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> Write100ContinueAsync()
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -148,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 // The HPACK header compressor is stateful, if we compress headers for an aborted stream we must send them.
                 // Optimize for not compressing or sending them.
@@ -187,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.FromCanceled(cancellationToken);
             }
 
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -207,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 if (_completed)
                 {
@@ -224,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> WriteRstStreamAsync(Http2ErrorCode error)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 // Always send the reset even if the response body is _completed. The request body may not have completed yet.
                 Stop();
@@ -235,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Advance(int bytes)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -252,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -267,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -282,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void CancelPendingFlush()
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 if (_completed)
                 {
@@ -300,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
             }
 
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 ThrowIfSuffixSent();
 
@@ -320,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
 
@@ -340,7 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Stop()
         {
-            lock (_dataWriterLock)
+            lock (_pipeWriter.Sync)
             {
                 if (_completed)
                 {

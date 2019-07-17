@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private static readonly Exception _successfullyCompletedSentinel = new Exception();
 
-        private readonly object _sync = new object();
+        public readonly object _sync = new object();
         private readonly PipeWriter _innerPipeWriter;
         private readonly MemoryPool<byte> _pool;
         private readonly BufferSegmentStack _bufferSegmentPool = new BufferSegmentStack(InitialSegmentPoolSize);
@@ -56,6 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             _innerPipeWriter = innerPipeWriter;
             _pool = pool;
         }
+
+        public object Sync => _sync;
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
