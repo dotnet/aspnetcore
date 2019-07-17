@@ -1,24 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
-    public class StartupAnalyzerTest
+    public class StartupAnalyzerTest : AnalyzerTestBase
     {
         public StartupAnalyzerTest()
         {
             StartupAnalyzer = new StartupAnalzyer();
 
-            Runner = new MvcDiagnosticAnalyzerRunner(StartupAnalyzer);
+            Runner = new AnalyzersDiagnosticAnalyzerRunner(StartupAnalyzer);
 
             Analyses = new ConcurrentBag<object>();
             ConfigureServicesMethods = new ConcurrentBag<IMethodSymbol>();
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
         private StartupAnalzyer StartupAnalyzer { get; }
 
-        private MvcDiagnosticAnalyzerRunner Runner { get; }
+        private AnalyzersDiagnosticAnalyzerRunner Runner { get; }
 
         private ConcurrentBag<object> Analyses { get; }
 
@@ -44,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_Standard()
         {
             // Arrange
-            var source = ReadSource("StartupSignatures_Standard");
+            var source = Read("StartupSignatures_Standard");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -60,7 +58,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_FindsStartupMethods_StartupSignatures_MoreVariety()
         {
             // Arrange
-            var source = ReadSource("StartupSignatures_MoreVariety");
+            var source = Read("StartupSignatures_MoreVariety");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -82,7 +80,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingDisabled()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled");
+            var source = Read("MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_MvcOptionsAnalysis_AddMvcOptions_FindsEndpointRoutingDisabled()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcWithDefaultRouteAndAddMvcOptionsEndpointRoutingDisabled");
+            var source = Read("MvcOptions_UseMvcWithDefaultRouteAndAddMvcOptionsEndpointRoutingDisabled");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -125,7 +123,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_MvcOptionsAnalysis_FindsEndpointRoutingEnabled(string sourceFileName, string mvcMiddlewareName)
         {
             // Arrange
-            var source = ReadSource(sourceFileName);
+            var source = Read(sourceFileName);
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -151,7 +149,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleMiddleware()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcWithOtherMiddleware");
+            var source = Read("MvcOptions_UseMvcWithOtherMiddleware");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -183,7 +181,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleUseMvc()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcMultiple");
+            var source = Read("MvcOptions_UseMvcMultiple");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -215,7 +213,7 @@ namespace Microsoft.AspNetCore.Analyzers
         public async Task StartupAnalyzer_ServicesAnalysis_CallBuildServiceProvider()
         {
             // Arrange
-            var source = ReadSource("ConfigureServices_BuildServiceProvider");
+            var source = Read("ConfigureServices_BuildServiceProvider");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -229,11 +227,6 @@ namespace Microsoft.AspNetCore.Analyzers
                     Assert.Same(StartupAnalzyer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
                 });
-        }
-
-        private TestSource ReadSource(string fileName)
-        {
-            return MvcTestSource.Read(nameof(StartupAnalyzerTest), fileName);
         }
     }
 }
