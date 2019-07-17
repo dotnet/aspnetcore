@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.2.5</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.2.6</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -77,12 +77,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
-    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
-    <BaselinePackageVersion>2.2.5</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
@@ -649,6 +649,11 @@
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Analyzers' AND '$(TargetFramework)' == 'netstandard1.3' " />
+  <!-- Package: Microsoft.AspNetCore.Mvc.Api.Analyzers-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Api.Analyzers' ">
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Api.Analyzers' AND '$(TargetFramework)' == 'netstandard1.3' " />
   <!-- Package: Microsoft.AspNetCore.Mvc.ApiExplorer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.ApiExplorer' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -932,7 +937,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.HttpSys-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -943,13 +948,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IIS-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' ">
-    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.3, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
