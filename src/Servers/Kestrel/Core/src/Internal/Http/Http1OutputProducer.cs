@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly MemoryPool<byte> _memoryPool;
 
         // This locks access to all of the below fields
+        private readonly object _contextLock = new object();
 
         private bool _pipeWriterCompleted;
         private bool _aborted;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             MemoryPool<byte> memoryPool)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
-            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool);
+            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
             _log = log;
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 if (_writeStreamSuffixCalled)
                 {
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 if (_pipeWriterCompleted)
                 {
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -218,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -243,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -287,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This method is for chunked http responses that directly call response.WriteAsync
         public ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -329,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -404,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Dispose()
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 _pipeWriter.Abort();
 
@@ -449,7 +450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Abort can be called after Dispose if there's a flush timeout.
             // It's important to still call _lifetimeFeature.Abort() in this case.
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 if (_aborted)
                 {
@@ -465,7 +466,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Stop()
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 CompletePipe();
             }
@@ -478,7 +479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -498,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
@@ -537,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken = default)
         {
-            lock (_pipeWriter.Sync)
+            lock (_contextLock)
             {
                 ThrowIfSuffixSent();
 
