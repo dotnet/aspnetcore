@@ -28,7 +28,7 @@
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
 
     <!-- The Resources.resx is a embedded resource -->
-    <GenerateResxSource>true</GenerateResxSource>
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <!--
