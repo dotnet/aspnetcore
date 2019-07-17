@@ -139,10 +139,9 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@dotnet/jsinterop@3.0.0-preview6.19280.1":
-  version "3.0.0-preview6.19280.1"
-  resolved "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview6.19280.1.tgz#4c991132f33157de93bc3b6db93cffc9e964b241"
-  integrity sha1-TJkRMvMxV96TvDttuTz/yelkskE=
+"@dotnet/jsinterop@https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview8.19367.2.tgz":
+  version "3.0.0-preview8.19367.2"
+  resolved "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview8.19367.2.tgz#885d87c9406ad0bbce878ff041d50342d03b2c86"
 
 "@microsoft/signalr@link:../../SignalR/clients/ts/signalr":
   version "0.0.0"
