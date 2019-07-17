@@ -571,11 +571,15 @@ class HubConnectionTest {
         assertEquals(1, hubConnection.getStreamMap().size());
         assertTrue(hubConnection.getStreamMap().keySet().contains("2"));
 
+        secondStream.onError(new Exception("Exception"));
+        assertEquals(0, hubConnection.getStreamMap().size());
+        assertTrue(hubConnection.getStreamMap().isEmpty());
+
         messages = mockTransport.getSentMessages();
         assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[5]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", messages[6]);
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
-
         assertTrue(hubConnection.getStreamMap().isEmpty());
     }
 
@@ -2100,7 +2104,7 @@ class HubConnectionTest {
 
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate", (req) -> {
-                    if(redirectCount.get() == 0){
+                    if (redirectCount.get() == 0) {
                         redirectCount.incrementAndGet();
                         redirectToken.set(req.getHeaders().get("Authorization"));
                         return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}"));
