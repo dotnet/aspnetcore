@@ -244,6 +244,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 Log.RequestProcessingError(ConnectionId, ex);
                 error = ex;
             }
+            catch (ConnectionAbortedException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+                error = ex;
+            }
             catch (Http2ConnectionErrorException ex)
             {
                 Log.Http2ConnectionError(ConnectionId, ex);
