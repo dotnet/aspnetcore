@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop.Internal;
 using Xunit;
 
 namespace Microsoft.JSInterop.Tests
@@ -79,7 +79,7 @@ namespace Microsoft.JSInterop.Tests
             var task = runtime.InvokeAsync<object>("test identifier 1", new object[] { "arg1", 123, true }, cts.Token);
 
             cts.Cancel();
-            
+
             // Assert
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
         }
@@ -248,13 +248,14 @@ namespace Microsoft.JSInterop.Tests
             var exception = new Exception("Some really sensitive data in here");
 
             // Act
-            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method");
+            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method", 0);
 
             // Assert
-            var call = runtime.BeginInvokeCalls.Single();
-            Assert.Equal(0, call.AsyncHandle);
-            Assert.Equal("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", call.Identifier);
-            Assert.Equal($"[\"0\",false,{{\"message\":\"{expectedMessage.Replace("'", "\\u0027")}\"}}]", call.ArgsJson);
+            var call = runtime.EndInvokeDotNetCalls.Single();
+            Assert.Equal("0", call.CallId);
+            Assert.False(call.Success);
+            var jsError = Assert.IsType<JSError>(call.ResultOrError);
+            Assert.Equal(expectedMessage, jsError.Message);
         }
 
         private class JSError
@@ -265,6 +266,7 @@ namespace Microsoft.JSInterop.Tests
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
+            public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = new List<EndInvokeDotNetArgs>();
 
             public TimeSpan? DefaultTimeout
             {
@@ -281,16 +283,28 @@ namespace Microsoft.JSInterop.Tests
                 public string ArgsJson { get; set; }
             }
 
+            public class EndInvokeDotNetArgs
+            {
+                public string CallId { get; set; }
+                public bool Success { get; set; }
+                public object ResultOrError { get; set; }
+            }
+
             public Func<Exception, string, string, object> OnDotNetException { get; set; }
 
-            protected override object OnDotNetInvocationException(Exception exception, string assemblyName, string methodName)
+            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
             {
-                if (OnDotNetException != null)
+                if (OnDotNetException != null && !success)
                 {
-                    return OnDotNetException(exception, assemblyName, methodName);
+                    resultOrError = OnDotNetException(resultOrError as Exception, assemblyName, methodIdentifier);
                 }
 
-                return base.OnDotNetInvocationException(exception, assemblyName, methodName);
+                EndInvokeDotNetCalls.Add(new EndInvokeDotNetArgs
+                {
+                    CallId = callId,
+                    Success = success,
+                    ResultOrError = resultOrError
+                });
             }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)

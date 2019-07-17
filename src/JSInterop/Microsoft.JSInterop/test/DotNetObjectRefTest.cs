@@ -37,6 +37,11 @@ namespace Microsoft.JSInterop.Tests
             {
                 throw new NotImplementedException();
             }
+
+            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         async Task WithJSRuntime(Action<JSRuntimeBase> testCode)

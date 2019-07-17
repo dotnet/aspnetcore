@@ -9,7 +9,6 @@ using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop.Internal;
 
 namespace Microsoft.JSInterop
 {
@@ -124,37 +123,21 @@ namespace Microsoft.JSInterop
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
 
         /// <summary>
-        /// Allows derived classes to configure the information about an exception in a JS interop call that gets sent to JavaScript.
+        /// Completes an async JS interop call from JavaScript to .NET
         /// </summary>
-        /// <remarks>
-        /// This callback can be used in remote JS interop scenarios to sanitize exceptions that happen on the server to avoid disclosing
-        /// sensitive information to remote browser clients.
-        /// </remarks>
-        /// <param name="exception">The exception that occurred.</param>
-        /// <param name="assemblyName">The assembly for the invoked .NET method.</param>
-        /// <param name="methodIdentifier">The identifier for the invoked .NET method.</param>
-        /// <returns>An object containing information about the exception.</returns>
-        protected virtual object OnDotNetInvocationException(Exception exception, string assemblyName, string methodIdentifier) => exception.ToString();
-
-        internal void EndInvokeDotNet(string callId, bool success, object resultOrException, string assemblyName, string methodIdentifier)
-        {
-            // For failures, the common case is to call EndInvokeDotNet with the Exception object.
-            // For these we'll serialize as something that's useful to receive on the JS side.
-            // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            if (!success && resultOrException is Exception ex)
-            {
-                resultOrException = OnDotNetInvocationException(ex, assemblyName, methodIdentifier);
-            }
-            else if (!success && resultOrException is ExceptionDispatchInfo edi)
-            {
-                resultOrException = OnDotNetInvocationException(edi.SourceException, assemblyName, methodIdentifier);
-            }
-
-            // We pass 0 as the async handle because we don't want the JS-side code to
-            // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callId, success, resultOrException }, JsonSerializerOptionsProvider.Options);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
-        }
+        /// <param name="callId">The id of the JavaScript callback to execute on completion.</param>
+        /// <param name="success">Whether the operation succeeded or not.</param>
+        /// <param name="resultOrError">The result of the operation or an object containing error details.</param>
+        /// <param name="assemblyName">The name of the method assembly if the invocation was for a static method.</param>
+        /// <param name="methodIdentifier">The identifier for the method within the assembly.</param>
+        /// <param name="dotNetObjectId">The tracking id of the dotnet object if the invocation was for an instance method.</param>
+        protected internal abstract void EndInvokeDotNet(
+            string callId,
+            bool success,
+            object resultOrError,
+            string assemblyName,
+            string methodIdentifier,
+            long dotNetObjectId);
 
         internal void EndInvokeJS(long taskId, bool succeeded, JSAsyncCallResult asyncCallResult)
         {

@@ -6,8 +6,7 @@ namespace Microsoft.JSInterop
     public static partial class DotNetDispatcher
     {
         public static void BeginInvoke(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
-        [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.EndInvoke")]
-        public static void EndInvoke(long asyncHandle, bool succeeded, Microsoft.JSInterop.Internal.JSAsyncCallResult result) { }
+        public static void EndInvoke(string arguments) { }
         public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
         [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.ReleaseDotNetObject")]
         public static void ReleaseDotNetObject(long dotNetObjectId) { }
@@ -62,16 +61,8 @@ namespace Microsoft.JSInterop
         protected JSRuntimeBase() { }
         protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
+        protected internal abstract void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId);
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, System.Collections.Generic.IEnumerable<object> args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
-        protected virtual object OnDotNetInvocationException(System.Exception exception, string assemblyName, string methodIdentifier) { throw null; }
-    }
-}
-namespace Microsoft.JSInterop.Internal
-{
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-    public sealed partial class JSAsyncCallResult
-    {
-        internal JSAsyncCallResult() { }
     }
 }

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -295,23 +297,18 @@ namespace Microsoft.JSInterop.Tests
             var resultTask = jsRuntime.NextInvocationTask;
             DotNetDispatcher.BeginInvoke(callId, null, "InvokableAsyncMethod", 1, argsJson);
             await resultTask;
-            var result = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson).RootElement;
-            var resultValue = result[2];
 
-            // Assert: Correct info to complete the async call
-            Assert.Equal(0, jsRuntime.LastInvocationAsyncHandle); // 0 because it doesn't want a further callback from JS to .NET
-            Assert.Equal("DotNet.jsCallDispatcher.endInvokeDotNetFromJS", jsRuntime.LastInvocationIdentifier);
-            Assert.Equal(3, result.GetArrayLength());
-            Assert.Equal(callId, result[0].GetString());
-            Assert.True(result[1].GetBoolean()); // Success flag
+            // Assert: Correct completion information
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.True(jsRuntime.LastCompletionStatus);
+            var result = Assert.IsType<object []>(jsRuntime.LastCompletionResult);
+            var resultDto1 = Assert.IsType<TestDTO>(result[0]);
 
-            // Assert: First result value marshalled via JSON
-            var resultDto1 = JsonSerializer.Deserialize<TestDTO>(resultValue[0].GetRawText(), JsonSerializerOptionsProvider.Options);
             Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
             Assert.Equal(2000, resultDto1.IntVal);
 
             // Assert: Second result value marshalled by ref
-            var resultDto2Ref = JsonSerializer.Deserialize<DotNetObjectRef<TestDTO>>(resultValue[1].GetRawText(), JsonSerializerOptionsProvider.Options);
+            var resultDto2Ref = Assert.IsType<DotNetObjectRef<TestDTO>>(result[1]);
             var resultDto2 = resultDto2Ref.Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(2468, resultDto2.IntVal);
@@ -330,13 +327,12 @@ namespace Microsoft.JSInterop.Tests
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
-            var result = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson).RootElement;
-            Assert.Equal(callId, result[0].GetString());
-            Assert.False(result[1].GetBoolean()); // Fails
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.False(jsRuntime.LastCompletionStatus); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
             // https://github.com/aspnet/AspNetCore/issues/8612
-            var exception = result[2].GetString();
+            var exception = jsRuntime.LastCompletionResult is ExceptionDispatchInfo edi ? edi.SourceException.ToString() : null;
             Assert.Contains(nameof(ThrowingClass.ThrowingMethod), exception);
         });
 
@@ -353,13 +349,12 @@ namespace Microsoft.JSInterop.Tests
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
-            var result = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson).RootElement;
-            Assert.Equal(callId, result[0].GetString());
-            Assert.False(result[1].GetBoolean()); // Fails
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.False(jsRuntime.LastCompletionStatus); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
             // https://github.com/aspnet/AspNetCore/issues/8612
-            var exception = result[2].GetString();
+            var exception = jsRuntime.LastCompletionResult is ExceptionDispatchInfo edi ? edi.SourceException.ToString() : null;
             Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), exception);
         });
 
@@ -374,11 +369,10 @@ namespace Microsoft.JSInterop.Tests
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
-            using var jsonDocument = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson);
-            var result = jsonDocument.RootElement;
-            Assert.Equal(callId, result[0].GetString());
-            Assert.False(result[1].GetBoolean()); // Fails
-            Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", result[2].GetString());
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.False(jsRuntime.LastCompletionStatus); // Fails
+            var result = Assert.IsType<ExceptionDispatchInfo>(jsRuntime.LastCompletionResult);
+            Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", result.SourceException.ToString());
         });
 
         [Fact]
@@ -390,12 +384,10 @@ namespace Microsoft.JSInterop.Tests
             DotNetDispatcher.BeginInvoke(callId, null, "InvokableInstanceVoid", 1, null);
 
             // Assert
-            using var jsonDocument = JsonDocument.Parse(jsRuntime.LastInvocationArgsJson);
-            var result = jsonDocument.RootElement;
-            Assert.Equal(callId, result[0].GetString());
-            Assert.False(result[1].GetBoolean()); // Fails
-
-            Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectRef instance was already disposed.", result[2].GetString());
+            Assert.Equal(callId, jsRuntime.LastCompletionCallId);
+            Assert.False(jsRuntime.LastCompletionStatus); // Fails
+            var result = Assert.IsType<ExceptionDispatchInfo>(jsRuntime.LastCompletionResult);
+            Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectRef instance was already disposed.", result.SourceException.ToString());
         });
 
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
@@ -556,6 +548,10 @@ namespace Microsoft.JSInterop.Tests
             public string LastInvocationIdentifier { get; private set; }
             public string LastInvocationArgsJson { get; private set; }
 
+            public string LastCompletionCallId { get; private set; }
+            public bool LastCompletionStatus { get; private set; }
+            public object LastCompletionResult { get; private set; }
+
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
             {
                 LastInvocationAsyncHandle = asyncHandle;
@@ -573,6 +569,21 @@ namespace Microsoft.JSInterop.Tests
                 _nextInvocationTcs.SetResult(null);
                 _nextInvocationTcs = new TaskCompletionSource<object>();
                 return null;
+            }
+
+            protected internal override void EndInvokeDotNet(
+                string callId,
+                bool success,
+                object resultOrError,
+                string assemblyName,
+                string methodIdentifier,
+                long dotNetObjectId)
+            {
+                LastCompletionCallId = callId;
+                LastCompletionStatus = success;
+                LastCompletionResult = resultOrError;
+                _nextInvocationTcs.SetResult(null);
+                _nextInvocationTcs = new TaskCompletionSource<object>();
             }
         }
     }

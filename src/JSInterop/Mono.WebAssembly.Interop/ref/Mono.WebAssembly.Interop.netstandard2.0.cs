@@ -7,6 +7,7 @@ namespace Mono.WebAssembly.Interop
     {
         public MonoWebAssemblyJSRuntime() { }
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson) { }
+        protected override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId) { }
         protected override string InvokeJS(string identifier, string argsJson) { throw null; }
         public TRes InvokeUnmarshalled<TRes>(string identifier) { throw null; }
         public TRes InvokeUnmarshalled<T0, TRes>(string identifier, T0 arg0) { throw null; }

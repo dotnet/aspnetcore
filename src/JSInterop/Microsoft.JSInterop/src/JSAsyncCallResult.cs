@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.ComponentModel;
 using System.Text.Json;
 
-namespace Microsoft.JSInterop.Internal
+namespace Microsoft.JSInterop
 {
     // This type takes care of a special case in handling the result of an async call from
     // .NET to JS. The information about what type the result should be exists only on the
@@ -23,8 +22,7 @@ namespace Microsoft.JSInterop.Internal
     /// <summary>
     /// Intended for framework use only.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class JSAsyncCallResult
+    internal sealed class JSAsyncCallResult
     {
         internal JSAsyncCallResult(JsonDocument document, JsonElement jsonElement)
         {

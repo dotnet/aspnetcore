@@ -75,7 +75,7 @@ module DotNet {
     try {
       const argsJson = JSON.stringify(args, argReplacer);
       getRequiredDispatcher().beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-    } catch(ex) {
+    } catch (ex) {
       // Synchronous failure
       completePendingCall(asyncCallId, false, ex);
     }
@@ -116,7 +116,7 @@ module DotNet {
   export interface DotNetCallDispatcher {
     /**
      * Optional. If implemented, invoked by the runtime to perform a synchronous call to a .NET method.
-     * 
+     *
      * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
      * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
      * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
@@ -135,6 +135,15 @@ module DotNet {
      * @param argsJson JSON representation of arguments to pass to the method.
      */
     beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void;
+
+    /**
+     * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
+     *
+     * @param callId A value identifying the asynchronous operation.
+     * @param succeded Whether the operation succeeded or not.
+     * @param resultOrError The serialized result or the serialized error from the async operation.
+     */
+    endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
   }
 
   /**
@@ -183,8 +192,8 @@ module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().beginInvokeDotNetFromJS(0, 'Microsoft.JSInterop', 'DotNetDispatcher.EndInvoke', null, JSON.stringify([asyncHandle, true, result], argReplacer)),
-          error => getRequiredDispatcher().beginInvokeDotNetFromJS(0, 'Microsoft.JSInterop', 'DotNetDispatcher.EndInvoke', null, JSON.stringify([asyncHandle, false, formatError(error)]))
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, result], argReplacer)),
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
     },
@@ -219,7 +228,7 @@ module DotNet {
       return error ? error.toString() : 'null';
     }
   }
-  
+
   function findJSFunction(identifier: string): Function {
     if (cachedJSFunctions.hasOwnProperty(identifier)) {
       return cachedJSFunctions[identifier];
@@ -247,7 +256,7 @@ module DotNet {
     }
   }
 
-  class DotNetObject {    
+  class DotNetObject {
     constructor(private _id: number) {
     }
 
@@ -268,14 +277,14 @@ module DotNet {
     }
 
     public serializeAsArg() {
-      return {__dotNetObject: this._id};
+      return { __dotNetObject: this._id };
     }
   }
 
   const dotNetObjectRefKey = '__dotNetObject';
   attachReviver(function reviveDotNetObject(key: any, value: any) {
     if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
-        return new DotNetObject(value.__dotNetObject);
+      return new DotNetObject(value.__dotNetObject);
     }
 
     // Unrecognized - let another reviver handle it
