@@ -98,15 +98,9 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             _emailSender = emailSender;
         }
 
-        public override async Task<IActionResult> OnGetAsync()
+        private async Task LoadAsync(TUser user)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
             var email = await _userManager.GetEmailAsync(user);
-
             Email = email;
 
             Input = new InputModel
@@ -115,21 +109,32 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
             };
 
             IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+        }
 
+        public override async Task<IActionResult> OnGetAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            await LoadAsync(user);
             return Page();
         }
 
         public override async Task<IActionResult> OnPostChangeEmailAsync()
         {
-            if (!ModelState.IsValid)
-            {
-                return await OnGetAsync();
-            }
-
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadAsync(user);
+                return Page();
             }
 
             var email = await _userManager.GetEmailAsync(user);
