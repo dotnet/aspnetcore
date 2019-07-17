@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private static readonly Exception _successfullyCompletedSentinel = new Exception();
 
-        public readonly object _sync;
+        private readonly object _sync;
         private readonly PipeWriter _innerPipeWriter;
         private readonly MemoryPool<byte> _pool;
         private readonly BufferSegmentStack _bufferSegmentPool = new BufferSegmentStack(InitialSegmentPoolSize);
