@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         {
             private RenderHandle _renderHandle;
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }

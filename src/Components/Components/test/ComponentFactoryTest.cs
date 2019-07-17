@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components
 
         private class EmptyComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new NotImplementedException();
             }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Components
 
             public TestService2 GetProperty2() => Property2;
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new NotImplementedException();
             }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components
 
             public TestService1 Property2 { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new NotImplementedException();
             }

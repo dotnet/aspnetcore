@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             public Action OnAfterRenderComplete { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             [Parameter] public Trigger Trigger { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }

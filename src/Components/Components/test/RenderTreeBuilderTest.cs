@@ -1810,7 +1810,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle) { }
+            public void Attach(RenderHandle renderHandle) { }
 
             public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();

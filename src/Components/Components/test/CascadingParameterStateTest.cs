@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             var supplier = new CascadingValue<T>();
             var renderer = new TestRenderer();
-            supplier.Configure(new RenderHandle(renderer, 0));
+            supplier.Attach(new RenderHandle(renderer, 0));
 
             var supplierParams = new Dictionary<string, object>
             {
@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         class TestComponentBase : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
             public Task SetParametersAsync(ParameterCollection parameters)

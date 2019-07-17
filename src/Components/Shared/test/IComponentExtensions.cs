@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         private abstract class AbstractComponent : IComponent
         {
-            public abstract void Configure(RenderHandle renderHandle);
+            public abstract void Attach(RenderHandle renderHandle);
             public abstract Task SetParametersAsync(ParameterCollection parameters);
         }
     }
