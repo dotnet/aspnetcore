@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             var field = component.GetType().GetField("myDiv", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(field);
-            Assert.Same(typeof(ElementRef), field.FieldType);
+            Assert.Same(typeof(ElementReference), field.FieldType);
         }
 
         [Fact]

@@ -12,7 +12,7 @@ namespace Test
     {
         #pragma warning disable 0414
         #pragma warning disable 0169
-        private global::Microsoft.AspNetCore.Components.ElementRef myElem;
+        private global::Microsoft.AspNetCore.Components.ElementReference myElem;
         #pragma warning restore 0169
         #pragma warning restore 0414
         #pragma warning disable 1998

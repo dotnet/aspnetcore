@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.EventHandlerAttribute";
         }
 
-        public static class ElementRef
+        public static class ElementReference
         {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.ElementRef";
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.ElementReference";
         }
 
         public static class EventCallback

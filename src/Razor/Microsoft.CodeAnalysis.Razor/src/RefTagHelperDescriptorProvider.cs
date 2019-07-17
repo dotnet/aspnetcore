@@ -27,8 +27,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            var elementRef = compilation.GetTypeByMetadataName(ComponentsApi.ElementRef.FullTypeName);
-            if (elementRef == null)
+            var elementReference = compilation.GetTypeByMetadataName(ComponentsApi.ElementReference.FullTypeName);
+            if (elementReference == null)
             {
                 // If we can't find ElementRef, then just bail. We won't be able to compile the
                 // generated code anyway.

@@ -874,7 +874,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // errors will be equivalent
                 var captureTypeName = node.IsComponentCapture
                     ? node.ComponentCaptureTypeName
-                    : ComponentsApi.ElementRef.FullTypeName;
+                    : ComponentsApi.ElementReference.FullTypeName;
                 WriteCSharpCode(context, new CSharpCodeIntermediateNode
                 {
                     Source = node.Source,

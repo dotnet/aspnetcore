@@ -3,14 +3,14 @@ Source Location: (12:0,12 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (855:24,12 [6] )
 |myElem|
 
-Source Location: (60:1,7 [72] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (60:1,7 [78] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    ElementRef myElem;
+    ElementReference myElem;
     void DoStuff() { GC.KeepAlive(myElem); }
 |
-Generated Location: (1094:33,7 [72] )
+Generated Location: (1100:33,7 [78] )
 |
-    ElementRef myElem;
+    ElementReference myElem;
     void DoStuff() { GC.KeepAlive(myElem); }
 |
 

@@ -792,7 +792,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             //
             // builder.AddComponentReferenceCapture(2, (__value) = { _field = (MyComponent)__value; });
             // OR
-            // builder.AddElementReferenceCapture(2, (__value) = { _field = (ElementRef)__value; });
+            // builder.AddElementReferenceCapture(2, (__value) = { _field = (ElementReference)__value; });
             var codeWriter = context.CodeWriter;
 
             var methodName = node.IsComponentCapture

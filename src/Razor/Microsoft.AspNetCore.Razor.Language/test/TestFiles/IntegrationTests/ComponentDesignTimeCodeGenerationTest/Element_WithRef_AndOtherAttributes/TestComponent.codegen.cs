@@ -12,7 +12,7 @@ namespace Test
     {
         #pragma warning disable 0414
         #pragma warning disable 0169
-        private global::Microsoft.AspNetCore.Components.ElementRef _element;
+        private global::Microsoft.AspNetCore.Components.ElementReference _element;
         #pragma warning restore 0169
         #pragma warning restore 0414
         #pragma warning disable 219
@@ -36,7 +36,7 @@ namespace Test
             ;
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                 _element = default(Microsoft.AspNetCore.Components.ElementRef);
+                                                 _element = default(Microsoft.AspNetCore.Components.ElementReference);
 
 #line default
 #line hidden

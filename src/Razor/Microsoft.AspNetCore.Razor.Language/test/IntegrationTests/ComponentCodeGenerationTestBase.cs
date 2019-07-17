@@ -3742,7 +3742,7 @@ namespace Test
             var generated = CompileToCSharp(@"
 <elem @ref=""myElem"" @ref:suppressField>Hello</elem>
 @code {
-    ElementRef myElem;
+    ElementReference myElem;
     void DoStuff() { GC.KeepAlive(myElem); }
 }");
 

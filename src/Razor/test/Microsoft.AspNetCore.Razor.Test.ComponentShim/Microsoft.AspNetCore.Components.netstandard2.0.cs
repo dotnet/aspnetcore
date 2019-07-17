@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components
         protected void OnUnhandledException(System.UnhandledExceptionEventArgs e) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ElementRef
+    public readonly partial struct ElementReference
     {
         private readonly object _dummy;
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent(int sequence, object textContent) { }
         public void AddContent(int sequence, string textContent) { }
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
-        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
+        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
         public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
         public void Clear() { }

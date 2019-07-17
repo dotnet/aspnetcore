@@ -31,7 +31,7 @@ namespace Test
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    ElementRef myElem;
+    ElementReference myElem;
     void DoStuff() { GC.KeepAlive(myElem); }
 
 #line default

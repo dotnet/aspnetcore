@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string ComponentCaptureTypeName { get; set; }
 
-        public string FieldTypeName => IsComponentCapture ? ComponentCaptureTypeName : "global::" + ComponentsApi.ElementRef.FullTypeName;
+        public string FieldTypeName => IsComponentCapture ? ComponentCaptureTypeName : "global::" + ComponentsApi.ElementReference.FullTypeName;
 
         public string TypeName => $"global::System.Action<{FieldTypeName}>";
 

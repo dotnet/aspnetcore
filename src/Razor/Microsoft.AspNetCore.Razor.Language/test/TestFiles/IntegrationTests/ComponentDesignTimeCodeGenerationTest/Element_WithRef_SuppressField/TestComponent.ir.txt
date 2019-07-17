@@ -20,5 +20,5 @@ Document -
                     ReferenceCapture - (12:0,12 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem
                 HtmlContent - (51:0,51 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (51:0,51 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (60:1,7 [72] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (60:1,7 [72] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    ElementRef myElem;\n    void DoStuff() { GC.KeepAlive(myElem); }\n
+            CSharpCode - (60:1,7 [78] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (60:1,7 [78] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    ElementReference myElem;\n    void DoStuff() { GC.KeepAlive(myElem); }\n

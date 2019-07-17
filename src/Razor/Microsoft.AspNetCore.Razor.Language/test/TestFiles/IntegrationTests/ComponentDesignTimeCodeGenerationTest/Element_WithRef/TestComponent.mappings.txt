@@ -1,5 +1,5 @@
 Source Location: (37:0,37 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |myElem|
-Generated Location: (1108:29,37 [6] )
+Generated Location: (1114:29,37 [6] )
 |myElem|
 

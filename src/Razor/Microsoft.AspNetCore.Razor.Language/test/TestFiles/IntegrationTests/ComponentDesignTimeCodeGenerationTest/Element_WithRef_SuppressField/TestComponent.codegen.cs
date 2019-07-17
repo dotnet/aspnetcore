@@ -22,7 +22,7 @@ namespace Test
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-            myElem = default(Microsoft.AspNetCore.Components.ElementRef);
+            myElem = default(Microsoft.AspNetCore.Components.ElementReference);
 
 #line default
 #line hidden
@@ -32,7 +32,7 @@ namespace Test
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    ElementRef myElem;
+    ElementReference myElem;
     void DoStuff() { GC.KeepAlive(myElem); }
 
 #line default
