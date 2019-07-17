@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _disposed = true;
             }
 
-            await _input.Reader.CompleteAsync();
-            await Output.CompleteAsync();
+            _input.Reader.Complete();
+            Output.Complete();
 
             CancelPendingRead();
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         protected override void Dispose(bool disposing)
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            throw new NotSupportedException();
         }
 
         private async Task ReadInputAsync()
