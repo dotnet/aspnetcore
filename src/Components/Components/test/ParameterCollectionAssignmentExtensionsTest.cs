@@ -364,11 +364,11 @@ namespace Microsoft.AspNetCore.Components.Test
             // "internal" to show we're not requiring public accessors, but also
             // to keep the assertions simple in the tests
 
-            [Parameter] internal int IntProp { get; set; }
-            [Parameter] internal string StringProp { get; set; }
+            [Parameter] public int IntProp { get; set; }
+            [Parameter] public string StringProp { get; set; }
 
             // Also a truly private one to show there's nothing special about 'internal'
-            [Parameter] private object ObjectProp { get; set; }
+            [Parameter] public object ObjectProp { get; set; }
 
             public static string ObjectPropName => nameof(ObjectProp);
             public object ObjectPropCurrentValue
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Components.Test
         class HasPropertyWhoseSetterThrows
         {
             [Parameter]
-            internal string StringProp
+            public string StringProp
             {
                 get => string.Empty;
                 set => throw new InvalidOperationException("This setter throws");
@@ -395,37 +395,37 @@ namespace Microsoft.AspNetCore.Components.Test
 
         class HasInheritedProperties : HasInstanceProperties
         {
-            [Parameter] internal int DerivedClassIntProp { get; set; }
+            [Parameter] public int DerivedClassIntProp { get; set; }
         }
 
         class HasParametersVaryingOnlyByCase
         {
-            [Parameter] internal object MyValue { get; set; }
-            [Parameter] internal object Myvalue { get; set; }
+            [Parameter] public object MyValue { get; set; }
+            [Parameter] public object Myvalue { get; set; }
         }
 
         class HasParameterClashingWithInherited : HasInstanceProperties
         {
-            [Parameter] new int IntProp { get; set; }
+            [Parameter] public new int IntProp { get; set; }
         }
 
         class HasCaptureUnmatchedValuesProperty
         {
-            [Parameter] internal int IntProp { get; set; }
-            [Parameter] internal string StringProp { get; set; }
-            [Parameter] internal object ObjectProp { get; set; }
-            [Parameter(CaptureUnmatchedValues = true)] internal IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
+            [Parameter] public int IntProp { get; set; }
+            [Parameter] public string StringProp { get; set; }
+            [Parameter] public object ObjectProp { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> CaptureUnmatchedValues { get; set; }
         }
 
         class HasDupliateCaptureUnmatchedValuesProperty
         {
-            [Parameter(CaptureUnmatchedValues = true)] internal Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
-            [Parameter(CaptureUnmatchedValues = true)] internal IDictionary<string, object> CaptureUnmatchedValuesProp2 { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> CaptureUnmatchedValuesProp1 { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> CaptureUnmatchedValuesProp2 { get; set; }
         }
 
         class HasWrongTypeCaptureUnmatchedValuesProperty
         {
-            [Parameter(CaptureUnmatchedValues = true)] internal KeyValuePair<string, object>[] CaptureUnmatchedValuesProp { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] public KeyValuePair<string, object>[] CaptureUnmatchedValuesProp { get; set; }
         }
 
         class ParameterCollectionBuilder : IEnumerable

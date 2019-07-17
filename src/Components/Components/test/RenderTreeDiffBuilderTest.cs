@@ -2205,19 +2205,19 @@ namespace Microsoft.AspNetCore.Components.Test
         private class FakeComponent : IComponent
         {
             [Parameter]
-            internal int IntProperty { get; set; }
+            public int IntProperty { get; set; }
 
             [Parameter]
-            internal string StringProperty { get; set; }
+            public string StringProperty { get; set; }
 
             [Parameter]
-            internal object ObjectProperty { get; set; }
+            public object ObjectProperty { get; set; }
 
             [Parameter]
-            internal string ReadonlyProperty { get; private set; }
+            public string ReadonlyProperty { get; private set; }
 
             [Parameter]
-            string PrivateProperty { get; set; }
+            public string PrivateProperty { get; set; }
 
             public string NonParameterProperty { get; set; }
 
