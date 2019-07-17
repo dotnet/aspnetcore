@@ -1750,9 +1750,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AssignsDistinctIdToNewElementReferenceCaptures()
         {
             // Arrange
-            ElementRef ref1 = default, ref2 = default;
-            Action<ElementRef> capture1 = val => { ref1 = val; };
-            Action<ElementRef> capture2 = val => { ref2 = val; };
+            ElementReference ref1 = default, ref2 = default;
+            Action<ElementReference> capture1 = val => { ref1 = val; };
+            Action<ElementReference> capture2 = val => { ref2 = val; };
             newTree.OpenElement(0, "My element");
             newTree.AddElementReferenceCapture(1, capture1);
             newTree.AddElementReferenceCapture(2, capture2);
@@ -1791,8 +1791,8 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var refWriteCount = 0;
-            ElementRef ref1 = default;
-            Action<ElementRef> capture1 = val => { ref1 = val; refWriteCount++; };
+            ElementReference ref1 = default;
+            Action<ElementReference> capture1 = val => { ref1 = val; refWriteCount++; };
             oldTree.OpenElement(0, "My element");
             oldTree.AddElementReferenceCapture(1, capture1);
             oldTree.CloseElement();

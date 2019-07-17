@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
-            Action<ElementRef> referenceCaptureAction = elementRef => { };
+            Action<ElementReference> referenceCaptureAction = elementReference => { };
 
             // Act
             builder.OpenElement(0, "myelement");                    //  0: <myelement
@@ -668,8 +668,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
-            Action<ElementRef> referenceCaptureAction1 = elementRef => { };
-            Action<ElementRef> referenceCaptureAction2 = elementRef => { };
+            Action<ElementReference> referenceCaptureAction1 = elementReference => { };
+            Action<ElementReference> referenceCaptureAction2 = elementReference => { };
 
             // Act
             builder.OpenElement(0, "myelement");
@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
-            Action<object> myAction = elementRef => { };
+            Action<object> myAction = elementReference => { };
 
             // Act
             builder.OpenComponent<TestComponent>(0);                //  0: <TestComponent
@@ -757,8 +757,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
-            Action<object> referenceCaptureAction1 = elementRef => { };
-            Action<object> referenceCaptureAction2 = elementRef => { };
+            Action<object> referenceCaptureAction1 = elementReference => { };
+            Action<object> referenceCaptureAction2 = elementReference => { };
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -1625,7 +1625,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Capture()
         {
             // Arrange
-            var capture = (Action<ElementRef>)((_) => { });
+            var capture = (Action<ElementReference>)((_) => { });
 
             var builder = new RenderTreeBuilder(new TestRenderer());
             builder.OpenElement(0, "div");
