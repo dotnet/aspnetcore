@@ -54,7 +54,7 @@ namespace Company.WebApplication1
                 .AddIdentityServerJwt();
 #endif
             services.AddControllersWithViews();
-#if (OrganizationalAuth || IndividualAuth)
+#if (IndividualAuth)
             services.AddRazorPages();
 #endif
             // In production, the Angular files will be served from this directory

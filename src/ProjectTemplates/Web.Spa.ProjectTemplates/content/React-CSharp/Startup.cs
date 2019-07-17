@@ -55,7 +55,7 @@ namespace Company.WebApplication1
 #endif
 
             services.AddControllersWithViews();
-#if (OrganizationalAuth || IndividualAuth)
+#if (IndividualAuth)
             services.AddRazorPages();
 #endif
 
