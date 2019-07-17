@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 };
 
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
 
                 var memory = concurrentPipeWriter.GetMemory();
                 Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 };
 
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
 
                 var memory = concurrentPipeWriter.GetMemory();
                 Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 };
 
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
 
                 var memory = concurrentPipeWriter.GetMemory();
                 Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 };
 
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
 
                 var memory = concurrentPipeWriter.GetMemory();
                 Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 };
 
                 var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
-                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool);
+                var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, new object());
 
                 var memory = concurrentPipeWriter.GetMemory();
                 Assert.Equal(1, mockPipeWriter.GetMemoryCallCount);
