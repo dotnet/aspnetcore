@@ -540,6 +540,46 @@ class HubConnectionTest {
     }
 
     @Test
+    public void streamMapEntriesRemovedOnStreamClose() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream, 12);
+
+        ReplaySubject<String> secondStream = ReplaySubject.create();
+        hubConnection.send("SecondUploadStream", secondStream, 13);
+
+
+        stream.onNext("FirstItem");
+        secondStream.onNext("SecondItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":1,\"target\":\"SecondUploadStream\",\"arguments\":[13],\"streamIds\":[\"2\"]}\u001E", messages[2]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[3]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", messages[4]);
+
+
+        assertEquals(2, hubConnection.getStreamMap().size());
+        assertTrue(hubConnection.getStreamMap().keySet().contains("1"));
+        assertTrue(hubConnection.getStreamMap().keySet().contains("2"));
+
+        // Verify that we clear the entry from the stream map after we clear the first stream.
+        stream.onComplete();
+        assertEquals(1, hubConnection.getStreamMap().size());
+        assertTrue(hubConnection.getStreamMap().keySet().contains("2"));
+
+        messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[5]);
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertTrue(hubConnection.getStreamMap().isEmpty());
+    }
+
+    @Test
     public void useSameSubjectMultipleTimes() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);

@@ -577,8 +577,14 @@ public class HubConnection {
             Observable observable = this.streamMap.get(streamId);
             observable.subscribe(
                 (item) -> sendHubMessage(new StreamItem(streamId, item)),
-                (error) -> sendHubMessage(new CompletionMessage(streamId, null, error.toString())),
-                () -> sendHubMessage(new CompletionMessage(streamId, null, null)));
+                (error) -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, error.toString()));
+                    this.streamMap.remove(streamId);
+                },
+                () -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, null));
+                    this.streamMap.remove(streamId);
+                });
         }
     }
 
