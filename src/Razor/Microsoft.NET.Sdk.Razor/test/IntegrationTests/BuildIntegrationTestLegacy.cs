@@ -153,6 +153,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        public async Task PublishingProject_CopyToPublishDirectoryItems()
+        {
+            using (CreateTestProject())
+            {
+                // Build
+                var result = await DotnetMSBuild("Publish");
+
+                Assert.BuildPassed(result);
+
+                // refs shouldn't be produced by default
+                Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+
+                // Views shouldn't be produced by default
+                Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+            }
+        }
+
+        [Fact]
         public virtual async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             using (CreateTestProject())

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject(TestProjectName)]
-        public async Task PublishingProject_CopyToOutputDirectoryFiles()
+        public async Task PublishingProject_CopyToPublishDirectoryItems()
         {
             TargetFramework = "net461";
 
@@ -51,17 +51,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Publish");
 
             Assert.BuildPassed(result);
-            // No cshtml files should be in the build output directory
-            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
 
             // refs shouldn't be produced by default
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+
+            // Views shouldn't be produced by default
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject(TestProjectName)]
-        public async Task PublishingProject_CopyToOutputDirectoryFiles_WithCopyRefAssembliesToPublishDirectory()
+        public async Task Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             TargetFramework = "net461";
 
