@@ -177,21 +177,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void IThreadPoolWorkItem.Execute()
         {
-            _ = ExecuteAsync(this);
+            _ = ExecuteAsync();
         }
 
-        internal Task ExecuteAsync()
+        internal async Task ExecuteAsync()
         {
-            return ExecuteAsync(this);
-        }
-
-        private async Task ExecuteAsync(KestrelConnection connection)
-        {
-            var connectionContext = connection.TransportConnection;
+            var connectionContext = TransportConnection;
 
             try
             {
-                _serviceContext.ConnectionManager.AddConnection(_id, connection);
+                _serviceContext.ConnectionManager.AddConnection(_id, this);
 
                 Logger.ConnectionStart(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStart(connectionContext);
@@ -210,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             finally
             {
-                await connection.FireOnCompletedAsync();
+                await FireOnCompletedAsync();
 
                 Logger.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
@@ -218,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Dispose the transport connection, this needs to happen before removing it from the
                 // connection manager so that we only signal completion of this connection after the transport
                 // is properly torn down.
-                await connection.TransportConnection.DisposeAsync();
+                await TransportConnection.DisposeAsync();
 
                 _serviceContext.ConnectionManager.RemoveConnection(_id);
             }
