@@ -61,89 +61,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
-            lock (_sync)
+            if (_currentFlushTcs == null && _head == null)
             {
-                if (_currentFlushTcs == null && _head == null)
-                {
-                    return _innerPipeWriter.GetMemory(sizeHint);
-                }
-
-                AllocateMemoryUnsynchronized(sizeHint);
-                return _tailMemory;
+                return _innerPipeWriter.GetMemory(sizeHint);
             }
+
+            AllocateMemoryUnsynchronized(sizeHint);
+            return _tailMemory;
         }
 
         public override Span<byte> GetSpan(int sizeHint = 0)
         {
-            lock (_sync)
+            if (_currentFlushTcs == null && _head == null)
             {
-                if (_currentFlushTcs == null && _head == null)
-                {
-                    return _innerPipeWriter.GetSpan(sizeHint);
-                }
-
-                AllocateMemoryUnsynchronized(sizeHint);
-                return _tailMemory.Span;
+                return _innerPipeWriter.GetSpan(sizeHint);
             }
+
+            AllocateMemoryUnsynchronized(sizeHint);
+            return _tailMemory.Span;
         }
 
         public override void Advance(int bytes)
         {
-            lock (_sync)
+            if (_currentFlushTcs == null && _head == null)
             {
-                if (_currentFlushTcs == null && _head == null)
-                {
-                    _innerPipeWriter.Advance(bytes);
-                    return;
-                }
-
-                if ((uint)bytes > (uint)_tailMemory.Length)
-                {
-                    ThrowArgumentOutOfRangeException(nameof(bytes));
-                }
-
-                _tailBytesBuffered += bytes;
-                _bytesBuffered += bytes;
-                _tailMemory = _tailMemory.Slice(bytes);
-                _bufferedWritePending = false;
+                _innerPipeWriter.Advance(bytes);
+                return;
             }
+
+            if ((uint)bytes > (uint)_tailMemory.Length)
+            {
+                ThrowArgumentOutOfRangeException(nameof(bytes));
+            }
+
+            _tailBytesBuffered += bytes;
+            _bytesBuffered += bytes;
+            _tailMemory = _tailMemory.Slice(bytes);
+            _bufferedWritePending = false;
         }
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            lock (_sync)
+            if (_currentFlushTcs != null)
+            {
+                return new ValueTask<FlushResult>(_currentFlushTcs.Task);
+            }
+
+            if (_bytesBuffered > 0)
+            {
+                CopyAndReturnSegmentsUnsynchronized();
+            }
+
+            var flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
+
+            if (flushTask.IsCompletedSuccessfully)
             {
                 if (_currentFlushTcs != null)
                 {
-                    return new ValueTask<FlushResult>(_currentFlushTcs.Task);
+                    CompleteFlushUnsynchronized(flushTask.GetAwaiter().GetResult(), null);
                 }
 
-                if (_bytesBuffered > 0)
-                {
-                    CopyAndReturnSegmentsUnsynchronized();
-                }
-
-                var flushTask = _innerPipeWriter.FlushAsync(cancellationToken);
-
-                if (flushTask.IsCompletedSuccessfully)
-                {
-                    if (_currentFlushTcs != null)
-                    {
-                        CompleteFlushUnsynchronized(flushTask.GetAwaiter().GetResult(), null);
-                    }
-
-                    return flushTask;
-                }
-
-                // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
-                _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var result = new ValueTask<FlushResult>(_currentFlushTcs.Task);
-
-                // FlushAsyncAwaited clears the TCS prior to completing. Make sure to construct the ValueTask
-                // from the TCS before calling FlushAsyncAwaited in case FlushAsyncAwaited completes inline.
-                _ = FlushAsyncAwaited(flushTask, cancellationToken);
-                return result;
+                return flushTask;
             }
+
+            // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
+            _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var result = new ValueTask<FlushResult>(_currentFlushTcs.Task);
+
+            // FlushAsyncAwaited clears the TCS prior to completing. Make sure to construct the ValueTask
+            // from the TCS before calling FlushAsyncAwaited in case FlushAsyncAwaited completes inline.
+            _ = FlushAsyncAwaited(flushTask, cancellationToken);
+            return result;
         }
 
         private async Task FlushAsyncAwaited(ValueTask<FlushResult> flushTask, CancellationToken cancellationToken)
@@ -201,40 +189,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         public override void Complete(Exception exception = null)
         {
-            lock (_sync)
+            // We store the complete exception or  s sentinel exception instance in a field  if a flush was ongoing.
+            // We call the inner Complete() method after the flush loop ended.
+
+            // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
+            // called but not Advance(), or there's a flush pending), but you don't want to complete the inner pipe, just call Abort().
+            _completeException = exception ?? _successfullyCompletedSentinel;
+
+            if (_currentFlushTcs == null)
             {
-                // We store the complete exception or  s sentinel exception instance in a field  if a flush was ongoing.
-                // We call the inner Complete() method after the flush loop ended.
-
-                // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
-                // called but not Advance(), or there's a flush pending), but you don't want to complete the inner pipe, just call Abort().
-                _completeException = exception ?? _successfullyCompletedSentinel;
-
-                if (_currentFlushTcs == null)
+                if (_bytesBuffered > 0)
                 {
-                    if (_bytesBuffered > 0)
-                    {
-                        CopyAndReturnSegmentsUnsynchronized();
-                    }
-
-                    CleanupSegmentsUnsynchronized();
-
-                    _innerPipeWriter.Complete(exception);
+                    CopyAndReturnSegmentsUnsynchronized();
                 }
+
+                CleanupSegmentsUnsynchronized();
+
+                _innerPipeWriter.Complete(exception);
             }
         }
 
         public void Abort()
         {
-            lock (_sync)
-            {
-                _aborted = true;
+            _aborted = true;
 
-                // If we're flushing, the cleanup will happen after the flush.
-                if (_currentFlushTcs == null)
-                {
-                    CleanupSegmentsUnsynchronized();
-                }
+            // If we're flushing, the cleanup will happen after the flush.
+            if (_currentFlushTcs == null)
+            {
+                CleanupSegmentsUnsynchronized();
             }
         }
 
