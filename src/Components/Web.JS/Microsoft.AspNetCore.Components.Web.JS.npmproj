@@ -13,4 +13,7 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
+  <!-- No-op when this project is built as part of CodeCheck -->
+  <Target Name="GenerateReferenceSource" />
+
 </Project>

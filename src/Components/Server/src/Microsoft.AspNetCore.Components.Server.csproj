@@ -27,7 +27,8 @@
       Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework" />
+      UndefineProperties="TargetFramework"
+      Condition="'$(BuildNodeJS)' != 'false'" />
   </ItemGroup>
 
   <PropertyGroup>
