@@ -10,23 +10,15 @@ Document -
                 Component - (0:0,0 [62] x:\dir\subdir\Test\TestComponent.cshtml) - User
                     ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Name - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (19:0,19 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserName
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, 
-                            IntermediateToken -  - CSharp - UserName
-                            IntermediateToken -  - CSharp - )
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserName = __value, UserName)
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
                             IntermediateToken - (46:0,46 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserIsActive
-                            IntermediateToken -  - CSharp - )
                     ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, 
-                            IntermediateToken -  - CSharp - UserIsActive
-                            IntermediateToken -  - CSharp - )
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => UserIsActive = __value, UserIsActive)
             CSharpCode - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

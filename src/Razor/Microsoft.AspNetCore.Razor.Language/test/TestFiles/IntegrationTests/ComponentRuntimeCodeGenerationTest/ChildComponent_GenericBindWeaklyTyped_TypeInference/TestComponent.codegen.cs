@@ -21,7 +21,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 2, Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            , 2, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         Value
@@ -29,7 +29,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ), 3, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
+            , 3, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #nullable restore

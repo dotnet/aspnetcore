@@ -28,7 +28,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , -1, Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            , -1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         Value
@@ -36,7 +36,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            ), -1, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
+            , -1, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => Value = __value, Value));
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = typeof(MyComponent<>);

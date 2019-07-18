@@ -20,7 +20,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __o = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                   y
@@ -28,8 +28,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            );
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y);
+            ;
+            __o = Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.CreateInferredEventCallback(this, __value => y = __value, y);
             builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));

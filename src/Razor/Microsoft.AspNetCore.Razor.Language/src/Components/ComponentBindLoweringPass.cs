@@ -332,22 +332,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var valueExpressionTokens = new List<IntermediateToken>();
             var changeExpressionTokens = new List<IntermediateToken>();
 
-            // DOM-based event handlers use EventCallback, so if we see a delegate here it's a component.
-            if (changeAttribute != null && changeAttribute.IsDelegateProperty())
+            // There are a few cases to handle for @bind:
+            // 1. This is a component using a delegate (int Value & Action<int> Value)
+            // 2. This is a component using EventCallback (int value & EventCallback<int>)
+            // 3. This is an element
+            if (parent is ComponentIntermediateNode && changeAttribute != null && changeAttribute.IsDelegateProperty())
             {
                 RewriteNodesForComponentDelegateBind(
                     original,
                     valueExpressionTokens,
                     changeExpressionTokens);
             }
+            else if (parent is ComponentIntermediateNode)
+            {
+                RewriteNodesForComponentEventCallbackBind(
+                    original,
+                    valueExpressionTokens,
+                    changeExpressionTokens);
+            }
             else
             {
-                RewriteNodesForEventCallbackBind(
+                RewriteNodesForElementEventCallbackBind(
                     original,
                     format,
                     culture,
-                    valueAttribute,
-                    changeAttribute,
                     valueExpressionTokens,
                     changeExpressionTokens);
             }
@@ -596,6 +604,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
+            // For a component using @bind we want to:
+            //  - use the value as-is
+            //  - create a delegate to handle changes
             valueExpressionTokens.Add(original);
 
             // Now rewrite the content of the change-handler node. Since it's a component attribute,
@@ -609,62 +620,68 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             });
         }
 
-        private void RewriteNodesForEventCallbackBind(
+        private void RewriteNodesForComponentEventCallbackBind(
             IntermediateToken original,
-            IntermediateToken format,
-            IntermediateToken culture,
-            BoundAttributeDescriptor valueAttribute,
-            BoundAttributeDescriptor changeAttribute,
             List<IntermediateToken> valueExpressionTokens,
             List<IntermediateToken> changeExpressionTokens)
         {
-            if (changeAttribute == null)
+            // For a component using @bind we want to:
+            //  - use the value as-is
+            //  - create a delegate to handle changes
+            valueExpressionTokens.Add(original);
+
+            changeExpressionTokens.Add(new IntermediateToken()
             {
-                // This is bind on a markup element. We use FormatValue to transform the value in the correct way
-                // according to format and culture.
-                //
-                // Now rewrite the content of the value node to look like:
-                //
-                // BindConverter.FormatValue(<code>, format: <format>, culture: <culture>)
+                Content = $"{ComponentsApi.RuntimeHelpers.CreateInferredEventCallback}(this, __value => {original.Content} = __value, {original.Content})",
+                Kind = TokenKind.CSharp
+            });
+        }
+
+        private void RewriteNodesForElementEventCallbackBind(
+            IntermediateToken original,
+            IntermediateToken format,
+            IntermediateToken culture,
+            List<IntermediateToken> valueExpressionTokens,
+            List<IntermediateToken> changeExpressionTokens)
+        {
+            // This is bind on a markup element. We use FormatValue to transform the value in the correct way
+            // according to format and culture.
+            //
+            // Now rewrite the content of the value node to look like:
+            //
+            // BindConverter.FormatValue(<code>, format: <format>, culture: <culture>)
+            valueExpressionTokens.Add(new IntermediateToken()
+            {
+                Content = $"{ComponentsApi.BindConverter.FormatValue}(",
+                Kind = TokenKind.CSharp
+            });
+            valueExpressionTokens.Add(original);
+
+            if (!string.IsNullOrEmpty(format?.Content))
+            {
                 valueExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = $"{ComponentsApi.BindConverter.FormatValue}(",
-                    Kind = TokenKind.CSharp
-                });
-                valueExpressionTokens.Add(original);
-
-                if (!string.IsNullOrEmpty(format?.Content))
-                {
-                    valueExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = ", format: ",
-                        Kind = TokenKind.CSharp,
-                    });
-                    valueExpressionTokens.Add(format);
-                }
-
-                if (!string.IsNullOrEmpty(culture?.Content))
-                {
-                    valueExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = ", culture: ",
-                        Kind = TokenKind.CSharp,
-                    });
-                    valueExpressionTokens.Add(culture);
-                }
-
-                valueExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ")",
+                    Content = ", format: ",
                     Kind = TokenKind.CSharp,
                 });
+                valueExpressionTokens.Add(format);
             }
-            else
+
+            if (!string.IsNullOrEmpty(culture?.Content))
             {
-                // This is a component. We can just use the value as-is, since we know its type
-                // we can type-check it.
-                valueExpressionTokens.Add(original);
+                valueExpressionTokens.Add(new IntermediateToken()
+                {
+                    Content = ", culture: ",
+                    Kind = TokenKind.CSharp,
+                });
+                valueExpressionTokens.Add(culture);
             }
+
+            valueExpressionTokens.Add(new IntermediateToken()
+            {
+                Content = ")",
+                Kind = TokenKind.CSharp,
+            });
 
             // Now rewrite the content of the change-handler node. There are two cases we care about
             // here. If it's a component attribute, then don't use the 'CreateBinder' wrapper. We expect
@@ -683,53 +700,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // EventCallbackFactory.CreateBinder(this, __value => <code> = __value, <code>, format: <format>, culture: <culture>)
             //
             // Note that the linemappings here are applied to the value attribute, not the change attribute.
-            if (changeAttribute == null)
+            changeExpressionTokens.Add(new IntermediateToken()
+            {
+                Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, ",
+                Kind = TokenKind.CSharp
+            });
+
+            changeExpressionTokens.Add(new IntermediateToken()
+            {
+                Content = original.Content,
+                Kind = TokenKind.CSharp
+            });
+
+            if (format != null)
             {
                 changeExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateBinderMethod}(this, __value => {original.Content} = __value, ",
+                    Content = $", format: {format.Content}",
                     Kind = TokenKind.CSharp
-                });
-
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = original.Content,
-                    Kind = TokenKind.CSharp
-                });
-
-                if (format != null)
-                {
-                    changeExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = $", format: {format.Content}",
-                        Kind = TokenKind.CSharp
-                    });
-                }
-
-                if (culture != null)
-                {
-                    changeExpressionTokens.Add(new IntermediateToken()
-                    {
-                        Content = $", culture: {culture.Content}",
-                        Kind = TokenKind.CSharp
-                    });
-                }
-
-                changeExpressionTokens.Add(new IntermediateToken()
-                {
-                    Content = ")",
-                    Kind = TokenKind.CSharp,
                 });
             }
-            else
+
+            if (culture != null)
             {
-                // Component
                 changeExpressionTokens.Add(new IntermediateToken()
                 {
-                    Content = $"{ComponentsApi.RuntimeHelpers.CreateInferredEventCallback}(this, __value => {original.Content} = __value, {original.Content})",
+                    Content = $", culture: {culture.Content}",
                     Kind = TokenKind.CSharp
                 });
             }
+
+            changeExpressionTokens.Add(new IntermediateToken()
+            {
+                Content = ")",
+                Kind = TokenKind.CSharp,
+            });
         }
 
         private static IntermediateToken GetAttributeContent(IntermediateNode node)
