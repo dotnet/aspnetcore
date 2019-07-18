@@ -61,11 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             else if (reader.ValueTextEquals(Status.EncodedUtf8Bytes))
             {
-                if (!reader.Read())
-                {
-                    throw new InvalidDataException(Resources.UnexpectedJsonEnd);
-                }
-
+                reader.Read();
                 if (reader.TokenType == JsonTokenType.Null)
                 {
                     // Nothing to do here.
@@ -91,11 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return false;
             }
 
-            if (!reader.Read())
-            {
-                throw new InvalidDataException(Resources.UnexpectedJsonEnd);
-            }
-
+            reader.Read();
             value = reader.GetString();
             return true;
         }

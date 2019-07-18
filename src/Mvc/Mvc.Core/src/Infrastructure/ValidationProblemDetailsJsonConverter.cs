@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
+                if (reader.ValueTextEquals(Errors.EncodedUtf8Bytes))
                 {
                     var errors = JsonSerializer.Deserialize<Dictionary<string, string[]>>(ref reader, options);
                     foreach (var item in errors)
