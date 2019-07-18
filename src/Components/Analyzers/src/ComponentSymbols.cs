@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
@@ -30,6 +29,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 return false;
             }
 
+            var icomponentType = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
+            if (icomponentType == null)
+            {
+                symbols = null;
+                return false;
+            }
+
             var dictionary = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2");
             var @string = compilation.GetSpecialType(SpecialType.System_String);
             var @object = compilation.GetSpecialType(SpecialType.System_Object);
@@ -41,18 +47,24 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
             var parameterCaptureUnmatchedValuesRuntimeType = dictionary.Construct(@string, @object);
 
-            symbols = new ComponentSymbols(parameterAttribute, cascadingParameterAttribute, parameterCaptureUnmatchedValuesRuntimeType);
+            symbols = new ComponentSymbols(
+                parameterAttribute,
+                cascadingParameterAttribute,
+                parameterCaptureUnmatchedValuesRuntimeType,
+                icomponentType);
             return true;
         }
 
         private ComponentSymbols(
             INamedTypeSymbol parameterAttribute,
             INamedTypeSymbol cascadingParameterAttribute,
-            INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType)
+            INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
+            INamedTypeSymbol icomponentType)
         {
             ParameterAttribute = parameterAttribute;
             CascadingParameterAttribute = cascadingParameterAttribute;
             ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
+            IComponentType = icomponentType;
         }
 
         public INamedTypeSymbol ParameterAttribute { get; }
@@ -61,5 +73,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         public INamedTypeSymbol ParameterCaptureUnmatchedValuesRuntimeType { get; }
 
         public INamedTypeSymbol CascadingParameterAttribute { get; }
+
+        public INamedTypeSymbol IComponentType { get; }
     }
 }

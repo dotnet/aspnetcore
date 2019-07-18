@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Components
                 return Task.CompletedTask;
             }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new NotImplementedException();
             }

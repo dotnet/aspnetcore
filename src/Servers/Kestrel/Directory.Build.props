@@ -8,8 +8,6 @@
   <PropertyGroup>
     <KestrelRoot>$(MSBuildThisFileDirectory)</KestrelRoot>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
-    <GenerateResxSource>true</GenerateResxSource>
-    <GenerateResxSourceEmitFormatMethods>true</GenerateResxSourceEmitFormatMethods>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">

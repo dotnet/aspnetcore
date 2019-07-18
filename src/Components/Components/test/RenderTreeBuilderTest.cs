@@ -1558,22 +1558,45 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CannotAddNullKey()
+        public void IgnoresNullElementKey()
         {
-            // Although we could translate 'null' into either some default "null key"
-            // instance, or just no-op the call, it almost certainly indicates a programming
-            // error so it's better to fail.
-
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
 
-            // Act/Assert
-            var ex = Assert.Throws<ArgumentNullException>(() =>
-            {
-                builder.OpenElement(0, "elem");
-                builder.SetKey(null);
-            });
-            Assert.Equal("value", ex.ParamName);
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.SetKey(null);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Element(frame, "elem", 1, 0);
+                    Assert.Null(frame.ElementKey);
+                });
+        }
+
+        [Fact]
+        public void IgnoresNullComponentKey()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenComponent<TestComponent>(0);
+            builder.SetKey(null);
+            builder.CloseComponent();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Component<TestComponent>(frame, 1, 0);
+                    Assert.Null(frame.ComponentKey);
+                });
         }
 
         [Fact]
@@ -1787,7 +1810,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle) { }
+            public void Attach(RenderHandle renderHandle) { }
 
             public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();

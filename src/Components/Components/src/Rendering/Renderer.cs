@@ -17,16 +17,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     public abstract partial class Renderer : IDisposable
     {
-        private readonly ComponentFactory _componentFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
-        private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
-        private readonly Dictionary<int, int> _eventHandlerIdReplacements = new Dictionary<int, int>();
+        private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
+        private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
-        private int _lastEventHandlerId = 0;
+        private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
 
         /// <summary>
@@ -61,9 +61,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _componentFactory = new ComponentFactory(serviceProvider);
+            _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
-            _componentFactory = new ComponentFactory(serviceProvider);
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => _componentFactory.InstantiateComponent(componentType);
+            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -186,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             Log.InitializingComponent(_logger, componentState, parentComponentState);
             _componentStateById.Add(componentId, componentState);
-            component.Configure(new RenderHandle(this, componentId));
+            component.Attach(new RenderHandle(this, componentId));
             return componentState;
         }
 
@@ -207,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(int eventHandlerId, EventFieldInfo fieldInfo, UIEventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, UIEventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
@@ -355,7 +354,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        internal void TrackReplacedEventHandlerId(int oldEventHandlerId, int newEventHandlerId)
+        internal void TrackReplacedEventHandlerId(ulong oldEventHandlerId, ulong newEventHandlerId)
         {
             // Tracking the chain of old->new replacements allows us to interpret incoming EventFieldInfo
             // values even if they refer to an event handler ID that's since been superseded. This is essential
@@ -363,7 +362,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
         }
 
-        private int FindLatestEventHandlerIdInChain(int eventHandlerId)
+        private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)
         {
             while (_eventHandlerIdReplacements.TryGetValue(eventHandlerId, out var replacementEventHandlerId))
             {
@@ -574,7 +573,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
+        private void RemoveEventHandlerIds(ArrayRange<ulong> eventHandlerIds, Task afterTaskIgnoreErrors)
         {
             if (eventHandlerIds.Count == 0)
             {
@@ -599,7 +598,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             // Factor out the async part into a separate local method purely so, in the
             // synchronous case, there's no state machine or task construction
-            async Task ContinueAfterTask(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
+            async Task ContinueAfterTask(ArrayRange<ulong> eventHandlerIds, Task afterTaskIgnoreErrors)
             {
                 // We need to delay the actual removal (e.g., until we've confirmed the client
                 // has processed the batch and hence can be sure not to reuse the handler IDs
@@ -638,7 +637,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private void UpdateRenderTreeToMatchClientState(int eventHandlerId, EventFieldInfo fieldInfo)
+        private void UpdateRenderTreeToMatchClientState(ulong eventHandlerId, EventFieldInfo fieldInfo)
         {
             var componentState = GetOptionalComponentState(fieldInfo.ComponentId);
             if (componentState != null)
@@ -664,13 +663,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     try
                     {
-                        disposable.Dispose();
+                        componentState.Dispose();
                     }
                     catch (Exception exception)
                     {
                         HandleException(exception);
                     }
                 }
+
+                _batchBuilder.Dispose();
             }
         }
 

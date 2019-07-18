@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public async Task ExecuteResultAsync_ExecutesViewComponent_AndWritesDiagnosticSource()
+        public async Task ExecuteResultAsync_ExecutesViewComponent_AndWritesDiagnosticListener()
         {
             // Arrange
             var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));

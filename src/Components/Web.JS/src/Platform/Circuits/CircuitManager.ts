@@ -94,12 +94,10 @@ function getComponentStartComment(node: Node): StartComponentComment | undefined
             rendererId: rendererId,
             componentId: componentId,
           };
-        } else {
-          throw new Error(`Found malformed start component comment at ${node.textContent}`);
         }
       } catch (error) {
-        throw new Error(`Found malformed start component comment at ${node.textContent}`);
       }
+      throw new Error(`Found malformed start component comment at ${node.textContent}`);
     }
   }
 }
@@ -114,20 +112,19 @@ function getComponentEndComment(component: StartComponentComment, children: Node
     }
     const componentEndComment = /\W+M.A.C.Component:\W+(\d+)\W+$/;
     const definition = componentEndComment.exec(node.textContent);
-    const rawComponentId = definition && definition[1];
-    if (!rawComponentId) {
+    const json = definition && definition[1];
+    if (!json) {
       continue;
     }
     try {
-      const componentId = Number.parseInt(rawComponentId);
+      // The value is expected to be a JSON encoded number
+      const componentId = JSON.parse(json);
       if (componentId === component.componentId) {
         return { componentId, node: node as Comment, index: i };
-      } else {
-        throw new Error(`Found malformed end component comment at ${node.textContent}`);
       }
     } catch (error) {
-      throw new Error(`Found malformed end component comment at ${node.textContent}`);
     }
+    throw new Error(`Found malformed end component comment at ${node.textContent}`);
   }
   throw new Error(`End component comment not found for ${component.node}`);
 }

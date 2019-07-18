@@ -1,7 +1,6 @@
 (global as any).DotNet = { attachReviver: jest.fn() };
 
 import { discoverPrerenderedCircuits } from '../src/Platform/Circuits/CircuitManager';
-import { NullLogger } from '../src/Platform/Logging/Loggers';
 import { JSDOM } from 'jsdom';
 
 describe('CircuitManager', () => {
@@ -14,7 +13,7 @@ describe('CircuitManager', () => {
       </head>
       <body>
         <header>Preamble</header>
-        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"1"} -->
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":1} -->
         <p>Prerendered content</p>
         <!-- M.A.C.Component: 1 -->
         <footer></footer>
@@ -40,11 +39,11 @@ describe('CircuitManager', () => {
       </head>
       <body>
         <header>Preamble</header>
-        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"1"} -->
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":1} -->
         <p>Prerendered content</p>
         <!-- M.A.C.Component: 1 -->
         <footer>
-          <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"2"} -->
+          <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":2} -->
           <p>Prerendered content</p>
           <!-- M.A.C.Component: 2 -->
         </footer>
@@ -66,7 +65,31 @@ describe('CircuitManager', () => {
     expect(second.componentId).toEqual(2);
   });
 
-  it('discoverPrerenderedCircuits throws for malformed circuits', () => {
+  it('discoverPrerenderedCircuits throws for malformed circuits - improper nesting', () => {
+    const dom = new JSDOM(`<!doctype HTML>
+    <html>
+      <head>
+        <title>Page</title>
+      </head>
+      <body>
+        <header>Preamble</header>
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":1} -->
+        <p>Prerendered content</p>
+        <!-- M.A.C.Component: 2 -->
+        <footer>
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":2} -->
+        <p>Prerendered content</p>
+        <!-- M.A.C.Component: 1 -->
+        </footer>
+      </body>
+    </html>`);
+
+    expect(() => discoverPrerenderedCircuits(dom.window.document))
+      .toThrow();
+  });
+
+
+  it('discoverPrerenderedCircuits throws for malformed circuits - mixed string and int', () => {
     const dom = new JSDOM(`<!doctype HTML>
     <html>
       <head>
@@ -76,11 +99,11 @@ describe('CircuitManager', () => {
         <header>Preamble</header>
         <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"1"} -->
         <p>Prerendered content</p>
-        <!-- M.A.C.Component: 2 -->
-        <footer>
-        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"2"} -->
-        <p>Prerendered content</p>
         <!-- M.A.C.Component: 1 -->
+        <footer>
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":2} -->
+        <p>Prerendered content</p>
+        <!-- M.A.C.Component: 2 -->
         </footer>
       </body>
     </html>`);
@@ -97,11 +120,11 @@ describe('CircuitManager', () => {
       </head>
       <body>
         <header>Preamble</header>
-        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"1"} -->
+        <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":1} -->
         <p>Prerendered content</p>
         <!-- M.A.C.Component: 1 -->
         <footer>
-          <!-- M.A.C.Component: {"circuitId":"1234","rendererId":"2","componentId":"2"} -->
+          <!-- M.A.C.Component: {"circuitId":"1234","rendererId":2,"componentId":2} -->
           <p>Prerendered content</p>
           <!-- M.A.C.Component: 2 -->
         </footer>

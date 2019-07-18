@@ -1142,7 +1142,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.Equal(initialValue, context.ValidationMetadata.IsRequired);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public void CreateValidationMetadata_InfersRequiredAttribute_NoNonNullableProperty()
         {
             // Arrange
@@ -1152,7 +1152,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 typeof(NullableReferenceTypes),
                 typeof(NullableReferenceTypes).GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType)));
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(NullableReferenceTypes), 
+                typeof(NullableReferenceTypes),
                 nameof(NullableReferenceTypes.NonNullableReferenceType), typeof(string));
             var context = new ValidationMetadataProviderContext(key, attributes);
 
@@ -1325,7 +1325,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.Same(attribute, validatorMetadata);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public void IsNonNullable_FindsNonNullableProperty()
         {
             // Arrange
@@ -1333,7 +1333,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var property = type.GetProperty(nameof(NullableReferenceTypes.NonNullableReferenceType));
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNonNullable(property.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.True(result);
@@ -1347,13 +1347,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var property = type.GetProperty(nameof(NullableReferenceTypes.NullableReferenceType));
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNonNullable(property.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, member: null, property.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.False(result);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public void IsNonNullable_FindsNonNullableParameter()
         {
             // Arrange
@@ -1362,7 +1362,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var parameter = method.GetParameters().Where(p => p.Name == "nonNullableParameter").Single();
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNonNullable(parameter.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, method, parameter.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.True(result);
@@ -1377,7 +1377,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var parameter = method.GetParameters().Where(p => p.Name == "nullableParameter").Single();
 
             // Act
-            var result = DataAnnotationsMetadataProvider.IsNonNullable(parameter.GetCustomAttributes(inherit: true));
+            var result = DataAnnotationsMetadataProvider.IsNullableReferenceType(type, method, parameter.GetCustomAttributes(inherit: true));
 
             // Assert
             Assert.False(result);
@@ -1429,12 +1429,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             return CreateProvider(options: null, localizationOptions, useStringLocalizer ? stringLocalizerFactory.Object : null);
         }
 
-        private ModelAttributes GetModelAttributes(IEnumerable<object> typeAttributes) 
+        private ModelAttributes GetModelAttributes(IEnumerable<object> typeAttributes)
             => new ModelAttributes(typeAttributes, Array.Empty<object>(), Array.Empty<object>());
 
         private ModelAttributes GetModelAttributes(
             IEnumerable<object> typeAttributes,
-            IEnumerable<object> propertyAttributes) 
+            IEnumerable<object> propertyAttributes)
             => new ModelAttributes(typeAttributes, propertyAttributes, Array.Empty<object>());
 
         private class KVPEnumGroupAndNameComparer : IEqualityComparer<KeyValuePair<EnumGroupAndName, string>>

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class RuntimeDependenciesResolverTest
     {
-        [ConditionalFact]
+        [ConditionalFact(Skip = " https://github.com/aspnet/AspNetCore/issues/12059")]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "StandaloneApp.dll",
                 "StandaloneApp.pdb",
                 "System.dll",
+                "System.Buffers.dll",
                 "System.Collections.Concurrent.dll",
                 "System.Collections.dll",
                 "System.ComponentModel.Composition.dll",

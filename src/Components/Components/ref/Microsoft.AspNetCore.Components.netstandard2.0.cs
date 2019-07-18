@@ -25,6 +25,53 @@ namespace Microsoft.AspNetCore.Components
     public static partial class BindAttributes
     {
     }
+    public static partial class BindConverter
+    {
+        public static bool FormatValue(bool value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(decimal value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(double value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(int value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(long value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static bool? FormatValue(bool? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(System.DateTime? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(decimal? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(double? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(int? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(long? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(float? value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(float value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static string FormatValue(string value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static object FormatValue<T>(T value, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static bool TryConvertToBool(object obj, System.Globalization.CultureInfo culture, out bool value) { throw null; }
+        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDecimal(object obj, System.Globalization.CultureInfo culture, out decimal value) { throw null; }
+        public static bool TryConvertToDouble(object obj, System.Globalization.CultureInfo culture, out double value) { throw null; }
+        public static bool TryConvertToFloat(object obj, System.Globalization.CultureInfo culture, out float value) { throw null; }
+        public static bool TryConvertToInt(object obj, System.Globalization.CultureInfo culture, out int value) { throw null; }
+        public static bool TryConvertToLong(object obj, System.Globalization.CultureInfo culture, out long value) { throw null; }
+        public static bool TryConvertToNullableBool(object obj, System.Globalization.CultureInfo culture, out bool? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDecimal(object obj, System.Globalization.CultureInfo culture, out decimal? value) { throw null; }
+        public static bool TryConvertToNullableDouble(object obj, System.Globalization.CultureInfo culture, out double? value) { throw null; }
+        public static bool TryConvertToNullableFloat(object obj, System.Globalization.CultureInfo culture, out float? value) { throw null; }
+        public static bool TryConvertToNullableInt(object obj, System.Globalization.CultureInfo culture, out int? value) { throw null; }
+        public static bool TryConvertToNullableLong(object obj, System.Globalization.CultureInfo culture, out long? value) { throw null; }
+        public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
+        public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindElementAttribute : System.Attribute
     {
@@ -63,7 +110,7 @@ namespace Microsoft.AspNetCore.Components
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
-        void Microsoft.AspNetCore.Components.IComponent.Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
         protected virtual void OnAfterRender() { }
@@ -102,6 +149,11 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
         public string __internalId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ElementReference
+    {
+        private readonly object _dummy;
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback
@@ -307,7 +359,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IComponent
     {
-        void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
+        void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters);
     }
     public partial interface IComponentContext
@@ -347,7 +399,7 @@ namespace Microsoft.AspNetCore.Components
     {
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        protected Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
@@ -672,7 +724,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         private readonly object _dummy;
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<int> DisposedComponentIDs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<int> DisposedEventHandlerIDs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<ulong> DisposedEventHandlerIDs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> ReferenceFrames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff> UpdatedComponents { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
@@ -683,7 +735,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
-        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo fieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public virtual System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo fieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
@@ -716,7 +768,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
-    public partial class RenderTreeBuilder
+    public partial class RenderTreeBuilder : System.IDisposable
     {
         public const string ChildContent = "ChildContent";
         public RenderTreeBuilder(Microsoft.AspNetCore.Components.Rendering.Renderer renderer) { }
@@ -747,6 +799,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void OpenElement(int sequence, string elementName) { }
         public void SetKey(object value) { }
         public void SetUpdatesAttributeName(string updatesAttributeName) { }
+        void System.IDisposable.Dispose() { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
@@ -781,17 +834,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         PermutationListEntry = 9,
         PermutationListEnd = 10,
     }
-    public enum RenderTreeFrameType
+    public enum RenderTreeFrameType : short
     {
-        None = 0,
-        Element = 1,
-        Text = 2,
-        Attribute = 3,
-        Component = 4,
-        Region = 5,
-        ElementReferenceCapture = 6,
-        ComponentReferenceCapture = 7,
-        Markup = 8,
+        None = (short)0,
+        Element = (short)1,
+        Text = (short)2,
+        Attribute = (short)3,
+        Component = (short)4,
+        Region = (short)5,
+        ElementReferenceCapture = (short)6,
+        ComponentReferenceCapture = (short)7,
+        Markup = (short)8,
     }
 }
 namespace Microsoft.AspNetCore.Components.Routing

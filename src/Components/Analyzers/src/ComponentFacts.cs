@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
@@ -84,6 +85,27 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             }
 
             return property.GetAttributes().Any(a => a.AttributeClass == symbols.CascadingParameterAttribute);
+        }
+
+        public static bool IsComponent(ComponentSymbols symbols, Compilation compilation, INamedTypeSymbol type)
+        {
+            if (symbols is null)
+            {
+                throw new ArgumentNullException(nameof(symbols));
+            }
+
+            if (type is null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            var conversion = compilation.ClassifyConversion(symbols.IComponentType, type);
+            if (!conversion.Exists || !conversion.IsExplicit)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

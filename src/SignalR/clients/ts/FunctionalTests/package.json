@@ -51,6 +51,9 @@
     "test:sauce": "yarn run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
     "sauce": "yarn run test:sauce"
   },
+  "resolutions": {
+    "lodash": ">=4.7.14"
+  },
   "author": "",
   "license": "Apache-2.0"
 }

@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        public abstract class MockableEncryptor : CngAuthenticatedEncryptorBase
+        internal abstract class MockableEncryptor : CngAuthenticatedEncryptorBase
         {
             public override void Dispose()
             {

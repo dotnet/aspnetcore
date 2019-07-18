@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 context.StreamId,
                 context.FrameWriter,
                 _outputFlowControl,
-                context.TimeoutControl,
                 context.MemoryPool,
                 this,
                 context.ServiceContext.Log);

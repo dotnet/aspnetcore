@@ -31,10 +31,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> ValueChanged { get; set; }
+        public Action<int> ValueChanged { get; set; }
     }
 }"));
 
@@ -105,10 +105,10 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        int Value { get; set; }
+        public int Value { get; set; }
 
         [Parameter]
-        Action<int> OnChanged { get; set; }
+        public Action<int> OnChanged { get; set; }
     }
 }"));
 

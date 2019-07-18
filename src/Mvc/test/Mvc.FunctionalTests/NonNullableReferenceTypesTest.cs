@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         private HttpClient Client { get; set; }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public async Task CanUseNonNullableReferenceType_WithController_OmitData_ValidationErrors()
         {
             // Arrange

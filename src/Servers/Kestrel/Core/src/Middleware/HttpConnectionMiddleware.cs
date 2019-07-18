@@ -34,11 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 MemoryPool = memoryPoolFeature.MemoryPool,
-                Transport = connectionContext.Transport
+                Transport = connectionContext.Transport,
+                LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint,
+                RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint
             };
-
-            httpConnectionContext.LocalEndPoint = connectionContext.LocalEndPoint as IPEndPoint;
-            httpConnectionContext.RemoteEndPoint = connectionContext.RemoteEndPoint as IPEndPoint;
 
             var connection = new HttpConnection(httpConnectionContext);
 

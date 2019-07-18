@@ -277,19 +277,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeaderPropagationSample", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "..\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RequestThrottling", "RequestThrottling", "{8C9AA8A2-9D1F-4450-9F8D-56BAB6F3D343}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConcurrencyLimiter", "ConcurrencyLimiter", "{8C9AA8A2-9D1F-4450-9F8D-56BAB6F3D343}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestThrottlingSample", "RequestThrottling\sample\RequestThrottlingSample.csproj", "{6720919C-0DEA-49E1-90DC-F1883F7919CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrencyLimiterSample", "ConcurrencyLimiter\sample\ConcurrencyLimiterSample.csproj", "{6720919C-0DEA-49E1-90DC-F1883F7919CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestThrottling", "RequestThrottling\src\Microsoft.AspNetCore.RequestThrottling.csproj", "{4CE2384D-6B88-4824-ADD1-4183D180FEFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter", "ConcurrencyLimiter\src\Microsoft.AspNetCore.ConcurrencyLimiter.csproj", "{4CE2384D-6B88-4824-ADD1-4183D180FEFF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestThrottling.Tests", "RequestThrottling\test\Microsoft.AspNetCore.RequestThrottling.Tests.csproj", "{353AA2B0-1013-486C-B5BD-9379385CA403}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Tests", "ConcurrencyLimiter\test\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj", "{353AA2B0-1013-486C-B5BD-9379385CA403}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Metadata", "..\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj", "{7E2EA6E2-31FE-418A-9AE4-955A4C708AE7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization", "..\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj", "{CDDD7C43-5BEB-4E3E-8A59-FCDC83C9FBCF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.RequestThrottling.Microbenchmarks", "RequestThrottling\perf\Microbenchmarks\Microsoft.AspNetCore.RequestThrottling.Microbenchmarks.csproj", "{737B26B4-CFC6-4B44-9070-DD36334E85B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks", "ConcurrencyLimiter\perf\Microbenchmarks\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj", "{737B26B4-CFC6-4B44-9070-DD36334E85B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDestination", "CORS\test\testassets\TestDestination\TestDestination.csproj", "{DFEB537A-2D35-4C62-8A13-42798DF66A80}"
 EndProject

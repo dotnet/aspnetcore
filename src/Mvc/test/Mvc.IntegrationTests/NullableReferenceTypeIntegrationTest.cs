@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 #nullable restore
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public async Task BindProperty_WithNonNullableReferenceType_NoData_ValidationError()
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 #nullable restore
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public async Task BindProperty_WithNonNullableReferenceType_NoData_ValidationError_CustomMessage()
         {
             // Arrange
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 #nullable restore
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11828")]
+        [Fact]
         public async Task BindParameter_WithNonNullableReferenceType_NoData_ValidationError()
         {
             // Arrange

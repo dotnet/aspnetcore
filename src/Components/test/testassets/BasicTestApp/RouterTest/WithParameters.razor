@@ -5,9 +5,9 @@
 
 @code
 {
-    [Parameter] string FirstName { get; set; }
+    [Parameter] public string FirstName { get; set; }
 
-    [Parameter] string LastName { get ; set; }
+    [Parameter] public string LastName { get ; set; }
 
     public override Task SetParametersAsync(ParameterCollection parameters)
     {

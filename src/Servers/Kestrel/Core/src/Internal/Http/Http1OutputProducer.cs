@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWriterHelpers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _unflushedBytes;
         private int _currentMemoryPrefixBytes;
 
-        private readonly PipeWriter _pipeWriter;
+        private readonly ConcurrentPipeWriter _pipeWriter;
         private IMemoryOwner<byte> _fakeMemoryOwner;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
@@ -81,17 +82,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             IHttpMinResponseDataRateFeature minResponseDataRateFeature,
             MemoryPool<byte> memoryPool)
         {
-            _pipeWriter = pipeWriter;
+            // Allow appending more data to the PipeWriter when a flush is pending.
+            _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
             _log = log;
             _minResponseDataRateFeature = minResponseDataRateFeature;
-            _flusher = new TimingPipeFlusher(pipeWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
             _memoryPool = memoryPool;
         }
-
-        // For tests
-        internal PipeWriter PipeWriter => _pipeWriter;
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
         {
@@ -408,6 +407,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
+                _pipeWriter.Abort();
+
                 if (_fakeMemoryOwner != null)
                 {
                     _fakeMemoryOwner.Dispose();

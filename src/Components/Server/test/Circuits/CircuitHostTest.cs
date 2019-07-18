@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class ThrowOnDisposeComponent : IComponent, IDisposable
         {
             public bool DidCallDispose { get; private set; }
-            public void Configure(RenderHandle renderHandle) { }
+            public void Attach(RenderHandle renderHandle) { }
 
             public Task SetParametersAsync(ParameterCollection parameters)
                 => Task.CompletedTask;

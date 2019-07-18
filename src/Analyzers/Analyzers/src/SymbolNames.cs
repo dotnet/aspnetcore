@@ -41,5 +41,12 @@ namespace Microsoft.AspNetCore.Analyzers
 
             public const string UseSignalRMethodName = "UseSignalR";
         }
+
+        public static class MvcOptions
+        {
+            public const string MetadataName = "Microsoft.AspNetCore.Mvc.MvcOptions";
+
+            public const string EnableEndpointRoutingPropertyName = "EnableEndpointRouting";
+        }
     }
 }

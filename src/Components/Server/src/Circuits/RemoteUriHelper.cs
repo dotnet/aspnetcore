@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// <summary>
     /// A Server-Side Components implementation of <see cref="IUriHelper"/>.
     /// </summary>
-    public class RemoteUriHelper : UriHelperBase
+    internal class RemoteUriHelper : UriHelperBase
     {
         private readonly ILogger<RemoteUriHelper> _logger;
         private IJSRuntime _jsRuntime;

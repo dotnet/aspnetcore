@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             public RenderHandle RenderHandle { get; private set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 RenderHandle = renderHandle;
             }
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             private RenderHandle _renderHandle;
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
@@ -584,7 +584,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             [Inject]
             public RenderFragment Fragment { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }

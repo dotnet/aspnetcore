@@ -22,14 +22,14 @@
 
 @code {
     [Parameter]
-    RenderFragment Header { get; set; }
+    public RenderFragment Header { get; set; }
 
     [Parameter]
-    RenderFragment<TItem> ItemTemplate { get; set; }
+    public RenderFragment<TItem> ItemTemplate { get; set; }
 
     [Parameter]
-    RenderFragment Footer { get; set; }
+    public RenderFragment Footer { get; set; }
 
     [Parameter]
-    IReadOnlyList<TItem> Items { get; set; }
+    public IReadOnlyList<TItem> Items { get; set; }
 }

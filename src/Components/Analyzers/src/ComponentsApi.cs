@@ -22,5 +22,11 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.CascadingParameterAttribute";
             public static readonly string MetadataName = FullTypeName;
         }
+
+        public static class IComponent
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
+            public static readonly string MetadataName = FullTypeName;
+        }
     }
 }

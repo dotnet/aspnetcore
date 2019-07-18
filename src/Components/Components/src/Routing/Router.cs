@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _logger = LoggerFactory.CreateLogger<Router>();
             _renderHandle = renderHandle;
@@ -70,8 +69,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
-            var types = ComponentResolver.ResolveComponents(AppAssembly);
-            Routes = RouteTable.Create(types);
+            Routes = RouteTableFactory.Create(AppAssembly);
             Refresh(isNavigationIntercepted: false);
             return Task.CompletedTask;
         }

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 {
     internal class RenderTreeUpdater
     {
-        public static void UpdateToMatchClientState(RenderTreeBuilder renderTreeBuilder, int eventHandlerId, object newFieldValue)
+        public static void UpdateToMatchClientState(RenderTreeBuilder renderTreeBuilder, ulong eventHandlerId, object newFieldValue)
         {
             // We only allow the client to supply string or bool currently, since those are the only kinds of
             // values we output on attributes that go to the client

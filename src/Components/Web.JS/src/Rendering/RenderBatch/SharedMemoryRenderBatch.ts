@@ -43,8 +43,8 @@ export class SharedMemoryRenderBatch implements RenderBatch {
   }
 
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number) {
-    const pointer = arrayValuesEntry(values, index, /* int length */ 4);
-    return platform.readInt32Field(pointer as any as Pointer);
+    const pointer = arrayValuesEntry(values, index, /* long length */ 8);
+    return platform.readUint64Field(pointer as any as Pointer);
   }
 
   arrayRangeReader = arrayRangeReader;
@@ -99,7 +99,7 @@ const editReader = {
 // Keep in sync with memory layout in RenderTreeFrame.cs
 const frameReader = {
   structLength: 36,
-  frameType: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 4) as FrameType,
+  frameType: (frame: RenderTreeFrame) => platform.readInt16Field(frame as any, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
   elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   componentId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 12),
@@ -108,7 +108,7 @@ const frameReader = {
   markupContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16)!,
   attributeName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
-  attributeEventHandlerId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
+  attributeEventHandlerId: (frame: RenderTreeFrame) => platform.readUint64Field(frame as any, 8),
 };
 
 function arrayValuesEntry<T>(arrayValues: ArrayValues<T>, index: number, itemSize: number): T {

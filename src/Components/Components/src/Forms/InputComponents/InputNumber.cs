@@ -13,38 +13,18 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputNumber<T> : InputBase<T>
     {
-        delegate bool Parser(string value, out T result);
-        private static Parser _parser;
         private static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 
-        // Determine the parsing logic once per T and cache it, so we don't have to consider all the possible types on each parse
         static InputNumber()
         {
             // Unwrap Nullable<T>, because InputBase already deals with the Nullable aspect
             // of it for us. We will only get asked to parse the T for nonempty inputs.
             var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-
-            if (targetType == typeof(int))
+            if (targetType == typeof(int) ||
+                targetType == typeof(float) ||
+                targetType == typeof(double) ||
+                targetType == typeof(decimal))
             {
-                _parser = TryParseInt;
-            }
-            else if (targetType == typeof(long))
-            {
-                _parser = TryParseLong;
-            }
-            else if (targetType == typeof(float))
-            {
-                _parser = TryParseFloat;
-                _stepAttributeValue = "any";
-            }
-            else if (targetType == typeof(double))
-            {
-                _parser = TryParseDouble;
-                _stepAttributeValue = "any";
-            }
-            else if (targetType == typeof(decimal))
-            {
-                _parser = TryParseDecimal;
                 _stepAttributeValue = "any";
             }
             else
@@ -62,11 +42,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "step", _stepAttributeValue); // Before the splat so the user can override
+            builder.AddAttribute(1, "step", _stepAttributeValue);
             builder.AddMultipleAttributes(2, AdditionalAttributes);
             builder.AddAttribute(3, "type", "number");
             builder.AddAttribute(4, "class", CssClass);
-            builder.AddAttribute(5, "value", BindMethods.GetValue(CurrentValueAsString));
+            builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
@@ -74,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
         {
-            if (_parser(value, out result))
+            if (BindConverter.TryConvertTo<T>(value, CultureInfo.InvariantCulture, out result))
             {
                 validationErrorMessage = null;
                 return true;
@@ -100,97 +80,22 @@ namespace Microsoft.AspNetCore.Components.Forms
                     return null;
 
                 case int @int:
-                    return @int.ToString(CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(@int, CultureInfo.InvariantCulture);
 
                 case long @long:
-                    return @long.ToString(CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(@long, CultureInfo.InvariantCulture);
 
                 case float @float:
-                    return @float.ToString(CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture);
 
                 case double @double:
-                    return @double.ToString(CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(@double, CultureInfo.InvariantCulture);
 
                 case decimal @decimal:
-                    return @decimal.ToString(CultureInfo.InvariantCulture);
+                    return BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture);
 
                 default:
                     throw new InvalidOperationException($"Unsupported type {value.GetType()}");
-            }
-        }
-
-        static bool TryParseInt(string value, out T result)
-        {
-            var success = int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        static bool TryParseLong(string value, out T result)
-        {
-            var success = long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        static bool TryParseFloat(string value, out T result)
-        {
-            var success = float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success && !float.IsInfinity(parsedValue))
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        static bool TryParseDouble(string value, out T result)
-        {
-            var success = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success && !double.IsInfinity(parsedValue))
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        static bool TryParseDecimal(string value, out T result)
-        {
-            var success = decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
             }
         }
     }
