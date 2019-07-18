@@ -109,6 +109,11 @@ public class HubConnection {
         this.tickRate = tickRateInMilliseconds;
     }
 
+    // For testing purposes
+    Map<String,Observable> getStreamMap() {
+        return this.streamMap;
+    }
+
     TransportEnum getTransportEnum() {
         return this.transportEnum;
     }
@@ -517,6 +522,7 @@ public class HubConnection {
             connectionId = null;
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
+            this.streamMap.clear();
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -575,8 +581,14 @@ public class HubConnection {
             Observable observable = this.streamMap.get(streamId);
             observable.subscribe(
                 (item) -> sendHubMessage(new StreamItem(streamId, item)),
-                (error) -> sendHubMessage(new CompletionMessage(streamId, null, error.toString())),
-                () -> sendHubMessage(new CompletionMessage(streamId, null, null)));
+                (error) -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, error.toString()));
+                    this.streamMap.remove(streamId);
+                },
+                () -> {
+                    sendHubMessage(new CompletionMessage(streamId, null, null));
+                    this.streamMap.remove(streamId);
+                });
         }
     }
 
@@ -598,7 +610,6 @@ public class HubConnection {
 
         return params.toArray();
     }
-
 
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
