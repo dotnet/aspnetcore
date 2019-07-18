@@ -169,7 +169,7 @@ namespace BlazorServerWeb_CSharp
 #if (OrganizationalAuth || IndividualAuth)
                 endpoints.MapControllers();
 #endif
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub<App>(selector: "app");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
