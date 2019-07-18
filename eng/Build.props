@@ -12,6 +12,8 @@
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
+    <!-- Explicitly excluded projects -->
+    <ProjectToExclude Include="$(ProjectToExclude)" />
 
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
