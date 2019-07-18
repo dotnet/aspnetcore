@@ -13,7 +13,7 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
-                "IResponseBodyPipeFeature",
+                "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IServiceProvidersFeature",
@@ -46,7 +46,6 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature",
                 "IHttpResetFeature"
             };
 
@@ -67,7 +66,7 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
-                "IResponseBodyPipeFeature",
+                "IHttpResponseBodyFeature",
                 "IRequestBodyPipeFeature",
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
@@ -77,7 +76,6 @@ namespace CodeGenerator
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature",
                 "IRouteValuesFeature",
                 "IEndpointFeature"
             };

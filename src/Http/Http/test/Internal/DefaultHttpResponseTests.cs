@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Http
 
             Assert.NotNull(bodyPipe);
         }
-
+        /*
         [Fact]
         public async Task ResponseStart_CallsFeatureIfSet()
         {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
 
             startMock.Verify(m => m.StartAsync(default), Times.Never());
         }
-
+        */
         [Fact]
         public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
         {

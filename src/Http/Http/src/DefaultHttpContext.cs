@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Http
         {
             Features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             Features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+            Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
         }
 
         public DefaultHttpContext(IFeatureCollection features)

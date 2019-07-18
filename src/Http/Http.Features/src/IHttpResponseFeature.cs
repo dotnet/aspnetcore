@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// The <see cref="Stream"/> for writing the response body.
         /// </summary>
-        Stream Body { get; set; }
+        Stream Body { get; [Obsolete("Use IHttpResponseBodyFeature instead.", error: false)] set; }
 
         /// <summary>
         /// Indicates if the response has started. If true, the <see cref="StatusCode"/>,

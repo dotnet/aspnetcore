@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features
     /// <summary>
     ///     Represents the HttpResponseBody as a PipeWriter
     /// </summary>
+    [Obsolete("TODO: Remove, use IHttpResponseBodyFeature instead.", error: false)]
     public interface IResponseBodyPipeFeature
     {
         /// <summary>
