@@ -11,17 +11,17 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    internal class ServerSentEventsTransport : IHttpTransport
+    internal class ServerSentEventsServerTransport : IHttpTransport
     {
         private readonly PipeReader _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
+        public ServerSentEventsServerTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;
-            _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();
+            _logger = loggerFactory.CreateLogger<ServerSentEventsServerTransport>();
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
