@@ -40,6 +40,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             _options = options;
             _application = application;
             _connection = connection;
+
+            // We create the logger with a string to preserve the logging namespace after the server side transport renames.
             _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.WebSocketsTransport");
         }
 

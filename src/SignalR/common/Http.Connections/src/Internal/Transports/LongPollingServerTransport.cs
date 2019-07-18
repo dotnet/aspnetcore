@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         {
             _timeoutToken = timeoutToken;
             _application = application;
+
+            // We create the logger with a string to preserve the logging namespace after the server side transport renames.
             _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.LongPollingTransport");
         }
 
