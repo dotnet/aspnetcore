@@ -859,7 +859,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
             AssertFrame.Attribute(referenceFrames[0], "onbar", addedHandler);
-            Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, removedEventHandlerFrame.AttributeEventHandlerId);
             Assert.Equal(
                 new[] { removedEventHandlerFrame.AttributeEventHandlerId },
                 batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
@@ -1592,7 +1592,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Empty(result.Edits);
             AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
-            Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
             Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
         }
@@ -1619,7 +1619,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Single(result.Edits);
             AssertFrame.Attribute(oldAttributeFrame, "ontest", retainedHandler);
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
-            Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
+            Assert.NotEqual(default, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
             Assert.Empty(batchBuilder.DisposedEventHandlerIDs.AsEnumerable());
         }
