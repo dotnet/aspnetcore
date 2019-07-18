@@ -156,6 +156,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
                 if (trigger == receiving)
                 {
+                    // Observe exception if there is one to avoid unobserved tasks
+                    _ = receiving.Exception;
+
                     // We're waiting for the application to finish and there are 2 things it could be doing
                     // 1. Waiting for application data
                     // 2. Waiting for a websocket send to complete
@@ -176,6 +179,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                         }
                         else
                         {
+                            // Observe exception if there is one to avoid unobserved tasks
+                            _ = sending.Exception;
+
                             // Cancel the timeout
                             delayCts.Cancel();
                         }
@@ -183,6 +189,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 }
                 else
                 {
+                    // Observe exception if there is one to avoid unobserved tasks
+                    _ = sending.Exception;
+
                     // We're waiting on the websocket to close and there are 2 things it could be doing
                     // 1. Waiting for websocket data
                     // 2. Waiting on a flush to complete (backpressure being applied)
@@ -269,10 +278,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!_aborted)
                 {
                     _application.Output.Complete(ex);
-
-                    // We re-throw here so we can communicate that there was an error when sending
-                    // the close frame
-                    throw;
                 }
             }
             finally
