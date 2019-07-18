@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
             => Dispatcher.InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
+        public Task DispatchEventAsync(ulong eventHandlerId, UIEventArgs args)
             => Dispatcher.InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, null, args));
 
-        public new Task DispatchEventAsync(int eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs args)
+        public new Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs args)
             => Dispatcher.InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, eventFieldInfo, args));
 
         private static Task UnwrapTask(Task task)
