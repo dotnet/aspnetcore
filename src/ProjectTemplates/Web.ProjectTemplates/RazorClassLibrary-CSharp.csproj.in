@@ -14,7 +14,7 @@
 
   <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${TemplateComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebPackageVersion}" />
   </ItemGroup>
 
 </Project>
