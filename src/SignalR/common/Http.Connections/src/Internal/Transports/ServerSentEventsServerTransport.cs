@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         {
             _application = application;
             _connectionId = connectionId;
-            _logger = loggerFactory.CreateLogger("ServerSentEventsTransport");
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.ServerSentEventsTransport");
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         {
             _timeoutToken = timeoutToken;
             _application = application;
-            _logger = loggerFactory.CreateLogger("LongPollingTransport");
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.LongPollingTransport");
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
