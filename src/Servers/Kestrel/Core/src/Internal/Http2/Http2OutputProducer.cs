@@ -437,8 +437,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_suffixSent)
             {
-                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+                ThrowSuffixSent();
             }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowSuffixSent()
+        {
+            throw new InvalidOperationException("Writing is not allowed after writer was completed.");
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)
