@@ -10,14 +10,8 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal class ApiBehaviorOptionsSetup :
-        IConfigureOptions<ApiBehaviorOptions>,
-        IPostConfigureOptions<ApiBehaviorOptions>
+    internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
-        internal static readonly Func<ActionContext, IActionResult> DefaultFactory = DefaultInvalidModelStateResponse;
-        internal static readonly Func<ActionContext, IActionResult> ProblemDetailsFactory =
-            ProblemDetailsInvalidModelStateResponse;
-
         public void Configure(ApiBehaviorOptions options)
         {
             if (options == null)
@@ -25,19 +19,29 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.InvalidModelStateResponseFactory = DefaultFactory;
+            options.InvalidModelStateResponseFactory = ProblemDetailsInvalidModelStateResponse;
             ConfigureClientErrorMapping(options);
-        }
 
-        public void PostConfigure(string name, ApiBehaviorOptions options)
-        {
-            // We want to use problem details factory only if
-            // (a) it has not been opted out of (SuppressMapClientErrors = true)
-            // (b) a different factory was configured
-            if (!options.SuppressMapClientErrors &&
-                object.ReferenceEquals(options.InvalidModelStateResponseFactory, DefaultFactory))
+            IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
             {
-                options.InvalidModelStateResponseFactory = ProblemDetailsFactory;
+                var problemDetails = new ValidationProblemDetails(context.ModelState)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                };
+
+                if (options.ClientErrorMapping.TryGetValue(400, out var clientErrorData))
+                {
+                    problemDetails.Type = clientErrorData.Link;
+                }
+
+                ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
+
+                var result = new BadRequestObjectResult(problemDetails);
+
+                result.ContentTypes.Add("application/problem+json");
+                result.ContentTypes.Add("application/problem+xml");
+
+                return result;
             }
         }
 
@@ -91,33 +95,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 Link = "https://tools.ietf.org/html/rfc4918#section-11.2",
                 Title = Resources.ApiConventions_Title_422,
             };
-        }
 
-        private static IActionResult DefaultInvalidModelStateResponse(ActionContext context)
-        {
-            var result = new BadRequestObjectResult(context.ModelState);
-
-            result.ContentTypes.Add("application/json");
-            result.ContentTypes.Add("application/xml");
-
-            return result;
-        }
-
-        internal static IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
-        {
-            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            options.ClientErrorMapping[500] = new ClientErrorData
             {
-                Status = StatusCodes.Status400BadRequest,
+                Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                Title = Resources.ApiConventions_Title_500,
             };
-
-            ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
-
-            var result = new BadRequestObjectResult(problemDetails);
-
-            result.ContentTypes.Add("application/problem+json");
-            result.ContentTypes.Add("application/problem+xml");
-
-            return result;
         }
     }
 }

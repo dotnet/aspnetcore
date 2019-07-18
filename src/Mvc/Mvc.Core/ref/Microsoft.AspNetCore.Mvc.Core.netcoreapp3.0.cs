@@ -445,6 +445,8 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.ObjectResult Problem(string detail = null, string instance = null, string title = null, string type = null) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectResult Redirect(string url) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectResult RedirectPermanent(string url) { throw null; }
@@ -586,6 +588,8 @@ namespace Microsoft.AspNetCore.Mvc
         public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ValidationProblemDetails descriptor) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem(string detail, string instance = null, string title = null, string type = null, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary = null) { throw null; }
     }
     public partial class ControllerContext : Microsoft.AspNetCore.Mvc.ActionContext
     {

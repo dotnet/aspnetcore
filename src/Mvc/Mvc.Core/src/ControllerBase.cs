@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -1822,6 +1823,52 @@ namespace Microsoft.AspNetCore.Mvc
             => new ConflictObjectResult(modelState);
 
         /// <summary>
+        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response with a <c>500</c>
+        /// error status with a <see cref="ProblemDetails" /> value.
+        /// </summary>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ObjectResult Problem(
+            string detail = null,
+            string instance = null,
+            string title = null,
+            string type = null)
+        {
+            var problemDetails = new ProblemDetails
+            {
+                Title = title,
+                Type = type,
+                Detail = detail,
+                Instance = instance,
+            };
+
+            ApplyProblemDetailsDefaults(problemDetails, statusCode: 500);
+
+            return new ObjectResult(problemDetails);
+        }
+
+        private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int statusCode)
+        {
+            problemDetails.Status = statusCode;
+
+            if (problemDetails.Title is null || problemDetails.Type is null)
+            {
+                var options = HttpContext.RequestServices.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
+                if (options.ClientErrorMapping.TryGetValue(statusCode, out var clientErrorData))
+                {
+                    problemDetails.Title ??= clientErrorData.Title;
+                    problemDetails.Type ??= clientErrorData.Link;
+                }
+            }
+
+            ProblemDetailsClientErrorFactory.SetTraceId(ControllerContext, problemDetails);
+        }
+
+        /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
@@ -1837,8 +1884,10 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with validation errors from <paramref name="modelStateDictionary"/>.
         /// </summary>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
@@ -1849,6 +1898,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var validationProblem = new ValidationProblemDetails(modelStateDictionary);
+            ApplyProblemDetailsDefaults(validationProblem, statusCode: 400);
+
             return new BadRequestObjectResult(validationProblem);
         }
 
@@ -1858,9 +1909,44 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem()
+        public virtual ActionResult ValidationProblem() => ValidationProblem(ModelState);
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with a <see cref="ValidationProblemDetails"/> value.
+        /// </summary>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+        /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>. 
+        /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ActionResult ValidationProblem(
+            string detail,
+            string instance = null,
+            string title = null,
+            string type = null,
+            [ActionResultObjectValue] ModelStateDictionary modelStateDictionary = null)
         {
-            var validationProblem = new ValidationProblemDetails(ModelState);
+            modelStateDictionary ??= ModelState;
+
+            var validationProblem = new ValidationProblemDetails(modelStateDictionary)
+            {
+                Detail = detail,
+                Instance = instance,
+                Type = type,
+            };
+
+            if (title != null)
+            {
+                // ValidationProblemDetails has a Title by default. Do not overwrite it with a null
+                validationProblem.Title = title;
+            }
+
+            ApplyProblemDetailsDefaults(validationProblem, statusCode: 400);
+
             return new BadRequestObjectResult(validationProblem);
         }
 
