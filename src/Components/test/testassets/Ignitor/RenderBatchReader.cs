@@ -14,6 +14,8 @@ namespace Ignitor
 {
     public static class RenderBatchReader
     {
+        private const int ReferenceFrameSize = 20;
+
         private static readonly Renderer Renderer = new FakeRenderer();
 
         public static RenderBatch Read(ReadOnlySpan<byte> data)
@@ -131,69 +133,67 @@ namespace Ignitor
 
         private static ArrayRange<RenderTreeFrame> ReadReferenceFrames(ReadOnlySpan<byte> data, string[] strings)
         {
-            var result = new RenderTreeFrame[data.Length / 16];
+            var result = new RenderTreeFrame[data.Length / ReferenceFrameSize];
 
-            for (var i = 0; i < data.Length; i += 16)
+            for (var i = 0; i < data.Length; i += ReferenceFrameSize)
             {
-                var frameData = data.Slice(i, 16);
+                var frameData = data.Slice(i, ReferenceFrameSize);
 
                 var type = (RenderTreeFrameType)BitConverter.ToInt32(frameData.Slice(0, 4));
 
                 // We want each frame to take up the same number of bytes, so that the
                 // recipient can index into the array directly instead of having to
                 // walk through it.
-                // Since we can fit every frame type into 3 ints, use that as the
+                // Since we can fit every frame type into 16 bytes, use that as the
                 // common size. For smaller frames, we add padding to expand it to
-                // 12 bytes (i.e., 3 x 4-byte ints).
-                // The total size then for each frame is 16 bytes (frame type, then
-                // 3 other ints).
+                // 16 bytes.
                 switch (type)
                 {
                     case RenderTreeFrameType.Attribute:
                         var attributeName = ReadString(frameData.Slice(4, 4), strings);
                         var attributeValue = ReadString(frameData.Slice(8, 4), strings);
-                        var attributeEventHandlerId = BitConverter.ToInt32(frameData.Slice(12, 4));
-                        result[i / 16] = RenderTreeFrame.Attribute(0, attributeName, attributeValue).WithAttributeEventHandlerId(attributeEventHandlerId);
+                        var attributeEventHandlerId = BitConverter.ToUInt64(frameData.Slice(12, 8));
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.Attribute(0, attributeName, attributeValue).WithAttributeEventHandlerId(attributeEventHandlerId);
                         break;
 
                     case RenderTreeFrameType.Component:
                         var componentSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
                         var componentId = BitConverter.ToInt32(frameData.Slice(8, 4)); // Nowhere to put this without creating a ComponentState
-                        result[i / 16] = RenderTreeFrame.ChildComponent(0, componentType: null)
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.ChildComponent(0, componentType: null)
                             .WithComponentSubtreeLength(componentSubtreeLength)
                             .WithComponent(new ComponentState(Renderer, componentId, new FakeComponent(), null));
                         break;
 
                     case RenderTreeFrameType.ComponentReferenceCapture:
                         // Client doesn't process these, skip.
-                        result[i / 16] = RenderTreeFrame.ComponentReferenceCapture(0, null, 0);
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.ComponentReferenceCapture(0, null, 0);
                         break;
 
                     case RenderTreeFrameType.Element:
                         var elementSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
                         var elementName = ReadString(frameData.Slice(8, 4), strings);
-                        result[i / 16] = RenderTreeFrame.Element(0, elementName).WithElementSubtreeLength(elementSubtreeLength);
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.Element(0, elementName).WithElementSubtreeLength(elementSubtreeLength);
                         break;
 
                     case RenderTreeFrameType.ElementReferenceCapture:
                         var referenceCaptureId = ReadString(frameData.Slice(4, 4), strings);
-                        result[i / 16] = RenderTreeFrame.ElementReferenceCapture(0, null)
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.ElementReferenceCapture(0, null)
                             .WithElementReferenceCaptureId(referenceCaptureId);
                         break;
 
                     case RenderTreeFrameType.Region:
                         var regionSubtreeLength = BitConverter.ToInt32(frameData.Slice(4, 4));
-                        result[i / 16] = RenderTreeFrame.Region(0).WithRegionSubtreeLength(regionSubtreeLength);
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.Region(0).WithRegionSubtreeLength(regionSubtreeLength);
                         break;
 
                     case RenderTreeFrameType.Text:
                         var text = ReadString(frameData.Slice(4, 4), strings);
-                        result[i / 16] = RenderTreeFrame.Text(0, text);
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.Text(0, text);
                         break;
 
                     case RenderTreeFrameType.Markup:
                         var markup = ReadString(frameData.Slice(4, 4), strings);
-                        result[i / 16] = RenderTreeFrame.Markup(0, markup);
+                        result[i / ReferenceFrameSize] = RenderTreeFrame.Markup(0, markup);
                         break;
 
                     default:
@@ -209,9 +209,9 @@ namespace Ignitor
             return new ArrayRange<int>(Array.Empty<int>(), 0);
         }
 
-        private static ArrayRange<int> ReadDisposedEventHandlerIds(ReadOnlySpan<byte> data)
+        private static ArrayRange<ulong> ReadDisposedEventHandlerIds(ReadOnlySpan<byte> data)
         {
-            return new ArrayRange<int>(Array.Empty<int>(), 0);
+            return new ArrayRange<ulong>(Array.Empty<ulong>(), 0);
         }
 
         private static string ReadString(ReadOnlySpan<byte> data, string[] strings)
@@ -276,7 +276,7 @@ namespace Ignitor
             {
                 // This is a count-prefixed contiguous array of RenderTreeFrame.
                 var count = BitConverter.ToInt32(data.Slice(_referenceFrames, 4));
-                return data.Slice(_referenceFrames + 4, count * 16);
+                return data.Slice(_referenceFrames + 4, count * ReferenceFrameSize);
             }
 
             public ReadOnlySpan<byte> GetStringTableIndexes(ReadOnlySpan<byte> data)

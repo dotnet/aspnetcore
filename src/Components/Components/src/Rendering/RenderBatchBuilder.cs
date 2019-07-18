@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // Primary result data
         public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
         public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
-        public ArrayBuilder<int> DisposedEventHandlerIds { get; } = new ArrayBuilder<int>();
+        public ArrayBuilder<ulong> DisposedEventHandlerIds { get; } = new ArrayBuilder<ulong>();
 
         // Buffers referenced by UpdatedComponentDiffs
         public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);

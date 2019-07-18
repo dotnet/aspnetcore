@@ -17,7 +17,10 @@ namespace ComponentsApp.Server
         {
             services.AddMvc();
             services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
-            services.AddServerSideBlazor();
+            services.AddServerSideBlazor(options =>
+            {
+                options.JSInteropDetailedErrors = true;
+            });
 
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
         }

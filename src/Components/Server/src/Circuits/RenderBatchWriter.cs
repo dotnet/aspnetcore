@@ -130,16 +130,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         void Write(in RenderTreeFrame frame)
         {
+            // TODO: Change this to write as a short, saving 2 bytes per frame
             _binaryWriter.Write((int)frame.FrameType);
 
             // We want each frame to take up the same number of bytes, so that the
             // recipient can index into the array directly instead of having to
             // walk through it.
-            // Since we can fit every frame type into 3 ints, use that as the
+            // Since we can fit every frame type into 16 bytes, use that as the
             // common size. For smaller frames, we add padding to expand it to
-            // 12 bytes (i.e., 3 x 4-byte ints).
-            // The total size then for each frame is 16 bytes (frame type, then
-            // 3 other ints).
+            // 16 bytes.
             switch (frame.FrameType)
             {
                 case RenderTreeFrameType.Attribute:
@@ -160,41 +159,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         var attributeValueString = frame.AttributeValue as string;
                         WriteString(attributeValueString, allowDeduplication: string.IsNullOrEmpty(attributeValueString));
                     }
-                    _binaryWriter.Write(frame.AttributeEventHandlerId);
+                    _binaryWriter.Write(frame.AttributeEventHandlerId); // 8 bytes
                     break;
                 case RenderTreeFrameType.Component:
                     _binaryWriter.Write(frame.ComponentSubtreeLength);
                     _binaryWriter.Write(frame.ComponentId);
-                    WritePadding(_binaryWriter, 4);
+                    WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     // The client doesn't need to know about these. But we still have
                     // to include them in the array otherwise the ReferenceFrameIndex
                     // values in the edits data would be wrong.
-                    WritePadding(_binaryWriter, 12);
+                    WritePadding(_binaryWriter, 16);
                     break;
                 case RenderTreeFrameType.Element:
                     _binaryWriter.Write(frame.ElementSubtreeLength);
                     WriteString(frame.ElementName, allowDeduplication: true);
-                    WritePadding(_binaryWriter, 4);
+                    WritePadding(_binaryWriter, 8);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
                     WriteString(frame.ElementReferenceCaptureId, allowDeduplication: false);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Region:
                     _binaryWriter.Write(frame.RegionSubtreeLength);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Text:
                     WriteString(
                         frame.TextContent,
                         allowDeduplication: string.IsNullOrWhiteSpace(frame.TextContent));
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 case RenderTreeFrameType.Markup:
                     WriteString(frame.MarkupContent, allowDeduplication: false);
-                    WritePadding(_binaryWriter, 8);
+                    WritePadding(_binaryWriter, 12);
                     break;
                 default:
                     throw new ArgumentException($"Unsupported frame type: {frame.FrameType}");
@@ -202,6 +201,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         int Write(in ArrayRange<int> numbers)
+        {
+            var startPos = (int)_binaryWriter.BaseStream.Position;
+            _binaryWriter.Write(numbers.Count);
+
+            var array = numbers.Array;
+            var count = numbers.Count;
+            for (var index = 0; index < count; index++)
+            {
+                _binaryWriter.Write(array[index]);
+            }
+
+            return startPos;
+        }
+
+        int Write(in ArrayRange<ulong> numbers)
         {
             var startPos = (int)_binaryWriter.BaseStream.Position;
             _binaryWriter.Write(numbers.Count);

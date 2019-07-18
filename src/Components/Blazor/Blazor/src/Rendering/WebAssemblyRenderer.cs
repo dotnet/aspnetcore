@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <inheritdoc />
-        public override Task DispatchEventAsync(int eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs eventArgs)
+        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs eventArgs)
         {
             // Be sure we only run one event handler at once. Although they couldn't run
             // simultaneously anyway (there's only one thread), they could run nested on
@@ -183,12 +183,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         readonly struct IncomingEventInfo
         {
-            public readonly int EventHandlerId;
+            public readonly ulong EventHandlerId;
             public readonly EventFieldInfo EventFieldInfo;
             public readonly UIEventArgs EventArgs;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
 
-            public IncomingEventInfo(int eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs eventArgs)
+            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs eventArgs)
             {
                 EventHandlerId = eventHandlerId;
                 EventFieldInfo = eventFieldInfo;

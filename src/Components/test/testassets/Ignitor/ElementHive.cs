@@ -93,7 +93,7 @@ namespace Ignitor
 
         }
 
-        private void DisposeEventHandler(int eventHandlerId)
+        private void DisposeEventHandler(ulong eventHandlerId)
         {
 
         }

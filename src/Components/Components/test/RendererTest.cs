@@ -3313,7 +3313,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                 var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
                 AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
-                Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
                 Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
             });
         }
@@ -3365,7 +3365,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                     var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
                     AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
-                    Assert.NotEqual(0, attributeFrame.AttributeEventHandlerId);
+                    Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
                     Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
                 });
             }
