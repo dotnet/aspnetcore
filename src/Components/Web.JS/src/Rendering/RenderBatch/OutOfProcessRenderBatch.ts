@@ -2,11 +2,13 @@ import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, E
 import { decodeUtf8 } from './Utf8Decoder';
 
 const updatedComponentsEntryLength = 4; // Each is a single int32 giving the location of the data
-const referenceFramesEntryLength = 16; // 1 byte for frame type, then 3 bytes for type-specific data
+const referenceFramesEntryLength = 20; // 1 int for frame type, then 16 bytes for type-specific data
 const disposedComponentIdsEntryLength = 4; // Each is an int32 giving the ID
-const disposedEventHandlerIdsEntryLength = 4; // Each is an int32 giving the ID
+const disposedEventHandlerIdsEntryLength = 8; // Each is an int64 giving the ID
 const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
+const uint64HighPartShift = Math.pow(2, 32);
+const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export class OutOfProcessRenderBatch implements RenderBatch {
   constructor(private batchData: Uint8Array) {
@@ -51,7 +53,7 @@ export class OutOfProcessRenderBatch implements RenderBatch {
 
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number): number {
     const entryPos = (values as any) + index * disposedEventHandlerIdsEntryLength;
-    return readInt32LE(this.batchData, entryPos);
+    return readUint64LE(this.batchData, entryPos);
   }
 
   diffReader: RenderTreeDiffReader;
@@ -160,7 +162,7 @@ class OutOfProcessRenderTreeFrameReader implements RenderTreeFrameReader {
   }
 
   attributeEventHandlerId(frame: RenderTreeFrame) {
-    return readInt32LE(this.batchDataUint8, frame as any + 12); // 4th int
+    return readUint64LE(this.batchDataUint8, frame as any + 12); // Bytes 12-19
   }
 }
 
@@ -233,6 +235,24 @@ function readInt32LE(buffer: Uint8Array, position: number): any {
     | (buffer[position + 1] << 8)
     | (buffer[position + 2] << 16)
     | (buffer[position + 3] << 24);
+}
+
+function readUint32LE(buffer: Uint8Array, position: number): any {
+  return (buffer[position])
+    + (buffer[position + 1] << 8)
+    + (buffer[position + 2] << 16)
+    + ((buffer[position + 3] << 24) >>> 0); // The >>> 0 coerces the value to unsigned
+}
+
+function readUint64LE(buffer: Uint8Array, position: number): any {
+  // This cannot be done using bit-shift operators in JavaScript, because
+  // those all implicitly convert to int32
+  const highPart = readUint32LE(buffer, position + 4);
+  if (highPart > maxSafeNumberHighPart) {
+    throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
+  }
+
+  return (highPart * uint64HighPartShift) + readUint32LE(buffer, position);
 }
 
 function readLEB128(buffer: Uint8Array, position: number) {

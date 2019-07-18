@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_NoContextType"), content);
+            Assert.StartsWith(StringsHelpers.GetResourceString("MigrationsEndPointMiddleware_NoContextType"), content);
             Assert.True(content.Length > 512);
         }
 

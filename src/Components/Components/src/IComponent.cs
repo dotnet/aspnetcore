@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Components
     public interface IComponent
     {
         /// <summary>
-        /// Initializes the component.
+        /// Attaches the component to a <see cref="RenderHandle" />.
         /// </summary>
         /// <param name="renderHandle">A <see cref="RenderHandle"/> that allows the component to be rendered.</param>
-        void Configure(RenderHandle renderHandle);
+        void Attach(RenderHandle renderHandle);
 
         /// <summary>
         /// Sets parameters supplied by the component's parent in the render tree.

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, new Mock<IKestrelTrace>().Object);
+            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, new Mock<IKestrelTrace>().Object);
 
             // Act
             await frameWriter.WriteWindowUpdateAsync(1, 1);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var pipe = new Pipe(new PipeOptions(_dirtyMemoryPool, PipeScheduler.Inline, PipeScheduler.Inline));
-            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, new Mock<IKestrelTrace>().Object);
+            var frameWriter = new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, new Mock<IKestrelTrace>().Object);
 
             // Act
             await frameWriter.WriteGoAwayAsync(1, Http2ErrorCode.NO_ERROR);

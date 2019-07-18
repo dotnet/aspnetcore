@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (ReferenceEquals(_callback, _callbackCompleted) ||
                 ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
             {
-                continuation();
+                Task.Run(continuation);
             }
         }
 

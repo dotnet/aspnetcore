@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components
         public RenderFragment AuthorizingContent { get; private set; }
 
         /// <inheritdoc />
-        public void Configure(RenderHandle renderHandle)
+        public void Attach(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }

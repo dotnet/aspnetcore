@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components
         public System.Type Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Collections.Generic.IDictionary<string, object> PageParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public RenderFragment ChildContent { get; set; }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.Routing.NavLinkMatch Match { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public Microsoft.AspNetCore.Components.RenderFragment<AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }

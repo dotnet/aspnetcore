@@ -50,7 +50,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19356.1</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19365.4</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>3.3.0-beta2-19363-02</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
@@ -149,18 +149,18 @@
     <MicrosoftJSInteropPackageVersion>3.0.0-preview8.19365.1</MicrosoftJSInteropPackageVersion>
     <MonoWebAssemblyInteropPackageVersion>3.0.0-preview8.19365.1</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
-    <dotnetefPackageVersion>3.0.0-preview8.19365.2</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview8.19365.2</MicrosoftEntityFrameworkCorePackageVersion>
+    <dotnetefPackageVersion>3.0.0-preview8.19365.5</dotnetefPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview8.19365.5</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview8.19364.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview8.19364.3</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview8.19364.3</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview8.19364.3</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview8.19365.2</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview8.19365.2</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview8.19365.2</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview8.19365.2</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
@@ -186,6 +186,7 @@
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
+    <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>
     <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
@@ -201,16 +202,16 @@
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelLoggingPackageVersion>5.3.0</MicrosoftIdentityModelLoggingPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.3.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
-    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.3.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
+    <MicrosoftIdentityModelLoggingPackageVersion>5.5.0</MicrosoftIdentityModelLoggingPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.5.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.5.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>2.2.1</MicrosoftInternalAspNetCoreH2SpecAllPackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>11.1.0</MicrosoftWebAdministrationPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
-    <SystemIdentityModelTokensJwtPackageVersion>5.3.0</SystemIdentityModelTokensJwtPackageVersion>
+    <SystemIdentityModelTokensJwtPackageVersion>5.5.0</SystemIdentityModelTokensJwtPackageVersion>
     <!-- Packages from 2.1/2.2 branches used for site extension build -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>

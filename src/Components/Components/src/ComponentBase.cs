@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Components
         protected Task InvokeAsync(Func<Task> workItem)
             => _renderHandle.Dispatcher.InvokeAsync(workItem);
 
-        void IComponent.Configure(RenderHandle renderHandle)
+        void IComponent.Attach(RenderHandle renderHandle)
         {
             // This implicitly means a ComponentBase can only be associated with a single
             // renderer. That's the only use case we have right now. If there was ever a need,

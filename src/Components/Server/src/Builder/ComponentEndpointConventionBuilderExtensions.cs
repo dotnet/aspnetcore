@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder
 {

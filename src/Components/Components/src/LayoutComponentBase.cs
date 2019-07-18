@@ -16,6 +16,6 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the content to be rendered inside the layout.
         /// </summary>
         [Parameter]
-        protected RenderFragment Body { get; private set; }
+        public RenderFragment Body { get; private set; }
     }
 }

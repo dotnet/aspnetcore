@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             public LoggingDuplexPipe(IDuplexPipe transport, ILogger logger) :
                 base(transport, stream => new LoggingStream(stream, logger))
             {
-                Log = logger;
             }
         }
     }

@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             var supplier = new CascadingValue<T>();
             var renderer = new TestRenderer();
-            supplier.Configure(new RenderHandle(renderer, 0));
+            supplier.Attach(new RenderHandle(renderer, 0));
 
             var supplierParams = new Dictionary<string, object>
             {
@@ -389,19 +389,19 @@ namespace Microsoft.AspNetCore.Components.Test
             renderer.Dispatcher.InvokeAsync((Action)(() => supplier.SetParametersAsync(ParameterCollection.FromDictionary(supplierParams))));
             return supplier;
         }
-       
+
         class ComponentWithNoParams : TestComponentBase
         {
         }
 
         class ComponentWithNoCascadingParams : TestComponentBase
         {
-            [Parameter] bool SomeRegularParameter { get; set; }
+            [Parameter] public bool SomeRegularParameter { get; set; }
         }
 
         class ComponentWithCascadingParams : TestComponentBase
         {
-            [Parameter] bool RegularParam { get; set; }
+            [Parameter] public bool RegularParam { get; set; }
             [CascadingParameter] internal ValueType1 CascadingParam1 { get; set; }
             [CascadingParameter] internal ValueType2 CascadingParam2 { get; set; }
         }
@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         class TestComponentBase : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
             public Task SetParametersAsync(ParameterCollection parameters)

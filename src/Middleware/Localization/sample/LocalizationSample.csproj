@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <!-- Localization resx files should not be compiled -->
+    <GenerateResxSource>false</GenerateResxSource>
   </PropertyGroup>
 
   <ItemGroup>

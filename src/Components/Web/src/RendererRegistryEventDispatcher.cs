@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Web
             /// <summary>
             /// For framework use only.
             /// </summary>
-            public int EventHandlerId { get; set; }
+            public ulong EventHandlerId { get; set; }
 
             /// <summary>
             /// For framework use only.

@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -387,6 +386,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             jsExecutor.ExecuteScript("history.back()");
 
             Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanArriveAtRouteWithExtension()
+        {
+            // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
+            // some unknown reason
+            SetUrlViaPushState("/Default.html");
+
+            var app = MountTestComponent<TestRouter>();
+            Assert.Equal("This is the default page.", app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("With extension");
+        }
+
+        [Fact]
+        public void RoutingToComponentOutsideMainAppDoesNotWork()
+        {
+            SetUrlViaPushState("/routeablecomponentfrompackage.html");
+
+            var app = MountTestComponent<TestRouter>();
+            Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
         }
 
         private string SetUrlViaPushState(string relativeUri)

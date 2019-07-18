@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
             [Inject] IUriHelper UriHelper { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
         class ThrowExceptionComponent : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
                 => throw new InvalidTimeZoneException();
 
             public Task SetParametersAsync(ParameterCollection parameters)

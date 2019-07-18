@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class RootLayout : AutoRenderComponent
         {
             [Parameter]
-            RenderFragment Body { get; set; }
+            public RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private class NestedLayout : AutoRenderComponent
         {
             [Parameter]
-            RenderFragment Body { get; set; }
+            public RenderFragment Body { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
                 {
                     MediaTypeNames.Application.Octet,
-                    WasmMediaTypeNames.Application.Wasm
+                    "application/wasm",
                 });
             });
         }

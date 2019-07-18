@@ -16,6 +16,7 @@ export interface Platform {
   getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer;
   readInt16Field(baseAddress: Pointer, fieldOffset?: number): number;
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
+  readUint64Field(baseAddress: Pointer, fieldOffset?: number): number;
   readFloatField(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
   readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;

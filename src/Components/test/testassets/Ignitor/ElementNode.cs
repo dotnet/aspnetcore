@@ -101,7 +101,7 @@ namespace Ignitor
 
         public class ElementEventDescriptor
         {
-            public ElementEventDescriptor(string eventName, int eventId)
+            public ElementEventDescriptor(string eventName, ulong eventId)
             {
                 EventName = eventName ?? throw new ArgumentNullException(nameof(eventName));
                 EventId = eventId;
@@ -109,7 +109,7 @@ namespace Ignitor
 
             public string EventName { get; }
 
-            public int EventId { get; }
+            public ulong EventId { get; }
         }
 
         public async Task ClickAsync(HubConnection connection)

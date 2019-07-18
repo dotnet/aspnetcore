@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.Components
                 return item.InvokeAsync(arg);
             }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new System.NotImplementedException();
             }

@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         internal static string HostableWebCoreLocation => Environment.ExpandEnvironmentVariables($@"%windir%\system32\inetsrv\{HWebCoreDll}");
         internal static string BasePath => Path.Combine(Path.GetDirectoryName(new Uri(typeof(TestServer).Assembly.CodeBase).AbsolutePath),
+                                                        "ANCM",
                                                         Environment.Is64BitProcess ? "x64" : "x86");
 
         internal static string AspNetCoreModuleLocation => Path.Combine(BasePath, AspNetCoreModuleDll);

@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// <typeparam name="T">The type of the elements in the array</typeparam>
     public readonly struct ArrayBuilderSegment<T> : IEnumerable<T>
     {
+        // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
         private readonly ArrayBuilder<T> _builder;
         private readonly int _offset;
         private readonly int _count;

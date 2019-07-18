@@ -12,7 +12,7 @@ namespace System.Threading.Tasks
             return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
-        public static Task DefaultTimeout<T>(this ValueTask task)
+        public static Task DefaultTimeout(this ValueTask task)
         {
             return task.AsTask().TimeoutAfter(TestConstants.DefaultTimeout);
         }

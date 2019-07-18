@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             private RenderHandle _renderHandle;
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
@@ -305,9 +305,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private class ExceptionComponent : ComponentBase
         {
-            [Parameter] bool IsAsync { get; set; }
+            [Parameter] public bool IsAsync { get; set; }
 
-            [Parameter] bool JsInterop { get; set; }
+            [Parameter] public bool JsInterop { get; set; }
 
             [Inject] IJSRuntime JsRuntime { get; set; }
 

@@ -11,9 +11,9 @@
 </ol>
 
 @code{
-    [Parameter] IEnumerable<TItem> Items { get; set; }
+    [Parameter] public IEnumerable<TItem> Items { get; set; }
 
-    [Parameter] RenderFragment<Context> Template { get; set; }
+    [Parameter] public RenderFragment<Context> Template { get; set; }
 
     public class Context
     {
