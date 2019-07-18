@@ -41,11 +41,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     var outputBufferedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    transportConnection.ConnectionClosed.Register(state =>
+#pragma warning disable 0618 // TODO: Repalce OnWriterCompleted
+                    transportConnection.Output.OnWriterCompleted((ex, state) =>
                     {
                         ((TaskCompletionSource<object>)state).SetResult(null);
                     },
                     outputBufferedTcs);
+#pragma warning restore
 
                     await connection.Send(
                         "GET / HTTP/1.1",
