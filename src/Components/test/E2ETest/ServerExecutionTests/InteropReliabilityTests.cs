@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
             {
                 BrowserRendererId = 0,
-                EventHandlerId = -1,
+                EventHandlerId = 1,
                 EventArgsType = "mouse",
             };
 
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
             {
                 BrowserRendererId = 0,
-                EventHandlerId = -1,
+                EventHandlerId = 1,
                 EventArgsType = "mouse",
             };
 
