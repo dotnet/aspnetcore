@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state) { }
-
         public override void Complete(Exception ex) { }
 
         public override void CancelPendingRead() { }

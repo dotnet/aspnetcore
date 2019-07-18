@@ -245,11 +245,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _completed = true;
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            // TODO make this work with ContentLength.
-        }
-
         public override void CancelPendingRead()
         {
             Interlocked.Exchange(ref _userCanceled, 1);

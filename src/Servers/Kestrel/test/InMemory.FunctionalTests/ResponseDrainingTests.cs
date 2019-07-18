@@ -41,10 +41,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     var outputBufferedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                    transportConnection.Output.OnWriterCompleted((ex, state) =>
+                    transportConnection.ConnectionClosed.Register(state =>
                     {
                         ((TaskCompletionSource<object>)state).SetResult(null);
-                    }, outputBufferedTcs);
+                    },
+                    outputBufferedTcs);
 
                     await connection.Send(
                         "GET / HTTP/1.1",

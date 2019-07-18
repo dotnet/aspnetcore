@@ -174,11 +174,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-        {
-            _innerPipeWriter.OnReaderCompleted(callback, state);
-        }
-
         public override void CancelPendingFlush()
         {
             // We propagate IsCanceled when we do multiple flushes in a loop. If FlushResult.IsCanceled is true with more data pending to flush,

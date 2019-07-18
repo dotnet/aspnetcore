@@ -52,13 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _body.Complete(exception);
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            ValidateState();
-
-            _body.OnWriterCompleted(callback, state);
-        }
-
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);

@@ -47,8 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public abstract bool TryRead(out ReadResult readResult);
 
-        public abstract void OnWriterCompleted(Action<Exception, object> callback, object state);
-
         public abstract void Complete(Exception exception);
 
         public abstract void CancelPendingRead();
