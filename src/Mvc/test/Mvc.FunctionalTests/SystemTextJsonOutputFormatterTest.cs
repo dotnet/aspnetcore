@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal("\"Hello Mr. \\ud83e\\udd8a\"", await response.Content.ReadAsStringAsync());
+            Assert.Equal("\"Hello Mr. \\uD83E\\uDD8A\"", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 HTML = "<b>John Doe</b>"
             };
-            var expectedOutput = "{\"html\":\"\\u003CB\\u003EJohn Doe\\u003C\\/b\\u003E\"}";
+            var expectedOutput = "{\"html\":\"\\u003Cb\\u003EJohn Doe\\u003C/b\\u003E\"}";
 
             // Act
             var result = helper.Serialize(obj);
