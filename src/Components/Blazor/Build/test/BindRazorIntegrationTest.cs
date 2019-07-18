@@ -55,7 +55,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<int>), 2));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
         public void Render_BindToComponent_SpecifiesValue_WithoutMatchingProperties()
         {
             // Arrange
@@ -129,7 +129,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<int>), 2));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
         public void Render_BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
         {
             // Arrange

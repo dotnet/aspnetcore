@@ -109,11 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context.ReportApplicationError(exception);
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            _requestBodyPipe.Reader.OnWriterCompleted(callback, state);
-        }
-
         public override void CancelPendingRead()
         {
             _requestBodyPipe.Reader.CancelPendingRead();

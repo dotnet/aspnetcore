@@ -9,7 +9,6 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
-    <NullableContextOptions>enable</NullableContextOptions>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

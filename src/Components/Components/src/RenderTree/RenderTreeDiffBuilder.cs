@@ -914,9 +914,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            var newElementRef = ElementRef.CreateWithUniqueId();
-            newFrame = newFrame.WithElementReferenceCaptureId(newElementRef.Id);
-            newFrame.ElementReferenceCaptureAction(newElementRef);
+            var newElementReference = ElementReference.CreateWithUniqueId();
+            newFrame = newFrame.WithElementReferenceCaptureId(newElementReference.Id);
+            newFrame.ElementReferenceCaptureAction(newElementReference);
         }
 
         private static void InitializeNewComponentReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)

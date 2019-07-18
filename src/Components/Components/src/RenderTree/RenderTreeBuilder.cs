@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="elementReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
-        public void AddElementReferenceCapture(int sequence, Action<ElementRef> elementReferenceCaptureAction)
+        public void AddElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
         {
             if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
             {

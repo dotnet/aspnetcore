@@ -56,8 +56,6 @@ namespace Microsoft.AspNetCore.Testing
                 public override Memory<byte> GetMemory(int sizeHint = 0) => _output.GetMemory(sizeHint);
 
                 public override Span<byte> GetSpan(int sizeHint = 0) => _output.GetSpan(sizeHint);
-
-                public override void OnReaderCompleted(Action<Exception, object> callback, object state) => _output.OnReaderCompleted(callback, state);
             }
 
             private class PassThroughPipeReader : PipeReader
@@ -76,8 +74,6 @@ namespace Microsoft.AspNetCore.Testing
                 public override void CancelPendingRead() => _input.CancelPendingRead();
 
                 public override void Complete(Exception exception = null) => _input.Complete(exception);
-
-                public override void OnWriterCompleted(Action<Exception, object> callback, object state) => _input.OnWriterCompleted(callback, state);
 
                 public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default) => _input.ReadAsync(cancellationToken);
 

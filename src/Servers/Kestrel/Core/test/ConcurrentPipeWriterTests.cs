@@ -377,11 +377,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 CancelPendingFlushCallCount++;
             }
-
-            public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

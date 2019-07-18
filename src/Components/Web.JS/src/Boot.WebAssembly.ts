@@ -7,15 +7,18 @@ import { renderBatch } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { fetchBootConfigAsync, loadEmbeddedResourcesAsync, shouldAutoStart } from './BootCommon';
+import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 
 let started = false;
 
-async function boot(options?: any) {
+async function boot(options?: any): Promise<void> {
 
   if (started) {
     throw new Error('Blazor has already started.');
   }
   started = true;
+
+  setEventDispatcher((eventDescriptor, eventArgs) => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.Web', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);

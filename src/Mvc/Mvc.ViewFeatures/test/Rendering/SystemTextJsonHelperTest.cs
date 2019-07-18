@@ -25,7 +25,26 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 HTML = "<b>John Doe</b>"
             };
-            var expectedOutput = "{\"html\":\"\\u003cb\\u003eJohn Doe\\u003c\\u002fb\\u003e\"}";
+            var expectedOutput = "{\"html\":\"\\u003Cb\\u003EJohn Doe\\u003C/b\\u003E\"}";
+
+            // Act
+            var result = helper.Serialize(obj);
+
+            // Assert
+            var htmlString = Assert.IsType<HtmlString>(result);
+            Assert.Equal(expectedOutput, htmlString.ToString());
+        }
+
+        [Fact]
+        public override void Serialize_WithNonAsciiChars()
+        {
+            // Arrange
+            var helper = GetJsonHelper();
+            var obj = new
+            {
+                HTML = $"Hello pingüino"
+            };
+            var expectedOutput = "{\"html\":\"Hello ping\\u00FCino\"}";
 
             // Act
             var result = helper.Serialize(obj);

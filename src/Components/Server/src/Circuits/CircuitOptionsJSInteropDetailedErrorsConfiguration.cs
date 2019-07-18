@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public void Configure(CircuitOptions options)
         {
-            options.JSInteropDetailedErrors = Configuration.GetValue<bool>(WebHostDefaults.DetailedErrorsKey);
+            options.DetailedErrors = Configuration.GetValue<bool>(WebHostDefaults.DetailedErrorsKey);
         }
     }
 }

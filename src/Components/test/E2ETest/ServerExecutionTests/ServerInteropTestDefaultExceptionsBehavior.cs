@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             string GetExpectedMessage(string method) =>
                 $"\"There was an exception invoking '{method}' on assembly 'BasicTestApp'. For more details turn on " +
-                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.JSInteropDetailedErrors)}'\"";
+                $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'\"";
         }
     }
 }

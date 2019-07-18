@@ -58,12 +58,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _pipeControl.GetSpan(sizeHint);
         }
 
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-        {
-            ValidateState();
-            throw new NotSupportedException();
-        }
-
         public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);

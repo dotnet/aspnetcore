@@ -9,6 +9,7 @@ import RenderQueue from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, ILogger } from './Platform/Logging/ILogger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
+import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 
 
 type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
@@ -109,7 +110,12 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
   const connection = connectionBuilder.build();
 
+  setEventDispatcher((descriptor, args) => {
+    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
+  });
+
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
+  connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
   connection.on('JS.RenderBatch', (browserRendererId: number, batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
 
@@ -130,8 +136,11 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
   }
 
   DotNet.attachDispatcher({
-    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson): void => {
       connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    },
+    endInvokeJSFromDotNet: (asyncHandle, succeeded, argsJson): void => {
+      connection.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
     },
   });
 
