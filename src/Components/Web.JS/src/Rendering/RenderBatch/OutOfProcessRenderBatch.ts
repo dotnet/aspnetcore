@@ -7,7 +7,8 @@ const disposedComponentIdsEntryLength = 4; // Each is an int32 giving the ID
 const disposedEventHandlerIdsEntryLength = 8; // Each is an int64 giving the ID
 const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
-const uint64HighOrderShift = Math.pow(2, 32);
+const uint64HighPartShift = Math.pow(2, 32);
+const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export class OutOfProcessRenderBatch implements RenderBatch {
   constructor(private batchData: Uint8Array) {
@@ -246,8 +247,12 @@ function readUint32LE(buffer: Uint8Array, position: number): any {
 function readUint64LE(buffer: Uint8Array, position: number): any {
   // This cannot be done using bit-shift operators in JavaScript, because
   // those all implicitly convert to int32
-  return readUint32LE(buffer, position)
-    + readUint32LE(buffer, position + 4) * uint64HighOrderShift;
+  const highPart = readUint32LE(buffer, position + 4);
+  if (highPart > maxSafeNumberHighPart) {
+    throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
+  }
+
+  return (highPart * uint64HighPartShift) + readUint32LE(buffer, position);
 }
 
 function readLEB128(buffer: Uint8Array, position: number) {

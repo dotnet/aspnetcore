@@ -14,6 +14,7 @@ let mono_string_get_utf8: (managedString: System_String) => Mono.Utf8Ptr;
 let mono_string: (jsString: string) => System_String;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
+const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export const monoPlatform: Platform = {
   start: function start(loadAssemblyUrls: string[]) {
@@ -128,7 +129,12 @@ export const monoPlatform: Platform = {
     // being the same as 'i32'. Also we must take care to read both halves as unsigned.
     const address = (baseAddress as any as number) + (fieldOffset || 0);
     const heapU32Index = address >> 2;
-    return Module.HEAPU32[heapU32Index] + Module.HEAPU32[heapU32Index + 1] * uint64HighOrderShift;
+    const highPart = Module.HEAPU32[heapU32Index + 1];
+    if (highPart > maxSafeNumberHighPart) {
+      throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
+    }
+
+    return (highPart * uint64HighOrderShift) + Module.HEAPU32[heapU32Index];
   },
 
   readFloatField: function readHeapFloat(baseAddress: Pointer, fieldOffset?: number): number {
