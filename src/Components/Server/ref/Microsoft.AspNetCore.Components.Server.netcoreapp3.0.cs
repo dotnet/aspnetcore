@@ -79,13 +79,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
     }
 }
-namespace Microsoft.AspNetCore.Components.Web.Rendering
-{
-    public partial class RemoteRendererException : System.Exception
-    {
-        public RemoteRendererException(string message) { }
-    }
-}
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class ComponentServiceCollectionExtensions
