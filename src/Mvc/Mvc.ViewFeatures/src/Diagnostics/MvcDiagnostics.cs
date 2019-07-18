@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeViewComponent : EventData
+    public sealed class BeforeViewComponentEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeViewComponent);
+        public const string EventName = EventNamespace + "BeforeViewComponent";
 
-        public BeforeViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, object viewComponent)
+        public BeforeViewComponentEventData(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, object viewComponent)
         {
             ActionDescriptor = actionDescriptor;
             ViewComponentContext = viewComponentContext;
@@ -36,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterViewComponent : EventData
+    public sealed class AfterViewComponentEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterViewComponent);
+        public const string EventName = EventNamespace + "AfterViewComponent";
 
-        public AfterViewComponent(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IViewComponentResult viewComponentResult, object viewComponent)
+        public AfterViewComponentEventData(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IViewComponentResult viewComponentResult, object viewComponent)
         {
             ActionDescriptor = actionDescriptor;
             ViewComponentContext = viewComponentContext;
@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewComponentBeforeViewExecute : EventData
+    public sealed class ViewComponentBeforeViewExecuteEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(ViewComponentBeforeViewExecute);
+        public const string EventName = EventNamespace + "ViewComponentBeforeViewExecute";
 
-        public ViewComponentBeforeViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
+        public ViewComponentBeforeViewExecuteEventData(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
             ActionDescriptor = actionDescriptor;
             ViewComponentContext = viewComponentContext;
@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewComponentAfterViewExecute : EventData
+    public sealed class ViewComponentAfterViewExecuteEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(ViewComponentAfterViewExecute);
+        public const string EventName = EventNamespace + "ViewComponentAfterViewExecute";
 
-        public ViewComponentAfterViewExecute(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
+        public ViewComponentAfterViewExecuteEventData(ActionDescriptor actionDescriptor, ViewComponentContext viewComponentContext, IView view)
         {
             ActionDescriptor = actionDescriptor;
             ViewComponentContext = viewComponentContext;
@@ -116,11 +116,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeView : EventData
+    public sealed class BeforeViewEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeView);
+        public const string EventName = EventNamespace + "BeforeView";
 
-        public BeforeView(IView view, ViewContext viewContext)
+        public BeforeViewEventData(IView view, ViewContext viewContext)
         {
             View = view;
             ViewContext = viewContext;
@@ -139,11 +139,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterView : EventData
+    public sealed class AfterViewEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterView);
+        public const string EventName = EventNamespace + "AfterView";
 
-        public AfterView(IView view, ViewContext viewContext)
+        public AfterViewEventData(IView view, ViewContext viewContext)
         {
             View = view;
             ViewContext = viewContext;
@@ -162,11 +162,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewFound : EventData
+    public sealed class ViewFoundEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(ViewFound);
+        public const string EventName = EventNamespace + "ViewFound";
 
-        public ViewFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IView view)
+        public ViewFoundEventData(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IView view)
         {
             ActionContext = actionContext;
             IsMainPage = isMainPage;
@@ -194,11 +194,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class ViewNotFound : EventData
+    public sealed class ViewNotFoundEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(ViewNotFound);
+        public const string EventName = EventNamespace + "ViewNotFound";
 
-        public ViewNotFound(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IEnumerable<string> searchedLocations)
+        public ViewNotFoundEventData(ActionContext actionContext, bool isMainPage, ActionResult result, string viewName, IEnumerable<string> searchedLocations)
         {
             ActionContext = actionContext;
             IsMainPage = isMainPage;

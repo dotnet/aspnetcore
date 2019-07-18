@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 IActionResult result = null;
                 try
                 {
-                    diagnosticListener.BeforeActionMethod(
+                    diagnosticListener.BeforeControllerActionMethod(
                         controllerContext,
                         arguments,
                         controller);
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 finally
                 {
-                    diagnosticListener.AfterActionMethod(
+                    diagnosticListener.AfterControllerActionMethod(
                         controllerContext,
                         arguments,
                         controllerContext,
