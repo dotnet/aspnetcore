@@ -63,11 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context.Input.CancelPendingRead();
         }
 
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            _context.Input.OnWriterCompleted(callback, state);
-        }
-
         public override Task ConsumeAsync()
         {
             return Task.CompletedTask;

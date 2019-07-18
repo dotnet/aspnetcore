@@ -1,7 +1,9 @@
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 @namespace BasicTestApp
 <h1>Server reliability</h1>
-<p>This component is used on the server-side execution model to validate that the circuit is resilient to failures, intentional or not.
+<p>
+    This component is used on the server-side execution model to validate that the circuit is resilient to failures, intentional or not.
     The tests that use this component trigger invalid .NET calls to which the server replies with proper JS interop messages indicating a
     failure to perform the call.
 
@@ -9,15 +11,22 @@
 </p>
 
 <p>Current count: @currentCount</p>
-<p id="errormessage">Error = @error</p>
-<button id="triggerjsinterop" @onclick="@TriggerJSInterop"></button>
+<p id="errormessage-malformed">Error = @errorMalformed</p>
+<p id="errormessage-success">Error = @errorSuccess</p>
+<p id="errormessage-failure">Error = @errorFailure</p>
+
+<button id="triggerjsinterop-malformed" @onclick="@TriggerJSInterop">Trigger malformed JS interop callback</button>
+<button id="triggerjsinterop-success" @onclick="@TriggerJSInteropSuccess">Trigger successfull JS interop callback</button>
+<button id="triggerjsinterop-failure" @onclick="@TriggerJSInteropFailure">Trigger error JS interop callback</button>
 
 <button id="thecounter" @onclick="@IncrementCount">Click me</button>
 
 @code
 {
     int currentCount = 0;
-    string error = "";
+    string errorMalformed = "";
+    string errorSuccess = "";
+    string errorFailure = "";
 
     void IncrementCount()
     {
@@ -34,7 +43,35 @@
         }
         catch (Exception e)
         {
-            error = e.Message;
+            errorMalformed = e.Message;
+        }
+    }
+
+    async Task TriggerJSInteropSuccess()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<object>(
+                "sendSuccessCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (Exception e)
+        {
+            errorSuccess = e.Message;
+        }
+    }
+
+    async Task TriggerJSInteropFailure()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<object>(
+                "sendFailureCallbackReturn",
+                Array.Empty<object>());
+        }
+        catch (JSException e)
+        {
+            errorFailure = e.Message;
         }
     }
 }

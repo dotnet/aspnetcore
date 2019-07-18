@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] public readonly Action<ElementRef> ElementReferenceCaptureAction;
+        [FieldOffset(24)] public readonly Action<ElementReference> ElementReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.ComponentReferenceCapture
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         // Element reference capture constructor
-        private RenderTreeFrame(int sequence, Action<ElementRef> elementReferenceCaptureAction, string elementReferenceCaptureId)
+        private RenderTreeFrame(int sequence, Action<ElementReference> elementReferenceCaptureAction, string elementReferenceCaptureId)
             : this()
         {
             FrameType = RenderTreeFrameType.ElementReferenceCapture;
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static RenderTreeFrame Region(int sequence)
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
 
-        internal static RenderTreeFrame ElementReferenceCapture(int sequence, Action<ElementRef> elementReferenceCaptureAction)
+        internal static RenderTreeFrame ElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
             => new RenderTreeFrame(sequence, elementReferenceCaptureAction: elementReferenceCaptureAction, elementReferenceCaptureId: null);
 
         internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)

@@ -53,11 +53,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application = pair.Application;
             Transport = pair.Transport;
 
+            // TODO: Resolve this, for now we use Pipe which works
+#pragma warning disable 0618
             Application.Input.OnWriterCompleted((ex, _) =>
             {
                 Application.Output.Complete();
             },
             null);
+#pragma warning restore 0618
         }
 
         public override ValueTask DisposeAsync() => DisposeCoreAsync();

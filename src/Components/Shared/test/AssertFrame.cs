@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             Assert.True(string.IsNullOrWhiteSpace(frame.TextContent));
         }
 
-        public static void ElementReferenceCapture(RenderTreeFrame frame, Action<ElementRef> action, int? sequence = null)
+        public static void ElementReferenceCapture(RenderTreeFrame frame, Action<ElementReference> action, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.ElementReferenceCapture, frame.FrameType);
             Assert.Same(action, frame.ElementReferenceCaptureAction);

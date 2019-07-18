@@ -90,14 +90,6 @@ namespace Microsoft.AspNetCore.Components
         public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public static partial class BindMethods
-    {
-        public static string GetValue(System.DateTime value, string format) { throw null; }
-        public static string GetValue(System.DateTimeOffset value, string format) { throw null; }
-        public static string GetValue(System.DateTimeOffset? value, string format) { throw null; }
-        public static string GetValue(System.DateTime? value, string format) { throw null; }
-        public static T GetValue<T>(T value) { throw null; }
-    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
@@ -142,13 +134,6 @@ namespace Microsoft.AspNetCore.Components
         public abstract System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>> workItem);
         public abstract System.Threading.Tasks.Task<TResult> InvokeAsync<TResult>(System.Func<TResult> workItem);
         protected void OnUnhandledException(System.UnhandledExceptionEventArgs e) { }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ElementRef
-    {
-        private readonly object _dummy;
-        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public string __internalId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ElementReference
@@ -472,12 +457,6 @@ namespace Microsoft.AspNetCore.Components
         public RouteAttribute(string template) { }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public static partial class RuntimeHelpers
-    {
-        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Action<T> callback, T value) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
-        public static T TypeCheck<T>(T value) { throw null; }
-    }
     public partial class UIChangeEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
     {
         public UIChangeEventArgs() { }
@@ -615,6 +594,8 @@ namespace Microsoft.AspNetCore.Components.CompilerServices
 {
     public static partial class RuntimeHelpers
     {
+        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Action<T> callback, T value) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
         public static T TypeCheck<T>(T value) { throw null; }
     }
 }
@@ -787,7 +768,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent(int sequence, object textContent) { }
         public void AddContent(int sequence, string textContent) { }
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
-        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
+        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
         public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
         public void Clear() { }

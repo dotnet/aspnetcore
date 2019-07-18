@@ -4,7 +4,7 @@
 <input @ref="myInput" @ref:suppressField value="Value set during render" />
 
 @code {
-    ElementRef myInput;
+    ElementReference myInput;
 
     protected override void OnAfterRender()
     {

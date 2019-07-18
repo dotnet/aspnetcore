@@ -1,9 +1,10 @@
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
-import { EventForDotNet, UIEventArgs } from './EventForDotNet';
+import { EventForDotNet, UIEventArgs, EventArgsType } from './EventForDotNet';
 import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
+import { dispatchEvent } from './RendererEventDispatcher';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -398,6 +399,13 @@ export interface ComponentDescriptor {
   end: Node;
 }
 
+export interface EventDescriptor {
+  browserRendererId: number;
+  eventHandlerId: number;
+  eventArgsType: EventArgsType;
+  eventFieldInfo: EventFieldInfo | null;
+}
+
 function parseMarkup(markup: string, isSvg: boolean) {
   if (isSvg) {
     sharedSvgElemForParsing.innerHTML = markup || ' ';
@@ -423,7 +431,13 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>, eventFieldInfo: EventFieldInfo | null) {
+function raiseEvent(
+  event: Event,
+  browserRendererId: number,
+  eventHandlerId: number,
+  eventArgs: EventForDotNet<UIEventArgs>,
+  eventFieldInfo: EventFieldInfo | null
+): void {
   if (preventDefaultEvents[event.type]) {
     event.preventDefault();
   }
@@ -435,12 +449,7 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
     eventFieldInfo: eventFieldInfo,
   };
 
-  return DotNet.invokeMethodAsync(
-    'Microsoft.AspNetCore.Components.Web',
-    'DispatchEvent',
-    eventDescriptor,
-    JSON.stringify(eventArgs.data)
-  );
+  dispatchEvent(eventDescriptor, eventArgs.data);
 }
 
 function clearElement(element: Element) {
@@ -452,7 +461,7 @@ function clearElement(element: Element) {
 
 function clearBetween(start: Node, end: Node): void {
   const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if (!logicalParent){
+  if (!logicalParent) {
     throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
   }
   const children = getLogicalChildrenArray(logicalParent);

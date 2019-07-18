@@ -367,8 +367,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var connectionClosed = new TaskCompletionSource<object>();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
+#pragma warning disable 0618
                     // We're hooking the TestConnection shutting down here because the HubConnection one will be blocked on the lock
                     testConnection.Transport.Input.OnWriterCompleted((_, __) => testConnectionClosed.TrySetResult(null), null);
+#pragma warning restore
                     connection.Closed += (e) =>
                     {
                         connectionClosed.TrySetResult(null);

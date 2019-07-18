@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
     {
         public static bool IsController(INamedTypeSymbol type, INamedTypeSymbol controllerAttribute, INamedTypeSymbol nonControllerAttribute)
         {
-            Debug.Assert(type != null);
-            Debug.Assert(controllerAttribute != null);
-            Debug.Assert(nonControllerAttribute != null);
+            type = type ?? throw new ArgumentNullException(nameof(type));
+            controllerAttribute = controllerAttribute ?? throw new ArgumentNullException(nameof(controllerAttribute));
+            nonControllerAttribute = nonControllerAttribute ?? throw new ArgumentNullException(nameof(nonControllerAttribute));
 
             if (type.TypeKind != TypeKind.Class)
             {
@@ -57,8 +57,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public static bool IsControllerAction(IMethodSymbol method, INamedTypeSymbol nonActionAttribute, IMethodSymbol disposableDispose)
         {
-            Debug.Assert(method != null);
-            Debug.Assert(nonActionAttribute != null);
+            method = method ?? throw new ArgumentNullException(nameof(method));
+            nonActionAttribute = nonActionAttribute ?? throw new ArgumentNullException(nameof(nonActionAttribute));
 
             if (method.MethodKind != MethodKind.Ordinary)
             {

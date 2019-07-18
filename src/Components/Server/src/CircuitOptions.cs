@@ -47,15 +47,15 @@ namespace Microsoft.AspNetCore.Components.Server
         public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
 
         /// <summary>
-        /// Gets or sets a value that determines whether or not to send detailed exception messages from .NET interop method invocation
-        /// exceptions to JavaScript.
+        /// Gets or sets a value that determines whether or not to send detailed exception messages to JavaScript when an unhandled exception
+        /// happens on the circuit or when a .NET method invocation through JS interop results in an exception.
         /// </summary>
         /// <remarks>
         /// This value should only be turned on in development scenarios as turning it on in production might result in the leak of
         /// sensitive information to untrusted parties.
         /// </remarks>
         /// <value>Defaults to <c>false</c>.</value>
-        public bool JSInteropDetailedErrors { get; set; }
+        public bool DetailedErrors { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates how long the server will wait before timing out an asynchronous JavaScript function invocation.

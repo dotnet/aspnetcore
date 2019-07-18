@@ -3686,11 +3686,11 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenElement(0, "input");
                 builder.AddAttribute(1, "type", "checkbox");
-                builder.AddAttribute(2, "value", BindMethods.GetValue(CheckboxEnabled));
+                builder.AddAttribute(2, "value", BindConverter.FormatValue(CheckboxEnabled));
                 builder.AddAttribute(3, "onchange", EventCallback.Factory.CreateBinder<bool>(this, __value => CheckboxEnabled = __value, CheckboxEnabled));
                 builder.CloseElement();
                 builder.OpenElement(4, "input");
-                builder.AddAttribute(5, "value", BindMethods.GetValue(SomeStringProperty));
+                builder.AddAttribute(5, "value", BindConverter.FormatValue(SomeStringProperty));
                 builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => SomeStringProperty = __value, SomeStringProperty));
                 builder.AddAttribute(7, "disabled", !CheckboxEnabled);
                 builder.CloseElement();
