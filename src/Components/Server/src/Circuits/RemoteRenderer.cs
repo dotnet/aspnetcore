@@ -101,13 +101,13 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         protected override void Dispose(bool disposing)
         {
             _disposing = true;
-            base.Dispose(true);
+            _rendererRegistry.TryRemove(Id);
             while (PendingRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
                 entry.Data.Dispose();
             }
-            _rendererRegistry.TryRemove(Id);
+            base.Dispose(true);
         }
 
         /// <inheritdoc />
