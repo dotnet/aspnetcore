@@ -26,7 +26,7 @@ namespace Templates.Test
         {
             Project = await ProjectFactory.GetOrCreateProject("razorclasslibwithviews", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("razorclasslib", args: new[] { "-support-pages-and-views", "true" });
+            var createResult = await Project.RunDotNetNewAsync("razorclasslib", args: new[] { "--support-pages-and-views", "true" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
