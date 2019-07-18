@@ -1777,7 +1777,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
-                return (writeContext.LoggerName == typeof(LongPollingTransport).FullName &&
+                return (writeContext.LoggerName == typeof(LongPollingServerTransport).FullName &&
                        writeContext.EventId.Name == "LongPollingTerminated") ||
                        (writeContext.LoggerName == typeof(HttpConnectionManager).FullName &&
                        writeContext.EventId.Name == "FailedDispose");

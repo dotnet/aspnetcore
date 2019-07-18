@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         nonClonedContext.Response.RegisterForDispose(timeoutSource);
                         nonClonedContext.Response.RegisterForDispose(tokenSource);
 
-                        var longPolling = new LongPollingTransport(timeoutSource.Token, Application.Input, loggerFactory);
+                        var longPolling = new LongPollingServerTransport(timeoutSource.Token, Application.Input, loggerFactory);
 
                         // Start the transport
                         TransportTask = longPolling.ProcessRequestAsync(nonClonedContext, tokenSource.Token);

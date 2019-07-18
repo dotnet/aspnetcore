@@ -11,17 +11,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    internal class LongPollingTransport : IHttpTransport
+    internal class LongPollingServerTransport : IHttpTransport
     {
         private readonly PipeReader _application;
         private readonly ILogger _logger;
         private readonly CancellationToken _timeoutToken;
 
-        public LongPollingTransport(CancellationToken timeoutToken, PipeReader application, ILoggerFactory loggerFactory)
+        public LongPollingServerTransport(CancellationToken timeoutToken, PipeReader application, ILoggerFactory loggerFactory)
         {
             _timeoutToken = timeoutToken;
             _application = application;
-            _logger = loggerFactory.CreateLogger<LongPollingTransport>();
+
+            // We create the logger with a string to preserve the logging namespace after the server side transport renames.
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.LongPollingTransport");
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)

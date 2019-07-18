@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Allow the reads to be cancelled
                 connection.Cancellation = new CancellationTokenSource();
 
-                var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
+                var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, ws, context, connection);
             }

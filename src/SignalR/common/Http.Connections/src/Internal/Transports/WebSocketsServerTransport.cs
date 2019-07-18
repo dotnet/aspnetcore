@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 {
-    internal partial class WebSocketsTransport : IHttpTransport
+    internal partial class WebSocketsServerTransport : IHttpTransport
     {
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         private readonly HttpConnectionContext _connection;
         private volatile bool _aborted;
 
-        public WebSocketsTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
+        public WebSocketsServerTransport(WebSocketOptions options, IDuplexPipe application, HttpConnectionContext connection, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -40,7 +40,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             _options = options;
             _application = application;
             _connection = connection;
-            _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
+
+            // We create the logger with a string to preserve the logging namespace after the server side transport renames.
+            _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.WebSocketsTransport");
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)

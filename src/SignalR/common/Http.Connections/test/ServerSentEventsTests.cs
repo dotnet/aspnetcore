@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 connection.Transport.Output.Complete();
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var feature = new HttpBufferingFeature();
                 context.Features.Set<IHttpBufferingFeature>(feature);
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
 
                 connection.Transport.Output.Complete();
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
 
