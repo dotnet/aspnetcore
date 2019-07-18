@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             {
                 if (_options.ExceptionHandlingPath == null)
                 {
-                    throw new InvalidOperationException(Resources.FormatExceptionHandlerOptions_NotConfiguredCorrectly());
+                    throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
                 }
                 else
                 {
