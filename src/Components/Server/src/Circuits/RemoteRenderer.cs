@@ -208,39 +208,62 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 return;
             }
 
+            // When clients send acks we know for sure they received and applied the batch.
+            // We send batches right away, and queue them until we receive an ACK.
+            // If one or more client ACKs get lost we might receive an ack for a higher batch.
+            // We confirm all previous batches at that point (because receiving an ack is guarantee
+            // from the client that it has received and successfully applied all batches up to that point).
+
+            // If receive an ack for a previously rendered batch, its an error, as the messages are
+            // guranteed to be delivered in order, so a message for a render batch of 2 will never arrive
+            // after a message for a render batch for 3.
+            // If that were to be the case, it would just be enough to relax the checks here and simply skip
+            // the message.
+
+            // A batch might get lost when we send it to the client. If the client receives a newer batch when
+            // it was expecting a previous batch, it can simply force a reconnection.
+
             // Even though we're not on the renderer sync context here, it's safe to assume ordered execution of the following
             // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
-            if (!PendingRenderBatches.TryDequeue(out var entry))
+            if (!PendingRenderBatches.TryPeek(out var entry) || incomingBatchId < entry.BatchId)
             {
                 HandleException(
                     new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
             }
             else
             {
-                entry.Data.Dispose();
-
-                if (entry.BatchId != incomingBatchId)
+                var lastBatchId = entry.BatchId;
+                // Order is important here so that we don't prematurely dequeue the last entry
+                while (PendingRenderBatches.TryPeek(out entry) && entry.BatchId <= incomingBatchId)
                 {
+                    lastBatchId = entry.BatchId;
+                    PendingRenderBatches.TryDequeue(out _);
+                    ProcessPendingBatch(errorMessageOrNull, entry);
+                }
+
+                if (lastBatchId < incomingBatchId)
+                {
+                    Log.ReceivedUnexpectedBatchId(_logger, incomingBatchId, lastBatchId);
                     HandleException(
-                        new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
+                        new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
                 }
-                else
-                {
-                    if (errorMessageOrNull == null)
-                    {
-                        Log.CompletingBatchWithoutError(_logger, entry.BatchId);
-                    }
-                    else
-                    {
-                        Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
-                    }
-                }
-
-
-                CompleteRender(entry.CompletionSource, errorMessageOrNull);
             }
+        }
+
+        private void ProcessPendingBatch(string errorMessageOrNull, PendingRender entry)
+        {
+            if (errorMessageOrNull == null)
+            {
+                Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+            }
+            else
+            {
+                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+            }
+
+            CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
         private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
@@ -288,6 +311,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
             private static readonly Action<ILogger, long, string, Exception> _completingBatchWithError;
             private static readonly Action<ILogger, long, Exception> _completingBatchWithoutError;
+            private static readonly Action<ILogger, long, long, Exception> _receivedUnexpectedBatchId;
 
             private static class EventIds
             {
@@ -297,6 +321,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
                 public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
                 public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
+                public static readonly EventId ReceivedUnexpectedBatchId = new EventId(106, "ReceivedUnexpectedBatchId");
             }
 
             static Log()
@@ -330,6 +355,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithoutError,
                     "Completing batch {BatchId} without error");
+
+                _receivedUnexpectedBatchId = LoggerMessage.Define<long, long>(
+                    LogLevel.Debug,
+                    EventIds.ReceivedUnexpectedBatchId,
+                    "Received an acknowledgement for batch with id '{IncomingBatchId}' when the last batch produced was '{LastBatchId}'.");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -378,6 +408,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     logger,
                     batchId,
                     null);
+            }
+
+            internal static void ReceivedUnexpectedBatchId(ILogger logger, long incomingBatchId, long lastBatchId)
+            {
+                _receivedUnexpectedBatchId(logger, incomingBatchId, lastBatchId, null);
             }
         }
     }
