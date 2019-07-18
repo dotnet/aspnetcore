@@ -156,6 +156,11 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
+    Write-Host "Re-generating Web.JS files"
+    Invoke-Block {
+        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+    }
+
     Write-Host "Re-generating references assemblies"
     Invoke-Block {
         & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
@@ -164,11 +169,6 @@ try {
     Write-Host "Re-generating package baselines"
     Invoke-Block {
         & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
-    }
-
-    Write-Host "Re-generating Web.JS files"
-    Invoke-Block {
-        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
     }
 
     Write-Host "Run git diff to check for pending changes"
