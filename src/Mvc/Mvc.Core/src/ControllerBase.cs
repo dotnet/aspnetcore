@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         private IModelBinderFactory _modelBinderFactory;
         private IObjectModelValidator _objectValidator;
         private IUrlHelper _url;
+        private ProblemDetailsFactory _problemDetailsFactory;
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
@@ -187,6 +188,28 @@ namespace Microsoft.AspNetCore.Mvc
                 }
 
                 _objectValidator = value;
+            }
+        }
+
+        public ProblemDetailsFactory ProblemDetailsFactory
+        {
+            get
+            {
+                if (_problemDetailsFactory == null)
+                {
+                    _problemDetailsFactory = HttpContext?.RequestServices?.GetRequiredService<ProblemDetailsFactory>();
+                }
+
+                return _problemDetailsFactory;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _problemDetailsFactory = value;
             }
         }
 
@@ -1823,49 +1846,31 @@ namespace Microsoft.AspNetCore.Mvc
             => new ConflictObjectResult(modelState);
 
         /// <summary>
-        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response with a <c>500</c>
-        /// error status with a <see cref="ProblemDetails" /> value.
+        /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
         /// </summary>
-        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
-        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+        /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />..</param>
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
         /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual ObjectResult Problem(
             string detail = null,
             string instance = null,
+            int? statusCode = null,
             string title = null,
             string type = null)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Title = title,
-                Type = type,
-                Detail = detail,
-                Instance = instance,
-            };
-
-            ApplyProblemDetailsDefaults(problemDetails, statusCode: 500);
+            var problemDetails = ProblemDetailsFactory.CreateProblemDetails(
+                HttpContext,
+                statusCode: statusCode ?? 500,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
 
             return new ObjectResult(problemDetails);
-        }
-
-        private void ApplyProblemDetailsDefaults(ProblemDetails problemDetails, int statusCode)
-        {
-            problemDetails.Status = statusCode;
-
-            if (problemDetails.Title is null || problemDetails.Type is null)
-            {
-                var options = HttpContext.RequestServices.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
-                if (options.ClientErrorMapping.TryGetValue(statusCode, out var clientErrorData))
-                {
-                    problemDetails.Title ??= clientErrorData.Title;
-                    problemDetails.Type ??= clientErrorData.Link;
-                }
-            }
-
-            ProblemDetailsClientErrorFactory.SetTraceId(ControllerContext, problemDetails);
         }
 
         /// <summary>
@@ -1884,70 +1889,64 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with validation errors from <paramref name="modelStateDictionary"/>.
         /// </summary>
         /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem([ActionResultObjectValue] ModelStateDictionary modelStateDictionary)
-        {
-            if (modelStateDictionary == null)
-            {
-                throw new ArgumentNullException(nameof(modelStateDictionary));
-            }
+             => ValidationProblem(detail: null, modelStateDictionary: modelStateDictionary);
 
-            var validationProblem = new ValidationProblemDetails(modelStateDictionary);
-            ApplyProblemDetailsDefaults(validationProblem, statusCode: 400);
-
-            return new BadRequestObjectResult(validationProblem);
-        }
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with validation errors from <see cref="ModelState"/>.
         /// </summary>
-        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
         [NonAction]
-        public virtual ActionResult ValidationProblem() => ValidationProblem(ModelState);
+        public virtual ActionResult ValidationProblem()
+            => ValidationProblem(ModelState);
 
         /// <summary>
-        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
         /// with a <see cref="ValidationProblemDetails"/> value.
         /// </summary>
-        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
-        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
         /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
         /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+        /// <param name="statusCode">The status code.</param>
+        /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+        /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
         /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>. 
         /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
-        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
         [NonAction]
         public virtual ActionResult ValidationProblem(
-            string detail,
+            string detail = null,
             string instance = null,
+            int? statusCode = null,
             string title = null,
             string type = null,
             [ActionResultObjectValue] ModelStateDictionary modelStateDictionary = null)
         {
             modelStateDictionary ??= ModelState;
 
-            var validationProblem = new ValidationProblemDetails(modelStateDictionary)
-            {
-                Detail = detail,
-                Instance = instance,
-                Type = type,
-            };
+            var validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
+                HttpContext,
+                modelStateDictionary,
+                statusCode: statusCode,
+                title: title,
+                type: type,
+                detail: detail,
+                instance: instance);
 
-            if (title != null)
+            if (validationProblem.Status == 400)
             {
-                // ValidationProblemDetails has a Title by default. Do not overwrite it with a null
-                validationProblem.Title = title;
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                return new BadRequestObjectResult(validationProblem);
             }
 
-            ApplyProblemDetailsDefaults(validationProblem, statusCode: 400);
-
-            return new BadRequestObjectResult(validationProblem);
+            return new ObjectResult(validationProblem);
         }
 
         /// <summary>

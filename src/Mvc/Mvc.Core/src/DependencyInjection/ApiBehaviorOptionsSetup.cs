@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -12,6 +11,8 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
+        private ProblemDetailsFactory _problemDetailsFactory;
+
         public void Configure(ApiBehaviorOptions options)
         {
             if (options == null)
@@ -19,30 +20,34 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.InvalidModelStateResponseFactory = ProblemDetailsInvalidModelStateResponse;
-            ConfigureClientErrorMapping(options);
-
-            IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
+            options.InvalidModelStateResponseFactory = context =>
             {
-                var problemDetails = new ValidationProblemDetails(context.ModelState)
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                };
+                // ProblemDetailsFactory depends on the ApiBehaviorOptions instance. We intentionally avoid constructor injecting
+                // it in this options setup to to avoid a DI cycle.
+                _problemDetailsFactory ??= context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                return ProblemDetailsInvalidModelStateResponse(_problemDetailsFactory, context);
+            };
 
-                if (options.ClientErrorMapping.TryGetValue(400, out var clientErrorData))
-                {
-                    problemDetails.Type = clientErrorData.Link;
-                }
+            ConfigureClientErrorMapping(options);
+        }
 
-                ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
-
-                var result = new BadRequestObjectResult(problemDetails);
-
-                result.ContentTypes.Add("application/problem+json");
-                result.ContentTypes.Add("application/problem+xml");
-
-                return result;
+        internal static IActionResult ProblemDetailsInvalidModelStateResponse(ProblemDetailsFactory problemDetailsFactory, ActionContext context)
+        {
+            var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(context.HttpContext, context.ModelState);
+            ObjectResult result;
+            if (problemDetails.Status == 400)
+            {
+                // For compatibility with 2.x, continue producing BadRequestObjectResult instances if the status code is 400.
+                result = new BadRequestObjectResult(problemDetails);
             }
+            else
+            {
+                result = new ObjectResult(problemDetails);
+            }
+            result.ContentTypes.Add("application/problem+json");
+            result.ContentTypes.Add("application/problem+xml");
+
+            return result;
         }
 
         // Internal for unit testing

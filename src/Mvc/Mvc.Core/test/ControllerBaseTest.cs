@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -2292,56 +2293,20 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
-        public void ValidationProblemDetails_UsesErrorDataConfiguredInApiBehaviorOptions()
-        {
-            // Arrange
-            var title = "Custom title";
-            var link = "http://custom-link";
-            var serviceProvider = new ServiceCollection()
-                .AddOptions()
-                .AddTransient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>()
-                .Configure<ApiBehaviorOptions>(o => o.ClientErrorMapping[400] = new ClientErrorData { Link = link, Title = title })
-                .BuildServiceProvider();
-
-            var context = new ControllerContext(new ActionContext(
-                new DefaultHttpContext { RequestServices = serviceProvider },
-                new RouteData(),
-                new ControllerActionDescriptor()));
-
-            var controller = new TestableController
-            {
-                ControllerContext = context,
-            };
-
-            // Act
-            var actionResult = controller.ValidationProblem();
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
-            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
-            // ValidationProblemDetails uses the default value to be consistent with the filter.
-            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
-            Assert.Equal(link, problemDetails.Type);
-        }
-
-        [Fact]
         public void ValidationProblemDetails_Works()
         {
             // Arrange
-            var serviceProvider = new ServiceCollection()
-                .AddOptions()
-                .AddTransient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>()
-                .BuildServiceProvider();
-
             var context = new ControllerContext(new ActionContext(
-                new DefaultHttpContext { RequestServices = serviceProvider },
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
                 new RouteData(),
                 new ControllerActionDescriptor()));
 
             context.ModelState.AddModelError("key1", "error1");
 
+            var options = GetApiBehaviorOptions();
             var controller = new TestableController
             {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
                 ControllerContext = context,
             };
 
@@ -2354,7 +2319,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(400, problemDetails.Status);
             Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
-            Assert.NotNull(problemDetails.Extensions["traceId"]);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
             Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
         }
 
@@ -2364,30 +2329,22 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var detail = "My detail";
             var title = "Custom title";
-            var link = "http://custom-link";
-            var serviceProvider = new ServiceCollection()
-                .AddOptions()
-                .Configure<ApiBehaviorOptions>(o => o.ClientErrorMapping[400] = new ClientErrorData { Link = link, Title = "Original Title" })
-                .BuildServiceProvider();
-
-            var context = new ControllerContext(new ActionContext(
-                new DefaultHttpContext { RequestServices = serviceProvider },
-                new RouteData(),
-                new ControllerActionDescriptor()));
+            var type = "http://custom-link";
+            var options = GetApiBehaviorOptions();
 
             var controller = new TestableController
             {
-                ControllerContext = context,
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
             };
 
             // Act
-            var actionResult = controller.ValidationProblem(detail, title: title);
+            var actionResult = controller.ValidationProblem(detail: detail, title: title, type: type);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
             Assert.Equal(title, problemDetails.Title);
-            Assert.Equal(link, problemDetails.Type);
+            Assert.Equal(type, problemDetails.Type);
             Assert.Equal(detail, problemDetails.Detail);
         }
 
@@ -2395,18 +2352,16 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         public void ProblemDetails_Works()
         {
             // Arrange
-            var serviceProvider = new ServiceCollection()
-                .AddOptions()
-                .AddTransient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>()
-                .BuildServiceProvider();
-
             var context = new ControllerContext(new ActionContext(
-                new DefaultHttpContext { RequestServices = serviceProvider },
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
                 new RouteData(),
                 new ControllerActionDescriptor()));
 
+            var options = GetApiBehaviorOptions();
+
             var controller = new TestableController
             {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
                 ControllerContext = context,
             };
 
@@ -2419,7 +2374,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(500, problemDetails.Status);
             Assert.Equal("An error occured while processing your request.", problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
-            Assert.NotNull(problemDetails.Extensions["traceId"]);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
         }
 
         [Fact]
@@ -2428,19 +2383,11 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var title = "The website is down.";
             var detail = "Try again in a few minutes.";
-            var serviceProvider = new ServiceCollection()
-                .AddOptions()
-                .AddTransient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>()
-                .BuildServiceProvider();
-
-            var context = new ControllerContext(new ActionContext(
-                new DefaultHttpContext { RequestServices = serviceProvider },
-                new RouteData(),
-                new ControllerActionDescriptor()));
+            var options = GetApiBehaviorOptions();
 
             var controller = new TestableController
             {
-                ControllerContext = context,
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
             };
 
             // Act
@@ -2453,7 +2400,53 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(title, problemDetails.Title);
             Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
             Assert.Equal(detail, problemDetails.Detail);
-            Assert.NotNull(problemDetails.Extensions["traceId"]);
+        }
+
+        [Fact]
+        public void ProblemDetails_UsesPassedInStatusCode()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.Problem(statusCode: 422);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(422, problemDetails.Status);
+            Assert.Equal("Unprocessable entity.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
+        }
+
+        private static ApiBehaviorOptions GetApiBehaviorOptions()
+        {
+            return new ApiBehaviorOptions
+            {
+                ClientErrorMapping =
+                {
+                    [400] = new ClientErrorData
+                    {
+                        Title = "One or more validation errors occurred.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+                    },
+                    [422] = new ClientErrorData
+                    {
+                        Title = "Unprocessable entity.",
+                        Link = "https://tools.ietf.org/html/rfc4918#section-11.2"
+                    },
+                    [500] = new ClientErrorData
+                    {
+                        Title = "An error occured while processing your request.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                    }
+                }
+            };
         }
 
         public static IEnumerable<object[]> RedirectTestData
