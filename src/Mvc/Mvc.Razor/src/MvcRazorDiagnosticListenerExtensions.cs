@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewPage.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewPageEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeViewPage.EventName,
-                    new BeforeViewPage(
+                    Diagnostics.BeforeViewPageEventData.EventName,
+                    new BeforeViewPageEventData(
                         page,
                         viewContext,
                         viewContext.ActionDescriptor,
@@ -57,11 +57,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IRazorPage page,
             ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewPage.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewPageEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterViewPage.EventName,
-                    new AfterViewPage(
+                    Diagnostics.AfterViewPageEventData.EventName,
+                    new AfterViewPageEventData(
                         page,
                         viewContext,
                         viewContext.ActionDescriptor,

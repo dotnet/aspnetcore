@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void BeforeViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, object viewComponent)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewComponent.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewComponentEventData.EventName))
             {
                 diagnosticListener.Write(
-                Diagnostics.BeforeViewComponent.EventName,
-                new BeforeViewComponent(
+                Diagnostics.BeforeViewComponentEventData.EventName,
+                new BeforeViewComponentEventData(
                     context.ViewContext.ActionDescriptor,
                     context,
                     viewComponent
@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void AfterViewComponentImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IViewComponentResult result, object viewComponent)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewComponent.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewComponentEventData.EventName))
             {
                 diagnosticListener.Write(
-                Diagnostics.AfterViewComponent.EventName,
-                new AfterViewComponent(
+                Diagnostics.AfterViewComponentEventData.EventName,
+                new AfterViewComponentEventData(
                     context.ViewContext.ActionDescriptor,
                     context,
                     result,
@@ -80,11 +80,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewComponentBeforeViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentBeforeViewExecute.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentBeforeViewExecuteEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.ViewComponentBeforeViewExecute.EventName,
-                    new ViewComponentBeforeViewExecute(
+                    Diagnostics.ViewComponentBeforeViewExecuteEventData.EventName,
+                    new ViewComponentBeforeViewExecuteEventData(
                         context.ViewContext.ActionDescriptor,
                         context,
                         view
@@ -106,11 +106,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewComponentAfterViewExecuteImpl(DiagnosticListener diagnosticListener, ViewComponentContext context, IView view)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentAfterViewExecute.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewComponentAfterViewExecuteEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.ViewComponentAfterViewExecute.EventName,
-                    new ViewComponentAfterViewExecute(
+                    Diagnostics.ViewComponentAfterViewExecuteEventData.EventName,
+                    new ViewComponentAfterViewExecuteEventData(
                         context.ViewContext.ActionDescriptor,
                         context,
                         view
@@ -132,11 +132,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void BeforeViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.BeforeView.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.BeforeViewEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.BeforeView.EventName,
-                    new BeforeView(view, viewContext));
+                    Diagnostics.BeforeViewEventData.EventName,
+                    new BeforeViewEventData(view, viewContext));
             }
         }
 
@@ -154,11 +154,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void AfterViewImpl(DiagnosticListener diagnosticListener, IView view, ViewContext viewContext)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.AfterView.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.AfterViewEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.AfterView.EventName,
-                    new AfterView(view, viewContext));
+                    Diagnostics.AfterViewEventData.EventName,
+                    new AfterViewEventData(view, viewContext));
             }
         }
 
@@ -179,11 +179,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, ActionResult viewResult, string viewName, IView view)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.ViewFound.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewFoundEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.ViewFound.EventName,
-                    new ViewFound(
+                    Diagnostics.ViewFoundEventData.EventName,
+                    new ViewFoundEventData(
                         actionContext,
                         isMainPage,
                         viewResult,
@@ -210,11 +210,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static void ViewNotFoundImpl(DiagnosticListener diagnosticListener, ActionContext actionContext, bool isMainPage, ActionResult viewResult, string viewName, IEnumerable<string> searchedLocations)
         {
-            if (diagnosticListener.IsEnabled(Diagnostics.ViewNotFound.EventName))
+            if (diagnosticListener.IsEnabled(Diagnostics.ViewNotFoundEventData.EventName))
             {
                 diagnosticListener.Write(
-                    Diagnostics.ViewNotFound.EventName,
-                    new ViewNotFound(
+                    Diagnostics.ViewNotFoundEventData.EventName,
+                    new ViewNotFoundEventData(
                         actionContext,
                         isMainPage,
                         viewResult,
