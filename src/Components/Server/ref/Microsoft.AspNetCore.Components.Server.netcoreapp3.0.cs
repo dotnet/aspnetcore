@@ -70,13 +70,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public virtual System.Threading.Tasks.Task OnConnectionUpAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit circuit, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Components.Web.Rendering
-{
-    public partial class RemoteRendererException : System.Exception
-    {
-        public RemoteRendererException(string message) { }
-    }
-}
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class ComponentServiceCollectionExtensions
