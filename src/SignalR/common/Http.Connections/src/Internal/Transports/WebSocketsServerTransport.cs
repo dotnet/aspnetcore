@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             _options = options;
             _application = application;
             _connection = connection;
-            _logger = loggerFactory.CreateLogger<WebSocketsServerTransport>();
+            _logger = loggerFactory.CreateLogger("WebSocketsTransport");
         }
 
         public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
