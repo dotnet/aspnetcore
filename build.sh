@@ -221,6 +221,10 @@ if [ "$build_deps" = false ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildProjectReferences=false"
 fi
 
+if [ "$build_nodejs" = false ] && [ "$build_managed" = true ]; then
+    __warn "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
+fi
+
 # Only set these MSBuild properties if they were explicitly set by build parameters.
 [ ! -z "$build_java" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildJava=$build_java"
 [ ! -z "$build_native" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNative=$build_native"

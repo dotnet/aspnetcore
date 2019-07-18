@@ -124,6 +124,19 @@
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
 
+        <!-- These projects have a transitive dependency on Microsoft.AspNetCore.Components.Web.JS exclude these projects if we are not building NodeJS -->
+        <!-- Do not skip these projects on the CI since we don't want to accidentally miss building artifacts -->
+        <DotnetProjectsTransitiveNodeJsDependencies Include="
+                          $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
+                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj;
+                          $(RepoRoot)src\ProjectTemplates\*\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
+                          $(RepoRoot)src\Components\**\*.*proj;
+                          $(RepoRoot)src\Mvc\**\*.*proj;" />
+        <ProjectToExclude Include="@(DotnetProjectsTransitiveNodeJsDependencies)" Condition="'$(BuildNodeJS)' == 'false' and '$(ContinuousIntegrationBuild)' != 'true'" />
+
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.

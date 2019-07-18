@@ -191,6 +191,10 @@ elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -a
     $BuildManaged = $true
 }
 
+if ($BuildManaged -and (-not $BuildNodeJS)) {
+    Write-Warning "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
+}
+
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
 if ($BuildManaged) { $MSBuildArguments += "/p:BuildManaged=true" }
 if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
