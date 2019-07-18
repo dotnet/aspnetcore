@@ -203,7 +203,7 @@ namespace Templates.Test.SpaTemplateTest
         {
             browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
-            browser.Contains(Project.ProjectGuid, () => browser.Title);
+            browser.Contains(Project.ProjectGuid.Replace(".", "._"), () => browser.Title);
 
             // Initially displays the home page
             browser.Equal("Hello, world!", () => browser.FindElement(By.TagName("h1")).Text);

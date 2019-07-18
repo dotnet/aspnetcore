@@ -48,7 +48,7 @@ namespace Templates.Test.Helpers
                         NodeLock = NodeLock,
                         Output = outputHelper,
                         DiagnosticsMessageSink = DiagnosticsMessageSink,
-                        ProjectGuid = Guid.NewGuid().ToString("N").Substring(0, 6)
+                        ProjectGuid = Path.GetRandomFileName()
                     };
                     project.ProjectName = $"AspNet.{key}.{project.ProjectGuid}";
 
