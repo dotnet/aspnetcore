@@ -1,5 +1,5 @@
 import { ReconnectDisplay } from './ReconnectDisplay';
-import { AutoReconnectCircuitHandler } from './AutoReconnectCircuitHandler';
+
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
 
@@ -9,9 +9,9 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   addedToDom: boolean = false;
 
-  constructor(private document: Document) {
+  constructor(dialogId: string, private document: Document) {
     this.modal = this.document.createElement('div');
-    this.modal.id = AutoReconnectCircuitHandler.DialogId;
+    this.modal.id = dialogId;
 
     const modalStyles = [
       'position: fixed',

@@ -28,7 +28,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
   // Initialize statefully prerendered circuits and their components
   // Note: This will all be removed soon
-  const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(logger)];
+  const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(options.reconnectionOptions, logger)];
   const initialConnection = await initializeConnection(options, circuitHandlers, logger);
   const circuits = discoverPrerenderedCircuits(document);
   for (let i = 0; i < circuits.length; i++) {

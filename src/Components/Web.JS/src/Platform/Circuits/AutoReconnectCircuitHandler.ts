@@ -3,22 +3,15 @@ import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
+import { ReconnectionOptions } from './BlazorOptions';
+
 export class AutoReconnectCircuitHandler implements CircuitHandler {
-  public static readonly MaxRetries = 5;
-
-  public static readonly RetryInterval = 3000;
-
-  public static readonly DialogId = 'components-reconnect-modal';
-
   public reconnectDisplay: ReconnectDisplay;
 
-  public logger: Logger;
-
-  public constructor(logger: Logger) {
-    this.logger = logger;
-    this.reconnectDisplay = new DefaultReconnectDisplay(document);
+  public constructor(public options: ReconnectionOptions, public logger: Logger) {
+    this.reconnectDisplay = new DefaultReconnectDisplay(options.dialogId, document);
     document.addEventListener('DOMContentLoaded', () => {
-      const modal = document.getElementById(AutoReconnectCircuitHandler.DialogId);
+      const modal = document.getElementById(this.options.dialogId);
       if (modal) {
         this.reconnectDisplay = new UserSpecifiedDisplay(modal);
       }
@@ -30,13 +23,13 @@ export class AutoReconnectCircuitHandler implements CircuitHandler {
   }
 
   public delay(): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, AutoReconnectCircuitHandler.RetryInterval));
+    return new Promise((resolve) => setTimeout(resolve, this.options.retryIntervalMilliseconds));
   }
 
   public async onConnectionDown(): Promise<void> {
     this.reconnectDisplay.show();
 
-    for (let i = 0; i < AutoReconnectCircuitHandler.MaxRetries; i++) {
+    for (let i = 0; i < this.options.maxRetries; i++) {
       await this.delay();
       try {
         const result = await window['Blazor'].reconnect();
