@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -139,10 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         app.Run(async context =>
                         {
-                            var buffer = new byte[(int)context.Request.ContentLength];
-
-                            await context.Request.Body.ReadAsync(buffer);
-                            await context.Response.WriteAsync(Encoding.ASCII.GetString(buffer));
+                            await context.Response.WriteAsync("Hello World");
                         });
                     });
 
@@ -150,48 +148,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await host.StartAsync();
 
+                    // https://github.com/dotnet/corefx/issues/5999
+                    // .NET Core HttpClient does not support unix sockets, it's difficult to parse raw response data. below is a little hacky way.
                     using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
                     {
                         await socket.ConnectAsync(new UnixDomainSocketEndPoint(path));
 
-                        var data = $"Hello World {Path.GetRandomFileName()}";
+                        byte[] readBuffer = new byte[32];
+                        var httpRequest = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+                        await socket.SendAsync(httpRequest, SocketFlags.None);
 
-                        StringBuilder httpRequest = new StringBuilder();
-                        httpRequest.AppendLine($"POST / HTTP/1.1");
-                        httpRequest.AppendLine($"Host: localhost");
-                        httpRequest.AppendLine($"Content-Length: {data.Length}");
-                        httpRequest.AppendLine();
-                        httpRequest.AppendLine(data);
+                        await socket.ReceiveAsync(readBuffer, SocketFlags.None);
 
-                        // https://docs.microsoft.com/en-us/dotnet/api/system.net.sockets.networkstream.dataavailable?view=netcore-3.0
-                        using (var stream = new NetworkStream(socket))
-                        {
-                            var requestData = Encoding.UTF8.GetBytes(httpRequest.ToString());
-                            stream.Write(requestData, 0, requestData.Length);
+                        var httpResponse = Encoding.ASCII.GetString(readBuffer);
+                        int httpStatusStart = httpResponse.IndexOf(' ') + 1;
+                        int httpStatusEnd = httpResponse.IndexOf(' ', httpStatusStart);
 
-                            if (stream.CanRead)
-                            {
-                                byte[] myReadBuffer = new byte[1024];
-                                StringBuilder myCompleteMessage = new StringBuilder();
-                                int numberOfBytesRead = 0;
-
-                                // Incoming message may be larger than the buffer size.
-                                do
-                                {
-                                    numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
-                                    myCompleteMessage.AppendFormat("{0}", Encoding.ASCII.GetString(myReadBuffer, 0, numberOfBytesRead));
-                                }
-                                while (stream.DataAvailable);
-
-                                // https://github.com/dotnet/corefx/issues/5999
-                                // .NET Core HttpClient does not support unix sockets, it's difficult to parse raw response data. below is a little hacky way.
-                                Assert.True(myCompleteMessage.ToString().IndexOf(data) > -1);
-                            }
-                            else
-                            {
-                                Assert.True(false, "Network stream cannot be read");
-                            }
-                        }
+                        var httpStatus = int.Parse(httpResponse.Substring(httpStatusStart, httpStatusEnd - httpStatusStart));
+                        Assert.Equal(httpStatus, StatusCodes.Status200OK);
+                       
                     }
                     await host.StopAsync();
                 }
