@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup Condition=" '$(OpenApiGenerateDocuments)' == '' ">
     <OpenApiGenerateDocuments
-        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' ">false</OpenApiGenerateDocuments>
+        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion.TrimStart('vV'))' &lt; '2.1' ">false</OpenApiGenerateDocuments>
     <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' ">true</OpenApiGenerateDocuments>
   </PropertyGroup>
   <PropertyGroup>
@@ -32,7 +32,7 @@
       Inputs="$(TargetPath)"
       Outputs="$(_OpenApiDocumentsCache)">
     <Error Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework."
-        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' " />
+        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion.TrimStart('vV'))' &lt; '2.1' " />
 
     <PropertyGroup>
       <_Command>dotnet "$(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_Command>
