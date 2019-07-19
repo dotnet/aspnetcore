@@ -10,45 +10,26 @@ import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, ILogger } from './Platform/Logging/ILogger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
-
-
-type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
-interface BlazorOptions {
-  configureSignalR: SignalRBuilder;
-  logLevel: LogLevel;
-}
+import { computeCircuitOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
 
 let renderingFailed = false;
 let started = false;
 
 async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
-
   if (started) {
     throw new Error('Blazor has already started.');
   }
   started = true;
 
-  const defaultOptions: BlazorOptions = {
-    configureSignalR: (_) => { },
-    logLevel: LogLevel.Warning,
-  };
-
-  const options: BlazorOptions = { ...defaultOptions, ...userOptions };
-
-  // For development.
-  // Simply put a break point here and modify the log level during
-  // development to get traces.
-  // In the future we will allow for users to configure this.
+  // Establish options to be used
+  const options = computeCircuitOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
-
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
+  // Initialize statefully prerendered circuits and their components
+  // Note: This will all be removed soon
   const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(logger)];
-  window['Blazor'].circuitHandlers = circuitHandlers;
-
-  // pass options.configureSignalR to configure the signalR.HubConnectionBuilder
   const initialConnection = await initializeConnection(options, circuitHandlers, logger);
-
   const circuits = discoverPrerenderedCircuits(document);
   for (let i = 0; i < circuits.length; i++) {
     const circuit = circuits[i];
@@ -59,7 +40,6 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 
   const circuit = await startCircuit(initialConnection);
-
   if (!circuit) {
     logger.log(LogLevel.Information, 'No preregistered components to render.');
   }
@@ -80,6 +60,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     return true;
   };
 
+  window['Blazor'].circuitHandlers = circuitHandlers;
   window['Blazor'].reconnect = reconnect;
 
   const reconnectTask = reconnect(initialConnection);
@@ -97,8 +78,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 }
 
-async function initializeConnection(options: Required<BlazorOptions>, circuitHandlers: CircuitHandler[], logger: ILogger): Promise<signalR.HubConnection> {
-
+async function initializeConnection(options: BlazorOptions, circuitHandlers: CircuitHandler[], logger: ILogger): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -160,6 +140,7 @@ function unhandledError(connection: signalR.HubConnection, err: Error, logger: I
 }
 
 window['Blazor'].start = boot;
+
 if (shouldAutoStart()) {
   boot();
 }
