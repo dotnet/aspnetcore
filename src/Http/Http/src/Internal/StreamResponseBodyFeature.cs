@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Http
     {
         private PipeWriter _pipeWriter;
         private bool _started;
+        private bool _completed;
         private bool _disposed;
 
         public StreamResponseBodyFeature(Stream stream)
@@ -75,11 +76,17 @@ namespace Microsoft.AspNetCore.Http
             {
                 return;
             }
+            if (_completed)
+            {
+                return;
+            }
 
             if (!_started)
             {
                 await StartAsync();
             }
+
+            _completed = true;
 
             if (_pipeWriter != null)
             {

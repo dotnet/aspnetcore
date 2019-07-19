@@ -116,21 +116,22 @@ namespace Microsoft.AspNetCore.Diagnostics
                     // add response buffering
                     app.Use(async (httpContext, next) =>
                     {
-                        var originalBodyFeature = httpContext.Features.Get<IHttpResponseBodyFeature>();
+                        var response = httpContext.Response;
+                        var originalResponseBody = response.Body;
                         var bufferingStream = new MemoryStream();
-                        httpContext.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(bufferingStream));
+                        response.Body = bufferingStream;
 
                         try
                         {
                             await next();
 
-                            httpContext.Features.Set(originalBodyFeature);
+                            response.Body = originalResponseBody;
                             bufferingStream.Seek(0, SeekOrigin.Begin);
                             await bufferingStream.CopyToAsync(httpContext.Response.Body);
                         }
                         finally
                         {
-                            httpContext.Features.Set(originalBodyFeature);
+                            response.Body = originalResponseBody;
                         }
                     });
 

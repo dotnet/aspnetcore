@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
                     && object.ReferenceEquals(value, streamFeature.PriorFeature.Stream))
                 {
                     // They're reverting the stream back to the prior one. Revert the whole feature.
-                    _features.Collection.Set(otherFeature);
+                    _features.Collection.Set(streamFeature.PriorFeature);
                     // CompleteAsync is registered with HttpResponse.OnCompleted and there's no way to unregister it.
                     // Prevent it from running by marking as disposed.
                     streamFeature.Dispose();
