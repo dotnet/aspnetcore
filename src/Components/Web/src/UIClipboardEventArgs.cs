@@ -4,13 +4,9 @@
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Supplies information about an event that is being raised.
+    /// Supplies information about an clipboard event that is being raised.
     /// </summary>
-    public class UIEventArgs
+    public class UIClipboardEventArgs : UIEventArgs
     {
-        /// <summary>
-        /// Gets or sets the type of the event.
-        /// </summary>
-        public string Type { get; set; }
     }
 }

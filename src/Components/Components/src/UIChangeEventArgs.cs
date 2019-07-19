@@ -4,13 +4,14 @@
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Supplies information about an event that is being raised.
+    /// Supplies information about an input change event that is being raised.
     /// </summary>
-    public class UIEventArgs
+    public class UIChangeEventArgs : UIEventArgs
     {
         /// <summary>
-        /// Gets or sets the type of the event.
+        /// Gets or sets the new value of the input. This may be a <see cref="string"/>
+        /// or a <see cref="bool"/>.
         /// </summary>
-        public string Type { get; set; }
+        public object Value { get; set; }
     }
 }
