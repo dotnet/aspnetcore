@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             DisconnectedCircuits = new MemoryCache(new MemoryCacheOptions
             {
-                SizeLimit = _options.MaxRetainedDisconnectedCircuits,
+                SizeLimit = _options.DisconnectedCircuitMaxRetained,
             });
 
             _postEvictionCallback = new PostEvictionCallbackRegistration
