@@ -871,9 +871,20 @@
     }
   },
   "razorclasslib": {
-    "None": {
+    "ComponentsOnly": {
       "Template": "razorclasslib",
       "Arguments": "new razorclasslib",
+      "Files": [
+        "wwwroot/background.png",
+        "wwwroot/exampleJsInterop.js",
+        "wwwroot/styles.css",
+        "Component1.razor",
+        "ExampleJsInterop.cs"
+      ]
+    },
+    "ViewsOnly": {
+      "Template": "razorclasslib",
+      "Arguments": "new razorclasslib --support-pages-and-views true",
       "Files": [
         "Areas/MyFeature/Pages/Page1.cshtml",
         "Areas/MyFeature/Pages/Page1.cshtml.cs"
