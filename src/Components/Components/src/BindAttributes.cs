@@ -22,6 +22,12 @@ namespace Microsoft.AspNetCore.Components
     [BindInputElement("checkbox", null, "checked", "onchange", isInvariantCulture: false, format: null)]
     [BindInputElement("text", null, "value", "onchange", isInvariantCulture: false, format: null)]
 
+    // type="number" is invariant culture
+    [BindInputElement("number", null, "value", "onchange", isInvariantCulture: true, format: null)]
+
+    // type="date" is invariant culture with a specific format
+    [BindInputElement("date", null, "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-dd")]
+
     [BindElement("select", null, "value", "onchange")]
     [BindElement("textarea", null, "value", "onchange")]
     public static class BindAttributes
