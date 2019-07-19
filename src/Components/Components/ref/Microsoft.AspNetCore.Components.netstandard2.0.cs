@@ -359,6 +359,10 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
+    public partial interface IHostEnvironmentAuthenticationStateProvider
+    {
+        void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> authenticationStateTask);
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute
     {
