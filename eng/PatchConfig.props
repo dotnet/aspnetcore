@@ -42,6 +42,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.13' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.DataProtection.AzureStorage;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
