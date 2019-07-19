@@ -16,7 +16,7 @@
     "webapp",
     "razor"
   ],
-  "thirdPartyNotices": "https://aka.ms/aspnetcore-template-3pn-210",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
