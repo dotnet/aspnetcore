@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             SetCompressionMode();
             ApplyResponseHeaders(Constants.Status200Ok);
             string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
+            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
                 // We don't need to directly cancel this, if the client disconnects it will fail silently.

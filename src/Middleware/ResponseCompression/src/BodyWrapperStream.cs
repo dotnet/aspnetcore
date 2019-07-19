@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             if (_pipeAdapter != null)
             {
-                await _pipeAdapter.CompleteAsync();
+                await _pipeAdapter.FlushAsync(); // TODO: CompleteAsync throws ODE.
             }
             if (_compressionStream != null)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => _innerBodyFeature.Body.CanWrite;
+        public override bool CanWrite => _innerBodyFeature.Stream.CanWrite;
 
         public override long Length
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             set { throw new NotSupportedException(); }
         }
 
-        public Stream Body => this;
+        public Stream Stream => this;
 
         public PipeWriter Writer
         {
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 if (_pipeAdapter == null)
                 {
-                    _pipeAdapter = PipeWriter.Create(Body, new StreamPipeWriterOptions(leaveOpen: true));
+                    _pipeAdapter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
                 }
 
                 return _pipeAdapter;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                _innerBodyFeature.Body.Flush();
+                _innerBodyFeature.Stream.Flush();
                 return;
             }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _innerBodyFeature.Body.Flush();
+                _innerBodyFeature.Stream.Flush();
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                return _innerBodyFeature.Body.FlushAsync(cancellationToken);
+                return _innerBodyFeature.Stream.FlushAsync(cancellationToken);
             }
 
             if (_compressionStream != null)
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return _compressionStream.FlushAsync(cancellationToken);
             }
 
-            return _innerBodyFeature.Body.FlushAsync(cancellationToken);
+            return _innerBodyFeature.Stream.FlushAsync(cancellationToken);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _innerBodyFeature.Body.Write(buffer, offset, count);
+                _innerBodyFeature.Stream.Write(buffer, offset, count);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                await _innerBodyFeature.Body.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerBodyFeature.Stream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
 
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                         _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
                         _context.Response.Headers.Remove(HeaderNames.ContentLength);
 
-                        _compressionStream = compressionProvider.CreateStream(_innerBodyFeature.Body);
+                        _compressionStream = compressionProvider.CreateStream(_innerBodyFeature.Stream);
                     }
                 }
             }

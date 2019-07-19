@@ -14,13 +14,22 @@ namespace Microsoft.AspNetCore.Http
     {
         private PipeWriter _pipeWriter;
         private bool _started;
+        private bool _disposed;
 
         public StreamResponseBodyFeature(Stream stream)
         {
-            Body = stream ?? throw new ArgumentNullException(nameof(stream));
+            Stream = stream ?? throw new ArgumentNullException(nameof(stream));
         }
 
-        public Stream Body { get; }
+        public StreamResponseBodyFeature(Stream stream, IHttpResponseBodyFeature priorFeature)
+        {
+            Stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            PriorFeature = priorFeature;
+        }
+
+        public Stream Stream { get; }
+
+        public IHttpResponseBodyFeature PriorFeature { get; }
 
         public PipeWriter Writer
         {
@@ -28,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 if (_pipeWriter == null)
                 {
-                    _pipeWriter = PipeWriter.Create(Body, new StreamPipeWriterOptions(leaveOpen: true));
+                    _pipeWriter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
                 }
 
                 return _pipeWriter;
@@ -45,7 +54,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 await StartAsync(cancellation);
             }
-            await SendFileAsyncCore(Body, path, offset, count, cancellation);
+            await SendFileAsyncCore(Stream, path, offset, count, cancellation);
         }
 
         public virtual Task StartAsync(CancellationToken token = default)
@@ -53,24 +62,32 @@ namespace Microsoft.AspNetCore.Http
             if (!_started)
             {
                 _started = true;
-                return Body.FlushAsync(token);
+                return Stream.FlushAsync(token);
             }
             return Task.CompletedTask;
         }
 
         public virtual async Task CompleteAsync()
         {
+            // CompleteAsync is registered with HttpResponse.OnCompleted and there's no way to unregister it.
+            // Prevent it from running by marking as disposed.
+            if (_disposed)
+            {
+                return;
+            }
+
             if (!_started)
             {
                 await StartAsync();
             }
+
             if (_pipeWriter != null)
             {
                 await _pipeWriter.CompleteAsync();
             }
             else
             {
-                await Body.FlushAsync();
+                await Stream.FlushAsync();
             }
         }
 
@@ -113,6 +130,11 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
             }
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

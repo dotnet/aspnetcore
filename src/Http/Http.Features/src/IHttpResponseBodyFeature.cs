@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpResponseBodyFeature
     {
         /// <summary>
-        /// The <see cref="Stream"/> for writing the response body.
+        /// The <see cref="System.IO.Stream"/> for writing the response body.
         /// </summary>
-        Stream Body { get; }
+        Stream Stream { get; }
 
         /// <summary>
         /// A <see cref="PipeWriter"/> representing the response body, if any.
@@ -34,8 +34,7 @@ namespace Microsoft.AspNetCore.Http.Features
         Task StartAsync(CancellationToken token = default);
 
         /// <summary>
-        /// Sends the requested file in the response body. This may bypass the IHttpResponseFeature.Body
-        /// <see cref="Stream"/>. A response may include multiple writes.
+        /// Sends the requested file in the response body. A response may include multiple writes.
         /// </summary>
         /// <param name="path">The full disk path to the file.</param>
         /// <param name="offset">The offset in the file to start at.</param>

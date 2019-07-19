@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => _routeValues = value;
         }
 
-        Stream IHttpResponseBodyFeature.Body => ResponseBody;
+        Stream IHttpResponseBodyFeature.Stream => ResponseBody;
 
         protected void ResetHttp1Features()
         {

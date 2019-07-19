@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.TestHost
 
         public Stream Body { get; set; }
 
+        public Stream Stream => Body;
+
         internal PipeWriter BodyWriter { get; set; }
 
         public PipeWriter Writer => BodyWriter;

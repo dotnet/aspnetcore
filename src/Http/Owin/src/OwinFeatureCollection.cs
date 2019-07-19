@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Owin
         IFeatureCollection,
         IHttpRequestFeature,
         IHttpResponseFeature,
+        IHttpResponseBodyFeature,
         IHttpConnectionFeature,
-        IHttpSendFileFeature,
         ITlsConnectionFeature,
         IHttpRequestIdentifierFeature,
         IHttpRequestLifetimeFeature,
@@ -150,6 +150,11 @@ namespace Microsoft.AspNetCore.Owin
             set { Prop(OwinConstants.ResponseBody, value); }
         }
 
+        Stream IHttpResponseBodyFeature.Stream
+        {
+            get { return Prop<Stream>(OwinConstants.ResponseBody); }
+        }
+
         bool IHttpResponseFeature.HasStarted
         {
             get { return _headersSent; }
@@ -211,7 +216,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
-        Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
             object obj;
             if (Environment.TryGetValue(OwinConstants.SendFiles.SendAsync, out obj))

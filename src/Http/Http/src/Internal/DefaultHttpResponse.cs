@@ -66,10 +66,23 @@ namespace Microsoft.AspNetCore.Http
 
         public override Stream Body
         {
-            get { return HttpResponseBodyFeature.Body; }
+            get { return HttpResponseBodyFeature.Stream; }
             set
             {
-                var feature = new StreamResponseBodyFeature(value);
+                var otherFeature = _features.Collection.Get<IHttpResponseBodyFeature>();
+                if (otherFeature is StreamResponseBodyFeature streamFeature
+                    && streamFeature.PriorFeature != null
+                    && object.ReferenceEquals(value, streamFeature.PriorFeature.Stream))
+                {
+                    // They're reverting the stream back to the prior one. Revert the whole feature.
+                    _features.Collection.Set(otherFeature);
+                    // CompleteAsync is registered with HttpResponse.OnCompleted and there's no way to unregister it.
+                    // Prevent it from running by marking as disposed.
+                    streamFeature.Dispose();
+                    return;
+                }
+
+                var feature = new StreamResponseBodyFeature(value, otherFeature);
                 OnCompleted(feature.CompleteAsync);
                 _features.Collection.Set<IHttpResponseBodyFeature>(feature);
             }
