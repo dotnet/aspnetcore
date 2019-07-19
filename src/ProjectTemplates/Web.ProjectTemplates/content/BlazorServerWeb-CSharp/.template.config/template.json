@@ -12,7 +12,7 @@
   "precedence": "5000",
   "identity": "Microsoft.Web.Blazor.Server.CSharp.3.0",
   "shortName": "blazorserver",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/3.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
