@@ -43,7 +43,16 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
             using (var scope = _services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TContext>();
-                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml)).ToList().AsReadOnly();
+
+                // Get Collection of DataProtectionKeys from Database
+                var dataProtectionKeys = context.DataProtectionKeys.AsNoTracking();
+                
+                
+                return dataProtectionKeys.Any() ?
+                    dataProtectionKeys.Select(key => TryParseKeyXml(key.Xml)).ToList().AsReadOnly() : 
+                    new List<XElement>().AsReadOnly();
+
+                
             }
         }
 
