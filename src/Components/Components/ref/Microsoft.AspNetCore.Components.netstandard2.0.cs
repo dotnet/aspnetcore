@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Components
     }
     [Microsoft.AspNetCore.Components.BindElementAttribute("select", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
-    [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
-    [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange")]
-    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange")]
-    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, null, "value", "onchange", false, null)]
     public static partial class BindAttributes
     {
     }
@@ -84,8 +84,10 @@ namespace Microsoft.AspNetCore.Components
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindInputElementAttribute : System.Attribute
     {
-        public BindInputElementAttribute(string type, string suffix, string valueAttribute, string changeAttribute) { }
+        public BindInputElementAttribute(string type, string suffix, string valueAttribute, string changeAttribute, bool isInvariantCulture, string format) { }
         public string ChangeAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Format { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsInvariantCulture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

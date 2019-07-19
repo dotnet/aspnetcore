@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -18,7 +19,13 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="suffix">The suffix value.</param>
         /// <param name="valueAttribute">The name of the value attribute to be bound.</param>
         /// <param name="changeAttribute">The name of an attribute that will register an associated change event.</param>
-        public BindInputElementAttribute(string type, string suffix, string valueAttribute, string changeAttribute)
+        /// <param name="isInvariantCulture">
+        /// Determines whether binding will use <see cref="CultureInfo.InvariantCulture" /> or <see cref="CultureInfo.CurrentCulture"/>.
+        /// </param>
+        /// <param name="format">
+        /// An optional format to use when converting values. 
+        /// </param>
+        public BindInputElementAttribute(string type, string suffix, string valueAttribute, string changeAttribute, bool isInvariantCulture, string format)
         {
             if (valueAttribute == null)
             {
@@ -34,6 +41,8 @@ namespace Microsoft.AspNetCore.Components
             Suffix = suffix;
             ValueAttribute = valueAttribute;
             ChangeAttribute = changeAttribute;
+            IsInvariantCulture = isInvariantCulture;
+            Format = format;
         }
 
         /// <summary>
@@ -55,5 +64,16 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the name of an attribute that will register an associated change event.
         /// </summary>
         public string ChangeAttribute { get; }
+
+        /// <summary>
+        /// Gets a value that determines whether binding will use <see cref="CultureInfo.InvariantCulture" /> or
+        /// <see cref="CultureInfo.CurrentCulture"/>.
+        /// </summary>
+        public bool IsInvariantCulture { get; }
+
+        /// <summary>
+        /// Gets an optional format to use when converting values.
+        /// </summary>
+        public string Format { get; }
     }
 }

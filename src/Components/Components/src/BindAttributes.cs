@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Components
     
     // Handles cases like <input @bind="..." /> - this is a fallback and will be ignored
     // when a specific type attribute is applied.
-    [BindInputElement(null, null, "value", "onchange")]
+    [BindInputElement(null, null, "value", "onchange", isInvariantCulture: false, format: null)]
 
     // Handles cases like <input @bind-value="..." /> - this is a fallback and will be ignored
     // when a specific type attribute is applied.
-    [BindInputElement(null, "value", "value", "onchange")]
+    [BindInputElement(null, "value", "value", "onchange", isInvariantCulture: false, format: null)]
 
-    [BindInputElement("checkbox", null, "checked", "onchange")]
-    [BindInputElement("text", null, "value", "onchange")]
+    [BindInputElement("checkbox", null, "checked", "onchange", isInvariantCulture: false, format: null)]
+    [BindInputElement("text", null, "value", "onchange", isInvariantCulture: false, format: null)]
 
     [BindElement("select", null, "value", "onchange")]
     [BindElement("textarea", null, "value", "onchange")]
