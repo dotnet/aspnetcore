@@ -27,15 +27,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             }
 
             var diagnostic = JObject.Load(reader);
+            var id = diagnostic[nameof(RazorDiagnostic.Id)].Value<string>();
+            var severity = diagnostic[nameof(RazorDiagnostic.Severity)].Value<int>();
+            var message = diagnostic[RazorDiagnosticMessageKey].Value<string>();
+
             var span = diagnostic[nameof(RazorDiagnostic.Span)].Value<JObject>();
+            var filePath = span[nameof(SourceSpan.FilePath)].Value<string>();
             var absoluteIndex = span[nameof(SourceSpan.AbsoluteIndex)].Value<int>();
             var lineIndex = span[nameof(SourceSpan.LineIndex)].Value<int>();
             var characterIndex = span[nameof(SourceSpan.CharacterIndex)].Value<int>();
             var length = span[nameof(SourceSpan.Length)].Value<int>();
-            var filePath = span[nameof(SourceSpan.FilePath)].Value<string>();
-            var message = diagnostic[RazorDiagnosticMessageKey].Value<string>();
-            var id = diagnostic[nameof(RazorDiagnostic.Id)].Value<string>();
-            var severity = diagnostic[nameof(RazorDiagnostic.Severity)].Value<int>();
 
             var descriptor = new RazorDiagnosticDescriptor(id, () => message, (RazorDiagnosticSeverity)severity);
             var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
@@ -53,7 +54,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             WriteProperty(writer, RazorDiagnosticMessageKey, diagnostic.GetMessage(CultureInfo.CurrentCulture));
 
             writer.WritePropertyName(nameof(RazorDiagnostic.Span));
-            serializer.Serialize(writer, diagnostic.Span);
+            writer.WriteStartObject();
+            WriteProperty(writer, nameof(SourceSpan.FilePath), diagnostic.Span.FilePath);
+            WriteProperty(writer, nameof(SourceSpan.AbsoluteIndex), diagnostic.Span.AbsoluteIndex);
+            WriteProperty(writer, nameof(SourceSpan.LineIndex), diagnostic.Span.LineIndex);
+            WriteProperty(writer, nameof(SourceSpan.CharacterIndex), diagnostic.Span.CharacterIndex);
+            WriteProperty(writer, nameof(SourceSpan.Length), diagnostic.Span.Length);
+            writer.WriteEndObject();
 
             writer.WriteEndObject();
         }
