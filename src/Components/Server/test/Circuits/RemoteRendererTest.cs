@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         }
 
         [Fact]
-        public async Task OnRenderCompletedAsync_ThrowsWhenNoBatchesAreQueued()
+        public async Task OnRenderCompletedAsync_DoesNotThrowWhenReceivedDuplicateAcks()
         {
             // Arrange
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
@@ -163,30 +163,30 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            // Pretend that we missed the ack for the initial batch
+            // Receive the ack for the intial batch
             renderer.OnRenderCompleted(2, null);
+            // Receive the ack for the second batch
             renderer.OnRenderCompleted(3, null);
+
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
+            // Repeat the ack for the third batch
             renderer.OnRenderCompleted(3, null);
 
             // Assert
-            var exception = Assert.Single(exceptions);
+            Assert.Empty(exceptions);
         }
 
         [Fact]
-        public async Task ThrowsIfWeReceiveAnAcknowledgeForAnAlreadyConfirmedBatch()
+        public async Task OnRenderCompletedAsync_DoesNotThrowWhenThereAreNoPendingBatchesToAck()
         {
             // Arrange
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
             var firstBatchTCS = new TaskCompletionSource<object>();
             var secondBatchTCS = new TaskCompletionSource<object>();
-            var renderIds = new List<long>();
-            var onlineClient = new Mock<IClientProxy>();
-            onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
-                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
-            var renderer = GetRemoteRenderer(serviceProvider, new CircuitClientProxy(onlineClient.Object, "online-client"));
+            var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
+            offlineClient.SetDisconnected();
+            var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
             RenderFragment initialContent = (builder) =>
             {
                 builder.OpenElement(0, "my element");
@@ -194,6 +194,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 builder.CloseElement();
             };
             var trigger = new Trigger();
+            var renderIds = new List<long>();
+            var onlineClient = new Mock<IClientProxy>();
+            onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
+                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
@@ -213,23 +218,26 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
 
             // Act
+            offlineClient.Transfer(onlineClient.Object, "new-connection");
+            var task = renderer.ProcessBufferedRenderBatches();
             var exceptions = new List<Exception>();
             renderer.UnhandledException += (sender, e) =>
             {
                 exceptions.Add(e);
             };
 
-            // Ack the first batch
-            firstBatchTCS.SetResult(null);
+            // Receive the ack for the intial batch
             renderer.OnRenderCompleted(2, null);
-            Assert.Single(renderer.PendingRenderBatches);
-            // Ack the first batch again
-            secondBatchTCS.SetResult(null);
+            // Receive the ack for the second batch
             renderer.OnRenderCompleted(2, null);
 
+            firstBatchTCS.SetResult(null);
+            secondBatchTCS.SetResult(null);
+            // Repeat the ack for the third batch
+            renderer.OnRenderCompleted(3, null);
+
             // Assert
-            var exception = Assert.Single(exceptions);
-            Assert.Equal("Received a notification for a rendered batch when not expecting it. Batch id '2'.", exception.Message);
+            Assert.Empty(exceptions);
         }
 
         [Fact]
