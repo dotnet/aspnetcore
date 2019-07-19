@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -83,13 +84,21 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 var type = value?.GetType() ?? typeof(object);
                 await JsonSerializer.SerializeAsync(writeStream, value, type, jsonSerializerOptions);
+
+                // The transcoding streams use Encoders and Decoders that have internal buffers. We need to flush these
+                // when there is no more data to be written. Stream.FlushAsync isn't suitable since it's
+                // acceptable to Flush a Stream (multiple times) prior to completion.
+                if (writeStream is TranscodingWriteStream transcodingStream)
+                {
+                    await transcodingStream.FinalWriteAsync(CancellationToken.None);
+                }
                 await writeStream.FlushAsync();
             }
             finally
             {
-                if (writeStream is TranscodingWriteStream transcoding)
+                if (writeStream is TranscodingWriteStream transcodingStream)
                 {
-                    await transcoding.DisposeAsync();
+                    await transcodingStream.DisposeAsync();
                 }
             }
         }
