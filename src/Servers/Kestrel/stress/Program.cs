@@ -605,7 +605,7 @@ public class Program
 
                 Random random = CreateRandomInstance();
 
-                for (long i = taskNum; i < 500000; i++)
+                for (long i = taskNum; i < 50000; i++)
                 {
                     long opIndex = i % clientOperations.Length;
                     (string operation, Func<RequestContext, Task> func) = clientOperations[opIndex];
