@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Appends a frame representing a region of frames.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public  void OpenRegion(int sequence)
+        public void OpenRegion(int sequence)
         {
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));

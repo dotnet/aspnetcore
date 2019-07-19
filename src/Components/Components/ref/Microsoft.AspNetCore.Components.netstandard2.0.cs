@@ -343,6 +343,11 @@ namespace Microsoft.AspNetCore.Components.CompilerServices
 }
 namespace Microsoft.AspNetCore.Components.Forms
 {
+    public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public DataAnnotationsValidator() { }
+        protected override void OnInitialized() { }
+    }
     public sealed partial class EditContext
     {
         public EditContext(object model) { }
