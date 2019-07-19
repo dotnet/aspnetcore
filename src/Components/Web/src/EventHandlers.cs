@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components
     [EventHandler("oncut", typeof(UIClipboardEventArgs))]
     [EventHandler("onpaste", typeof(UIClipboardEventArgs))]
 
-    // Touch events 
+    // Touch events
     [EventHandler("ontouchcancel", typeof(UITouchEventArgs))]
     [EventHandler("ontouchend", typeof(UITouchEventArgs))]
     [EventHandler("ontouchmove", typeof(UITouchEventArgs))]
