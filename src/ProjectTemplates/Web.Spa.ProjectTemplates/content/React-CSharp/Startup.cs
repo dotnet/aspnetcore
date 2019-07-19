@@ -55,7 +55,7 @@ namespace Company.WebApplication1
 #endif
 
             services.AddControllersWithViews();
-#if (IndividualAuth)
+#if (IndividualLocalAuth)
             services.AddRazorPages();
 #endif
 
@@ -106,6 +106,9 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+#if (IndividualLocalAuth)
+                endpoints.MapRazorPages();
+#endif
             });
 
             app.UseSpa(spa =>
