@@ -636,11 +636,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public static System.Collections.Generic.IEnumerable<string> GetValidationMessages(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<object>> accessor) { throw null; }
         public static bool IsModified(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<object>> accessor) { throw null; }
     }
-    public static partial class EditContextFieldClassExtensions
-    {
-        public static string FieldClass(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
-        public static string FieldClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
-    }
     public sealed partial class FieldChangedEventArgs
     {
         internal FieldChangedEventArgs() { }
@@ -782,10 +777,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
+        public void CloseRegion() { }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
         public void OpenComponent(int sequence, System.Type componentType) { }
         public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
         public void OpenElement(int sequence, string elementName) { }
+        public void OpenRegion(int sequence) { }
         public void SetKey(object value) { }
         public void SetUpdatesAttributeName(string updatesAttributeName) { }
         void System.IDisposable.Dispose() { }

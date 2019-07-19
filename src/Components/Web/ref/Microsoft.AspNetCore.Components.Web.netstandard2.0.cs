@@ -1,6 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Components.Forms
+{
+    public static partial class EditContextFieldClassExtensions
+    {
+        public static string FieldClass(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
+        public static string FieldClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Components.Web
 {
     public static partial class RendererRegistryEventDispatcher
