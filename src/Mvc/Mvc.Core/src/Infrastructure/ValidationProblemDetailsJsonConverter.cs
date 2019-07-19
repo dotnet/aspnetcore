@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (!reader.Read())
             {
-                throw new InvalidDataException(Resources.UnexpectedJsonEnd);
+                throw new JsonException(Resources.UnexpectedJsonEnd);
             }
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -38,6 +37,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     ReadValue(ref reader, problemDetails, options);
                 }
+            }
+
+            if (reader.TokenType != JsonTokenType.EndObject)
+            {
+                throw new JsonException(Resources.UnexpectedJsonEnd);
             }
 
             return problemDetails;

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var title = "Not found";
             var status = 404;
             var detail = "Product not found";
-            var instance = "http://exmaple.com/products/14";
+            var instance = "http://example.com/products/14";
             var traceId = "|37dd3dd5-4a9619f953c40a16.";
             var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"detail\":\"{detail}\", \"instance\":\"{instance}\",\"traceId\":\"{traceId}\"," +
                 "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
                 Status = 404,
                 Detail = "Product not found",
-                Instance = "http://exmaple.com/products/14",
+                Instance = "http://example.com/products/14",
                 Extensions =
                 {
                     { "traceId", traceId },

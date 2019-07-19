@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -23,12 +22,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (!reader.Read())
             {
-                throw new InvalidDataException(Resources.UnexpectedJsonEnd);
+                throw new JsonException(Resources.UnexpectedJsonEnd);
             }
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 ReadValue(ref reader, problemDetails, options);
+            }
+
+            if (reader.TokenType != JsonTokenType.EndObject)
+            {
+                throw new JsonException(Resources.UnexpectedJsonEnd);
             }
 
             return problemDetails;
