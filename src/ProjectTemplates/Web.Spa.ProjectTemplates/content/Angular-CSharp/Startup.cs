@@ -54,7 +54,7 @@ namespace Company.WebApplication1
                 .AddIdentityServerJwt();
 #endif
             services.AddControllersWithViews();
-#if (IndividualAuth)
+#if (IndividualLocalAuth)
             services.AddRazorPages();
 #endif
             // In production, the Angular files will be served from this directory
@@ -104,7 +104,7 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-#if (IndividualAuth)
+#if (IndividualLocalAuth)
                 endpoints.MapRazorPages();
 #endif
             });
