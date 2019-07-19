@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 await StartAsync(cancellation);
             }
-            await SendFileAsyncCore(Stream, path, offset, count, cancellation);
+            await SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
         }
 
         public virtual Task StartAsync(CancellationToken token = default)
@@ -95,34 +95,6 @@ namespace Microsoft.AspNetCore.Http
             else
             {
                 await Stream.FlushAsync();
-            }
-        }
-
-        // Not safe for overlapped writes.
-        private static async Task SendFileAsyncCore(Stream outputStream, string fileName, long offset, long? count, CancellationToken cancel = default)
-        {
-            cancel.ThrowIfCancellationRequested();
-
-            var fileInfo = new FileInfo(fileName);
-            CheckRange(offset, count, fileInfo.Length);
-
-            int bufferSize = 1024 * 16;
-            var fileStream = new FileStream(
-                fileName,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                bufferSize: bufferSize,
-                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            using (fileStream)
-            {
-                if (offset > 0)
-                {
-                    fileStream.Seek(offset, SeekOrigin.Begin);
-                }
-
-                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count, cancel);
             }
         }
 

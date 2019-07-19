@@ -28,6 +28,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 return "/";
             }
 
+            // OPTIONS *
+            // RemoveDotSegments Asserts path always starts with a '/'
+            if (rawPath.Length == 1 && rawPath[0] == (byte)'*')
+            {
+                return "*";
+            }
+
             var unescapedPath = Unescape(rawPath);
 
             var length = PathNormalizer.RemoveDotSegments(unescapedPath);

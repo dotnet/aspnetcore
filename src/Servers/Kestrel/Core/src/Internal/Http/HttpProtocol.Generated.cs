@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IHttpMinResponseDataRateFeatureType = typeof(IHttpMinResponseDataRateFeature);
         private static readonly Type IHttpBodyControlFeatureType = typeof(IHttpBodyControlFeature);
         private static readonly Type IHttpResetFeatureType = typeof(IHttpResetFeature);
-        private static readonly Type IHttpSendFileFeatureType = typeof(IHttpSendFileFeature);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
@@ -71,7 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIHttpMinResponseDataRateFeature;
         private object _currentIHttpBodyControlFeature;
         private object _currentIHttpResetFeature;
-        private object _currentIHttpSendFileFeature;
 
         private int _featureRevision;
 
@@ -108,7 +106,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentISessionFeature = null;
             _currentIHttpMinResponseDataRateFeature = null;
             _currentIHttpResetFeature = null;
-            _currentIHttpSendFileFeature = null;
         }
 
         // Internal for testing
@@ -275,10 +272,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpResetFeature;
                 }
-                else if (key == IHttpSendFileFeatureType)
-                {
-                    feature = _currentIHttpSendFileFeature;
-                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -403,10 +396,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpResetFeature = value;
                 }
-                else if (key == IHttpSendFileFeatureType)
-                {
-                    _currentIHttpSendFileFeature = value;
-                }
                 else
                 {
                     ExtraFeatureSet(key, value);
@@ -528,10 +517,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpResetFeature))
             {
                 feature = (TFeature)_currentIHttpResetFeature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpSendFileFeature))
-            {
-                feature = (TFeature)_currentIHttpSendFileFeature;
             }
             else if (MaybeExtra != null)
             {
@@ -661,10 +646,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpResetFeature = feature;
             }
-            else if (typeof(TFeature) == typeof(IHttpSendFileFeature))
-            {
-                _currentIHttpSendFileFeature = feature;
-            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -784,10 +765,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpResetFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpResetFeatureType, _currentIHttpResetFeature);
-            }
-            if (_currentIHttpSendFileFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, _currentIHttpSendFileFeature);
             }
 
             if (MaybeExtra != null)

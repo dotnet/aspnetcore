@@ -49,15 +49,9 @@ namespace CodeGenerator
                 "IHttpResetFeature"
             };
 
-            var rareFeatures = new[]
-            {
-                "IHttpSendFileFeature",
-            };
-
             var allFeatures = alwaysFeatures
                 .Concat(commonFeatures)
                 .Concat(sometimesFeatures)
-                .Concat(rareFeatures)
                 .ToArray();
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.

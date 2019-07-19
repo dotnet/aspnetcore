@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             ApplyResponseHeaders(Constants.Status206PartialContent);
 
             string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpSendFileFeature>();
+            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
                 _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);

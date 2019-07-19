@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
-        Task StartAsync(CancellationToken token = default);
+        Task StartAsync(CancellationToken cancellation = default);
 
         /// <summary>
         /// Sends the requested file in the response body. A response may include multiple writes.

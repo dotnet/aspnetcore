@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var memoryStream = new MemoryStream();
             var stream = new BodyWrapperStream(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             stream.Write(buffer, 0, buffer.Length);
 
             Assert.Equal(buffer, memoryStream.ToArray());
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var memoryStream = new MemoryStream();
             var stream = new BodyWrapperStream(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             await stream.WriteAsync(buffer, 0, buffer.Length);
 
             Assert.Equal(buffer, memoryStream.ToArray());
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var stream = new BodyWrapperStream(new DefaultHttpContext(), new MockResponseCompressionProvider(true), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
 
             var path = "testfile1kb.txt";
             await stream.SendFileAsync(path, 0, null, CancellationToken.None);
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var stream = new BodyWrapperStream(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             stream.BeginWrite(buffer, 0, buffer.Length, (o) => {}, null);
 
             Assert.Equal(buffer, memoryStream.ToArray());

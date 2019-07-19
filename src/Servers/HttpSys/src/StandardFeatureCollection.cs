@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
-            { typeof(IHttpSendFileFeature), _identityFunc },
+            { typeof(IHttpResponseBodyFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
