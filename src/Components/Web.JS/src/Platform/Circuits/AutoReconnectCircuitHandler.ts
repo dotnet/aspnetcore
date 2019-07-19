@@ -2,7 +2,7 @@ import { CircuitHandler } from './CircuitHandler';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { ReconnectDisplay } from './ReconnectDisplay';
-import { ILogger, LogLevel } from '../Logging/ILogger';
+import { Logger, LogLevel } from '../Logging/Logger';
 export class AutoReconnectCircuitHandler implements CircuitHandler {
   public static readonly MaxRetries = 5;
 
@@ -12,9 +12,9 @@ export class AutoReconnectCircuitHandler implements CircuitHandler {
 
   public reconnectDisplay: ReconnectDisplay;
 
-  public logger: ILogger;
+  public logger: Logger;
 
-  public constructor(logger: ILogger) {
+  public constructor(logger: Logger) {
     this.logger = logger;
     this.reconnectDisplay = new DefaultReconnectDisplay(document);
     document.addEventListener('DOMContentLoaded', () => {

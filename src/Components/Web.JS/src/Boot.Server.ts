@@ -7,7 +7,7 @@ import { CircuitHandler } from './Platform/Circuits/CircuitHandler';
 import { AutoReconnectCircuitHandler } from './Platform/Circuits/AutoReconnectCircuitHandler';
 import RenderQueue from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
-import { LogLevel, ILogger } from './Platform/Logging/ILogger';
+import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { computeCircuitOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
@@ -78,7 +78,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 }
 
-async function initializeConnection(options: BlazorOptions, circuitHandlers: CircuitHandler[], logger: ILogger): Promise<signalR.HubConnection> {
+async function initializeConnection(options: BlazorOptions, circuitHandlers: CircuitHandler[], logger: Logger): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -127,7 +127,7 @@ async function initializeConnection(options: BlazorOptions, circuitHandlers: Cir
   return connection;
 }
 
-function unhandledError(connection: signalR.HubConnection, err: Error, logger: ILogger): void {
+function unhandledError(connection: signalR.HubConnection, err: Error, logger: Logger): void {
   logger.log(LogLevel.Error, err);
 
   // Disconnect on errors.

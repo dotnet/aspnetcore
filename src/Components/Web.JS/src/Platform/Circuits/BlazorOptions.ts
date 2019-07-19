@@ -1,4 +1,4 @@
-import { LogLevel } from '../Logging/ILogger';
+import { LogLevel } from '../Logging/Logger';
 
 type SignalRBuilder = (builder: signalR.HubConnectionBuilder) => void;
 
