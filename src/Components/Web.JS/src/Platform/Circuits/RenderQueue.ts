@@ -1,23 +1,23 @@
 import { renderBatch } from '../../Rendering/Renderer';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
-import { ILogger, LogLevel } from '../Logging/ILogger';
+import { Logger, LogLevel } from '../Logging/Logger';
 import { HubConnection } from '@aspnet/signalr';
 
-export default class RenderQueue {
+export class RenderQueue {
   private static renderQueues = new Map<number, RenderQueue>();
 
   private nextBatchId = 2;
 
   public browserRendererId: number;
 
-  public logger: ILogger;
+  public logger: Logger;
 
-  public constructor(browserRendererId: number, logger: ILogger) {
+  public constructor(browserRendererId: number, logger: Logger) {
     this.browserRendererId = browserRendererId;
     this.logger = logger;
   }
 
-  public static getOrCreateQueue(browserRendererId: number, logger: ILogger): RenderQueue {
+  public static getOrCreateQueue(browserRendererId: number, logger: Logger): RenderQueue {
     const queue = this.renderQueues.get(browserRendererId);
     if (queue) {
       return queue;
