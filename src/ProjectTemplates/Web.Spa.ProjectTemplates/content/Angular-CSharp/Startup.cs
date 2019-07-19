@@ -104,7 +104,9 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+#if (IndividualAuth)
                 endpoints.MapRazorPages();
+#endif
             });
 
             app.UseSpa(spa =>
