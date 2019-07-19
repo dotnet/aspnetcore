@@ -46,7 +46,6 @@
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
-
   </ItemGroup>
 
   <Choose>
@@ -104,19 +103,16 @@
         <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
-        <NodeJsProjectsForManagedProjects Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" RestoreInParallel="false"/>
         <NodeJsProjects Include="
+                          $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 
-        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects);@(NodeJsProjectsForManagedProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
-
-        <!-- If explicitly disabling NodeJS builds, do not build NodeJsProjectsForManagedProjects, if BuildNodeJS is empty, let managed projects determine whether NodeJsProjectsForManagedProjects is built -->
-        <ProjectToExclude Condition=" '$(BuildNodeJS)' == 'false'" Include="@(NodeJsProjectsForManagedProjects)" />
 
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
@@ -174,10 +170,8 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;" />
 
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(NodeJsProjectsForManagedProjects);@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
-
-        <ProjectToExclude Condition=" '$(BuildManaged)' != 'true' and '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjectsForManagedProjects)" />
       </ItemGroup>
     </Otherwise>
   </Choose>
