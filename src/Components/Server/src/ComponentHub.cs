@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +74,13 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
+            if (CircuitHost != null)
+            {
+                Log.CircuitAlreadyInitialized(_logger, CircuitHost.CircuitId);
+                NotifyClientError(Clients.Caller, $"The circuit host '{CircuitHost.CircuitId}' has already been initialized.");
+                return null;
+            }
+
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
             if (DefaultCircuitFactory.ResolveComponentMetadata(Context.GetHttpContext(), circuitClient).Count == 0)
             {
@@ -129,17 +137,44 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            _ = EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                _ = NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
+        /// <summary>
+        /// Intended for framework use only. Applications should not call this method directly.
+        /// </summary>
         public void EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
         {
-            _ = EnsureCircuitHost().EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                _ = NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
         }
 
+        /// <summary>
+        /// Intended for framework use only. Applications should not call this method directly.
+        /// </summary>
         public void DispatchBrowserEvent(string eventDescriptor, string eventArgs)
         {
-            _ = EnsureCircuitHost().DispatchEvent(eventDescriptor, eventArgs);
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                _ = NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.DispatchEvent(eventDescriptor, eventArgs);
         }
 
         /// <summary>
@@ -147,8 +182,15 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
             Log.ReceivedConfirmationForBatch(_logger, renderId);
-            EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+            CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -161,14 +203,14 @@ namespace Microsoft.AspNetCore.Components.Server
                 Log.UnhandledExceptionInCircuit(_logger, circuitId, (Exception)e.ExceptionObject);
                 if (_options.DetailedErrors)
                 {
-                    await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject.ToString());
+                    await NotifyClientError(circuitHost.Client, e.ExceptionObject.ToString());
                 }
                 else
                 {
                     var message = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
                         $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
 
-                    await circuitHost.Client.SendAsync("JS.Error", message);
+                    await NotifyClientError(circuitHost.Client, message);
                 }
 
                 // We generally can't abort the connection here since this is an async
@@ -181,17 +223,8 @@ namespace Microsoft.AspNetCore.Components.Server
             }
         }
 
-        private CircuitHost EnsureCircuitHost()
-        {
-            var circuitHost = CircuitHost;
-            if (circuitHost == null)
-            {
-                var message = $"The {nameof(CircuitHost)} is null. This is due to an exception thrown during initialization.";
-                throw new InvalidOperationException(message);
-            }
-
-            return circuitHost;
-        }
+        private static Task NotifyClientError(IClientProxy client, string error) =>
+            client.SendAsync("JS.Error", error);
 
         private static class Log
         {
@@ -206,6 +239,13 @@ namespace Microsoft.AspNetCore.Components.Server
 
             private static readonly Action<ILogger, string, Exception> _failedToTransmitException =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "FailedToTransmitException"), "Failed to transmit exception to client in circuit {CircuitId}");
+
+            private static readonly Action<ILogger, string, Exception> _circuitAlreadyInitialized =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
+
+            private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
+
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
@@ -226,6 +266,10 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 _failedToTransmitException(logger, circuitId, transmissionException);
             }
+
+            public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
+
+            public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
         }
     }
 }
