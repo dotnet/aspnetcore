@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(
                 logEvents,
                 e => e.eventIdName == "DispatchEventFailedToDispatchEvent" && e.logLevel == LogLevel.Debug &&
-                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler with ID -1"));
+                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler with ID 1"));
 
             await ValidateClientKeepsWorking(Client, batches);
         }
