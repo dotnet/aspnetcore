@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                             response.Body = originalResponseBody;
                             bufferingStream.Seek(0, SeekOrigin.Begin);
-                            await bufferingStream.CopyToAsync(httpContext.Response.Body);
+                            await bufferingStream.CopyToAsync(response.Body);
                         }
                         finally
                         {

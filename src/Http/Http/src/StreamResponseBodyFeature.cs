@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        public virtual void DisableResponseBuffering()
+        public virtual void DisableBuffering()
         {
         }
 

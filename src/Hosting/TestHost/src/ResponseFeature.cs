@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
         }
 
-        public void DisableResponseBuffering()
+        public void DisableBuffering()
         {
         }
 

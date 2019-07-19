@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Opts out of write buffering for the response.
         /// </summary>
-        void DisableResponseBuffering();
+        void DisableBuffering();
 
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
         /// <param name="cancellation">A <see cref="CancellationToken"/> used to abort the transmission.</param>
         /// <returns></returns>
-        Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation);
+        Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation = default);
 
         /// <summary>
         /// Flush any remaining response headers, data, or trailers.

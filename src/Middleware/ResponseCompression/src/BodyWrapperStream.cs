@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private PipeWriter _pipeAdapter = null;
         private bool _providerCreated = false;
         private bool _autoFlush = false;
+        private bool _complete = false;
 
         internal BodyWrapperStream(HttpContext context, IResponseCompressionProvider provider,
             IHttpResponseBodyFeature innerBodyFeature)
@@ -39,10 +40,18 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         internal async Task FinishCompressionAsync()
         {
+            if (_complete)
+            {
+                return;
+            }
+
+            _complete = true;
+
             if (_pipeAdapter != null)
             {
                 await _pipeAdapter.FlushAsync(); // TODO: CompleteAsync throws ODE.
             }
+
             if (_compressionStream != null)
             {
                 await _compressionStream.DisposeAsync();
@@ -270,7 +279,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         }
 
         // For this to be effective it needs to be called before the first write.
-        public void DisableResponseBuffering()
+        public void DisableBuffering()
         {
             if (ResolveCompressionProvider()?.SupportsFlush == false)
             {
@@ -282,7 +291,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 _autoFlush = true;
             }
-            _innerBodyFeature.DisableResponseBuffering();
+            _innerBodyFeature.DisableBuffering();
         }
 
         // The IHttpSendFileFeature feature will only be registered if _innerSendFileFeature exists.
@@ -343,8 +352,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public async Task CompleteAsync()
         {
+            if (_complete)
+            {
+                return;
+            }
+
             await StartAsync();
-            await FinishCompressionAsync();
+            await FinishCompressionAsync(); // Sets _complete
             await _innerBodyFeature.CompleteAsync();
         }
     }

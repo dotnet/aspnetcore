@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return InitializeResponseAsync(0);
         }
 
-        void IHttpResponseBodyFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
         }
 
