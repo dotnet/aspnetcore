@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             await Client.HubConnection.InvokeAsync(
                 "DispatchBrowserEvent",
-                JsonSerializer.Serialize(browserDescriptor, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }),
+                JsonSerializer.Serialize(browserDescriptor, TestJsonSerializerOptionsProvider.Options),
                 "{Invalid:{\"payload}");
 
             Assert.Contains(
@@ -439,13 +439,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             await Client.HubConnection.InvokeAsync(
                 "DispatchBrowserEvent",
-                JsonSerializer.Serialize(browserDescriptor, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }),
-                JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+                JsonSerializer.Serialize(browserDescriptor, TestJsonSerializerOptionsProvider.Options),
+                JsonSerializer.Serialize(mouseEventArgs, TestJsonSerializerOptionsProvider.Options));
 
             Assert.Contains(
                 logEvents,
                 e => e.eventIdName == "DispatchEventFailedToDispatchEvent" && e.logLevel == LogLevel.Debug &&
-                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler with ID -1"));
+                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler with ID 1"));
 
             await ValidateClientKeepsWorking(Client, batches);
         }
@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 EventArgsType = "mouse",
             };
 
-            var serializerOptions = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var serializerOptions = TestJsonSerializerOptionsProvider.Options;
             var uiArgs = JsonSerializer.Serialize(mouseEventArgs, serializerOptions);
 
             await Assert.ThrowsAsync<TaskCanceledException>(() => Client.InvokeDotNetMethod(
