@@ -130,56 +130,28 @@ export class AuthorizeService {
   //    the response and redirect to the return url or display an error message.
   public async completeSignIn(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
-    let response;
     try {
-      response = await this.getSignInResponse(url);
-      if (!!response.error) {
-        return this.error(`${response.error}: ${response.error_description}`);
-      }
-    } catch (processSignInResponseError) {
-      if (processSignInResponseError.error === 'login_required') {
-        // This error is thrown by the underlying oidc client when it tries to log in
-        // the user silently as in case 1 defined above and the IdP requires the user
-        // to enter credentials. We let the user manager handle the response to notify
-        // the main window.
-        response = processSignInResponseError;
-      } else {
-        console.log('There was an error processing the sign-in response: ', processSignInResponseError);
-        return this.error('There was an error processing the sign-in response.');
-      }
-    }
+      const responseStatePromise = (this.userManager as any).readSigninResponseState(url, this.userManager.settings.stateStore);
+      const { state, response } = await responseStatePromise;
+      if (state.request_type === 'si:r') {
+        const user = await this.userManager.signinRedirectCallback(url);
+        this.userSubject.next(user.profile);
+        return this.success(response.state.userState);
 
-    const authenticationState = response.state as IAuthenticationState;
-    const mode = authenticationState.mode;
+      }
+      if (state.request_type === 'si:p') {
+        await this.userManager.signinPopupCallback(url);
+        return this.success(undefined);
+      }
+      if (state.request_type === 'si:s') {
+        await this.userManager.signinSilentCallback(url);
+        return this.success(undefined);
+      }
 
-    switch (mode) {
-      case LoginMode.Silent:
-        try {
-          await this.userManager.signinSilentCallback(url);
-          return this.success(undefined);
-        } catch (silentCallbackError) {
-          console.log('Silent callback authentication error: ', silentCallbackError);
-          return this.error('Silent callback authentication error');
-        }
-      case LoginMode.PopUp:
-        try {
-          await this.userManager.signinPopupCallback(url);
-          return this.success(undefined);
-        } catch (popupCallbackError) {
-          console.log('Popup callback authentication error: ', popupCallbackError);
-          return this.error('Popup callback authentication error.');
-        }
-      case LoginMode.Redirect:
-        try {
-          const user = await this.userManager.signinRedirectCallback(url);
-          this.userSubject.next(user.profile);
-          return this.success(response.state.userState);
-        } catch (redirectCallbackError) {
-          console.log('Redirect callback authentication error: ', redirectCallbackError);
-          return this.error('Redirect callback authentication error.');
-        }
-      default:
-        throw new Error(`Invalid login mode '${mode}'.`);
+      throw new Error(`Invalid login mode '${state.request_type}'.`);
+    } catch (signInResponseError) {
+      console.log('There was an error signing in', signInResponseError);
+      return this.error('Sing in callback authentication error.');
     }
   }
 
@@ -318,9 +290,6 @@ export class AuthorizeService {
     const settings: any = await response.json();
     settings.automaticSilentRenew = true;
     settings.includeIdTokenInSilentRenew = true;
-    settings.userStore = new WebStorageStateStore({
-      prefix: ApplicationName
-    });
     this.userManager = new UserManager(settings);
 
     this.userManager.events.addUserSignedOut(async () => {
