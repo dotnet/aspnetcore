@@ -127,9 +127,7 @@
         <!-- These projects have a transitive dependency on Microsoft.AspNetCore.Components.Web.JS exclude these projects if we are not building NodeJS -->
         <!-- Do not skip these projects on the CI since we don't want to accidentally miss building artifacts -->
         <DotnetProjectsTransitiveNodeJsDependencies Include="
-                          $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
-                          $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
-                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Framework\**\*.csproj;
                           $(RepoRoot)src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
