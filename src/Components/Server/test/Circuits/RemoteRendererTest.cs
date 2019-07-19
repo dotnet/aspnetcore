@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             component.TriggerRender();
 
             // Assert
-            Assert.Equal(2, renderer.PendingRenderBatches.Count);
+            Assert.Equal(2, renderer.UnacknowledgedRenderBatches.Count);
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             offlineClient.Transfer(onlineClient.Object, "new-connection");
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             offlineClient.Transfer(onlineClient.Object, "new-connection");
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             var exceptions = new List<Exception>();
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // Assert
             Assert.Empty(exceptions);
-            Assert.Empty(renderer.PendingRenderBatches);
+            Assert.Empty(renderer.UnacknowledgedRenderBatches);
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             var exceptions = new List<Exception>();
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // Assert
             Assert.Equal(0, first.ComponentId);
             Assert.Equal(1, second.ComponentId);
-            Assert.Equal(2, renderer.PendingRenderBatches.Count);
+            Assert.Equal(2, renderer.UnacknowledgedRenderBatches.Count);
         }
 
         private RemoteRenderer GetRemoteRenderer(IServiceProvider serviceProvider, CircuitClientProxy circuitClientProxy)

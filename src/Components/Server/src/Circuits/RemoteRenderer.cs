@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             _logger = logger;
         }
 
-        internal ConcurrentQueue<PendingRender> PendingRenderBatches = new ConcurrentQueue<PendingRender>();
+        internal ConcurrentQueue<UnacknowledgedRenderBatch> UnacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         {
             _disposing = true;
             _rendererRegistry.TryRemove(Id);
-            while (PendingRenderBatches.TryDequeue(out var entry))
+            while (UnacknowledgedRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
                 entry.Data.Dispose();
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // snapshot its contents now.
             var arrayBuilder = new ArrayBuilder<byte>(2048);
             using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
-            PendingRender pendingRender;
+            UnacknowledgedRenderBatch pendingRender;
             try
             {
                 using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 var renderId = Interlocked.Increment(ref _nextRenderId);
 
-                pendingRender = new PendingRender(
+                pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
                     new TaskCompletionSource<object>());
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
 
-                PendingRenderBatches.Enqueue(pendingRender);
+                UnacknowledgedRenderBatches.Enqueue(pendingRender);
             }
             catch
             {
@@ -164,10 +164,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // All the batches are sent in order based on the fact that SignalR
             // provides ordering for the underlying messages and that the batches
             // are always in order.
-            return Task.WhenAll(PendingRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+            return Task.WhenAll(UnacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
         }
 
-        private async Task WriteBatchBytesAsync(PendingRender pending)
+        private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)
         {
             // Send the render batch to the client
             // If the "send" operation fails (synchronously or asynchronously) or the client
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
 
-            if (!PendingRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
+            if (!UnacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
                 Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
             }
@@ -239,10 +239,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             {
                 var lastBatchId = nextUnacknowledgedBatch.BatchId;
                 // Order is important here so that we don't prematurely dequeue the last nextUnacknowledgedBatch
-                while (PendingRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
+                while (UnacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
                 {
                     lastBatchId = nextUnacknowledgedBatch.BatchId;
-                    PendingRenderBatches.TryDequeue(out _);
+                    UnacknowledgedRenderBatches.TryDequeue(out _);
                     ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
                 }
 
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
         }
 
-        private void ProcessPendingBatch(string errorMessageOrNull, PendingRender entry)
+        private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry)
         {
             if (errorMessageOrNull == null)
             {
@@ -281,9 +281,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
         }
 
-        internal readonly struct PendingRender
+        internal readonly struct UnacknowledgedRenderBatch
         {
-            public PendingRender(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
             {
                 BatchId = batchId;
                 Data = data;
