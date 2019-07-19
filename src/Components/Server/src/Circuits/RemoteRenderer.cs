@@ -210,7 +210,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // When clients send acks we know for sure they received and applied the batch.
             // We send batches right away, and hold them in memory until we receive an ACK.
-            // If one or more client ACKs get lost (e.g., with long polling, client->server delivery is not guaranteed) we might receive an ack for a higher batch.
+            // If one or more client ACKs get lost (e.g., with long polling, client->server delivery is not guaranteed)
+            // we might receive an ack for a higher batch.
             // We confirm all previous batches at that point (because receiving an ack is guarantee
             // from the client that it has received and successfully applied all batches up to that point).
 
@@ -224,7 +225,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // In this case, once it reconnects the server will re-send any unacknowledged batches, some of which the
             // client might have received and even believe it did send back an acknowledgement for. The client handles
             // those by re-acknowledging.
-            // it was expecting a previous batch, it can simply force a reconnection.
 
             // Even though we're not on the renderer sync context here, it's safe to assume ordered execution of the following
             // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
