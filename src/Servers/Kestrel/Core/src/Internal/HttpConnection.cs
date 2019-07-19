@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class HttpConnection : ITimeoutHandler
     {
-        private static readonly ReadOnlyMemory<byte> Http2Id = new[] { (byte)'h', (byte)'2' };
+        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
+        private static ReadOnlySpan<byte> Http2Id => new[] { (byte)'h', (byte)'2' };
 
         private readonly HttpConnectionContext _context;
         private readonly ISystemClock _systemClock;
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         break;
                     case HttpProtocols.None:
                         // An error was already logged in SelectProtocol(), but we should close the connection.
-                        Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
+                        _context.ConnectionContext.Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
                         break;
                     default:
                         // SelectProtocol() only returns Http1, Http2 or None.
@@ -130,9 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 switch (_protocolSelectionState)
                 {
-                    case ProtocolSelectionState.Initializing:
-                        _protocolSelectionState = ProtocolSelectionState.Aborted;
-                        break;
                     case ProtocolSelectionState.Selected:
                     case ProtocolSelectionState.Aborted:
                         break;
@@ -141,9 +139,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             switch (previousState)
             {
-                case ProtocolSelectionState.Initializing:
-                    _context.ConnectionContext.Abort(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
-                    break;
                 case ProtocolSelectionState.Selected:
                     _requestProcessor.StopProcessingNextRequest();
                     break;
@@ -161,9 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 switch (_protocolSelectionState)
                 {
-                    case ProtocolSelectionState.Initializing:
-                        _protocolSelectionState = ProtocolSelectionState.Aborted;
-                        break;
                     case ProtocolSelectionState.Selected:
                     case ProtocolSelectionState.Aborted:
                         break;
@@ -172,12 +164,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             switch (previousState)
             {
-                case ProtocolSelectionState.Initializing:
-                    // ConnectionClosed callback is not wired up until after leaving the Initializing state.
-                    Debug.Assert(false);
-
-                    _context.ConnectionContext.Abort(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
-                    break;
                 case ProtocolSelectionState.Selected:
                     _requestProcessor.OnInputOrOutputCompleted();
                     break;
@@ -198,9 +184,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             switch (previousState)
             {
-                case ProtocolSelectionState.Initializing:
-                    _context.ConnectionContext.Abort(ex);
-                    break;
                 case ProtocolSelectionState.Selected:
                     _requestProcessor.Abort(ex);
                     break;
@@ -224,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 error = CoreStrings.EndPointRequiresAtLeastOneProtocol;
             }
 
-            if (!http1Enabled && http2Enabled && hasTls && !Http2Id.Span.SequenceEqual(applicationProtocol.Span))
+            if (!http1Enabled && http2Enabled && hasTls && !Http2Id.SequenceEqual(applicationProtocol.Span))
             {
                 error = CoreStrings.EndPointHttp2NotNegotiated;
             }
@@ -241,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return HttpProtocols.Http1;
             }
 
-            return http2Enabled && (!hasTls || Http2Id.Span.SequenceEqual(applicationProtocol.Span)) ? HttpProtocols.Http2 : HttpProtocols.Http1;
+            return http2Enabled && (!hasTls || Http2Id.SequenceEqual(applicationProtocol.Span)) ? HttpProtocols.Http2 : HttpProtocols.Http1;
         }
 
         private void Tick()
