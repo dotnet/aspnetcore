@@ -21,6 +21,48 @@ namespace Microsoft.AspNetCore.Routing
     public class EndpointRoutingMiddlewareTest
     {
         [Fact]
+        public async Task Invoke_ChangedPath_ResultsInDifferentResult()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            var matcher = new Mock<Matcher>();
+            var pathToEndpoints = new Dictionary<string, Endpoint>()
+            {
+                ["/initial"] = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "initialEndpoint"),
+                ["/changed"] = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "changedEndpoint")
+            };
+            matcher.Setup(m => m.MatchAsync(httpContext))
+                .Callback<HttpContext>(context =>
+                {
+                    var endpointToSet = pathToEndpoints[context.Request.Path];
+                    context.SetEndpoint(endpointToSet);
+                })
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            var matcherFactory = Mock.Of<MatcherFactory>(factory => factory.CreateMatcher(It.IsAny<EndpointDataSource>()) == matcher.Object);
+            var middleware = CreateMiddleware(
+                matcherFactory: matcherFactory,
+                next: context =>
+                {
+                    Assert.True(pathToEndpoints.TryGetValue(context.Request.Path, out var expectedEndpoint));
+
+                    var currentEndpoint = context.GetEndpoint();
+                    Assert.Equal(expectedEndpoint, currentEndpoint);
+
+                    return Task.CompletedTask;
+                });
+
+            // Act
+            httpContext.Request.Path = "/initial";
+            await middleware.Invoke(httpContext);
+            httpContext.Request.Path = "/changed";
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            matcher.Verify();
+        }
+
+        [Fact]
         public async Task Invoke_OnException_ResetsEndpoint()
         {
             // Arrange
