@@ -619,17 +619,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Append(RenderTreeFrame.ComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue));
         }
 
-        // Internal for tests
-        // Not public because there's no current use case for user code defining regions arbitrarily.
-        // Currently the sole use case for regions is when appending a RenderFragment.
-        internal void OpenRegion(int sequence)
+        /// <summary>
+        /// Appends a frame representing a region of frames.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        public  void OpenRegion(int sequence)
         {
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));
         }
 
-        // See above for why this is not public
-        internal void CloseRegion()
+        /// <summary>
+        /// Marks a previously appended region frame as closed. Calls to this method
+        /// must be balanced with calls to <see cref="OpenRegion(int)"/>.
+        /// </summary>
+        public void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];

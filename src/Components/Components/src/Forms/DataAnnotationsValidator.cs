@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 throw new InvalidOperationException($"{nameof(DataAnnotationsValidator)} requires a cascading " +
                     $"parameter of type {nameof(EditContext)}. For example, you can use {nameof(DataAnnotationsValidator)} " +
-                    $"inside an {nameof(EditForm)}.");
+                    $"inside an EditForm.");
             }
 
             CurrentEditContext.AddDataAnnotationsValidation();
