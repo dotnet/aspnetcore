@@ -16,15 +16,24 @@
   </ItemGroup>
 
   <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+    <Error Text="OpenAPI document generation is disabled. Add '<OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>' to the project."
+        Condition=" '$(OpenApiGenerateDocuments)' != 'true' " />
+
     <ReadLinesFromFile File="$(_OpenApiDocumentsCache)">
       <Output TaskParameter="Lines" ItemName="_OpenApiProjectDocuments" />
     </ReadLinesFromFile>
+
+    <Warning Text="Application does not have any registered documents. Update its 'Startup' class to register a document."
+        Condition=" '@(_OpenApiProjectDocuments)' == '' " />
   </Target>
 
   <Target Name="GenerateOpenApiDocuments"
       Condition=" '$(OpenApiGenerateDocuments)' == 'true' "
       Inputs="$(TargetPath)"
       Outputs="$(_OpenApiDocumentsCache)">
+    <Error Text="OpenAPI document generation is not supported when targeting netcoreapp2.0 or earlier. Disable the feature or move to a later target framework."
+        Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' " />
+
     <PropertyGroup>
       <_Command>dotnet "$(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_Command>
       <_Command>$(_Command) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_Command>
