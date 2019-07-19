@@ -131,9 +131,8 @@ export class AuthorizeService {
   public async completeSignIn(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
-      const responseStatePromise = (this.userManager as any).readSigninResponseState(url, this.userManager.settings.stateStore);
-      const { state, response } = await responseStatePromise;
-      if (state.request_type === 'si:r') {
+      const { state, response } = await (this.userManager as any).readSigninResponseState(url, this.userManager.settings.stateStore);
+      if (state.request_type === 'si:r' || !state.request_type) {
         const user = await this.userManager.signinRedirectCallback(url);
         this.userSubject.next(user.profile);
         return this.success(response.state.userState);
@@ -186,74 +185,23 @@ export class AuthorizeService {
   //    the response and redirect to the logged-out url or display an error message.
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
-    let response;
     try {
-      response = await await this.getSignOutResponse(url);
-    } catch (processSignOutResponseError) {
-      console.log('There was an error processing the sign-out response: ', processSignOutResponseError);
-      response = processSignOutResponseError;
-    }
-
-    if (!!response.error) {
-      return this.error(`${response.error}: ${response.error_description}`);
-    }
-
-    const authenticationState = response.state as IAuthenticationState;
-    const mode = (authenticationState && authenticationState.mode) ||
-      !!window.opener ? LoginMode.PopUp : LoginMode.Redirect;
-
-    switch (mode) {
-      case LoginMode.PopUp:
-        try {
-          await this.userManager.signoutPopupCallback(url);
-          return this.success(response.state && response.state.userState);
-        } catch (popupCallbackError) {
-          console.log('Popup signout callback error: ', popupCallbackError);
-          return this.error('Popup signout callback error');
-        }
-      case LoginMode.Redirect:
-        try {
+      const { state, response } = await this.userManager.readSignoutResponseState(url, this.userManager.settings.stateStore);
+      if (state) {
+        if (state.request_type === 'so:r') {
           await this.userManager.signoutRedirectCallback(url);
           this.userSubject.next(null);
           return this.success(response.state.userState);
-        } catch (redirectCallbackError) {
-          console.log('Redirect signout callback error: ', redirectCallbackError);
-          return this.error('Redirect signout callback error');
         }
-      default:
-        throw new Error(`Invalid LoginMode '${mode}'.`);
-    }
-  }
-
-  private async getSignInResponse(url: string) {
-    const keys = await this.userManager.settings.stateStore.getAllKeys();
-    const states = keys.map(key => ({ key, state: this.userManager.settings.stateStore.get(key) }));
-    for (const state of states) {
-      state.state = await state.state;
-    }
-    try {
-      const response = await this.userManager.processSigninResponse(url);
-      return response;
-    } finally {
-      for (const state of states) {
-        await this.userManager.settings.stateStore.set(state.key, state.state);
+        if (state.request_type === 'so:p') {
+          await this.userManager.signoutPopupCallback(url);
+          return this.success(response.state && response.state.userState);
+        }
+        throw new Error(`Invalid login mode '${state.request_type}'.`);
       }
-    }
-  }
-
-  private async getSignOutResponse(url: string) {
-    const keys = await this.userManager.settings.stateStore.getAllKeys();
-    const states = keys.map(key => ({ key, state: this.userManager.settings.stateStore.get(key) }));
-    for (const state of states) {
-      state.state = await state.state;
-    }
-    try {
-      const response = await this.userManager.processSignoutResponse(url);
-      return response;
-    } finally {
-      for (const state of states) {
-        await this.userManager.settings.stateStore.set(state.key, state.state);
-      }
+    } catch (signInResponseError) {
+      console.log('There was an error signing out', signInResponseError);
+      return this.error('Sing out callback authentication error.');
     }
   }
 
