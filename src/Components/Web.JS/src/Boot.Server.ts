@@ -23,7 +23,8 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   // Establish options to be used
   const options = resolveOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
-  options.reconnectionHandler = options.reconnectionHandler || new DefaultReconnectionHandler(logger);
+  window['Blazor'].defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
+  options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
   // Initialize statefully prerendered circuits and their components
