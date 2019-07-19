@@ -230,25 +230,24 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
+
             if (!PendingRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
-                HandleException(
-                    new InvalidOperationException($"Received a duplicate ACK for batch id '{incomingBatchId}'."));
+                Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
             }
             else
             {
-                var lastBatchId = entry.BatchId;
-                // Order is important here so that we don't prematurely dequeue the last entry
-                while (PendingRenderBatches.TryPeek(out entry) && entry.BatchId <= incomingBatchId)
+                var lastBatchId = nextUnacknowledgedBatch.BatchId;
+                // Order is important here so that we don't prematurely dequeue the last nextUnacknowledgedBatch
+                while (PendingRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
                 {
-                    lastBatchId = entry.BatchId;
+                    lastBatchId = nextUnacknowledgedBatch.BatchId;
                     PendingRenderBatches.TryDequeue(out _);
-                    ProcessPendingBatch(errorMessageOrNull, entry);
+                    ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
                 }
 
                 if (lastBatchId < incomingBatchId)
                 {
-                    Log.ReceivedUnexpectedBatchId(_logger, incomingBatchId, lastBatchId);
                     HandleException(
                         new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
                 }
@@ -314,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
             private static readonly Action<ILogger, long, string, Exception> _completingBatchWithError;
             private static readonly Action<ILogger, long, Exception> _completingBatchWithoutError;
-            private static readonly Action<ILogger, long, long, Exception> _receivedUnexpectedBatchId;
+            private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
 
             private static class EventIds
             {
@@ -324,7 +323,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
                 public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
                 public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
-                public static readonly EventId ReceivedUnexpectedBatchId = new EventId(106, "ReceivedUnexpectedBatchId");
+                public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
             }
 
             static Log()
@@ -359,10 +358,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     EventIds.CompletingBatchWithoutError,
                     "Completing batch {BatchId} without error");
 
-                _receivedUnexpectedBatchId = LoggerMessage.Define<long, long>(
+                _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
                     LogLevel.Debug,
-                    EventIds.ReceivedUnexpectedBatchId,
-                    "Received an acknowledgement for batch with id '{IncomingBatchId}' when the last batch produced was '{LastBatchId}'.");
+                    EventIds.ReceivedDuplicateBatchAcknowledgement,
+                    "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -413,9 +412,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     null);
             }
 
-            internal static void ReceivedUnexpectedBatchId(ILogger logger, long incomingBatchId, long lastBatchId)
+            internal static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
             {
-                _receivedUnexpectedBatchId(logger, incomingBatchId, lastBatchId, null);
+                _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
             }
         }
     }

@@ -8,7 +8,7 @@ export class RenderQueue {
 
   private nextBatchId = 2;
 
-  private lastError?: string;
+  private fatalError?: string;
 
   public browserRendererId: number;
 
@@ -41,9 +41,9 @@ export class RenderQueue {
     }
 
     if (receivedBatchId > this.nextBatchId) {
-      if (this.lastError) {
+      if (this.fatalError) {
         this.logger.log(LogLevel.Debug, `Received a new batch ${receivedBatchId} but errored out on a previous batch ${this.nextBatchId - 1}`);
-        await connection.send('OnRenderCompleted', this.nextBatchId - 1, this.lastError.toString());
+        await connection.send('OnRenderCompleted', this.nextBatchId - 1, this.fatalError.toString());
         return;
       }
 
@@ -57,7 +57,7 @@ export class RenderQueue {
       renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
       await this.completeBatch(connection, receivedBatchId);
     } catch (error) {
-      this.lastError = error.toString();
+      this.fatalError = error.toString();
       this.logger.log(LogLevel.Error, `There was an error applying batch ${receivedBatchId}.`);
 
       // If there's a rendering exception, notify server *and* throw on client
