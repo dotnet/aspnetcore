@@ -476,16 +476,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async Task ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
+        public async Task ServesCachedContent_IfIHttpSendFileFeature_Used()
         {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(app =>
-            {
-                app.Use(async (context, next) =>
+            var builders = TestUtils.CreateBuildersWithResponseCaching(
+                app =>
                 {
-                    context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                    await next.Invoke();
-                });
-            });
+                    app.Use(async (context, next) =>
+                    {
+                        var oldFeature = context.Features.Get<IHttpResponseBodyFeature>();
+                        context.Features.Set<IHttpResponseBodyFeature>(new DummySendFileFeature(oldFeature));
+                        await next.Invoke();
+                    });
+                },
+                contextAction: async context => await context.Features.Get<IHttpResponseBodyFeature>().SendFileAsync("dummy", 0, 0, CancellationToken.None));
 
             foreach (var builder in builders)
             {
@@ -496,33 +499,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     var subsequentResponse = await client.GetAsync("");
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task ServesFreshContent_IfIHttpSendFileFeature_Used()
-        {
-            var builders = TestUtils.CreateBuildersWithResponseCaching(
-                app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        context.Features.Set<IHttpSendFileFeature>(new DummySendFileFeature());
-                        await next.Invoke();
-                    });
-                },
-                contextAction: async context => await context.Features.Get<IHttpSendFileFeature>().SendFileAsync("dummy", 0, 0, CancellationToken.None));
-
-            foreach (var builder in builders)
-            {
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    var initialResponse = await client.GetAsync("");
-                    var subsequentResponse = await client.GetAsync("");
-
-                    await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
             }
         }
