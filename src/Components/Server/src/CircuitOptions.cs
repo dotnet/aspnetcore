@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Components.Server
 {
     /// <summary>
-    /// Options to configure ASP.NET Core Components.
+    /// Options to configure circuit handler for server-side Blazor 
     /// </summary>
-    public class CircuitOptions
+    public sealed class CircuitOptions
     {
         /// <summary>
         /// Gets or sets a value that determines the maximum number of disconnected circuit state details
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <value>
         /// Defaults to <c>100</c>.
         /// </value>
-        public int MaxRetainedDisconnectedCircuits { get; set; } = 100;
+        public int DisconnectedCircuitMaxRetained { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets a value that determines the maximum duration state for a disconnected circuit is
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </para>
         /// <para>
         /// This value determines the maximium duration circuit state is retained by the server before being evicted.
-        /// <seealso cref="MaxRetainedDisconnectedCircuits"/>
+        /// <seealso cref="DisconnectedCircuitMaxRetained"/>
         /// </para>
         /// </summary>
         /// <value>
