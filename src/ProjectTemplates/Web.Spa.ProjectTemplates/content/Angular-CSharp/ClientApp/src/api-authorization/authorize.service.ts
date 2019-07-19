@@ -201,7 +201,7 @@ export class AuthorizeService {
       }
     } catch (signInResponseError) {
       console.log('There was an error signing out', signInResponseError);
-      return this.error('Sing out callback authentication error.');
+      return this.error('Sign out callback authentication error.');
     }
   }
 
