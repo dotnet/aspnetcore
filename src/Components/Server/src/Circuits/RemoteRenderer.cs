@@ -265,6 +265,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
             }
 
+            entry.Data.Dispose();
             CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
