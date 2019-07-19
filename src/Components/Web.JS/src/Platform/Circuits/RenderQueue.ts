@@ -3,7 +3,7 @@ import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProces
 import { Logger, LogLevel } from '../Logging/Logger';
 import { HubConnection } from '@aspnet/signalr';
 
-export default class RenderQueue {
+export class RenderQueue {
   private static renderQueues = new Map<number, RenderQueue>();
 
   private nextBatchId = 2;

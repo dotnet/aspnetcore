@@ -3,14 +3,13 @@ import './GlobalExports';
 import * as signalR from '@aspnet/signalr';
 import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
 import { shouldAutoStart } from './BootCommon';
-import { CircuitHandler } from './Platform/Circuits/CircuitHandler';
-import { AutoReconnectCircuitHandler } from './Platform/Circuits/AutoReconnectCircuitHandler';
-import RenderQueue from './Platform/Circuits/RenderQueue';
+import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
-import { computeCircuitOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
+import { resolveOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
+import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 
 let renderingFailed = false;
 let started = false;
@@ -22,14 +21,14 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   started = true;
 
   // Establish options to be used
-  const options = computeCircuitOptions(userOptions);
+  const options = resolveOptions(userOptions);
   const logger = new ConsoleLogger(options.logLevel);
+  options.reconnectionHandler = options.reconnectionHandler || new DefaultReconnectionHandler(logger);
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
   // Initialize statefully prerendered circuits and their components
   // Note: This will all be removed soon
-  const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(options.reconnectionOptions, logger)];
-  const initialConnection = await initializeConnection(options, circuitHandlers, logger);
+  const initialConnection = await initializeConnection(options, logger);
   const circuits = discoverPrerenderedCircuits(document);
   for (let i = 0; i < circuits.length; i++) {
     const circuit = circuits[i];
@@ -49,18 +48,18 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
       // We can't reconnect after a failure, so exit early.
       return false;
     }
-    const reconnection = existingConnection || await initializeConnection(options, circuitHandlers, logger);
+    const reconnection = existingConnection || await initializeConnection(options, logger);
     const results = await Promise.all(circuits.map(circuit => circuit.reconnect(reconnection)));
 
     if (reconnectionFailed(results)) {
       return false;
     }
 
-    circuitHandlers.forEach(h => h.onConnectionUp && h.onConnectionUp());
+    options.reconnectionHandler!.onConnectionUp();
+
     return true;
   };
 
-  window['Blazor'].circuitHandlers = circuitHandlers;
   window['Blazor'].reconnect = reconnect;
 
   const reconnectTask = reconnect(initialConnection);
@@ -78,7 +77,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   }
 }
 
-async function initializeConnection(options: BlazorOptions, circuitHandlers: CircuitHandler[], logger: Logger): Promise<signalR.HubConnection> {
+async function initializeConnection(options: BlazorOptions, logger: Logger): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -104,7 +103,7 @@ async function initializeConnection(options: BlazorOptions, circuitHandlers: Cir
     queue.processBatch(batchId, batchData, connection);
   });
 
-  connection.onclose(error => !renderingFailed && circuitHandlers.forEach(h => h.onConnectionDown && h.onConnectionDown(error)));
+  connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
   connection.on('JS.Error', error => unhandledError(connection, error, logger));
 
   window['Blazor']._internal.forceCloseConnection = () => connection.stop();

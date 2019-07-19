@@ -4,9 +4,10 @@ export interface BlazorOptions {
   configureSignalR: (builder: signalR.HubConnectionBuilder) => void;
   logLevel: LogLevel;
   reconnectionOptions: ReconnectionOptions;
+  reconnectionHandler?: ReconnectionHandler;
 }
 
-export function computeCircuitOptions(userOptions?: Partial<BlazorOptions>): BlazorOptions {
+export function resolveOptions(userOptions?: Partial<BlazorOptions>): BlazorOptions {
     const result = { ...defaultOptions, ...userOptions };
 
     // The spread operator can't be used for a deep merge, so do the same for subproperties
@@ -21,6 +22,11 @@ export interface ReconnectionOptions {
   maxRetries: number;
   retryIntervalMilliseconds: number;
   dialogId: string;
+}
+
+export interface ReconnectionHandler {
+  onConnectionDown(options: ReconnectionOptions, error?: Error): void;
+  onConnectionUp(): void;
 }
 
 const defaultOptions: BlazorOptions = {
