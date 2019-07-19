@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Supplies information about a mouse event that is being raised.
+    /// Supplies information about a pointer event that is being raised.
     /// </summary>
     public class UIPointerEventArgs : UIMouseEventArgs
     {

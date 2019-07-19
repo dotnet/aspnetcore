@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components
         public double ClientX { get; set; }
 
         /// <summary>
-        /// 	The Y coordinate of the mouse pointer in local (DOM content) coordinates.
+        /// The Y coordinate of the mouse pointer in local (DOM content) coordinates.
         /// </summary>
         public double ClientY { get; set; }
 
@@ -55,22 +55,22 @@ namespace Microsoft.AspNetCore.Components
         public long Buttons { get; set; }
 
         /// <summary>
-        /// true if the control key was down when the event was fired. false otherwise.
+        /// <c>true</c> if the control key was down when the event was fired. <c>false</c> otherwise.
         /// </summary>
         public bool CtrlKey { get; set; }
 
         /// <summary>
-        /// true if the shift key was down when the event was fired. false otherwise.
+        /// <c>true</c> if the shift key was down when the event was fired. <c>false</c> otherwise.
         /// </summary>
         public bool ShiftKey { get; set; }
 
         /// <summary>
-        /// true if the alt key was down when the event was fired. false otherwise.
+        /// <c>true</c> if the alt key was down when the event was fired. <c>false</c> otherwise.
         /// </summary>
         public bool AltKey { get; set; }
 
         /// <summary>
-        /// true if the meta key was down when the event was fired. false otherwise.
+        /// <c>true</c> if the meta key was down when the event was fired. <c>false</c> otherwise.
         /// </summary>
         public bool MetaKey { get; set; }
     }
