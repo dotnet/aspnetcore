@@ -186,7 +186,7 @@ export class AuthorizeService {
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
-      const { state, response } = await this.userManager.readSignoutResponseState(url, this.userManager.settings.stateStore);
+      const { state, response } = await (this.userManager as any).readSignoutResponseState(url, this.userManager.settings.stateStore);
       if (state) {
         if (state.request_type === 'so:r') {
           await this.userManager.signoutRedirectCallback(url);
