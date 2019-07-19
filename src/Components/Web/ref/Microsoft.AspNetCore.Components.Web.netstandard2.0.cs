@@ -9,6 +9,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         public static string FieldClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Components.Routing
+{
+    public enum NavLinkMatch
+    {
+        Prefix = 0,
+        All = 1,
+    }
+}
 namespace Microsoft.AspNetCore.Components.Web
 {
     public static partial class RendererRegistryEventDispatcher

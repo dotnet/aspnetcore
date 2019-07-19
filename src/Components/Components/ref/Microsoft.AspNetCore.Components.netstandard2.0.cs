@@ -848,9 +848,4 @@ namespace Microsoft.AspNetCore.Components.Routing
         public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public enum NavLinkMatch
-    {
-        Prefix = 0,
-        All = 1,
-    }
 }

@@ -118,39 +118,3 @@ namespace Microsoft.AspNetCore.Components
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 }
-
-namespace Microsoft.AspNetCore.Components.Routing
-{
-    public partial class NavLink : Microsoft.AspNetCore.Components.IComponent, System.IDisposable
-    {
-        public NavLink() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string ActiveClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues = true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public RenderFragment ChildContent { get; set; }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.Routing.NavLinkMatch Match { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public void Dispose() { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
-
-    public partial class Router : Microsoft.AspNetCore.Components.IComponent, System.IDisposable
-    {
-        public Router() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Reflection.Assembly AppAssembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment NotFoundContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<AuthenticationState> NotAuthorizedContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
-        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public void Dispose() { }
-        protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
-}
