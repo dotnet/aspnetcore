@@ -24,7 +24,11 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreExitCode="true" >
+      <Output TaskParameter="ExitCode" PropertyName="YarnExitCode" />
+    </Yarn>
+
+    <Error Condition="'$(YarnExitCode)' != '0'" Text="Yarn exited with non-zero exit code: $(YarnExitCode). Ensure NodeJS is installed or exclude NodeJS with -NoBuildNodeJS (cmd), --no-build-nodejs (sh) or /p:BuildNodeJS=false (dotnet cli)." />
   </Target>
 
   <Target Name="PrepareForBuild">
