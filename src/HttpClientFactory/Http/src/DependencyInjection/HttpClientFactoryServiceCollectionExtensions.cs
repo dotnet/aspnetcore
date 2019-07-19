@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Typed Clients
             //
             services.TryAdd(ServiceDescriptor.Transient(typeof(ITypedHttpClientFactory<>), typeof(DefaultTypedHttpClientFactory<>)));
-            services.TryAdd(ServiceDescriptor.Transient(typeof(DefaultTypedHttpClientFactory<>.Cache), typeof(DefaultTypedHttpClientFactory<>.Cache)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(DefaultTypedHttpClientFactory<>.Cache), typeof(DefaultTypedHttpClientFactory<>.Cache)));
 
             //
             // Misc infrastructure
