@@ -131,11 +131,11 @@ export class AuthorizeService {
   public async completeSignIn(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
-      const { state, response } = await (this.userManager as any).readSigninResponseState(url, this.userManager.settings.stateStore);
+      const { state } = await (this.userManager as any).readSigninResponseState(url, this.userManager.settings.stateStore);
       if (state.request_type === 'si:r' || !state.request_type) {
         const user = await this.userManager.signinRedirectCallback(url);
         this.userSubject.next(user.profile);
-        return this.success(response.state.userState);
+        return this.success(state.data.userState);
 
       }
       if (state.request_type === 'si:p') {
@@ -186,16 +186,16 @@ export class AuthorizeService {
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
-      const { state, response } = await (this.userManager as any).readSignoutResponseState(url, this.userManager.settings.stateStore);
+      const { state } = await (this.userManager as any).readSignoutResponseState(url, this.userManager.settings.stateStore);
       if (state) {
         if (state.request_type === 'so:r') {
           await this.userManager.signoutRedirectCallback(url);
           this.userSubject.next(null);
-          return this.success(response.state.userState);
+          return this.success(state.data.userState);
         }
         if (state.request_type === 'so:p') {
           await this.userManager.signoutPopupCallback(url);
-          return this.success(response.state && response.state.userState);
+          return this.success(state.data && state.data.userState);
         }
         throw new Error(`Invalid login mode '${state.request_type}'.`);
       }
