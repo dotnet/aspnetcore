@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Http.Performance
 {
-    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class LoggingOverheadBenchmark
     {
         private const int Iterations = 100;

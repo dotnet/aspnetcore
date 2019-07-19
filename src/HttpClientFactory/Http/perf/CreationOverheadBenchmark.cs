@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Performance
 {
-    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class CreationOverheadBenchmark
     {
         private const int Iterations = 100;
