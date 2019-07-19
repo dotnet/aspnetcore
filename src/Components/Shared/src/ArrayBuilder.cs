@@ -6,7 +6,11 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+#if COMPONENTS_SERVER
+namespace Microsoft.AspNetCore.Components.Web.Rendering
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree
+#endif
 {
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.
@@ -153,22 +157,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _items = Empty;
             _itemsInUse = 0;
         }
-
-        /// <summary>
-        /// Produces an <see cref="ArrayRange{T}"/> structure describing the current contents.
-        /// </summary>
-        /// <returns>The <see cref="ArrayRange{T}"/>.</returns>
-        public ArrayRange<T> ToRange()
-            => new ArrayRange<T>(_items, _itemsInUse);
-
-        /// <summary>
-        /// Produces an <see cref="ArrayBuilderSegment{T}"/> structure describing the selected contents.
-        /// </summary>
-        /// <param name="fromIndexInclusive">The index of the first item in the segment.</param>
-        /// <param name="toIndexExclusive">One plus the index of the last item in the segment.</param>
-        /// <returns>The <see cref="ArraySegment{T}"/>.</returns>
-        public ArrayBuilderSegment<T> ToSegment(int fromIndexInclusive, int toIndexExclusive)
-            => new ArrayBuilderSegment<T>(this, fromIndexInclusive, toIndexExclusive - fromIndexInclusive);
 
         private void GrowBuffer(int desiredCapacity)
         {
