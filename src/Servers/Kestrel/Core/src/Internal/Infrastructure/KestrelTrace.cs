@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -111,11 +110,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(38, nameof(HPackEncodingError)),
                 @"Connection id ""{ConnectionId}"": HPACK encoding error while encoding headers for stream ID {StreamId}.");
 
+        private static readonly Action<ILogger, string, Exception> _connectionAccepted =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, nameof(ConnectionAccepted)), @"Connection id ""{ConnectionId}"" accepted.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
         {
             _logger = logger;
+        }
+
+        public virtual void ConnectionAccepted(string connectionId)
+        {
+            _connectionAccepted(_logger, connectionId, null);
         }
 
         public virtual void ConnectionStart(string connectionId)

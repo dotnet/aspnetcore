@@ -186,8 +186,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             try
             {
-                _serviceContext.ConnectionManager.AddConnection(_id, this);
-
                 Logger.ConnectionStart(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStart(connectionContext);
 
