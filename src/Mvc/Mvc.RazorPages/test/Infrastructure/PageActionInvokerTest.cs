@@ -1422,21 +1422,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var resultName = typeof(PageResult).FullName;
             var factoryType = hasPageModel ? "page model" : "page";
 
-            Assert.Equal(13, messages.Count);
-            Assert.Equal($"Route matched with {{page = \"foo\"}}. Executing page {pagePath}", messages[0]);
-            Assert.Equal("Execution plan of authorization filters (in the following order): None", messages[1]);
-            Assert.Equal("Execution plan of resource filters (in the following order): None", messages[2]);
-            Assert.Equal("Execution plan of action filters (in the following order): None", messages[3]);
-            Assert.Equal("Execution plan of exception filters (in the following order): None", messages[4]);
-            Assert.Equal("Execution plan of result filters (in the following order): None", messages[5]);
-            Assert.Equal($"Executing {factoryType} factory for page {pageName}", messages[6]);
-            Assert.Equal($"Executed {factoryType} factory for page {pageName}", messages[7]);
-            Assert.Equal($"Executing handler method {methodFullName} - ModelState is Valid", messages[8]);
-            Assert.Equal($"Executed handler method {methodName}, returned result {resultName}.", messages[9]);
-            Assert.Equal($"Before executing action result {resultName}.", messages[10]);
-            Assert.Equal($"After executing action result {resultName}.", messages[11]);
-            Assert.StartsWith($"Executed page {pagePath} in ", messages[12]);
-
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{page = \"foo\"}}. Executing page {pagePath}", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executed {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executing handler method {methodFullName} - ModelState is Valid", m),
+                m => Assert.Equal($"Executed handler method {methodName}, returned result {resultName}.", m),
+                m => Assert.Equal($"Before executing action result {resultName}.", m),
+                m => Assert.Equal($"After executing action result {resultName}.", m),
+                m => Assert.StartsWith($"Executed page {pagePath} in ", m));
         }
 
         #endregion

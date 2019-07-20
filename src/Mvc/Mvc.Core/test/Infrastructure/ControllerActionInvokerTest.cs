@@ -1488,20 +1488,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
             var actionName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)}.{nameof(TestController.ActionMethod)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
             var actionResultName = $"{typeof(CommonResourceInvokerTest).FullName}+{nameof(TestResult)}";
-            Assert.Equal(13, messages.Count);
-            Assert.Equal($"Route matched with {{}}. Executing controller action with signature {actionSignature} on controller {controllerName}.", messages[0]);
-            Assert.Equal("Execution plan of authorization filters (in the following order): None", messages[1]);
-            Assert.Equal("Execution plan of resource filters (in the following order): None", messages[2]);
-            Assert.Equal("Execution plan of action filters (in the following order): None", messages[3]);
-            Assert.Equal("Execution plan of exception filters (in the following order): None", messages[4]);
-            Assert.Equal("Execution plan of result filters (in the following order): None", messages[5]);
-            Assert.Equal($"Executing controller factory for controller {controllerName}", messages[6]);
-            Assert.Equal($"Executed controller factory for controller {controllerName}", messages[7]);
-            Assert.Equal($"Executing action method {actionName} - Validation state: Valid", messages[8]);
-            Assert.StartsWith($"Executed action method {actionName}, returned result {actionResultName} in ", messages[9]);
-            Assert.Equal($"Before executing action result {actionResultName}.", messages[10]);
-            Assert.Equal($"After executing action result {actionResultName}.", messages[11]);
-            Assert.StartsWith($"Executed action {actionName} in ", messages[12]);
+
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{}}. Executing controller action with signature {actionSignature} on controller {controllerName}.", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executed controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executing action method {actionName} - Validation state: Valid", m),
+                m => Assert.StartsWith($"Executed action method {actionName}, returned result {actionResultName} in ", m),
+                m => Assert.Equal($"Before executing action result {actionResultName}.", m),
+                m => Assert.Equal($"After executing action result {actionResultName}.", m),
+                m => Assert.StartsWith($"Executed action {actionName} in ", m));
         }
 
         #endregion
