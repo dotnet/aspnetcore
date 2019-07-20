@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _application = application;
             _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
-
             if (httpContextFactory is DefaultHttpContextFactory factory)
             {
                 _defaultHttpContextFactory = factory;
@@ -41,7 +40,6 @@ namespace Microsoft.AspNetCore.Hosting
         // Set up the request
         public ContextWrapper CreateContext(IFeatureCollection contextFeatures)
         {
-
             Context hostContext;
             if (contextFeatures is IHostContextContainer<ContextWrapper> container)
             {
