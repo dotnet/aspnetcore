@@ -27,6 +27,13 @@ namespace Microsoft.AspNetCore.Hosting.Server
         public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
+namespace Microsoft.AspNetCore.Hosting.Server.Abstractions
+{
+    public partial interface IHostContextContainer<TContext>
+    {
+        TContext HostContext { get; set; }
+    }
+}
 namespace Microsoft.AspNetCore.Hosting.Server.Features
 {
     public partial interface IServerAddressesFeature

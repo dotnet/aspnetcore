@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost.Tests
@@ -19,7 +17,9 @@ namespace Microsoft.AspNetCore.TestHost.Tests
         [InlineData("http://localhost:81/connect", "localhost:81")]
         public async Task ConnectAsync_ShouldSetRequestProperties(string requestUri, string expectedHost)
         {
-            HttpRequest capturedRequest = null;
+            string capturedScheme = null;
+            string capturedHost = null;
+            string capturedPath = null;
 
             using (var testServer = new TestServer(new WebHostBuilder()
                 .Configure(app =>
@@ -28,7 +28,9 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                     {
                         if (ctx.Request.Path.StartsWithSegments("/connect"))
                         {
-                            capturedRequest = ctx.Request;
+                            capturedScheme = ctx.Request.Scheme;
+                            capturedHost = ctx.Request.Host.Value;
+                            capturedPath = ctx.Request.Path;
                         }
                         return Task.FromResult(0);
                     });
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 {
                     await client.ConnectAsync(
                         uri: new Uri(requestUri),
-                        cancellationToken: default(CancellationToken));
+                        cancellationToken: default);
                 }
                 catch
                 {
@@ -48,9 +50,9 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 }
             }
 
-            Assert.Equal("http", capturedRequest.Scheme);
-            Assert.Equal(expectedHost, capturedRequest.Host.Value);
-            Assert.Equal("/connect", capturedRequest.Path);
+            Assert.Equal("http", capturedScheme);
+            Assert.Equal(expectedHost, capturedHost);
+            Assert.Equal("/connect", capturedPath);
         }
     }
 }
