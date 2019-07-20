@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -146,7 +148,7 @@ namespace Microsoft.AspNetCore.WebSockets
                     }
                 }
 
-                string key = string.Join(", ", _context.Request.Headers[HeaderNames.SecWebSocketKey]);
+                string key = _context.Request.Headers[HeaderNames.SecWebSocketKey];
 
                 HandshakeHelpers.GenerateResponseHeaders(key, subProtocol, _context.Response.Headers);
 
