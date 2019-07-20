@@ -26,6 +26,7 @@
     -->
     <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)">
       <GlobalPropertiesToRemove>TargetFramework</GlobalPropertiesToRemove>
+      <Private>false</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
@@ -127,6 +128,9 @@
           Condition="'$(DefaultLanguageSourceExtension)' != '.ts'">
         <SourceDocument>%(_Directories.FullPath)</SourceDocument>
       </Compile>
+
+      <FileWrites Exclude="@(FileWrites)"
+          Include="@(_Files);@(_Directories -> '%(Identity)/**/*.ts;%(Identity)/**/*.tsx;%(Identity)/**/*.$(DefaultLanguageSourceExtension)'" />
 
       <_Files Remove="@(_Files)" />
       <_Directories Remove="@(_Directories)" />
