@@ -31,7 +31,31 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(featureCollection));
             }
 
-            var httpContext = CreateHttpContext(featureCollection);
+            var httpContext = new DefaultHttpContext(featureCollection);
+            return Initialize(httpContext);
+        }
+
+        public DefaultHttpContext CreateOrInitialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
+        {
+            if (featureCollection == null)
+            {
+                throw new ArgumentNullException(nameof(featureCollection));
+            }
+
+            if (httpContext is null)
+            {
+                httpContext = new DefaultHttpContext(featureCollection);
+            }
+            else
+            {
+                httpContext.Initialize(featureCollection);
+            }
+
+            return Initialize(httpContext);
+        }
+
+        private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
+        {
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = httpContext;
@@ -43,22 +67,22 @@ namespace Microsoft.AspNetCore.Http
             return httpContext;
         }
 
-        private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
-        {
-            if (featureCollection is IDefaultHttpContextContainer container)
-            {
-                return container.HttpContext;
-            }
-
-            return new DefaultHttpContext(featureCollection);
-        }
-
         public void Dispose(HttpContext httpContext)
         {
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = null;
             }
+        }
+
+        public void Dispose(DefaultHttpContext httpContext)
+        {
+            if (_httpContextAccessor != null)
+            {
+                _httpContextAccessor.HttpContext = null;
+            }
+
+            httpContext.Uninitialize();
         }
     }
 }

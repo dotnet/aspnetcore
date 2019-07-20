@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Hosting
     {
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory _httpContextFactory;
+        private readonly DefaultHttpContextFactory _defaultHttpContextFactory;
         private HostingApplicationDiagnostics _diagnostics;
 
         public HostingApplication(
@@ -26,13 +27,20 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _application = application;
             _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
-            _httpContextFactory = httpContextFactory;
+
+            if (httpContextFactory is DefaultHttpContextFactory factory)
+            {
+                _defaultHttpContextFactory = factory;
+            }
+            else
+            {
+                _httpContextFactory = httpContextFactory;
+            }
         }
 
         // Set up the request
         public ContextWrapper CreateContext(IFeatureCollection contextFeatures)
         {
-            var httpContext = _httpContextFactory.Create(contextFeatures);
 
             Context hostContext;
             if (contextFeatures is IHostContextContainer<ContextWrapper> container)
@@ -51,7 +59,18 @@ namespace Microsoft.AspNetCore.Hosting
                 hostContext = new Context();
             }
 
+            HttpContext httpContext;
+            if (_defaultHttpContextFactory != null)
+            {
+                httpContext = _defaultHttpContextFactory.CreateOrInitialize((DefaultHttpContext)hostContext.HttpContext, contextFeatures);
+            }
+            else
+            {
+                httpContext = _httpContextFactory.Create(contextFeatures);
+            }
+
             hostContext.HttpContext = httpContext;
+
             _diagnostics.BeginRequest(httpContext, hostContext);
             return new ContextWrapper(hostContext);
         }
@@ -68,7 +87,16 @@ namespace Microsoft.AspNetCore.Hosting
             var context = contextWrapper.Context;
             var httpContext = context.HttpContext;
             _diagnostics.RequestEnd(httpContext, exception, context);
-            _httpContextFactory.Dispose(httpContext);
+
+            if (_defaultHttpContextFactory != null)
+            {
+                _defaultHttpContextFactory.Dispose((DefaultHttpContext)httpContext);
+            }
+            else
+            {
+                _httpContextFactory.Dispose(httpContext);
+            }
+
             _diagnostics.ContextDisposed(context);
 
             // Reset the context as it may be pooled
@@ -88,7 +116,6 @@ namespace Microsoft.AspNetCore.Hosting
 
             public void Reset()
             {
-                HttpContext = null;
                 Scope = null;
                 Activity = null;
 
