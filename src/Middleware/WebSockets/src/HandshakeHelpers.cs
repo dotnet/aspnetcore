@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.WebSockets
             return validConnection && validUpgrade && validVersion && validKey;
         }
 
-        public static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
+        internal static void GenerateResponseHeaders(string key, string subProtocol, IHeaderDictionary headers)
         {
             headers[HeaderNames.Connection] = Constants.Headers.ConnectionUpgrade;
             headers[HeaderNames.Upgrade] = Constants.Headers.UpgradeWebSocket;
@@ -89,6 +91,7 @@ namespace Microsoft.AspNetCore.WebSockets
             }
             try
             {
+                //Convert.TryFromBase64String();
                 byte[] data = Convert.FromBase64String(value);
                 return data.Length == 16;
             }
@@ -98,7 +101,7 @@ namespace Microsoft.AspNetCore.WebSockets
             }
         }
 
-        public static string CreateResponseKey(string requestKey)
+        internal static string CreateResponseKey(string requestKey)
         {
             // "The value of this header field is constructed by concatenating /key/, defined above in step 4
             // in Section 4.2.2, with the string "258EAFA5- E914-47DA-95CA-C5AB0DC85B11", taking the SHA-1 hash of
@@ -113,8 +116,17 @@ namespace Microsoft.AspNetCore.WebSockets
             using (var algorithm = SHA1.Create())
             {
                 string merged = requestKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-                byte[] mergedBytes = Encoding.UTF8.GetBytes(merged);
-                byte[] hashedBytes = algorithm.ComputeHash(mergedBytes);
+
+                var count = Encoding.UTF8.GetByteCount(merged);
+                // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' so stackalloc is safe
+                Span<byte> mergedBytes = stackalloc byte[count];
+                Encoding.UTF8.GetBytes(merged, mergedBytes);
+
+                Span<byte> hashedBytes = stackalloc byte[20];
+                var success = algorithm.TryComputeHash(mergedBytes, hashedBytes, out var written);
+                Debug.Assert(success);
+                Debug.Assert(written == 20);
+
                 return Convert.ToBase64String(hashedBytes);
             }
         }
