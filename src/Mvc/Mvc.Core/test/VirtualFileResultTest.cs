@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -470,7 +471,7 @@ namespace Microsoft.AspNetCore.Mvc
                 FileProvider = GetFileProvider(path),
             };
 
-            var sendFileMock = new Mock<IHttpSendFileFeature>();
+            var sendFileMock = new Mock<IHttpResponseBodyFeature>();
             sendFileMock
                 .Setup(s => s.SendFileAsync(path, 0, null, CancellationToken.None))
                 .Returns(Task.FromResult<int>(0));
@@ -503,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var sendFile = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Features.Set<IHttpSendFileFeature>(sendFile);
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFile);
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
@@ -548,7 +549,6 @@ namespace Microsoft.AspNetCore.Mvc
                 "FilePathResultTestFile_ASCII.txt", expectedContentType)
             {
                 FileProvider = GetFileProvider("FilePathResultTestFile_ASCII.txt"),
-                IsAscii = true,
             };
 
             var httpContext = GetHttpContext();
@@ -760,11 +760,8 @@ namespace Microsoft.AspNetCore.Mvc
             public override Task ExecuteResultAsync(ActionContext context)
             {
                 var executor = (TestVirtualFileResultExecutor)context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<VirtualFileResult>>();
-                executor.IsAscii = IsAscii;
                 return executor.ExecuteAsync(context, this);
             }
-
-            public bool IsAscii { get; set; } = false;
         }
 
         private class TestVirtualFileResultExecutor : VirtualFileResultExecutor
@@ -773,28 +770,28 @@ namespace Microsoft.AspNetCore.Mvc
                 : base(loggerFactory, hostingEnvironment)
             {
             }
-
-            public bool IsAscii { get; set; }
-
-            protected override Stream GetFileStream(IFileInfo fileInfo)
-            {
-                if (IsAscii)
-                {
-                    return new MemoryStream(Encoding.ASCII.GetBytes("FilePathResultTestFile contents ASCII encoded"));
-                }
-                else
-                {
-                    return new MemoryStream(Encoding.UTF8.GetBytes("FilePathResultTestFile contents¡"));
-                }
-            }
         }
 
-        private class TestSendFileFeature : IHttpSendFileFeature
+        private class TestSendFileFeature : IHttpResponseBodyFeature
         {
             public string Name { get; set; }
             public long Offset { get; set; }
             public long? Length { get; set; }
             public CancellationToken Token { get; set; }
+
+            public Stream Stream => throw new NotImplementedException();
+
+            public PipeWriter Writer => throw new NotImplementedException();
+
+            public Task CompleteAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DisableBuffering()
+            {
+                throw new NotImplementedException();
+            }
 
             public Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
             {
@@ -804,6 +801,11 @@ namespace Microsoft.AspNetCore.Mvc
                 Token = cancellation;
 
                 return Task.FromResult(0);
+            }
+
+            public Task StartAsync(CancellationToken cancellation = default)
+            {
+                throw new NotImplementedException();
             }
         }
     }
