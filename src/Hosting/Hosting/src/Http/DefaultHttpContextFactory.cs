@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -26,34 +27,37 @@ namespace Microsoft.AspNetCore.Http
 
         public HttpContext Create(IFeatureCollection featureCollection)
         {
-            if (featureCollection == null)
+            if (featureCollection is null)
             {
-                throw new ArgumentNullException(nameof(featureCollection));
+                ThrowFeatureCollectionIsNull();
             }
 
             var httpContext = new DefaultHttpContext(featureCollection);
-            return Initialize(httpContext);
+            Initialize(httpContext);
+            return httpContext;
         }
 
-        public DefaultHttpContext CreateOrInitialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Initialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
         {
-            if (featureCollection == null)
+            if (featureCollection is null)
             {
-                throw new ArgumentNullException(nameof(featureCollection));
+                ThrowFeatureCollectionIsNull();
             }
 
             if (httpContext is null)
             {
-                httpContext = new DefaultHttpContext(featureCollection);
+                ThrowHttpContextIsNull();
             }
             else
             {
                 httpContext.Initialize(featureCollection);
             }
 
-            return Initialize(httpContext);
+            Initialize(httpContext);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
         {
             if (_httpContextAccessor != null)
@@ -75,7 +79,7 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        public void Dispose(DefaultHttpContext httpContext)
+        internal void Dispose(DefaultHttpContext httpContext)
         {
             if (_httpContextAccessor != null)
             {
@@ -83,6 +87,16 @@ namespace Microsoft.AspNetCore.Http
             }
 
             httpContext.Uninitialize();
+        }
+
+        private static void ThrowHttpContextIsNull()
+        {
+            throw new ArgumentNullException("httpContext");
+        }
+
+        private static void ThrowFeatureCollectionIsNull()
+        {
+            throw new ArgumentNullException("featureCollection");
         }
     }
 }
