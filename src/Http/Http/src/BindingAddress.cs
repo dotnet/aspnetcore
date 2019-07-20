@@ -102,6 +102,10 @@ namespace Microsoft.AspNetCore.Http
                 {
                     // Windows has drive letters and volume separator (c:)
                     unixPipeHostPrefixLength += 2;
+                    if (schemeDelimiterEnd + unixPipeHostPrefixLength > address.Length)
+                    {
+                        throw new FormatException($"Invalid url: '{address}'");
+                    }
                 }
 
                 pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + unixPipeHostPrefixLength, StringComparison.Ordinal);
@@ -155,6 +159,11 @@ namespace Microsoft.AspNetCore.Http
             if (string.IsNullOrEmpty(serverAddress.Host))
             {
                 throw new FormatException($"Invalid url: '{address}'");
+            }
+
+            if (isUnixPipe && !Path.IsPathRooted(serverAddress.UnixPipePath))
+            {
+                throw new FormatException($"Invalid url, unix socket path must be absolute: '{address}'");
             }
 
             if (address[address.Length - 1] == '/')
