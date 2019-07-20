@@ -68,7 +68,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         break;
                     case HttpProtocols.None:
                         // An error was already logged in SelectProtocol(), but we should close the connection.
-                        _context.ConnectionContext.Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
                         break;
                     default:
                         // SelectProtocol() only returns Http1, Http2 or None.
@@ -128,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             lock (_protocolSelectionLock)
             {
                 previousState = _protocolSelectionState;
+                Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
 
                 switch (_protocolSelectionState)
                 {
@@ -153,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             lock (_protocolSelectionLock)
             {
                 previousState = _protocolSelectionState;
+                Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
 
                 switch (_protocolSelectionState)
                 {
@@ -179,6 +180,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             lock (_protocolSelectionLock)
             {
                 previousState = _protocolSelectionState;
+                Debug.Assert(previousState != ProtocolSelectionState.Initializing, "The state should never be initializing");
+
                 _protocolSelectionState = ProtocolSelectionState.Aborted;
             }
 
