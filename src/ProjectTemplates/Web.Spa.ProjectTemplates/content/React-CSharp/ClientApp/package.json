@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "bootstrap": "^4.1.3",
     "babel-eslint": "10.0.1",
+    "bootstrap": "^4.1.3",
     "jquery": "^3.4.1",
     "merge": "^1.2.1",
-    "oidc-client": "^1.8.0",
+    "oidc-client": "^1.9.0-beta.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-router-bootstrap": "^0.24.4",

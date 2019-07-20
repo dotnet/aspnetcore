@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "ProjectTemplates.sln",
+    "projects": [
+      "Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
+      "Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
+      "Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
+      "Web.Spa.ProjectTemplates\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
+      "test\\ProjectTemplates.Tests.csproj"
+    ]
+  }
+}
