@@ -487,6 +487,40 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public async Task DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer {
+                ShouldHandleExceptions = true
+            };
+
+            var component = new EventComponent
+            {
+                OnTest = args => throw new Exception("Error")
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIEventArgs();
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.True(renderTask.IsCompletedSuccessfully);
+
+            var exception = Assert.Single(renderer.HandledExceptions);
+            Assert.Equal("Error", exception.Message);
+
+            await renderTask; // Does not throw
+        }
+
+        [Fact]
         public async Task CanDispatchTypedEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
