@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (featureCollection is null)
             {
-                ThrowFeatureCollectionIsNull();
+                throw new ArgumentNullException(nameof(featureCollection));
             }
 
             var httpContext = new DefaultHttpContext(featureCollection);
@@ -40,19 +41,10 @@ namespace Microsoft.AspNetCore.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Initialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
         {
-            if (featureCollection is null)
-            {
-                ThrowFeatureCollectionIsNull();
-            }
+            Debug.Assert(featureCollection != null);
+            Debug.Assert(httpContext != null);
 
-            if (httpContext is null)
-            {
-                ThrowHttpContextIsNull();
-            }
-            else
-            {
-                httpContext.Initialize(featureCollection);
-            }
+            httpContext.Initialize(featureCollection);
 
             Initialize(httpContext);
         }
@@ -87,16 +79,6 @@ namespace Microsoft.AspNetCore.Http
             }
 
             httpContext.Uninitialize();
-        }
-
-        private static void ThrowHttpContextIsNull()
-        {
-            throw new ArgumentNullException("httpContext");
-        }
-
-        private static void ThrowFeatureCollectionIsNull()
-        {
-            throw new ArgumentNullException("featureCollection");
         }
     }
 }
