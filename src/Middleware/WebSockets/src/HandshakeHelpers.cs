@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.WebSockets
             }
             try
             {
-                //Convert.TryFromBase64String();
-                byte[] data = Convert.FromBase64String(value);
-                return data.Length == 16;
+                Span<byte> temp = stackalloc byte[20];
+                var success = Convert.TryFromBase64String(value, temp, out var written);
+                return written == 16 && success;
             }
             catch (Exception)
             {
