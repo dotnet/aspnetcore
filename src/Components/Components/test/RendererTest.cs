@@ -482,8 +482,6 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // Does not throw
         }
 
         [Fact]
@@ -516,8 +514,6 @@ namespace Microsoft.AspNetCore.Components.Test
 
             var exception = Assert.Single(renderer.HandledExceptions);
             Assert.Equal("Error", exception.Message);
-
-            await renderTask; // Does not throw
         }
 
         [Fact]
@@ -547,8 +543,6 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]
@@ -578,8 +572,6 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.NotNull(receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]
@@ -620,8 +612,6 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]
