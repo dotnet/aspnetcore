@@ -117,8 +117,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         private static void ThrowContextDisposed()
         {
-            // Can't use nameof as Microsoft.AspNetCore.Http.Abstractions is higher in the stack.
-            throw new ObjectDisposedException("HttpContext", "Request has finished and HttpContext disposed.");
+            throw new ObjectDisposedException(nameof(Collection), nameof(IFeatureCollection) + " has been disposed.");
         }
     }
 }
