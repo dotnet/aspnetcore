@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task CanDispatchEventsToTopLevelComponents()
+        public void CanDispatchEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
+        public void DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer {
@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task CanDispatchTypedEventsToTopLevelComponents()
+        public void CanDispatchTypedEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task CanDispatchActionEventsToTopLevelComponents()
+        public void CanDispatchActionEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task CanDispatchEventsToNestedComponents()
+        public void CanDispatchEventsToNestedComponents()
         {
             UIEventArgs receivedArgs = null;
 
