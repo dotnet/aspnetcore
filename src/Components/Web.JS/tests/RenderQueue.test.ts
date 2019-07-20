@@ -1,6 +1,6 @@
 (global as any).DotNet = { attachReviver: jest.fn() };
 
-import RenderQueue from '../src/Platform/Circuits/RenderQueue';
+import { RenderQueue } from '../src/Platform/Circuits/RenderQueue';
 import { NullLogger } from '../src/Platform/Logging/Loggers';
 import * as signalR from '@aspnet/signalr';
 

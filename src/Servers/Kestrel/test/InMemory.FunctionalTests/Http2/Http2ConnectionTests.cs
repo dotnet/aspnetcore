@@ -3731,7 +3731,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void IOExceptionDuringFrameProcessingLoggedAsInfo()
+        public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
         {
             CreateConnection();
 
@@ -3740,9 +3740,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
+            Assert.All(TestApplicationErrorLogger.Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
-            Assert.Equal(LogLevel.Information, logMessage.LogLevel);
+            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.EventId == 20);
+
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
         }

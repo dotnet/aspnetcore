@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using BasicTestApp;
+using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -96,7 +97,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub();
+                    endpoints.MapBlazorHub<TestRouter>(selector: "app");
                 });
             });
 

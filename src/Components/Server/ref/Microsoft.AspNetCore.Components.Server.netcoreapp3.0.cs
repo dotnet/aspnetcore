@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Builder
 }
 namespace Microsoft.AspNetCore.Components.Server
 {
-    public partial class CircuitOptions
+    public sealed partial class CircuitOptions
     {
         public CircuitOptions() { }
         public bool DetailedErrors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int DisconnectedCircuitMaxRetained { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan DisconnectedCircuitRetentionPeriod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan JSInteropDefaultCallTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MaxRetainedDisconnectedCircuits { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class ComponentPrerenderingContext
     {
@@ -77,13 +77,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
         public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
-    }
-}
-namespace Microsoft.AspNetCore.Components.Web.Rendering
-{
-    public partial class RemoteRendererException : System.Exception
-    {
-        public RemoteRendererException(string message) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

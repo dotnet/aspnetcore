@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostChangeEmailAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
@@ -764,7 +764,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostChangeEmailAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {

@@ -142,21 +142,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public void ReconnectUI()
         {
             Browser.FindElement(By.LinkText("Counter")).Click();
+
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(@"
-window.modalDisplayState = [];
-window.Blazor.circuitHandlers.push({
-    onConnectionUp: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display),
-    onConnectionDown: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display)
-});
-window.Blazor._internal.forceCloseConnection();");
+            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => (long)javascript.ExecuteScript("console.log(window.modalDisplayState); return window.modalDisplayState.length") == 2);
+            // We should see the 'reconnecting' UI appear
+            var reconnectionDialog = WaitUntilReconnectionDialogExists();
+            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
 
-            var states = (string)javascript.ExecuteScript("return window.modalDisplayState.join(',')");
-
-            Assert.Equal("block,none", states);
+            // Then it should disappear
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
         }
 
         [Fact]
@@ -169,16 +165,17 @@ window.Blazor._internal.forceCloseConnection();");
             var initialValue = element.Text;
 
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(@"
-window.connectionUp = false;
-window.Blazor.circuitHandlers.push({
-    onConnectionUp: () => window.connectionUp = true
-});
-window.Blazor._internal.forceCloseConnection();");
+            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => (bool)javascript.ExecuteScript("return window.connectionUp"));
+            // We should see the 'reconnecting' UI appear
+            var reconnectionDialog = WaitUntilReconnectionDialogExists();
+            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
 
+            // Then it should disappear
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
+
+            // We should receive a render that occurred while disconnected
             var currentValue = element.Text;
             Assert.NotEqual(initialValue, currentValue);
 
@@ -203,6 +200,14 @@ window.Blazor._internal.forceCloseConnection();");
             Browser.FindElement(By.Id("cause-error")).Click();
             Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
                 .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        }
+
+        private IWebElement WaitUntilReconnectionDialogExists()
+        {
+            IWebElement reconnectionDialog = null;
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+                .Until(driver => (reconnectionDialog = driver.FindElement(By.Id("components-reconnect-modal"))) != null);
+            return reconnectionDialog;
         }
     }
 }

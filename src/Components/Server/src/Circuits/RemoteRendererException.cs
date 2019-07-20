@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
     /// <summary>
     /// Represents an exception related to remote rendering.
     /// </summary>
-    public class RemoteRendererException : Exception
+    internal class RemoteRendererException : Exception
     {
         /// <summary>
         /// Constructs an instance of <see cref="RemoteRendererException"/>.

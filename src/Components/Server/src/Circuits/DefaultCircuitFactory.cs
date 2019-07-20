@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -50,9 +51,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
 
-            // You can replace the AuthenticationStateProvider with a custom one, but in that case initialization is up to you
-            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>();
-            (authenticationStateProvider as FixedAuthenticationStateProvider)?.Initialize(httpContext.User);
+            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+            if (authenticationStateProvider != null)
+            {
+                var authenticationState = new AuthenticationState(httpContext.User); // TODO: Get this from the hub connection context instead
+                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            }
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();

@@ -571,6 +571,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 Log.RequestProcessingError(ConnectionId, ex);
             }
+            catch (ConnectionAbortedException ex)
+            {
+                Log.RequestProcessingError(ConnectionId, ex);
+            }
             catch (Exception ex)
             {
                 Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);

@@ -424,8 +424,8 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                     writer.Write(floatValue);
                     break;
 
-                case byte[] byteArray:
-                    writer.Write(byteArray);
+                case ArraySegment<byte> bytes:
+                    writer.Write(bytes);
                     break;
 
                 case Exception exception:
