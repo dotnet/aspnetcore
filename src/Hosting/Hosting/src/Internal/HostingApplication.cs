@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    internal class HostingApplication : IHttpApplication<HostingApplication.ContextWrapper>
+    internal class HostingApplication : IHttpApplication<HostingApplication.Context>
     {
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory _httpContextFactory;
@@ -38,17 +38,16 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         // Set up the request
-        public ContextWrapper CreateContext(IFeatureCollection contextFeatures)
+        public Context CreateContext(IFeatureCollection contextFeatures)
         {
             Context hostContext;
-            if (contextFeatures is IHostContextContainer<ContextWrapper> container)
+            if (contextFeatures is IHostContextContainer<Context> container)
             {
-                hostContext = container.HostContext.Context;
+                hostContext = container.HostContext;
                 if (hostContext is null)
                 {
                     hostContext = new Context();
-                    // Initalize the wrapper struct in-place; so its wrapped object reference gets set
-                    container.HostContext = new ContextWrapper(hostContext);
+                    container.HostContext = hostContext;
                 }
             }
             else
@@ -79,19 +78,18 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             _diagnostics.BeginRequest(httpContext, hostContext);
-            return new ContextWrapper(hostContext);
+            return hostContext;
         }
 
         // Execute the request
-        public Task ProcessRequestAsync(ContextWrapper contextWrapper)
+        public Task ProcessRequestAsync(Context context)
         {
-            return _application(contextWrapper.Context.HttpContext);
+            return _application(context.HttpContext);
         }
 
         // Clean up the request
-        public void DisposeContext(ContextWrapper contextWrapper, Exception exception)
+        public void DisposeContext(Context context, Exception exception)
         {
-            var context = contextWrapper.Context;
             var httpContext = context.HttpContext;
             _diagnostics.RequestEnd(httpContext, exception, context);
 
@@ -123,6 +121,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             public void Reset()
             {
+                // Not resetting HttpContext here as we pool it on the Context
+
                 Scope = null;
                 Activity = null;
 
@@ -130,19 +130,6 @@ namespace Microsoft.AspNetCore.Hosting
                 HasDiagnosticListener = false;
                 EventLogEnabled = false;
             }
-        }
-
-        /// <summary>
-        /// Struct wrapper to devirtualize <see cref="IHttpApplication{TContext}"/> into faster concrete generic implementations rather than shared generics.
-        /// </summary>
-        internal readonly struct ContextWrapper
-        {
-            public ContextWrapper(Context context)
-            {
-                Context = context;
-            }
-
-            public Context Context { get; }
         }
     }
 }
