@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -91,7 +90,7 @@ namespace Microsoft.AspNetCore.WebSockets
             }
             try
             {
-                Span<byte> temp = stackalloc byte[20];
+                Span<byte> temp = stackalloc byte[16];
                 var success = Convert.TryFromBase64String(value, temp, out var written);
                 return written == 16 && success;
             }
@@ -101,7 +100,7 @@ namespace Microsoft.AspNetCore.WebSockets
             }
         }
 
-        internal static string CreateResponseKey(string requestKey)
+        public static string CreateResponseKey(string requestKey)
         {
             // "The value of this header field is constructed by concatenating /key/, defined above in step 4
             // in Section 4.2.2, with the string "258EAFA5- E914-47DA-95CA-C5AB0DC85B11", taking the SHA-1 hash of
@@ -117,9 +116,9 @@ namespace Microsoft.AspNetCore.WebSockets
             {
                 string merged = requestKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-                var count = Encoding.UTF8.GetByteCount(merged);
-                // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' so stackalloc is safe
-                Span<byte> mergedBytes = stackalloc byte[count];
+                // requestKey is already verified to be small (24 bytes) by 'IsRequestKeyValid()' and everything is 1:1 mapping to UTF8 bytes
+                // so this can be hardcoded to 60 bytes for the requestKey + static websocket string
+                Span<byte> mergedBytes = stackalloc byte[60];
                 Encoding.UTF8.GetBytes(merged, mergedBytes);
 
                 Span<byte> hashedBytes = stackalloc byte[20];
