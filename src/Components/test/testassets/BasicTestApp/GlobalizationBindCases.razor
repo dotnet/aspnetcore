@@ -30,11 +30,11 @@
 <div>
     <p>Numbers using bind in number fields</p>
     <div>
-        int: <input type="number" id="input_type_number_int" value="@inputTypeNumberInt.ToString(CultureInfo.InvariantCulture)" @onchange="@EventCallback.Factory.CreateBinder(this, (value) => inputTypeNumberInt = value, inputTypeNumberInt, CultureInfo.InvariantCulture)" />
+        int: <input type="number" id="input_type_number_int" @bind="inputTypeNumberInt" />
         <span id="input_type_number_int_value">@inputTypeNumberInt</span>
     </div>
     <div>
-        decimal: <input type="number" id="input_type_number_decimal" value="@inputTypeNumberDecimal.ToString(CultureInfo.InvariantCulture)" @onchange="@EventCallback.Factory.CreateBinder(this, (value) => inputTypeNumberDecimal = value, inputTypeNumberDecimal, CultureInfo.InvariantCulture)"/>
+        decimal: <input type="number" id="input_type_number_decimal" @bind="inputTypeNumberDecimal" />
         <span id="input_type_number_decimal_value">@inputTypeNumberDecimal</span>
     </div>
 </div>
@@ -43,12 +43,12 @@
     <p>Dates using bind in date fields</p>
     <div>
         DateTime: <input type="text" id="input_type_date_datetime_extrainput" @bind="inputTypeDateDateTime" />
-        <input type="date" id="input_type_date_datetime" value="@inputTypeDateDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" @onchange="@EventCallback.Factory.CreateBinder(this, (value) => inputTypeDateDateTime = value, inputTypeDateDateTime, "yyyy-MM-dd", CultureInfo.InvariantCulture)" />
+        <input type="date" id="input_type_date_datetime" @bind="inputTypeDateDateTime" />
         <span id="input_type_date_datetime_value">@inputTypeDateDateTime</span>
     </div>
     <div>
         DateTimeOffset: <input type="text" id="input_type_date_datetimeoffset_extrainput" @bind="inputTypeDateDateTimeOffset" />
-        <input type="date" id="input_type_date_datetimeoffset" value="@inputTypeDateDateTimeOffset.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" @onchange="@EventCallback.Factory.CreateBinder(this, (value) => inputTypeDateDateTimeOffset = value, inputTypeDateDateTimeOffset, "yyyy-MM-dd", CultureInfo.InvariantCulture)"/>
+        <input type="date" id="input_type_date_datetimeoffset" @bind="inputTypeDateDateTimeOffset" />
         <span id="input_type_date_datetimeoffset_value">@inputTypeDateDateTimeOffset</span>
     </div>
 </div>

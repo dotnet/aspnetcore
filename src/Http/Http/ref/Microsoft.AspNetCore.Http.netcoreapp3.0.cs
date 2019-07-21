@@ -54,12 +54,6 @@ namespace Microsoft.AspNetCore.Http
         public void Initialize(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { }
         public void Uninitialize() { }
     }
-    public partial class DefaultHttpContextFactory : Microsoft.AspNetCore.Http.IHttpContextFactory
-    {
-        public DefaultHttpContextFactory(System.IServiceProvider serviceProvider) { }
-        public Microsoft.AspNetCore.Http.HttpContext Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { throw null; }
-        public void Dispose(Microsoft.AspNetCore.Http.HttpContext httpContext) { }
-    }
     public partial class FormCollection : Microsoft.AspNetCore.Http.IFormCollection, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
     {
         public static readonly Microsoft.AspNetCore.Http.FormCollection Empty;
@@ -163,10 +157,6 @@ namespace Microsoft.AspNetCore.Http
         public static void EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold) { }
         public static void EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold, long bufferLimit) { }
         public static void EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest request, long bufferLimit) { }
-    }
-    public partial interface IDefaultHttpContextContainer
-    {
-        Microsoft.AspNetCore.Http.DefaultHttpContext HttpContext { get; }
     }
     public partial class MiddlewareFactory : Microsoft.AspNetCore.Http.IMiddlewareFactory
     {

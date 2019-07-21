@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIMouseEventArgs receivedArgs = null;
+            DerivedEventArgs receivedArgs = null;
 
             var component = new EventComponent
             {
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.NotNull(receivedArgs);
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIMouseEventArgs receivedArgs = null;
+            DerivedEventArgs receivedArgs = null;
 
             var state = 0;
             var tcs = new TaskCompletionSource<object>();
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.Equal(1, state);
             Assert.Same(eventArgs, receivedArgs);
@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.Equal(1, state);
             Assert.NotNull(receivedArgs);
@@ -807,7 +807,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -851,7 +851,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -890,7 +890,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -931,7 +931,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -973,7 +973,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -992,7 +992,7 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action)parentComponent.SomeMethod));
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Action)parentComponent.SomeMethod));
                 builder.CloseComponent();
             };
             parentComponent.OnEvent = () =>
@@ -1009,7 +1009,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -1030,7 +1030,7 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action)(() =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Action)(() =>
                 {
                     parentComponent.SomeMethod();
                 })));
@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -1071,7 +1071,7 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Func<Task>)(() =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Func<Task>)(() =>
                 {
                     parentComponent.SomeMethod();
                     return Task.CompletedTask;
@@ -1092,7 +1092,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var eventArgs = new UIMouseEventArgs();
+            var eventArgs = new DerivedEventArgs();
             await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // Assert
@@ -1125,7 +1125,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
@@ -1157,7 +1157,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.RanToCompletion, task.Status);
@@ -1168,14 +1168,14 @@ namespace Microsoft.AspNetCore.Components.Test
         public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCompletion()
         {
             // Arrange
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<DerivedEventArgs>)((e) =>
                 {
                     arg = e;
                 })));
@@ -1191,7 +1191,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -1224,7 +1224,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);
@@ -1256,7 +1256,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, task.Status);
@@ -1267,14 +1267,14 @@ namespace Microsoft.AspNetCore.Components.Test
         public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCancellation()
         {
             // Arrange
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<DerivedEventArgs>)((e) =>
                 {
                     arg = e;
                     throw new OperationCanceledException();
@@ -1291,7 +1291,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -1324,7 +1324,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.Faulted, task.Status);
@@ -1356,7 +1356,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.Faulted, task.Status);
@@ -1367,14 +1367,14 @@ namespace Microsoft.AspNetCore.Components.Test
         public async Task DispatchEventAsync_EventCallbackOfT_SynchronousException()
         {
             // Arrange
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, (Action<DerivedEventArgs>)((e) =>
                 {
                     arg = e;
                     throw new InvalidTimeZoneException();
@@ -1391,7 +1391,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -1426,7 +1426,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1461,7 +1461,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1475,14 +1475,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var tcs = new TaskCompletionSource<object>();
 
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, async (e) =>
                 {
                     arg = e;
                     await tcs.Task;
@@ -1499,7 +1499,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -1536,7 +1536,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1574,7 +1574,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1590,14 +1590,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var tcs = new TaskCompletionSource<object>();
 
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, async (e) =>
                 {
                     arg = e;
                     await tcs.Task;
@@ -1615,7 +1615,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -1654,7 +1654,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1691,7 +1691,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
@@ -1706,14 +1706,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var tcs = new TaskCompletionSource<object>();
 
-            UIMouseEventArgs arg = null;
+            DerivedEventArgs arg = null;
 
             var renderer = new TestRenderer();
             var parentComponent = new OuterEventComponent();
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<DerivedEventArgs>(parentComponent, async (e) =>
                 {
                     arg = e;
                     await tcs.Task;
@@ -1731,7 +1731,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act
-            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+            var task = renderer.DispatchEventAsync(eventHandlerId, new DerivedEventArgs());
 
             // Assert
             Assert.NotNull(arg);
@@ -3489,10 +3489,10 @@ namespace Microsoft.AspNetCore.Components.Test
             public Func<UIEventArgs, Task> OnTestAsync { get; set; }
 
             [Parameter]
-            public Action<UIMouseEventArgs> OnClick { get; set; }
+            public Action<DerivedEventArgs> OnClick { get; set; }
 
             [Parameter]
-            public Func<UIMouseEventArgs, Task> OnClickAsync { get; set; }
+            public Func<DerivedEventArgs, Task> OnClickAsync { get; set; }
 
             [Parameter]
             public Action OnClickAction { get; set; }
@@ -3504,7 +3504,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public EventCallback OnClickEventCallback { get; set; }
 
             [Parameter]
-            public EventCallback<UIMouseEventArgs> OnClickEventCallbackOfT { get; set; }
+            public EventCallback<DerivedEventArgs> OnClickEventCallbackOfT { get; set; }
 
             public bool SkipElement { get; set; }
             private int renderCount = 0;
@@ -4080,6 +4080,10 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.SetUpdatesAttributeName(nameof(BoundString));
                 builder.CloseElement();
             }
+        }
+
+        private class DerivedEventArgs : UIEventArgs
+        {
         }
     }
 }

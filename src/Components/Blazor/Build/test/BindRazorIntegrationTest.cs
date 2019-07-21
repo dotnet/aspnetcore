@@ -55,7 +55,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<int>), 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void Render_BindToComponent_SpecifiesValue_WithoutMatchingProperties()
         {
             // Arrange
@@ -89,7 +89,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(EventCallback<int>), 2));
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<int>), 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12286")]
+        [Fact]
         public void Render_BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
         {
             // Arrange
@@ -163,7 +163,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(EventCallback<int>), 2));
         }
 
         [Fact]

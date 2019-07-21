@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -26,12 +28,30 @@ namespace Microsoft.AspNetCore.Http
 
         public HttpContext Create(IFeatureCollection featureCollection)
         {
-            if (featureCollection == null)
+            if (featureCollection is null)
             {
                 throw new ArgumentNullException(nameof(featureCollection));
             }
 
-            var httpContext = CreateHttpContext(featureCollection);
+            var httpContext = new DefaultHttpContext(featureCollection);
+            Initialize(httpContext);
+            return httpContext;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Initialize(DefaultHttpContext httpContext, IFeatureCollection featureCollection)
+        {
+            Debug.Assert(featureCollection != null);
+            Debug.Assert(httpContext != null);
+
+            httpContext.Initialize(featureCollection);
+
+            Initialize(httpContext);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private DefaultHttpContext Initialize(DefaultHttpContext httpContext)
+        {
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = httpContext;
@@ -43,22 +63,22 @@ namespace Microsoft.AspNetCore.Http
             return httpContext;
         }
 
-        private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
-        {
-            if (featureCollection is IDefaultHttpContextContainer container)
-            {
-                return container.HttpContext;
-            }
-
-            return new DefaultHttpContext(featureCollection);
-        }
-
         public void Dispose(HttpContext httpContext)
         {
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = null;
             }
+        }
+
+        internal void Dispose(DefaultHttpContext httpContext)
+        {
+            if (_httpContextAccessor != null)
+            {
+                _httpContextAccessor.HttpContext = null;
+            }
+
+            httpContext.Uninitialize();
         }
     }
 }

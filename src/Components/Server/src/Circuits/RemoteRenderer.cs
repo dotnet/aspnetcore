@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             _logger = logger;
         }
 
-        internal ConcurrentQueue<PendingRender> PendingRenderBatches = new ConcurrentQueue<PendingRender>();
+        internal ConcurrentQueue<UnacknowledgedRenderBatch> UnacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         {
             _disposing = true;
             _rendererRegistry.TryRemove(Id);
-            while (PendingRenderBatches.TryDequeue(out var entry))
+            while (UnacknowledgedRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
                 entry.Data.Dispose();
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // snapshot its contents now.
             var arrayBuilder = new ArrayBuilder<byte>(2048);
             using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
-            PendingRender pendingRender;
+            UnacknowledgedRenderBatch pendingRender;
             try
             {
                 using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 var renderId = Interlocked.Increment(ref _nextRenderId);
 
-                pendingRender = new PendingRender(
+                pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
                     new TaskCompletionSource<object>());
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
 
-                PendingRenderBatches.Enqueue(pendingRender);
+                UnacknowledgedRenderBatches.Enqueue(pendingRender);
             }
             catch
             {
@@ -164,10 +164,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // All the batches are sent in order based on the fact that SignalR
             // provides ordering for the underlying messages and that the batches
             // are always in order.
-            return Task.WhenAll(PendingRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+            return Task.WhenAll(UnacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
         }
 
-        private async Task WriteBatchBytesAsync(PendingRender pending)
+        private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)
         {
             // Send the render batch to the client
             // If the "send" operation fails (synchronously or asynchronously) or the client
@@ -208,39 +208,65 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 return;
             }
 
+            // When clients send acks we know for sure they received and applied the batch.
+            // We send batches right away, and hold them in memory until we receive an ACK.
+            // If one or more client ACKs get lost (e.g., with long polling, client->server delivery is not guaranteed)
+            // we might receive an ack for a higher batch.
+            // We confirm all previous batches at that point (because receiving an ack is guarantee
+            // from the client that it has received and successfully applied all batches up to that point).
+
+            // If receive an ack for a previously acknowledged batch, its an error, as the messages are
+            // guranteed to be delivered in order, so a message for a render batch of 2 will never arrive
+            // after a message for a render batch for 3.
+            // If that were to be the case, it would just be enough to relax the checks here and simply skip
+            // the message.
+
+            // A batch might get lost when we send it to the client, because the client might disconnect before receiving and processing it.
+            // In this case, once it reconnects the server will re-send any unacknowledged batches, some of which the
+            // client might have received and even believe it did send back an acknowledgement for. The client handles
+            // those by re-acknowledging.
+
             // Even though we're not on the renderer sync context here, it's safe to assume ordered execution of the following
             // line (i.e., matching the order in which we received batch completion messages) based on the fact that SignalR
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
-            if (!PendingRenderBatches.TryDequeue(out var entry))
+
+            if (!UnacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
-                HandleException(
-                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
+                Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
             }
             else
             {
-                entry.Data.Dispose();
+                var lastBatchId = nextUnacknowledgedBatch.BatchId;
+                // Order is important here so that we don't prematurely dequeue the last nextUnacknowledgedBatch
+                while (UnacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
+                {
+                    lastBatchId = nextUnacknowledgedBatch.BatchId;
+                    UnacknowledgedRenderBatches.TryDequeue(out _);
+                    ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
+                }
 
-                if (entry.BatchId != incomingBatchId)
+                if (lastBatchId < incomingBatchId)
                 {
                     HandleException(
-                        new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
+                        new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
                 }
-                else
-                {
-                    if (errorMessageOrNull == null)
-                    {
-                        Log.CompletingBatchWithoutError(_logger, entry.BatchId);
-                    }
-                    else
-                    {
-                        Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
-                    }
-                }
-
-
-                CompleteRender(entry.CompletionSource, errorMessageOrNull);
             }
+        }
+
+        private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry)
+        {
+            if (errorMessageOrNull == null)
+            {
+                Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+            }
+            else
+            {
+                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+            }
+
+            entry.Data.Dispose();
+            CompleteRender(entry.CompletionSource, errorMessageOrNull);
         }
 
         private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
@@ -255,9 +281,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
         }
 
-        internal readonly struct PendingRender
+        internal readonly struct UnacknowledgedRenderBatch
         {
-            public PendingRender(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
             {
                 BatchId = batchId;
                 Data = data;
@@ -288,6 +314,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
             private static readonly Action<ILogger, long, string, Exception> _completingBatchWithError;
             private static readonly Action<ILogger, long, Exception> _completingBatchWithoutError;
+            private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
 
             private static class EventIds
             {
@@ -297,6 +324,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
                 public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
                 public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
+                public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
             }
 
             static Log()
@@ -330,6 +358,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithoutError,
                     "Completing batch {BatchId} without error");
+
+                _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.ReceivedDuplicateBatchAcknowledgement,
+                    "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -378,6 +411,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     logger,
                     batchId,
                     null);
+            }
+
+            internal static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
+            {
+                _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
             }
         }
     }

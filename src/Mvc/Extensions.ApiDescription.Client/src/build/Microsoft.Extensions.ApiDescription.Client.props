@@ -67,9 +67,6 @@
     Well-known metadata of the code generator item groups.
   -->
   <ItemDefinitionGroup>
-    <!-- OpenApiProjectReference items may also include OpenApiReference metadata. -->
-    <OpenApiProjectReference />
-
     <OpenApiReference>
       <!-- Name of the class to generate. Defaults to match filename in %(OutputPath). -->
       <ClassName />
@@ -98,5 +95,40 @@
       -->
       <OutputPath />
     </OpenApiReference>
+
+    <!-- OpenApiProjectReference items may include all OpenApiReference metadata. -->
+    <OpenApiProjectReference>
+      <!--
+        Name of the class to generate. Defaults to match filename in %(OutputPath). To avoid compilation errors,
+        override only if the referenced project has a single registered document.
+      -->
+      <ClassName />
+
+      <!--
+        Code generator to use. Required and must end with "CSharp" or "TypeScript" (the currently-supported target
+        languages) unless %(OutputPath) is set. Builds will invoke a target named "Generate%(CodeGenerator)" to do
+        actual code generation.
+      -->
+      <CodeGenerator>NSwagCSharp</CodeGenerator>
+
+      <!-- Namespace to contain generated class. Default is $(RootNamespace). -->
+      <Namespace />
+
+      <!--
+        Options to pass to the code generator target then (likely) added to a tool's command line. Value is passed
+        along to the code generator but otherwise unused in this package.
+      -->
+      <Options>$(OpenApiGenerateCodeOptions)</Options>
+
+      <!--
+        Path to place generated code. Code generator may interpret path as a filename or directory. Default filename or
+        folder name is {document filename}Client.[cs|ts]. {document filename} is always either %(Filename}.json (when
+        the document name is "v1") or %(Filename)_{document name}.json (otherwise). Filenames and relative paths (if
+        explicitly set) are combined with $(OpenApiCodeDirectory). Final value (depending on $(OpenApiCodeDirectory))
+        is likely to be a path relative to the client project. To avoid repeatedly writing to the same file, override
+        only if the referenced project has a single registered document.
+      -->
+      <OutputPath />
+    </OpenApiProjectReference>
   </ItemDefinitionGroup>
 </Project>
