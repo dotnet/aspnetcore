@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         public static async Task<Index> CreateAsync(HttpClient client, DefaultUIContext context = null)
         {
-            var goToIndex = await client.GetAsync("/");
+            using var goToIndex = await client.GetAsync("/");
             var index = await ResponseAssert.IsHtmlDocumentAsync(goToIndex);
 
             return new Index(client, index, context ?? new DefaultUIContext());

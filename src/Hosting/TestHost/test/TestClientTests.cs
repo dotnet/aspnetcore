@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.TestHost
             RequestDelegate appDelegate = ctx =>
                 ctx.Response.WriteAsync(expected);
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act
             var actual = await client.GetStringAsync("http://localhost:12345");
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.TestHost
                 return ctx.Response.WriteAsync(expected);
             };
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act
             var actual = await client.GetStringAsync("http://localhost:12345");
@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.TestHost
                 return ctx.Response.WriteAsync(expected);
             };
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act
             var actual = await client.GetStringAsync("http://localhost:12345/");
@@ -91,12 +91,12 @@ namespace Microsoft.AspNetCore.TestHost
             RequestDelegate appDelegate = async ctx =>
                 await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " PUT Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act
             var content = new StringContent("Hello world");
-            var response = await client.PutAsync("http://localhost:12345", content);
+            using var response = await client.PutAsync("http://localhost:12345", content);
 
             // Assert
             Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync());
@@ -109,12 +109,12 @@ namespace Microsoft.AspNetCore.TestHost
             RequestDelegate appDelegate = async ctx =>
                 await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " POST Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act
             var content = new StringContent("Hello world");
-            var response = await client.PostAsync("http://localhost:12345", content);
+            using var response = await client.PostAsync("http://localhost:12345", content);
 
             // Assert
             Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync());
@@ -145,11 +145,11 @@ namespace Microsoft.AspNetCore.TestHost
             };
 
             builder.Configure(appBuilder => appBuilder.Run(app));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
             // Act & Assert
-            var response = await client.GetAsync("http://localhost:12345");
+            using var response = await client.GetAsync("http://localhost:12345");
         }
 
         private class TestDisposable : IDisposable
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     app.Run(appDelegate);
                 });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             // Act
             var client = server.CreateWebSocketClient();
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.TestHost
             var builder = new WebHostBuilder()
                 .ConfigureServices(services => services.AddSingleton<ILogger<IWebHost>>(logger))
                 .Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             // Act
             var client = server.CreateWebSocketClient();
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 app.Run(appDelegate);
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             // Act
             var client = server.CreateWebSocketClient();
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 app.Run(appDelegate);
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             // Act
             var client = server.CreateWebSocketClient();
@@ -385,9 +385,9 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             // Abort Request
             response.Dispose();
@@ -439,10 +439,10 @@ namespace Microsoft.AspNetCore.TestHost
                         return context.Response.WriteAsync("Done");
                     });
                 });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            var resp = await client.GetAsync("/");
+            using var resp = await client.GetAsync("/");
 
             Assert.NotSame(value, capturedValue);
         }
@@ -464,13 +464,13 @@ namespace Microsoft.AspNetCore.TestHost
                         return context.Response.WriteAsync("Done");
                     });
                 });
-            var server = new TestServer(builder)
+            using var server = new TestServer(builder)
             {
                 PreserveExecutionContext = true
             };
-            var client = server.CreateClient();
+            using var client = server.CreateClient();
 
-            var resp = await client.GetAsync("/");
+            using var resp = await client.GetAsync("/");
 
             Assert.Same(value, capturedValue);
         }

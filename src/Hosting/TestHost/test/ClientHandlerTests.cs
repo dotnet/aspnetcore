@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.TestHost
     public class ClientHandlerTests
     {
         [Fact]
-        public Task ExpectedKeysAreAvailable()
+        public async Task ExpectedKeysAreAvailable()
         {
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
@@ -42,12 +42,12 @@ namespace Microsoft.AspNetCore.TestHost
 
                 return Task.FromResult(0);
             }));
-            var httpClient = new HttpClient(handler);
-            return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
         }
 
         [Fact]
-        public Task ExpectedKeysAreInFeatures()
+        public async Task ExpectedKeysAreInFeatures()
         {
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.TestHost
                 Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
                 Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
             }));
-            var httpClient = new HttpClient(handler);
-            return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
         }
 
         [Fact]
-        public Task SingleSlashNotMovedToPathBase()
+        public async Task SingleSlashNotMovedToPathBase()
         {
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.TestHost
 
                 return Task.FromResult(0);
             }));
-            var httpClient = new HttpClient(handler);
-            return httpClient.GetAsync("https://example.com/");
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/");
         }
 
         [Fact]
@@ -106,14 +106,14 @@ namespace Microsoft.AspNetCore.TestHost
                 context.Response.AppendTrailer("EndTrailer", "Value!");
             }));
 
-            var invoker = new HttpMessageInvoker(handler);
-            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+            using var invoker = new HttpMessageInvoker(handler);
+            using var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
 
-            var response = await invoker.SendAsync(message, CancellationToken.None);
+            using var response = await invoker.SendAsync(message, CancellationToken.None);
 
             Assert.Empty(response.TrailingHeaders);
 
-            var responseBody = await response.Content.ReadAsStreamAsync();
+            using var responseBody = await response.Content.ReadAsStreamAsync();
 
             int read = await responseBody.ReadAsync(new byte[100], 0, 100);
             Assert.Equal(11, read);
@@ -171,8 +171,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await hasAssertedResponseTcs.Task;
             }));
 
-            var invoker = new HttpMessageInvoker(handler);
-            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+            using var invoker = new HttpMessageInvoker(handler);
+            using var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
 
             var responseTask = invoker.SendAsync(message, CancellationToken.None);
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.TestHost
             // Asserted that response return was checked, allow response to finish
             hasAssertedResponseTcs.TrySetResult(null);
 
-            await responseTask;
+            using var response = await responseTask;
 
             Assert.False(preHasStarted);
             Assert.True(postHasStarted);
@@ -204,15 +204,15 @@ namespace Microsoft.AspNetCore.TestHost
                 context.Response.Headers["TestHeader"] = "TestValue:" + requestCount++;
             }));
 
-            HttpMessageInvoker invoker = new HttpMessageInvoker(handler);
-            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+            using var invoker = new HttpMessageInvoker(handler);
+            using var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
             message.Content = new StringContent("Hello World");
 
-            HttpResponseMessage response = await invoker.SendAsync(message, CancellationToken.None);
-            Assert.Equal("TestValue:1", response.Headers.GetValues("TestHeader").First());
+            using var response1 = await invoker.SendAsync(message, CancellationToken.None);
+            Assert.Equal("TestValue:1", response1.Headers.GetValues("TestHeader").First());
 
-            response = await invoker.SendAsync(message, CancellationToken.None);
-            Assert.Equal("TestValue:2", response.Headers.GetValues("TestHeader").First());
+            using var response2 = await invoker.SendAsync(message, CancellationToken.None);
+            Assert.Equal("TestValue:2", response2.Headers.GetValues("TestHeader").First());
         }
 
         [Fact]
@@ -223,26 +223,26 @@ namespace Microsoft.AspNetCore.TestHost
                 context.Response.Headers["TestHeader"] = "TestValue";
                 return Task.FromResult(0);
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/");
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/");
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
         }
 
         [Fact]
         public async Task BlockingMiddlewareShouldNotBlockClient()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            using var block = new ManualResetEvent(false);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
             {
                 block.WaitOne();
                 return Task.FromResult(0);
             }));
-            var httpClient = new HttpClient(handler);
+            using var httpClient = new HttpClient(handler);
             Task<HttpResponseMessage> task = httpClient.GetAsync("https://example.com/");
             Assert.False(task.IsCompleted);
             Assert.False(task.Wait(50));
             block.Set();
-            HttpResponseMessage response = await task;
+            using var response = await task.WithTimeout();
         }
 
         [Fact]
@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
             block.SetResult(0);
@@ -275,8 +275,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
             block.SetResult(0);
@@ -293,11 +293,11 @@ namespace Microsoft.AspNetCore.TestHost
                 context.Response.Body.Flush();
                 return block.Task;
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
-            Stream responseStream = await response.Content.ReadAsStreamAsync();
+            var responseStream = await response.Content.ReadAsStreamAsync();
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
@@ -315,11 +315,11 @@ namespace Microsoft.AspNetCore.TestHost
                 context.Response.Body.Flush();
                 return block.Task;
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
-            Stream responseStream = await response.Content.ReadAsStreamAsync();
+            using var responseStream = await response.Content.ReadAsStreamAsync();
             CancellationTokenSource cts = new CancellationTokenSource();
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 throw new InvalidOperationException("Test Exception");
             }));
-            var httpClient = new HttpClient(handler);
+            using var httpClient = new HttpClient(handler);
             return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead));
         }
@@ -351,8 +351,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await block.Task;
                 throw new InvalidOperationException("Test Exception");
             }));
-            var httpClient = new HttpClient(handler);
-            HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
+            using var httpClient = new HttpClient(handler);
+            using var response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
             block.SetResult(0);
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.TestHost
                 });
                 return context.Response.WriteAsync("Hello World");
             }));
-            var httpClient = new HttpClient(handler);
+            using var httpClient = new HttpClient(handler);
             return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead));
         }
@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.TestHost
                 });
                 return Task.CompletedTask;
             }));
-            var httpClient = new HttpClient(handler);
+            using var httpClient = new HttpClient(handler);
             return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead));
         }
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.TestHost
                     await context.Response.WriteAsync(ex.ToString());
                 }
             }));
-            var httpClient = new HttpClient(handler);
+            using var httpClient = new HttpClient(handler);
             return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead));
         }
@@ -526,10 +526,11 @@ namespace Microsoft.AspNetCore.TestHost
                         return Task.FromResult(0);
                     });
                 });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
-            var result = await server.CreateClient().GetStringAsync("/");
+            using var client = server.CreateClient();
+            var result = await client.GetStringAsync("/");
         }
 
         private class VerifierLogger : ILogger<IWebHost>

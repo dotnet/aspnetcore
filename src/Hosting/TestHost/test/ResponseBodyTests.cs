@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 return Task.CompletedTask;
             });
 
-            var response = await host.GetTestServer().CreateClient().GetAsync("/");
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/");
             var bytes = await response.Content.ReadAsByteArrayAsync();
             Assert.Equal(length, bytes.Length);
         }
@@ -41,7 +42,8 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 writer.Advance(length);
             });
 
-            var response = await host.GetTestServer().CreateClient().GetAsync("/");
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/");
             var bytes = await response.Content.ReadAsByteArrayAsync();
             Assert.Equal(length, bytes.Length);
         }

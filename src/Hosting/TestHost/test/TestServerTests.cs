@@ -43,7 +43,8 @@ namespace Microsoft.AspNetCore.TestHost
                 .Build();
             await host.StartAsync();
 
-            var response = await host.GetTestServer().CreateClient().GetAsync("/");
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -59,7 +60,8 @@ namespace Microsoft.AspNetCore.TestHost
                 })
                 .StartAsync();
 
-            var response = await host.GetTestServer().CreateClient().GetAsync("/");
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.TestHost
                 })
                 .StartAsync();
 
-            var response = await host.GetTestClient().GetAsync("/");
+            using var response = await host.GetTestClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             // Act & Assert (Does not throw)
-            new TestServer(new WebHostBuilder().Configure(app => { }));
+            using var server = new TestServer(new WebHostBuilder().Configure(app => { }));
         }
 
         [Fact]
@@ -119,9 +121,9 @@ namespace Microsoft.AspNetCore.TestHost
                 .ConfigureTestServices(services => services.AddSingleton(new SimpleService { Message = "OverridesConfigureServices" }))
                 .ConfigureTestContainer<ThirdPartyContainer>(container => container.Services.AddSingleton(new TestService { Message = "OverridesConfigureContainer" }));
 
-            var host = new TestServer(builder);
-
-            var response = await host.CreateClient().GetStringAsync("/");
+            using var host = new TestServer(builder);
+            using var client = host.CreateClient();
+            var response = await client.GetStringAsync("/");
 
             Assert.Equal("OverridesConfigureServices, OverridesConfigureContainer", response);
         }
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.TestHost
                 });
 
             // Does not throw
-            new TestServer(builder);
+            using var server = new TestServer(builder);
         }
 
         [Fact]
@@ -175,7 +177,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     services.AddSingleton(testService);
                 });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             Assert.Equal(testService, server.Host.Services.GetRequiredService<TestService>());
         }
@@ -190,9 +192,9 @@ namespace Microsoft.AspNetCore.TestHost
                     return context.Response.WriteAsync("RequestServices:" + (context.RequestServices != null));
                 });
             });
-            var server = new TestServer(builder);
-
-            string result = await server.CreateClient().GetStringAsync("/path");
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("RequestServices:True", result);
         }
 
@@ -203,17 +205,16 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 app.Run(async context =>
                 {
-                    using (var sr = new StreamReader(context.Request.Body))
-                    {
-                        await context.Response.WriteAsync(await sr.ReadToEndAsync());
-                    }
+                    using var sr = new StreamReader(context.Request.Body);
+                    await context.Response.WriteAsync(await sr.ReadToEndAsync());
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             var stream = new ThrowOnDisposeStream();
             stream.Write(Encoding.ASCII.GetBytes("Hello World"));
-            var response = await server.CreateClient().PostAsync("/", new StreamContent(stream));
+            using var client = server.CreateClient();
+            using var response = await client.PostAsync("/", new StreamContent(stream));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
         }
@@ -242,8 +243,9 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task CustomServiceProviderSetsApplicationServices()
         {
             var builder = new WebHostBuilder().UseStartup<CustomContainerStartup>();
-            var server = new TestServer(builder);
-            string result = await server.CreateClient().GetStringAsync("/path");
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("ApplicationServicesEqual:True", result);
         }
 
@@ -265,7 +267,7 @@ namespace Microsoft.AspNetCore.TestHost
             featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
             // Act
-            new TestServer(builder, featureCollection);
+            using var server = new TestServer(builder, featureCollection);
 
             // Assert
             // Is inside configure callback
@@ -287,7 +289,7 @@ namespace Microsoft.AspNetCore.TestHost
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
 
             // Act
-            var testServer = new TestServer(serviceProvider);
+            using var testServer = new TestServer(serviceProvider);
 
             // Assert
             Assert.Equal(serviceProvider, testServer.Services);
@@ -303,7 +305,7 @@ namespace Microsoft.AspNetCore.TestHost
                 .Configure(_ => { });
 
             // Act
-            var testServer = new TestServer(builder);
+            using var testServer = new TestServer(builder);
 
             // Assert
             Assert.Equal(testService, testServer.Services.GetService<TestService>());
@@ -336,7 +338,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         public class TestRequestServiceMiddleware
         {
-            private RequestDelegate _next;
+            private readonly RequestDelegate _next;
 
             public TestRequestServiceMiddleware(RequestDelegate next)
             {
@@ -380,9 +382,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 services.AddTransient<IStartupFilter, RequestServicesFilter>();
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("Found:True", result);
         }
 
@@ -402,9 +405,10 @@ namespace Microsoft.AspNetCore.TestHost
                     return context.Response.WriteAsync("Success");
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("Success", result);
         }
 
@@ -450,9 +454,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 services.AddSingleton<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices));
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            var result = await server.CreateClient().GetStringAsync("/path");
+            var result = await client.GetStringAsync("/path");
             Assert.Equal("Success", result);
         }
 
@@ -491,9 +496,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 services.AddTransient<IStartupFilter, NullServiceProvidersFeatureFilter>();
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            var result = await server.CreateClient().GetStringAsync("/path");
+            var result = await client.GetStringAsync("/path");
             Assert.Equal("Success", result);
         }
 
@@ -508,9 +514,10 @@ namespace Microsoft.AspNetCore.TestHost
                     return context.Response.WriteAsync("FoundLogger:" + (logger != null));
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("FoundLogger:True", result);
         }
 
@@ -529,9 +536,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
         }
 
@@ -561,9 +569,10 @@ namespace Microsoft.AspNetCore.TestHost
                 services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
                 services.AddSingleton<ContextHolder>();
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
         }
 
@@ -577,9 +586,10 @@ namespace Microsoft.AspNetCore.TestHost
                     return context.Response.WriteAsync("CreateInvokesApp");
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            string result = await server.CreateClient().GetStringAsync("/path");
+            string result = await client.GetStringAsync("/path");
             Assert.Equal("CreateInvokesApp", result);
         }
 
@@ -594,9 +604,10 @@ namespace Microsoft.AspNetCore.TestHost
                     context.Response.Body.Dispose();
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            using var result = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("Response", await result.Content.ReadAsStringAsync());
         }
@@ -613,8 +624,9 @@ namespace Microsoft.AspNetCore.TestHost
                 });
             });
             var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            using var result = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             server.Dispose();
             await Assert.ThrowsAsync<ObjectDisposedException>(() => server.CreateClient().GetAsync("/"));
@@ -633,7 +645,7 @@ namespace Microsoft.AspNetCore.TestHost
                                           return tcs.Task;
                                       });
                                   });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => { string result = await server.CreateClient().GetStringAsync("/path"); });
         }
@@ -643,8 +655,9 @@ namespace Microsoft.AspNetCore.TestHost
         {
             var builder = new WebHostBuilder()
                 .UseStartup<TestStartup>();
-            var server = new TestServer(builder);
-            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
+            using var result = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundService:True", await result.Content.ReadAsStringAsync());
         }
@@ -655,9 +668,10 @@ namespace Microsoft.AspNetCore.TestHost
             var builder = new WebHostBuilder()
                             .UseStartup<TestStartup>()
                             .UseEnvironment("Foo");
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            HttpResponseMessage result = await server.CreateClient().GetAsync("/");
+            using var result = await client.GetAsync("/");
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
         }
@@ -676,11 +690,12 @@ namespace Microsoft.AspNetCore.TestHost
                                     return context.Response.WriteAsync("Hello World");
                                 });
                             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
-            var result = await server.CreateClient().GetStringAsync("/path");
+            using var client = server.CreateClient();
+            var result = await client.GetStringAsync("/path");
 
             // This ensures that all diagnostics are completely written to the diagnostic listener
             Thread.Sleep(1000);
@@ -703,7 +718,7 @@ namespace Microsoft.AspNetCore.TestHost
                     throw new Exception("Test exception");
                 });
             });
-            var server = new TestServer(builder);
+            using var server = new TestServer(builder);
 
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
@@ -729,13 +744,13 @@ namespace Microsoft.AspNetCore.TestHost
                 ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
 
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
+            using var server = new TestServer(builder);
+            using var client = server.CreateClient();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             request.Headers.Host = "otherhost:5678";
 
-            var response = await client.SendAsync(request);
+            using var response = await client.SendAsync(request);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             Assert.Equal("otherhost:5678", responseBody);

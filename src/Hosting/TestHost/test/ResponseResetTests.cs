@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.TestHost
                 return Task.CompletedTask;
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version11;
-            var response = await client.GetAsync("/");
+            using var response = await client.GetAsync("/");
             response.EnsureSuccessStatusCode();
         }
 
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.TestHost
                 return Task.CompletedTask;
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetAsync("/");
+            using var response = await client.GetAsync("/");
             response.EnsureSuccessStatusCode();
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.TestHost
                 await requestAborted.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
             var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/"));
             Assert.Equal("The application reset the request with error code 12345.", rex.Message);
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.TestHost
                 await resetReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
             var rex = await Assert.ThrowsAsync<HttpResetTestException>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
             Assert.Equal("The application reset the request with error code 12345.", rex.Message);
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.TestHost
                 await resetReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.TestHost
                 await resetReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());

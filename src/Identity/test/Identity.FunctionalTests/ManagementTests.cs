@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var server = ServerFactory
                 .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
-            var client = server.CreateClient();
+            using var client = server.CreateClient();
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = $"!Test.Password1$";

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.TestHost
                 await requestAborted.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
             Assert.Equal("The application aborted the request.", ex.Message);
             await requestAborted.Task.WithTimeout();
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.TestHost
                 await abortReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
+            using var client = host.GetTestServer().CreateClient();
             var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
             Assert.Equal("The application aborted the request.", ex.Message);
             abortReceived.SetResult(0);
@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await abortReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
-            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
@@ -85,8 +85,8 @@ namespace Microsoft.AspNetCore.TestHost
                 await abortReceived.Task.WithTimeout();
             });
 
-            var client = host.GetTestServer().CreateClient();
-            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var client = host.GetTestServer().CreateClient();
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
