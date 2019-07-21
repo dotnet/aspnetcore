@@ -51,7 +51,16 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
 
             public void SetValue(object target, object value)
-                => _setterDelegate((TTarget)target, (TValue)value);
+            {
+                if (value == null)
+                {
+                    _setterDelegate((TTarget)target, default);
+                }
+                else
+                {
+                    _setterDelegate((TTarget)target, (TValue)value);
+                }
+            }
         }
     }
 }
