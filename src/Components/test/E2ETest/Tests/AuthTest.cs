@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     public class AuthTest : BasicTestAppTestBase
     {
         // These strings correspond to the links in BasicTestApp\AuthTest\Links.razor
-        const string CascadingAuthenticationStateLink = "Cascading authentication state";
-        const string AuthorizeViewCases = "AuthorizeView cases";
-        const string PageAllowingAnonymous = "Page allowing anonymous";
-        const string PageRequiringAuthorization = "Page requiring any authentication";
-        const string PageRequiringPolicy = "Page requiring policy";
-        const string PageRequiringRole = "Page requiring role";
+        protected const string CascadingAuthenticationStateLink = "Cascading authentication state";
+        protected const string AuthorizeViewCases = "AuthorizeView cases";
+        protected const string PageAllowingAnonymous = "Page allowing anonymous";
+        protected const string PageRequiringAuthorization = "Page requiring any authentication";
+        protected const string PageRequiringPolicy = "Page requiring policy";
+        protected const string PageRequiringRole = "Page requiring role";
 
         public AuthTest(
             BrowserFixture browserFixture,
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 appElement.FindElement(By.CssSelector("#auth-failure")).Text);
         }
 
-        IWebElement MountAndNavigateToAuthTest(string authLinkText)
+        protected IWebElement MountAndNavigateToAuthTest(string authLinkText)
         {
             Navigate(ServerPathBase);
             var appElement = MountTestComponent<BasicTestApp.AuthTest.AuthRouter>();
