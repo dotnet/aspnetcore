@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -190,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                 _circuitIdFactory = circuitIdFactory ?? (() => Guid.NewGuid().ToString());
             }
 
-            public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute)
+            public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute, ClaimsPrincipal user)
             {
                 var serviceCollection = new ServiceCollection();
                 serviceCollection.AddScoped<IUriHelper>(_ =>
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             public Mock<IServiceScope> MockServiceScope { get; }
                 = new Mock<IServiceScope>();
 
-            public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute)
+            public override CircuitHost CreateCircuitHost(HttpContext httpContext, CircuitClientProxy client, string uriAbsolute, string baseUriAbsolute, ClaimsPrincipal user)
             {
                 return TestCircuitHost.Create(Guid.NewGuid().ToString(), MockServiceScope.Object);
             }

@@ -7,14 +7,13 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -40,7 +39,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             HttpContext httpContext,
             CircuitClientProxy client,
             string uriAbsolute,
-            string baseUriAbsolute)
+            string baseUriAbsolute,
+            ClaimsPrincipal user)
         {
             var components = ResolveComponentMetadata(httpContext, client);
 
@@ -50,13 +50,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
-
-            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-            if (authenticationStateProvider != null)
-            {
-                var authenticationState = new AuthenticationState(httpContext.User); // TODO: Get this from the hub connection context instead
-                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
-            }
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
@@ -102,6 +95,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Initialize per - circuit data that services need
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
+            circuitHost.SetCircuitUser(user);
 
             return circuitHost;
         }

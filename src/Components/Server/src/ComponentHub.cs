@@ -97,7 +97,8 @@ namespace Microsoft.AspNetCore.Components.Server
                 Context.GetHttpContext(),
                 circuitClient,
                 uriAbsolute,
-                baseUriAbsolute);
+                baseUriAbsolute,
+                Context.User);
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
@@ -125,6 +126,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 CircuitHost = circuitHost;
 
                 circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
+                circuitHost.SetCircuitUser(Context.User);
                 circuitHost.SendPendingBatches();
                 return true;
             }
