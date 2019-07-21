@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization"));
         }
 
         public void Dispose()

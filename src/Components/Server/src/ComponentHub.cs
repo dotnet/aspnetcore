@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -224,6 +226,18 @@ namespace Microsoft.AspNetCore.Components.Server
             CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
+        public void OnLocationChanged(string uri, bool intercepted)
+        {
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.OnLocationChangedAsync(uri, intercepted);
+        }
+
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var circuitHost = (CircuitHost)sender;
@@ -275,10 +289,10 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
 
             private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {

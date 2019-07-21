@@ -27,11 +27,6 @@ namespace Microsoft.AspNetCore.Blazor.Services
 
         protected override void EnsureInitialized()
         {
-            WebAssemblyJSRuntime.Instance.Invoke<object>(
-                Interop.ListenForNavigationEvents,
-                typeof(WebAssemblyNavigationManager).Assembly.GetName().Name,
-                nameof(NotifyLocationChanged));
-
             // As described in the comment block above, BrowserNavigationManager is only for
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);

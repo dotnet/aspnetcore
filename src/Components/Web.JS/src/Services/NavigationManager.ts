@@ -5,7 +5,7 @@ let hasRegisteredNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: { assemblyName: string; functionName: string } | null = null;
+let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -16,12 +16,12 @@ export const internalFunctions = {
   getLocationHref: () => location.href,
 };
 
-function listenForNavigationEvents(assemblyName: string, functionName: string) {
+function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
   if (hasRegisteredNavigationEventListeners) {
     return;
   }
 
-  notifyLocationChangedCallback = { assemblyName, functionName };
+  notifyLocationChangedCallback = callback;
 
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', () => notifyLocationChanged(false));
@@ -95,12 +95,7 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
 
 async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
-    await DotNet.invokeMethodAsync(
-      notifyLocationChangedCallback.assemblyName,
-      notifyLocationChangedCallback.functionName,
-      location.href,
-      interceptedLink
-    );
+    await notifyLocationChangedCallback(location.href, interceptedLink);
   }
 }
 

@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
@@ -11,9 +10,9 @@ using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInte
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
-    /// A Server-Side Components implementation of <see cref="NavigationManager"/>.
+    /// A Server-Side Blazor implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
+    internal class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
         private readonly ILogger<RemoteNavigationManager> _logger;
         private IJSRuntime _jsRuntime;
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// Initializes the <see cref="RemoteNavigationManager"/>.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
-        internal void AttachJsRuntime(IJSRuntime jsRuntime)
+        public void AttachJsRuntime(IJSRuntime jsRuntime)
         {
             if (_jsRuntime != null)
             {
@@ -55,31 +54,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             _jsRuntime = jsRuntime;
-
-            _jsRuntime.InvokeAsync<object>(
-                Interop.ListenForNavigationEvents,
-                typeof(RemoteNavigationManager).Assembly.GetName().Name,
-                nameof(NotifyLocationChanged));
         }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink)
+        public void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink)
         {
-            var circuit = CircuitHost.Current;
-            if (circuit == null)
-            {
-                var message = $"{nameof(NotifyLocationChanged)} called without a circuit.";
-                throw new InvalidOperationException(message);
-            }
+            Log.ReceivedLocationChangedNotification(_logger, uriAbsolute, isInterceptedLink);
 
-            var navigationManager = (RemoteNavigationManager)circuit.Services.GetRequiredService<NavigationManager>();
-            Log.ReceivedLocationChangedNotification(navigationManager._logger, uriAbsolute, isInterceptedLink);
-
-            navigationManager.SetAbsoluteUri(uriAbsolute);
-            navigationManager.NotifyLocationChanged(isInterceptedLink);
+            SetAbsoluteUri(uriAbsolute);
+            NotifyLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />
