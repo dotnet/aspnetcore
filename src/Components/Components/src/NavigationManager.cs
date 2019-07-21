@@ -11,21 +11,22 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class NavigationManager
     {
-        private EventHandler<LocationChangedEventArgs> _onLocationChanged;
+        private EventHandler<LocationChangedEventArgs> _locationChanged;
 
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
-        public event EventHandler<LocationChangedEventArgs> OnLocationChanged
+        public event EventHandler<LocationChangedEventArgs> LocationChanged
         {
             add
             {
                 AssertInitialized();
-                _onLocationChanged += value;
+                _locationChanged += value;
             }
             remove
             {
-                _onLocationChanged -= value;
+                AssertInitialized();
+                _locationChanged -= value;
             }
         }
 
@@ -45,18 +46,8 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
-        public void NavigateTo(string uri)
-        {
-            NavigateTo(uri, forceLoad: false);
-        }
-
-        /// <summary>
-        /// Navigates to the specified URI.
-        /// </summary>
-        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
-        /// (as returned by <see cref="GetBaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
-        public void NavigateTo(string uri, bool forceLoad)
+        public void NavigateTo(string uri, bool forceLoad = false)
         {
             AssertInitialized();
             NavigateToCore(uri, forceLoad);
@@ -74,7 +65,7 @@ namespace Microsoft.AspNetCore.Components
         /// Called to initialize BaseURI and current URI before these values are used for the first time.
         /// Override this method to dynamically calculate these values.
         /// </summary>
-        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute)
+        protected void Initialize(string uriAbsolute, string baseUriAbsolute)
         {
             if (uriAbsolute == null)
             {
@@ -97,7 +88,8 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Allows derived classes to lazyly self initialize. It does nothing unless overriden.
+        /// Allows derived classes to lazyly self-initialize. Implementations that support lazy-initialization should override
+        /// this method and call <see cref="Initialize(string, string)" />.
         /// </summary>
         protected virtual void EnsureInitialized()
         {
@@ -129,12 +121,12 @@ namespace Microsoft.AspNetCore.Components
         /// Converts a relative URI into an absolute one (by resolving it
         /// relative to the current absolute URI).
         /// </summary>
-        /// <param name="href">The relative URI.</param>
+        /// <param name="relativeUri">The relative URI.</param>
         /// <returns>The absolute URI.</returns>
-        public Uri ToAbsoluteUri(string href)
+        public Uri ToAbsoluteUri(string relativeUri)
         {
             AssertInitialized();
-            return new Uri(_baseUri, href);
+            return new Uri(_baseUri, relativeUri);
         }
 
         /// <summary>
@@ -146,7 +138,7 @@ namespace Microsoft.AspNetCore.Components
         /// </param>
         /// <param name="locationAbsolute">An absolute URI that is within the space of the base URI.</param>
         /// <returns>A relative URI path.</returns>
-        public string ToBaseRelativePath(string baseUri, string locationAbsolute)
+        public static string ToBaseRelativePath(string baseUri, string locationAbsolute)
         {
             if (locationAbsolute.StartsWith(baseUri, StringComparison.Ordinal))
             {
@@ -177,7 +169,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="uri">The URI. Must be an absolute URI.</param>
         /// <remarks>
-        /// Calling <see cref="SetAbsoluteUri(string)"/> does not trigger <see cref="OnLocationChanged"/>.
+        /// Calling <see cref="SetAbsoluteUri(string)"/> does not trigger <see cref="LocationChanged"/>.
         /// </remarks>
         protected void SetAbsoluteUri(string uri)
         {
@@ -189,7 +181,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="baseUri">The base URI. Must be an absolute URI.</param>
         /// <remarks>
-        /// Calling <see cref="SetAbsoluteBaseUri(string)"/> does not trigger <see cref="OnLocationChanged"/>.
+        /// Calling <see cref="SetAbsoluteBaseUri(string)"/> does not trigger <see cref="LocationChanged"/>.
         /// </remarks>
         protected void SetAbsoluteBaseUri(string baseUri)
         {
@@ -207,11 +199,11 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Triggers the <see cref="OnLocationChanged"/> event with the current URI value.
+        /// Triggers the <see cref="LocationChanged"/> event with the current URI value.
         /// </summary>
-        protected void TriggerOnLocationChanged(bool isinterceptedLink)
+        protected void NotifyLocationChanged(bool isInterceptedLink)
         {
-            _onLocationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isinterceptedLink));
+            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isInterceptedLink));
         }
 
         private void AssertInitialized()

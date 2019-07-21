@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
             var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
-            InitializeState(uri, baseUri);
+            Initialize(uri, baseUri);
         }
 
         /// <inheritdoc />
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         public static void NotifyLocationChanged(string newAbsoluteUri, bool isInterceptedLink)
         {
             Instance.SetAbsoluteUri(newAbsoluteUri);
-            Instance.TriggerOnLocationChanged(isInterceptedLink);
+            Instance.NotifyLocationChanged(isInterceptedLink);
         }
 
         /// <summary>

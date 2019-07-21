@@ -13,12 +13,12 @@
     protected override void OnInitialized()
     {
         UrlLocation = NavigationManager.GetAbsoluteUri();
-        NavigationManager.OnLocationChanged += OnLocationChanged;
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
     void IDisposable.Dispose()
     {
-        NavigationManager.OnLocationChanged -= OnLocationChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 
     void OnLocationChanged(object sender, LocationChangedEventArgs e)

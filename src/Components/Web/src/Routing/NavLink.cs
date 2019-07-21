@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         protected override void OnInitialized()
         {
             // We'll consider re-rendering on each location change
-            NavigationManger.OnLocationChanged += OnLocationChanged;
+            NavigationManger.LocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
-            NavigationManger.OnLocationChanged -= OnLocationChanged;
+            NavigationManger.LocationChanged -= OnLocationChanged;
         }
 
         private void UpdateCssClass()

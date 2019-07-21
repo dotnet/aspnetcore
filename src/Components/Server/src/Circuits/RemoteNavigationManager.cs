@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// <summary>
     /// A Server-Side Components implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class RemoteNavigationManager : NavigationManager
+    public class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
         private readonly ILogger<RemoteNavigationManager> _logger;
         private IJSRuntime _jsRuntime;
@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public bool HasAttachedJSRuntime => _jsRuntime != null;
 
         /// <summary>
-        /// Initializes the <see cref="RemoteNavigationManager"/>.
+        /// Initializes the <see cref="NavigationManager" />.
         /// </summary>
-        /// <param name="uriAbsolute">The absolute URI of the current page.</param>
-        /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
-        public override void InitializeState(string uriAbsolute, string baseUriAbsolute)
+        /// <param name="absoluteUri">The absolute URI.</param>
+        /// <param name="baseUri">The base URI.</param>
+        public new void Initialize(string absoluteUri, string baseUri)
         {
-            base.InitializeState(uriAbsolute, baseUriAbsolute);
-            TriggerOnLocationChanged(isinterceptedLink: false);
+            base.Initialize(absoluteUri, baseUri);
+            NotifyLocationChanged(isInterceptedLink: false);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Log.ReceivedLocationChangedNotification(navigationManager._logger, uriAbsolute, isInterceptedLink);
 
             navigationManager.SetAbsoluteUri(uriAbsolute);
-            navigationManager.TriggerOnLocationChanged(isInterceptedLink);
+            navigationManager.NotifyLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />

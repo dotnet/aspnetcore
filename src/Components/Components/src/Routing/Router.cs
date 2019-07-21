@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _renderHandle = renderHandle;
             _baseUri = NavigationManager.GetBaseUri();
             _locationAbsolute = NavigationManager.GetAbsoluteUri();
-            NavigationManager.OnLocationChanged += OnLocationChanged;
+            NavigationManager.LocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public void Dispose()
         {
-            NavigationManager.OnLocationChanged -= OnLocationChanged;
+            NavigationManager.LocationChanged -= OnLocationChanged;
         }
 
         private string StringUntilAny(string str, char[] chars)

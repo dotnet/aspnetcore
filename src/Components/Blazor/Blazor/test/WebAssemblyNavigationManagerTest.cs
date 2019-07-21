@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/", "scheme://host/path/more#hash", "more#hash")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
         {
-            var actualResult = _navigationManager.ToBaseRelativePath(baseUri, absoluteUri);
+            var actualResult = WebAssemblyNavigationManager.ToBaseRelativePath(baseUri, absoluteUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                _navigationManager.ToBaseRelativePath(baseUri, absoluteUri);
+                WebAssemblyNavigationManager.ToBaseRelativePath(baseUri, absoluteUri);
             });
 
             Assert.Equal(

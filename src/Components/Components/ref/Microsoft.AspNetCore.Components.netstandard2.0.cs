@@ -308,19 +308,18 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class NavigationManager
     {
         protected NavigationManager() { }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> LocationChanged { add { } remove { } }
         protected virtual void EnsureInitialized() { }
         public string GetAbsoluteUri() { throw null; }
         public virtual string GetBaseUri() { throw null; }
-        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
-        public void NavigateTo(string uri) { }
-        public void NavigateTo(string uri, bool forceLoad) { }
+        protected void Initialize(string uriAbsolute, string baseUriAbsolute) { }
+        public void NavigateTo(string uri, bool forceLoad = false) { }
         protected abstract void NavigateToCore(string uri, bool forceLoad);
+        protected void NotifyLocationChanged(bool isInterceptedLink) { }
         protected void SetAbsoluteBaseUri(string baseUri) { }
         protected void SetAbsoluteUri(string uri) { }
-        public System.Uri ToAbsoluteUri(string href) { throw null; }
-        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
+        public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
+        public static string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
     }
     public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {
@@ -627,16 +626,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    public partial interface IHostEnvironmentNavigationManager
+    {
+        void Initialize(string absoluteUri, string baseUri);
+    }
     public partial interface INavigationInterception
     {
         System.Threading.Tasks.Task EnableNavigationInterceptionAsync();
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct LocationChangedEventArgs
+    public partial class LocationChangedEventArgs : System.EventArgs
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { throw null; }
+        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { }
         public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }

@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
@@ -77,8 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                     authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
                 }
 
-                var navigationManager = (NavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-                navigationManager.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+                var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
+                navigationManager?.Initialize(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
             }
         }
 
