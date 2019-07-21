@@ -79,14 +79,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 () => Browser.FindElement(By.TagName("strong")).Text);
         }
 
-        [Fact]
-        public async Task CanRedirectDuringPrerendering()
+        [Theory]
+        [InlineData("base/relative", "prerendered/base/relative")]
+        [InlineData("/root/relative", "/root/relative")]
+        [InlineData("http://absolute/url", "http://absolute/url")]
+        public async Task CanRedirectDuringPrerendering(string destinationParam, string expectedRedirectionLocation)
         {
-            var targetUri = new Uri(_serverFixture.RootUri, "prerendered/prerendered-redirection?destination=prerendered-transition");
+            var requestUri = new Uri(
+                _serverFixture.RootUri,
+                "prerendered/prerendered-redirection?destination=" + destinationParam);
+
             var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-            var response = await httpClient.GetAsync(targetUri);
+            var response = await httpClient.GetAsync(requestUri);
+
+            var expectedUri = new Uri(_serverFixture.RootUri, expectedRedirectionLocation);
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("prerendered-transition", response.Headers.Location.ToString());
+            Assert.Equal(expectedUri, response.Headers.Location);
         }
 
         private void BeginInteractivity()
