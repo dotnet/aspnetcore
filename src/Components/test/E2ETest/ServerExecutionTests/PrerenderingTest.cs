@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -73,6 +77,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal(
                 _serverFixture.RootUri + url,
                 () => Browser.FindElement(By.TagName("strong")).Text);
+        }
+
+        [Fact]
+        public async Task CanRedirectDuringPrerendering()
+        {
+            var targetUri = new Uri(_serverFixture.RootUri, "prerendered/prerendered-redirection?destination=prerendered-transition");
+            var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+            var response = await httpClient.GetAsync(targetUri);
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("prerendered-transition", response.Headers.Location.ToString());
         }
 
         private void BeginInteractivity()
