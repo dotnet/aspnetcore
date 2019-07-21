@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 length = writer.GetMemory().Length;
                 writer.Advance(length);
                 return Task.CompletedTask;
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            using var response = await client.GetAsync("/");
-            var bytes = await response.Content.ReadAsByteArrayAsync();
+            using var response = await client.GetAsync("/").WithTimeout();
+            var bytes = await response.Content.ReadAsByteArrayAsync().WithTimeout();
             Assert.Equal(length, bytes.Length);
         }
 
@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 var writer = httpContext.Response.BodyWriter;
                 length = writer.GetMemory().Length;
                 writer.Advance(length);
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            using var response = await client.GetAsync("/");
-            var bytes = await response.Content.ReadAsByteArrayAsync();
+            using var response = await client.GetAsync("/").WithTimeout();
+            var bytes = await response.Content.ReadAsByteArrayAsync().WithTimeout();
             Assert.Equal(length, bytes.Length);
         }
 

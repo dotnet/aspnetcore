@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.TestHost
                 httpContext.Abort();
 
                 await requestAborted.Task.WithTimeout();
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
+            var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead)).WithTimeout();
             Assert.Equal("The application aborted the request.", ex.Message);
             await requestAborted.Task.WithTimeout();
         }
@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 httpContext.Abort();
                 await abortReceived.Task.WithTimeout();
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead));
+            var ex = await Assert.ThrowsAsync<Exception>(() => client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead)).WithTimeout();
             Assert.Equal("The application aborted the request.", ex.Message);
             abortReceived.SetResult(0);
         }
@@ -60,13 +60,13 @@ namespace Microsoft.AspNetCore.TestHost
                 await responseReceived.Task.WithTimeout();
                 httpContext.Abort();
                 await abortReceived.Task.WithTimeout();
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead).WithTimeout();
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
-            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync()).WithTimeout();
             var rex = ex.GetBaseException();
             Assert.Equal("The application aborted the request.", rex.Message);
             abortReceived.SetResult(0);
@@ -83,13 +83,13 @@ namespace Microsoft.AspNetCore.TestHost
                 await responseReceived.Task.WithTimeout();
                 httpContext.Abort();
                 await abortReceived.Task.WithTimeout();
-            });
+            }).WithTimeout();
 
             using var client = host.GetTestServer().CreateClient();
-            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead).WithTimeout();
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
-            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync()).WithTimeout();
             var rex = ex.GetBaseException();
             Assert.Equal("The application aborted the request.", rex.Message);
             abortReceived.SetResult(0);

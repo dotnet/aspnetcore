@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var client = server.CreateClient();
 
             // Act
-            var actual = await client.GetStringAsync("http://localhost:12345");
+            var actual = await client.GetStringAsync("http://localhost:12345").WithTimeout();
 
             // Assert
             Assert.Equal(expected, actual);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var client = server.CreateClient();
 
             // Act
-            var actual = await client.GetStringAsync("http://localhost:12345");
+            var actual = await client.GetStringAsync("http://localhost:12345").WithTimeout();
 
             // Assert
             Assert.Equal(expected, actual);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var client = server.CreateClient();
 
             // Act
-            var actual = await client.GetStringAsync("http://localhost:12345/");
+            var actual = await client.GetStringAsync("http://localhost:12345/").WithTimeout();
 
             // Assert
             Assert.Equal(expected, actual);
@@ -96,10 +96,10 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var content = new StringContent("Hello world");
-            using var response = await client.PutAsync("http://localhost:12345", content);
+            using var response = await client.PutAsync("http://localhost:12345", content).WithTimeout();
 
             // Assert
-            Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync());
+            Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync().WithTimeout());
         }
 
         [Fact]
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var content = new StringContent("Hello world");
-            using var response = await client.PostAsync("http://localhost:12345", content);
+            using var response = await client.PostAsync("http://localhost:12345", content).WithTimeout();
 
             // Assert
-            Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync());
+            Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync().WithTimeout());
         }
 
         [Fact]
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var client = server.CreateClient();
 
             // Act & Assert
-            using var response = await client.GetAsync("http://localhost:12345");
+            using var response = await client.GetAsync("http://localhost:12345").WithTimeout();
         }
 
         private class TestDisposable : IDisposable
@@ -204,28 +204,28 @@ namespace Microsoft.AspNetCore.TestHost
             // Act
             var client = server.CreateWebSocketClient();
             // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
-            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None);
+            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None).WithTimeout();
             var hello = Encoding.UTF8.GetBytes("hello");
-            await clientSocket.SendAsync(new System.ArraySegment<byte>(hello), WebSocketMessageType.Text, true, CancellationToken.None);
+            await clientSocket.SendAsync(new System.ArraySegment<byte>(hello), WebSocketMessageType.Text, true, CancellationToken.None).WithTimeout();
             var world = Encoding.UTF8.GetBytes("world!");
-            await clientSocket.SendAsync(new System.ArraySegment<byte>(world), WebSocketMessageType.Binary, true, CancellationToken.None);
-            await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
+            await clientSocket.SendAsync(new System.ArraySegment<byte>(world), WebSocketMessageType.Binary, true, CancellationToken.None).WithTimeout();
+            await clientSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None).WithTimeout();
 
             // Assert
             Assert.Equal(WebSocketState.CloseSent, clientSocket.State);
 
             var buffer = new byte[1024];
-            var result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
+            var result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None).WithTimeout();
             Assert.Equal(hello.Length, result.Count);
             Assert.True(hello.SequenceEqual(buffer.Take(hello.Length)));
             Assert.Equal(WebSocketMessageType.Text, result.MessageType);
 
-            result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
+            result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None).WithTimeout();
             Assert.Equal(world.Length, result.Count);
             Assert.True(world.SequenceEqual(buffer.Take(world.Length)));
             Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
 
-            result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
+            result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None).WithTimeout();
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketState.Closed, clientSocket.State);
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.TestHost
             tokenSource.Cancel();
 
             // Assert
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new Uri("http://localhost"), tokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new Uri("http://localhost"), tokenSource.Token).WithTimeout());
         }
 
         private class VerifierLogger : ILogger<IWebHost>
@@ -311,9 +311,9 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var client = server.CreateWebSocketClient();
-            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None);
+            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None).WithTimeout();
             var buffer = new byte[1024];
-            await Assert.ThrowsAsync<IOException>(async () => await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None));
+            await Assert.ThrowsAsync<IOException>(async () => await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None).WithTimeout());
 
             clientSocket.Dispose();
         }
@@ -344,16 +344,16 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Act
             var client = server.CreateWebSocketClient();
-            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None);
+            var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None).WithTimeout();
             var hello = Encoding.UTF8.GetBytes("hello");
-            await clientSocket.SendAsync(new System.ArraySegment<byte>(hello), WebSocketMessageType.Text, true, CancellationToken.None);
+            await clientSocket.SendAsync(new System.ArraySegment<byte>(hello), WebSocketMessageType.Text, true, CancellationToken.None).WithTimeout();
 
             // Assert
             var buffer = new byte[1];
             for (var i = 0; i < hello.Length; i++)
             {
                 bool last = i == (hello.Length - 1);
-                var result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None);
+                var result = await clientSocket.ReceiveAsync(new System.ArraySegment<byte>(buffer), CancellationToken.None).WithTimeout();
                 Assert.Equal(buffer.Length, result.Count);
                 Assert.Equal(buffer[0], hello[i]);
                 Assert.Equal(last, result.EndOfMessage);
@@ -388,12 +388,12 @@ namespace Microsoft.AspNetCore.TestHost
             using var server = new TestServer(builder);
             using var client = server.CreateClient();
             using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
-            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).WithTimeout();
             // Abort Request
             response.Dispose();
 
             // Assert
-            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task).WithTimeout();
         }
 
         [Fact]
@@ -417,9 +417,9 @@ namespace Microsoft.AspNetCore.TestHost
             using var server = new TestServer(builder);
             using var client = server.CreateClient();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
+            var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token)).WithTimeout();
 
-            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task).WithTimeout();
         }
 
         [Fact]
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.TestHost
             using var server = new TestServer(builder);
             using var client = server.CreateClient();
 
-            using var resp = await client.GetAsync("/");
+            using var resp = await client.GetAsync("/").WithTimeout();
 
             Assert.NotSame(value, capturedValue);
         }
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.TestHost
             };
             using var client = server.CreateClient();
 
-            using var resp = await client.GetAsync("/");
+            using var resp = await client.GetAsync("/").WithTimeout();
 
             Assert.Same(value, capturedValue);
         }
