@@ -165,6 +165,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization"));
         }
 
+        [Fact]
+        public async Task CannotInvokeOnLocationChangedBeforeInitialization()
+        {
+            // Arrange
+            var expectedError = "Circuit not initialized.";
+            var rootUri = _serverFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.Empty(Batches);
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "OnLocationChanged",
+                baseUri.AbsoluteUri,
+                false));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnLocationChanged' received before the circuit host initialization"));
+        }
+
         public void Dispose()
         {
             TestSink.MessageLogged -= LogMessages;
