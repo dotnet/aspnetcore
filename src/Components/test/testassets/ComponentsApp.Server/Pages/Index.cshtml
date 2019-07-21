@@ -20,7 +20,11 @@
             configureSignalR: function (builder) {
                 builder.configureLogging(2); // LogLevel.Information
             },
-            logLevel: 2 // LogLevel.Information
+            logLevel: 2, // LogLevel.Information
+            reconnectionOptions: {
+                maxRetries: 3,
+                retryIntervalMilliseconds: 2000,
+            }
         }).then(function () {
             window['__aspnetcore__testing__blazor__started__'] = true;
         });
