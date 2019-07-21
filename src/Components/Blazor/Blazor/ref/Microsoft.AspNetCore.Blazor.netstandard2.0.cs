@@ -70,10 +70,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 }
 namespace Microsoft.AspNetCore.Blazor.Services
 {
-    public partial class WebAssemblyUriHelper : Microsoft.AspNetCore.Components.UriHelperBase
+    public partial class WebAssemblyNavigationManager : Microsoft.AspNetCore.Components.NavigationManager
     {
-        internal WebAssemblyUriHelper() { }
-        public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyUriHelper Instance;
+        internal WebAssemblyNavigationManager() { }
+        public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyNavigationManager Instance;
         protected override void EnsureInitialized() { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]

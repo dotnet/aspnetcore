@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components.Routing;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// A base class for <see cref="IUriHelper"/> implementations.
+    /// Provides an abstraction for querying and mananging URI navigation.
     /// </summary>
-    public abstract class UriHelperBase : IUriHelper
+    public abstract class NavigationManager
     {
         private EventHandler<LocationChangedEventArgs> _onLocationChanged;
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components
 
             if (_isInitialized)
             {
-                throw new InvalidOperationException($"'{typeof(UriHelperBase).Name}' already initialized.");
+                throw new InvalidOperationException($"'{typeof(NavigationManager).Name}' already initialized.");
             }
             _isInitialized = true;
 

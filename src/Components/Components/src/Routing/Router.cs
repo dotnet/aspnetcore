@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         bool _navigationInterceptionEnabled;
         ILogger<Router> _logger;
 
-        [Inject] private IUriHelper UriHelper { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private INavigationInterception NavigationInterception { get; set; }
 
@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             _logger = LoggerFactory.CreateLogger<Router>();
             _renderHandle = renderHandle;
-            _baseUri = UriHelper.GetBaseUri();
-            _locationAbsolute = UriHelper.GetAbsoluteUri();
-            UriHelper.OnLocationChanged += OnLocationChanged;
+            _baseUri = NavigationManager.GetBaseUri();
+            _locationAbsolute = NavigationManager.GetAbsoluteUri();
+            NavigationManager.OnLocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public void Dispose()
         {
-            UriHelper.OnLocationChanged -= OnLocationChanged;
+            NavigationManager.OnLocationChanged -= OnLocationChanged;
         }
 
         private string StringUntilAny(string str, char[] chars)
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private void Refresh(bool isNavigationIntercepted)
         {
-            var locationPath = UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
+            var locationPath = NavigationManager.ToBaseRelativePath(_baseUri, _locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 else
                 {
                     Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
-                    UriHelper.NavigateTo(_locationAbsolute, forceLoad: true);
+                    NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
                 }
             }
         }

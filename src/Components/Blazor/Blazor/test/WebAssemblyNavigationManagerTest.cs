@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Services.Test
 {
-    public class WebAssemblyUriHelperTest
+    public class WebAssemblyNavigationManagerTest
     {
-        private WebAssemblyUriHelper _uriHelper = new WebAssemblyUriHelper();
+        private WebAssemblyNavigationManager _navigationManager = new WebAssemblyNavigationManager();
 
         [Theory]
         [InlineData("scheme://host/", "scheme://host/")]
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path/")]
         public void ComputesCorrectBaseUri(string baseUri, string expectedResult)
         {
-            var actualResult = WebAssemblyUriHelper.ToBaseUri(baseUri);
+            var actualResult = WebAssemblyNavigationManager.ToBaseUri(baseUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/", "scheme://host/path/more#hash", "more#hash")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
         {
-            var actualResult = _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+            var actualResult = _navigationManager.ToBaseRelativePath(baseUri, absoluteUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+                _navigationManager.ToBaseRelativePath(baseUri, absoluteUri);
             });
 
             Assert.Equal(

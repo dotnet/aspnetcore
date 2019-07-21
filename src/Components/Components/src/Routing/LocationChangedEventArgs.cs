@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Components.Routing
 {
     /// <summary>
-    /// <see cref="EventArgs" /> for <see cref="IUriHelper.OnLocationChanged" />.
+    /// <see cref="EventArgs" /> for <see cref="NavigationManager.OnLocationChanged" />.
     /// </summary>
     public readonly struct LocationChangedEventArgs
     {

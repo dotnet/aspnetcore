@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter]
         public NavLinkMatch Match { get; set; }
 
-        [Inject] private IUriHelper UriHelper { get; set; }
+        [Inject] private NavigationManager NavigationManger { get; set; }
 
         /// <inheritdoc />
         protected override void OnInitialized()
         {
             // We'll consider re-rendering on each location change
-            UriHelper.OnLocationChanged += OnLocationChanged;
+            NavigationManger.OnLocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Components.Routing
                 href = Convert.ToString(obj);
             }
 
-            _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
-            _isActive = ShouldMatch(UriHelper.GetAbsoluteUri());
+            _hrefAbsolute = href == null ? null : NavigationManger.ToAbsoluteUri(href).AbsoluteUri;
+            _isActive = ShouldMatch(NavigationManger.GetAbsoluteUri());
 
             _class = (string)null;
             if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             // To avoid leaking memory, it's important to detach any event handlers in Dispose()
-            UriHelper.OnLocationChanged -= OnLocationChanged;
+            NavigationManger.OnLocationChanged -= OnLocationChanged;
         }
 
         private void UpdateCssClass()

@@ -4,24 +4,24 @@
 using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {
     /// <summary>
-    /// Default client-side implementation of <see cref="IUriHelper"/>.
+    /// Default client-side implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class WebAssemblyUriHelper : UriHelperBase
+    public class WebAssemblyNavigationManager : NavigationManager
     {
         /// <summary>
-        /// Gets the instance of <see cref="WebAssemblyUriHelper"/>.
+        /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.
         /// </summary>
-        public static readonly WebAssemblyUriHelper Instance = new WebAssemblyUriHelper();
+        public static readonly WebAssemblyNavigationManager Instance = new WebAssemblyNavigationManager();
 
-        // For simplicity we force public consumption of the BrowserUriHelper through
+        // For simplicity we force public consumption of the BrowserNavigationManager through
         // a singleton. Only a single instance can be updated by the browser through
         // interop. We can construct instances for testing.
-        internal WebAssemblyUriHelper()
+        internal WebAssemblyNavigationManager()
         {
         }
 
@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Blazor.Services
         {
             WebAssemblyJSRuntime.Instance.Invoke<object>(
                 Interop.ListenForNavigationEvents,
-                typeof(WebAssemblyUriHelper).Assembly.GetName().Name,
+                typeof(WebAssemblyNavigationManager).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
 
-            // As described in the comment block above, BrowserUriHelper is only for
+            // As described in the comment block above, BrowserNavigationManager is only for
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
             var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);

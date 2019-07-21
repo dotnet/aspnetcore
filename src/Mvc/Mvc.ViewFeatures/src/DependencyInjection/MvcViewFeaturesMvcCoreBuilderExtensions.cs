@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Component prerendering
             //
             services.TryAddScoped<StaticComponentRenderer>();
-            services.TryAddScoped<IUriHelper, HttpUriHelper>();
+            services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<IComponentContext, UnsupportedComponentContext>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();

@@ -2,26 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
-    /// A Server-Side Components implementation of <see cref="IUriHelper"/>.
+    /// A Server-Side Components implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class RemoteUriHelper : UriHelperBase
+    public class RemoteNavigationManager : NavigationManager
     {
-        private readonly ILogger<RemoteUriHelper> _logger;
+        private readonly ILogger<RemoteNavigationManager> _logger;
         private IJSRuntime _jsRuntime;
 
         /// <summary>
-        /// Creates a new <see cref="RemoteUriHelper"/> instance.
+        /// Creates a new <see cref="RemoteNavigationManager"/> instance.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
-        public RemoteUriHelper(ILogger<RemoteUriHelper> logger)
+        public RemoteNavigationManager(ILogger<RemoteNavigationManager> logger)
         {
             _logger = logger;
         }
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public bool HasAttachedJSRuntime => _jsRuntime != null;
 
         /// <summary>
-        /// Initializes the <see cref="RemoteUriHelper"/>.
+        /// Initializes the <see cref="RemoteNavigationManager"/>.
         /// </summary>
         /// <param name="uriAbsolute">The absolute URI of the current page.</param>
         /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         /// <summary>
-        /// Initializes the <see cref="RemoteUriHelper"/>.
+        /// Initializes the <see cref="RemoteNavigationManager"/>.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
         internal void AttachJsRuntime(IJSRuntime jsRuntime)
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _jsRuntime.InvokeAsync<object>(
                 Interop.ListenForNavigationEvents,
-                typeof(RemoteUriHelper).Assembly.GetName().Name,
+                typeof(RemoteNavigationManager).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
         }
 
@@ -74,11 +75,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new InvalidOperationException(message);
             }
 
-            var uriHelper = (RemoteUriHelper)circuit.Services.GetRequiredService<IUriHelper>();
-            Log.ReceivedLocationChangedNotification(uriHelper._logger, uriAbsolute, isInterceptedLink);
+            var navigationManager = (RemoteNavigationManager)circuit.Services.GetRequiredService<NavigationManager>();
+            Log.ReceivedLocationChangedNotification(navigationManager._logger, uriAbsolute, isInterceptedLink);
 
-            uriHelper.SetAbsoluteUri(uriAbsolute);
-            uriHelper.TriggerOnLocationChanged(isInterceptedLink);
+            navigationManager.SetAbsoluteUri(uriAbsolute);
+            navigationManager.TriggerOnLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />

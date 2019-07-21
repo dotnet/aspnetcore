@@ -222,8 +222,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         {
             var services = new ServiceCollection();
             services.AddSingleton(HtmlEncoder.Default);
-            services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
-            services.AddSingleton<IUriHelper,HttpUriHelper>();
+            services.AddSingleton<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.AddSingleton<NavigationManager, HttpNavigationManager>();
             services.AddSingleton<StaticComponentRenderer>();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
 
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
         private class RedirectComponent : ComponentBase
         {
-            [Inject] IUriHelper UriHelper { get; set; }
+            [Inject] NavigationManager NavigationManager { get; set; }
 
             [Parameter] public string RedirectUri { get; set; }
 
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
             protected override void OnInitialized()
             {
-                UriHelper.NavigateTo(RedirectUri, Force);
+                NavigationManager.NavigateTo(RedirectUri, Force);
             }
         }
 

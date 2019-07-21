@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                     authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
                 }
 
-                var helper = (UriHelperBase)httpContext.RequestServices.GetRequiredService<IUriHelper>();
-                helper.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+                var navigationManager = (NavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
+                navigationManager.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
             }
         }
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         private string GetContextBaseUri(HttpRequest request)
         {
             var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
-            
+
             // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
             // it has to end with a trailing slash
             return result.EndsWith("/") ? result : result += "/";

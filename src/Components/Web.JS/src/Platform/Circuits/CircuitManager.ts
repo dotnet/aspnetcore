@@ -1,4 +1,4 @@
-import { internalFunctions as uriHelperFunctions } from '../../Services/UriHelper';
+import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 
 export class CircuitDescriptor {
   public circuitId: string;
@@ -13,7 +13,7 @@ export class CircuitDescriptor {
 }
 
 export async function startCircuit(connection: signalR.HubConnection): Promise<CircuitDescriptor> {
-  const result = await connection.invoke<string>('StartCircuit', uriHelperFunctions.getLocationHref(), uriHelperFunctions.getBaseURI());
+  const result = await connection.invoke<string>('StartCircuit', navigationManagerFunctions.getLocationHref(), navigationManagerFunctions.getBaseURI());
   if (result) {
     return new CircuitDescriptor(result);
   } else {

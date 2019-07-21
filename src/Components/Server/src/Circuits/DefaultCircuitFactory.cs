@@ -51,12 +51,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
 
-            var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
+            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+            if (authenticationStateProvider != null)
+            {
+                var authenticationState = new AuthenticationState(httpContext.User); // TODO: Get this from the hub connection context instead
+                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            }
+
+            var navigationManaaer = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
             {
-                uriHelper.AttachJsRuntime(jsRuntime);
-                uriHelper.InitializeState(
+                navigationManager.AttachJsRuntime(jsRuntime);
+                navigationManager.InitializeState(
                     uriAbsolute,
                     baseUriAbsolute);
 
@@ -64,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                uriHelper.InitializeState(uriAbsolute, baseUriAbsolute);
+                navigationManager.InitializeState(uriAbsolute, baseUriAbsolute);
             }
 
             var rendererRegistry = new RendererRegistry();
