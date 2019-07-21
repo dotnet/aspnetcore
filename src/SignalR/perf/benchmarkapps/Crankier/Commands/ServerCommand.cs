@@ -16,34 +16,38 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
     internal class ServerCommand
     {
-        public static void Register(CommandLineApplication app, params string[] args)
+        public static void Register(CommandLineApplication app)
         {
             app.Command("server", cmd =>
             {
+                var logLevelOption = cmd.Option("--log <LOG_LEVEL>", "The LogLevel to use.", CommandOptionType.SingleValue);
+
                 cmd.OnExecute(() =>
                 {
-                    return Execute();
+                    LogLevel logLevel = Defaults.LogLevel;
+
+                    if (logLevelOption.HasValue() && !Enum.TryParse(logLevelOption.Value(), out logLevel))
+                    {
+                        return InvalidArg(logLevelOption);
+                    }
+                    return Execute(logLevel);
                 });
             });
         }
 
-        private static int Execute(params string[] args)
+        private static int Execute(LogLevel logLevel)
         {
             Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
 
             var config = new ConfigurationBuilder()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-                .AddCommandLine(args)
                 .Build();
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .ConfigureLogging(loggerFactory =>
                 {
-                    if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
-                    {
-                        loggerFactory.AddConsole().SetMinimumLevel(logLevel);
-                    }
+                    loggerFactory.AddConsole().SetMinimumLevel(logLevel);   
                 })
                 .UseKestrel()
                 .UseStartup<Startup>();
