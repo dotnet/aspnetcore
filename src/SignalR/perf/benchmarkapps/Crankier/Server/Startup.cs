@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.SignalR.Crankier
+namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 {
     public class Startup
     {
@@ -24,6 +24,10 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             })
             // TODO: Json vs NewtonsoftJson option
             .AddMessagePackProtocol();
+
+            services.AddSingleton<ConnectionCounter>();
+
+            services.AddHostedService<ConnectionCounterHostedService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

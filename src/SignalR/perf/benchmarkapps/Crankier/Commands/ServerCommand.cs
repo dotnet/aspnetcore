@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR.Crankier.Server;
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {

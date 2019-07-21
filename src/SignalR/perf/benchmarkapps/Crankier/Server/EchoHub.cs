@@ -6,10 +6,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Microsoft.AspNetCore.SignalR.Crankier
+namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 {
     public class EchoHub : Hub
     {
+        private ConnectionCounter _counter;
+
+        public EchoHub(ConnectionCounter counter)
+        {
+            _counter = counter;
+        }
+
         public async Task Broadcast(int duration)
         {
             var sent = 0;
@@ -28,6 +35,17 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 Console.WriteLine(e);
             }
             Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
+        }
+
+        public override Task OnConnectedAsync()
+        {
+            _counter?.Connected();
+            return Task.CompletedTask;
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception) {
+            _counter?.Disconnected();
+            return Task.CompletedTask;
         }
 
         public DateTime Echo(DateTime time)
