@@ -428,10 +428,6 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                     writer.Write(bytes);
                     break;
 
-                case Exception exception:
-                    writer.Write(exception.ToString());
-                    break;
-
                 default:
                     throw new FormatException($"Unsupported argument type {argument.GetType()}");
             }
@@ -460,13 +456,6 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                 else if (type == typeof(float))
                 {
                     return reader.ReadSingle();
-                }
-                else if (type == typeof(byte[]))
-                {
-                    var bytes = reader.ReadBytes();
-                    // MessagePack ensures there are at least as many bytes in the message as declared by the byte header.
-                    // Consequently it is safe to do ToArray on the returned SequenceReader instance.
-                    return bytes.ToArray();
                 }
             }
             catch (Exception ex)
