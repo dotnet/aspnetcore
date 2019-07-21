@@ -55,6 +55,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }
 
+        [Fact]
+        public void CanReadUrlHashOnlyOnceConnected()
+        {
+            var urlWithoutHash = "prerendered/show-uri?my=query&another=value";
+            var url = $"{urlWithoutHash}#some/hash?tokens";
+
+            // The server doesn't receive the hash part of the URL, so you can't
+            // read it during prerendering
+            Navigate(url);
+            Browser.Equal(
+                _serverFixture.RootUri + urlWithoutHash,
+                () => Browser.FindElement(By.TagName("strong")).Text);
+
+            // Once connected, you do have access to the full URL
+            BeginInteractivity();
+            Browser.Equal(
+                _serverFixture.RootUri + url,
+                () => Browser.FindElement(By.TagName("strong")).Text);
+        }
+
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
