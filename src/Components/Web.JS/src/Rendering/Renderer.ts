@@ -9,6 +9,7 @@ interface BrowserRendererRegistry {
   [browserRendererId: number]: BrowserRenderer;
 }
 const browserRenderers: BrowserRendererRegistry = {};
+let shouldResetScrollAfterNextBatch = false;
 
 export function attachRootComponentToLogicalElement(browserRendererId: number, logicalElement: LogicalElement, componentId: number): void {
 
@@ -66,5 +67,21 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
   for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
     const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
     browserRenderer.disposeEventHandler(eventHandlerId);
+  }
+
+  resetScrollIfNeeded();
+}
+
+export function resetScrollAfterNextBatch() {
+  shouldResetScrollAfterNextBatch = true;
+}
+
+function resetScrollIfNeeded() {
+  if (shouldResetScrollAfterNextBatch) {
+    shouldResetScrollAfterNextBatch = false;
+
+    // This assumes the scroller is on the window itself. There isn't a general way to know
+    // if some other element is playing the role of the primary scroll region.
+    window.scrollTo && window.scrollTo(0, 0);
   }
 }
