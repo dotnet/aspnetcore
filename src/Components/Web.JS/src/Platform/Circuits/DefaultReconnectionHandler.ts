@@ -6,19 +6,26 @@ import { Logger, LogLevel } from '../Logging/Logger';
 
 export class DefaultReconnectionHandler implements ReconnectionHandler {
   private readonly _logger: Logger;
-  private readonly _overrideDisplay?: ReconnectDisplay;
   private readonly _reconnectCallback: () => Promise<boolean>;
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
+  private _reconnectionDisplay?: ReconnectDisplay;
 
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
     this._logger = logger;
-    this._overrideDisplay = overrideDisplay;
+    this._reconnectionDisplay = overrideDisplay;
     this._reconnectCallback = reconnectCallback || (() => window['Blazor'].reconnect());
   }
 
   onConnectionDown (options: ReconnectionOptions, error?: Error) {
+    if (!this._reconnectionDisplay) {
+      const modal = document.getElementById(options.dialogId);
+      this._reconnectionDisplay = modal
+          ? new UserSpecifiedDisplay(modal)
+          : new DefaultReconnectDisplay(options.dialogId, document);
+    }
+
     if (!this._currentReconnectionProcess) {
-      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._overrideDisplay);
+      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay!);
     }
   }
 
@@ -34,12 +41,8 @@ class ReconnectionProcess {
   readonly reconnectDisplay: ReconnectDisplay;
   isDisposed = false;
 
-  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, display?: ReconnectDisplay) {
-    const modal = document.getElementById(options.dialogId);
-    this.reconnectDisplay = display || (modal
-        ? new UserSpecifiedDisplay(modal)
-        : new DefaultReconnectDisplay(options.dialogId, document));
-
+  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, display: ReconnectDisplay) {
+    this.reconnectDisplay = display;
     this.reconnectDisplay.show();
     this.attemptPeriodicReconnection(options);
   }
