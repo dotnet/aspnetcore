@@ -131,7 +131,7 @@ On macOS/Linux:
 ./build.sh
 ```
 
-By default, only the C# projects are built. Some sub-areas have additional requirements, such as needing Yarn to be installed, before being able to build successfully.
+By default, all of the C# projects are built. Some C# projects requires NodeJS to be installed to compile JavaScript assets. To disable building NodeJS projects and all C# projects that depend on them, specify /p:BuildNodeJs=false on the command line.
 
 ### Using `dotnet` on command line in this repo
 

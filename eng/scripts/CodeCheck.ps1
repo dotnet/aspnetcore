@@ -156,11 +156,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "Re-generating Web.JS files"
-    Invoke-Block {
-        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-    }
-
     Write-Host "Re-generating references assemblies"
     Invoke-Block {
         & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
