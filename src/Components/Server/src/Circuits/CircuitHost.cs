@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHost : IAsyncDisposable
     {
-        private static readonly AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
         private readonly SemaphoreSlim HandlerLock = new SemaphoreSlim(1);
         private readonly IServiceScope _scope;
         private readonly CircuitHandler[] _circuitHandlers;
@@ -25,23 +24,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _initialized;
 
         /// <summary>
-        /// Gets the current <see cref="Circuit"/>, if any.
-        /// </summary>
-        public static CircuitHost Current => _current.Value;
-
-        /// <summary>
         /// Sets the current <see cref="Circuits.Circuit"/>.
         /// </summary>
         /// <param name="circuitHost">The <see cref="Circuits.Circuit"/>.</param>
         /// <remarks>
-        /// Calling <see cref="SetCurrentCircuitHost(CircuitHost)"/> will store the circuit
-        /// and other related values such as the <see cref="IJSRuntime"/> and <see cref="Renderer"/>
+        /// Calling <see cref="SetCurrentCircuitHost(CircuitHost)"/> will store related values such as the
+        /// <see cref="IJSRuntime"/> and <see cref="Renderer"/>
         /// in the local execution context. Application code should not need to call this method,
         /// it is primarily used by the Server-Side Components infrastructure.
         /// </remarks>
         public static void SetCurrentCircuitHost(CircuitHost circuitHost)
         {
-            _current.Value = circuitHost ?? throw new ArgumentNullException(nameof(circuitHost));
+            if (circuitHost is null)
+            {
+                throw new ArgumentNullException(nameof(circuitHost));
+            }
 
             JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
             RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
