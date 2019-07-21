@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
+    [Collection("auth")] // Because auth uses cookies, this can't run in parallel with other auth tests
     public class AuthTest : BasicTestAppTestBase
     {
         // These strings correspond to the links in BasicTestApp\AuthTest\Links.razor
@@ -191,16 +192,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilExists(By.Id("auth-links"));
             appElement.FindElement(By.LinkText(authLinkText)).Click();
             return appElement;
-        }
-
-        void SignInAs(string usernameOrNull, string rolesOrNull)
-        {
-            const string authenticationPageUrl = "/Authentication";
-            var baseRelativeUri = usernameOrNull == null
-                ? $"{authenticationPageUrl}?signout=true"
-                : $"{authenticationPageUrl}?username={usernameOrNull}&roles={rolesOrNull}";
-            Navigate(baseRelativeUri);
-            WaitUntilExists(By.CssSelector("h1#authentication"));
         }
     }
 }

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
@@ -48,6 +48,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             new WebDriverWait(Browser, TimeSpan.FromSeconds(timeoutSeconds))
                 .Until(driver => (result = driver.FindElement(findBy)) != null);
             return result;
+        }
+
+        protected void SignInAs(string usernameOrNull, string rolesOrNull, bool useSeparateTab = false)
+        {
+            const string authenticationPageUrl = "/Authentication";
+            var baseRelativeUri = usernameOrNull == null
+                ? $"{authenticationPageUrl}?signout=true"
+                : $"{authenticationPageUrl}?username={usernameOrNull}&roles={rolesOrNull}";
+
+            if (useSeparateTab)
+            {
+                // Some tests need to change the authentication state without discarding the
+                // original page, but this adds several seconds of delay
+                var javascript = (IJavaScriptExecutor)Browser;
+                var originalWindow = Browser.CurrentWindowHandle;
+                javascript.ExecuteScript("window.open()");
+                Browser.SwitchTo().Window(Browser.WindowHandles.Last());
+                Navigate(baseRelativeUri);
+                WaitUntilExists(By.CssSelector("h1#authentication"));
+                javascript.ExecuteScript("window.close()");
+                Browser.SwitchTo().Window(originalWindow);
+            }
+            else
+            {
+                Navigate(baseRelativeUri);
+                WaitUntilExists(By.CssSelector("h1#authentication"));
+            }
         }
     }
 }
