@@ -66,7 +66,15 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             CircuitHost = null;
-            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            if (exception != null)
+            {
+                return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            }
+            else
+            {
+                Log.CircuitTerminatedGracefully(_logger, circuitHost.CircuitId);
+                return circuitHost.DisposeAsync().AsTask();
+            }
         }
 
         /// <summary>
@@ -246,6 +254,8 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
 
+            private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully.");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
@@ -270,6 +280,8 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
 
             public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
+
+            internal static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
         }
     }
 }
