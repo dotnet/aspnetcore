@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ThrowObjectDisposedException();
             }
 
-            void ThrowObjectDisposedException()
+            static void ThrowObjectDisposedException()
             {
                 throw new ObjectDisposedException(nameof(HttpResponseStream), CoreStrings.WritingToResponseBodyAfterResponseCompleted);
             }

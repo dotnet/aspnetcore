@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
 
-                    var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
-                    if (states.OldState != states.NewState)
+                    var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+                    if (oldState != newState)
                     {
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
@@ -425,9 +425,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Abort(IOException abortReason)
         {
-            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            if (states.OldState == states.NewState)
+            if (oldState == newState)
             {
                 return;
             }
@@ -451,9 +451,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
             // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
-            var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-            if (states.OldState == states.NewState)
+            if (oldState == newState)
             {
                 return;
             }

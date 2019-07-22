@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
-        private bool _showErrorDetails;
+        private readonly bool _showErrorDetails;
 
         public HttpParser() : this(showErrorDetails: true)
         {

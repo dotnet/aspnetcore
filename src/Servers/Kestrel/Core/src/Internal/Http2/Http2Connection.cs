@@ -396,31 +396,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdEven(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            switch (_incomingFrame.Type)
+            return _incomingFrame.Type switch
             {
-                case Http2FrameType.DATA:
-                    return ProcessDataFrameAsync(payload);
-                case Http2FrameType.HEADERS:
-                    return ProcessHeadersFrameAsync(application, payload);
-                case Http2FrameType.PRIORITY:
-                    return ProcessPriorityFrameAsync();
-                case Http2FrameType.RST_STREAM:
-                    return ProcessRstStreamFrameAsync();
-                case Http2FrameType.SETTINGS:
-                    return ProcessSettingsFrameAsync(payload);
-                case Http2FrameType.PUSH_PROMISE:
-                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR);
-                case Http2FrameType.PING:
-                    return ProcessPingFrameAsync(payload);
-                case Http2FrameType.GOAWAY:
-                    return ProcessGoAwayFrameAsync();
-                case Http2FrameType.WINDOW_UPDATE:
-                    return ProcessWindowUpdateFrameAsync();
-                case Http2FrameType.CONTINUATION:
-                    return ProcessContinuationFrameAsync(payload);
-                default:
-                    return ProcessUnknownFrameAsync();
-            }
+                Http2FrameType.DATA => ProcessDataFrameAsync(payload),
+                Http2FrameType.HEADERS => ProcessHeadersFrameAsync(application, payload),
+                Http2FrameType.PRIORITY => ProcessPriorityFrameAsync(),
+                Http2FrameType.RST_STREAM => ProcessRstStreamFrameAsync(),
+                Http2FrameType.SETTINGS => ProcessSettingsFrameAsync(payload),
+                Http2FrameType.PUSH_PROMISE => throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR),
+                Http2FrameType.PING => ProcessPingFrameAsync(payload),
+                Http2FrameType.GOAWAY => ProcessGoAwayFrameAsync(),
+                Http2FrameType.WINDOW_UPDATE => ProcessWindowUpdateFrameAsync(),
+                Http2FrameType.CONTINUATION => ProcessContinuationFrameAsync(payload),
+                _ => ProcessUnknownFrameAsync(),
+            };
         }
 
         private Task ProcessDataFrameAsync(in ReadOnlySequence<byte> payload)

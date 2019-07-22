@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        private object _abortLock = new object();
+        private readonly object _abortLock = new object();
         private volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
@@ -839,12 +839,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task FlushAsyncInternal()
-        {
-            return Output.FlushAsync(default).GetAsTask();
-        }
-
         private void VerifyAndUpdateWrite(int count)
         {
             var responseHeaders = HttpResponseHeaders;
@@ -1554,7 +1548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return await Output.FlushAsync(cancellationToken);
         }
 
-        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
             return WritePipeAsync(data, cancellationToken).GetAsTask();
         }
