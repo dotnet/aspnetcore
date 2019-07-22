@@ -389,6 +389,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void UriHelperCanReadAbsoluteUriIncludingHash()
+        {
+            var app = MountTestComponent<UriHelperComponent>();
+            Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
+
+            var uri = "/mytestpath?my=query&another#some/hash?tokens";
+            var expectedAbsoluteUri = $"{_serverFixture.RootUri}subdir{uri}";
+
+            SetUrlViaPushState(uri);
+            Browser.Equal(expectedAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtRouteWithExtension()
         {
             // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to
