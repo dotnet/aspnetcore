@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -57,6 +59,40 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
         }
 
+        [Fact]
+        public async Task ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
+        {
+            // Arrange
+            GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
+            Messages = new List<(Extensions.Logging.LogLevel level, string eventIdName)>();
+            Sink.MessageLogged += wc => Log(wc);
+
+            // Act
+            Browser.Close();
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+        }
+
+        [Fact]
+        public async Task ClosingTheBrowserWindow_GracefullyDisconnects_WhenNavigatingAwayFromThePage()
+        {
+            // Arrange
+            GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
+            Messages = new List<(Extensions.Logging.LogLevel level, string eventIdName)>();
+            Sink.MessageLogged += wc => Log(wc);
+
+            // Act
+            Browser.Navigate().GoToUrl("about:blank");
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+        }
+
         private void Log(WriteContext wc)
         {
             if ((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
@@ -64,11 +100,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
                 GracefulDisconnectCompletionSource.TrySetResult(null);
             }
             Messages.Add((wc.LogLevel, wc.EventId.Name));
-        }
-
-        [Fact]
-        public void ClosingTheBrowserWindow_GracefullyDisconnects_TheCurrentCircuit()
-        {
         }
 
         public void Dispose()
