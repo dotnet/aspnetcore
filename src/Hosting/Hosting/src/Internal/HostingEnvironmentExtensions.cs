@@ -82,6 +82,9 @@ namespace Microsoft.AspNetCore.Hosting
             hostingEnvironment.ApplicationName = options.ApplicationName;
             hostingEnvironment.ContentRootPath = contentRootPath;
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
+            //Defaulting here but it could be also interesting to do some work like checking if it does exists
+            //or creating the Directory if it doesn't.
+            hostingEnvironment.TempDirectoryPath = options.TempDirectory ?? Path.GetTempPath();
 
             var webRoot = options.WebRoot;
             if (webRoot == null)

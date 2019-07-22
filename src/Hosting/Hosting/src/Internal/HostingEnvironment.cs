@@ -20,5 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
         public string ContentRootPath { get; set; }
 
         public IFileProvider ContentRootFileProvider { get; set; }
+
+        public string TempDirectoryPath { get; set; }
     }
 }

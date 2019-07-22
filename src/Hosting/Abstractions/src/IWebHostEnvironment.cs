@@ -20,5 +20,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// Gets or sets an <see cref="IFileProvider"/> pointing at <see cref="WebRootPath"/>.
         /// </summary>
         IFileProvider WebRootFileProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the absolute path to the temp directory.
+        /// </summary>
+        string TempDirectoryPath { get; set; }
     }
 }

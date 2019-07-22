@@ -132,6 +132,22 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Specify the temp directory to be used by the web host.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="tempDirectory">Path to the temp directory used by the web server.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseTempDirectory(this IWebHostBuilder hostBuilder, string tempDirectory)
+        {
+            if (tempDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(tempDirectory));
+            }
+
+            return hostBuilder.UseSetting(WebHostDefaults.TempDirectoryKey, tempDirectory);
+        }
+
+        /// <summary>
         /// Specify the urls the web host will listen on.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>

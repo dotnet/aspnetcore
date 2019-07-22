@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Hosting
             Environment = configuration[WebHostDefaults.EnvironmentKey];
             WebRoot = configuration[WebHostDefaults.WebRootKey];
             ContentRootPath = configuration[WebHostDefaults.ContentRootKey];
+            TempDirectory = configuration[WebHostDefaults.TempDirectoryKey];
             PreventHostingStartup = WebHostUtilities.ParseBool(configuration, WebHostDefaults.PreventHostingStartupKey);
             SuppressStatusMessages = WebHostUtilities.ParseBool(configuration, WebHostDefaults.SuppressStatusMessagesKey);
 
@@ -66,6 +67,8 @@ namespace Microsoft.AspNetCore.Hosting
         public string WebRoot { get; set; }
 
         public string ContentRootPath { get; set; }
+
+        public string TempDirectory { get; set; }
 
         public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
