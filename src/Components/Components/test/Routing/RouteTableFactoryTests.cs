@@ -268,8 +268,9 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder()
-                .AddRoute("/an/awesome/path")
-                .AddRoute("/{some}/awesome/{route}/").Build();
+                .AddRoute("/an/awesome/path", typeof(TestHandler1))
+                .AddRoute("/{some}/awesome/{route}/", typeof(TestHandler2))
+                .Build();
             var context = new RouteContext("/an/awesome/path");
 
             // Act
@@ -346,9 +347,58 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        [Fact]
+        public void SuppliesNullForUnusedHandlerParameters()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder()
+                .AddRoute("/", typeof(TestHandler1))
+                .AddRoute("/products/{param1:int}", typeof(TestHandler1))
+                .AddRoute("/products/{param2}/{PaRam1}", typeof(TestHandler1))
+                .AddRoute("/{unrelated}", typeof(TestHandler2))
+                .Build();
+            var context = new RouteContext("/products/456");
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.Collection(routeTable.Routes,
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("/", route.Template.TemplateText);
+                    Assert.Equal(new[] { "param1", "param2" }, route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler2), route.Handler);
+                    Assert.Equal("{unrelated}", route.Template.TemplateText);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("products/{param1:int}", route.Template.TemplateText);
+                    Assert.Equal(new[] { "param2" }, route.UnusedRouteParameterNames);
+                },
+                route =>
+                {
+                    Assert.Same(typeof(TestHandler1), route.Handler);
+                    Assert.Equal("products/{param2}/{PaRam1}", route.Template.TemplateText);
+                    Assert.Equal(Array.Empty<string>(), route.UnusedRouteParameterNames);
+                });
+            Assert.Same(typeof(TestHandler1), context.Handler);
+            Assert.Equal(new Dictionary<string, object>
+            {
+                { "param1", 456 },
+                { "param2", null },
+            }, context.Parameters);
+        }
+
         private class TestRouteTableBuilder
         {
-            IList<(string, Type)> _routeTemplates = new List<(string, Type)>();
+            IList<(string Template, Type Handler)> _routeTemplates = new List<(string, Type)>();
             Type _handler = typeof(object);
 
             public TestRouteTableBuilder AddRoute(string template, Type handler = null)
@@ -361,10 +411,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 try
                 {
-                    return new RouteTable(_routeTemplates
-                        .Select(rt => new RouteEntry(TemplateParser.ParseTemplate(rt.Item1), rt.Item2))
-                        .OrderBy(id => id, RouteTableFactory.RoutePrecedence)
-                        .ToArray());
+                    var templatesByHandler = _routeTemplates
+                        .GroupBy(rt => rt.Handler)
+                        .ToDictionary(group => group.Key, group => group.Select(g => g.Template).ToArray());
+                    return RouteTableFactory.Create(templatesByHandler);
                 }
                 catch (InvalidOperationException ex) when (ex.InnerException is InvalidOperationException)
                 {
@@ -373,5 +423,8 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 }
             }
         }
+
+        class TestHandler1 { }
+        class TestHandler2 { }
     }
 }

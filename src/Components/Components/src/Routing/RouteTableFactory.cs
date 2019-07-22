@@ -34,24 +34,51 @@ namespace Microsoft.AspNetCore.Components
 
         internal static RouteTable Create(IEnumerable<Type> componentTypes)
         {
-            var routes = new List<RouteEntry>();
-            foreach (var type in componentTypes)
+            var templatesByHandler = new Dictionary<Type, string[]>();
+            foreach (var componentType in componentTypes)
             {
                 // We're deliberately using inherit = false here.
                 //
                 // RouteAttribute is defined as non-inherited, because inheriting a route attribute always causes an
                 // ambiguity. You end up with two components (base class and derived class) with the same route.
-                var routeAttributes = type.GetCustomAttributes<RouteAttribute>(inherit: false);
+                var routeAttributes = componentType.GetCustomAttributes<RouteAttribute>(inherit: false);
 
-                foreach (var routeAttribute in routeAttributes)
+                var templates = routeAttributes.Select(t => t.Template).ToArray();
+                templatesByHandler.Add(componentType, templates);
+            }
+            return Create(templatesByHandler);
+        }
+
+        internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler)
+        {
+            var routes = new List<RouteEntry>();
+            foreach (var keyValuePair in templatesByHandler)
+            {
+                var parsedTemplates = keyValuePair.Value.Select(v => TemplateParser.ParseTemplate(v)).ToArray();
+                var allRouteParameterNames = parsedTemplates
+                    .SelectMany(GetParameterNames)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                foreach (var parsedTemplate in parsedTemplates)
                 {
-                    var template = TemplateParser.ParseTemplate(routeAttribute.Template);
-                    var entry = new RouteEntry(template, type);
+                    var unusedRouteParameterNames = allRouteParameterNames
+                        .Except(GetParameterNames(parsedTemplate), StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    var entry = new RouteEntry(parsedTemplate, keyValuePair.Key, unusedRouteParameterNames);
                     routes.Add(entry);
                 }
             }
 
             return new RouteTable(routes.OrderBy(id => id, RoutePrecedence).ToArray());
+        }
+
+        private static string[] GetParameterNames(RouteTemplate routeTemplate)
+        {
+            return routeTemplate.Segments
+                .Where(s => s.IsParameter)
+                .Select(s => s.Value)
+                .ToArray();
         }
 
         /// <summary>

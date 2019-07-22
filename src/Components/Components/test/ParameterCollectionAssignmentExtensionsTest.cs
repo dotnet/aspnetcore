@@ -358,6 +358,24 @@ namespace Microsoft.AspNetCore.Components.Test
                 ex.Message);
         }
 
+        [Fact]
+        public void SupplyingNullWritesDefaultForType()
+        {
+            // Arrange
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasInstanceProperties.IntProp), null },
+                { nameof(HasInstanceProperties.StringProp), null },
+            }.Build();
+            var target = new HasInstanceProperties { IntProp = 123, StringProp = "Hello" };
+
+            // Act
+            parameterCollection.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal(0, target.IntProp);
+            Assert.Null(target.StringProp);
+        }
 
         class HasInstanceProperties
         {
