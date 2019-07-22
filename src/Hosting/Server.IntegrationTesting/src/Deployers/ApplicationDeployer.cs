@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    _publishedApplication.Dispose();
+                    _publishedApplication?.Dispose();
                 }
             }
         }
