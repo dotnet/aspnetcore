@@ -416,17 +416,17 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>47201721f98aafa1819a74e80d48bf5a825ef986</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19365.4">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19369.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>fb27fd4d8a2b67d4333e33d4b898c65171c9f3c1</Sha>
+      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19365.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19369.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>fb27fd4d8a2b67d4333e33d4b898c65171c9f3c1</Sha>
+      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19365.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19369.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>fb27fd4d8a2b67d4333e33d4b898c65171c9f3c1</Sha>
+      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview8.19370.1" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>

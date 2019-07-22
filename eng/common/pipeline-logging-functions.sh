@@ -39,11 +39,11 @@ function Write-PipelineTaskError {
     return
   fi
 
-  message_type="error"
-  sourcepath=''
-  linenumber=''
-  columnnumber=''
-  error_code=''
+  local message_type="error"
+  local sourcepath=''
+  local linenumber=''
+  local columnnumber=''
+  local error_code=''
 
   while [[ $# -gt 0 ]]; do
     opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
@@ -76,7 +76,7 @@ function Write-PipelineTaskError {
     shift
   done
 
-  message="##vso[task.logissue"
+  local message="##vso[task.logissue"
 
   message="$message type=$message_type"
 
@@ -100,3 +100,73 @@ function Write-PipelineTaskError {
   echo "$message"
 }
 
+function Write-PipelineSetVariable {
+  if [[ "$ci" != true ]]; then
+    return
+  fi
+
+  local name=''
+  local value=''
+  local secret=false
+  local as_output=false
+  local is_multi_job_variable=true
+
+  while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    case "$opt" in
+      -name|-n)
+        name=$2
+        shift
+        ;;
+      -value|-v)
+        value=$2
+        shift
+        ;;
+      -secret|-s)
+        secret=true
+        ;;
+      -as_output|-a)
+        as_output=true
+        ;;
+      -is_multi_job_variable|-i)
+        is_multi_job_variable=$2
+        shift
+        ;;
+    esac
+    shift
+  done
+
+  value=${value/;/%3B}
+  value=${value/\\r/%0D}
+  value=${value/\\n/%0A}
+  value=${value/]/%5D}
+
+  local message="##vso[task.setvariable variable=$name;isSecret=$secret;isOutput=$is_multi_job_variable]$value"
+
+  if [[ "$as_output" == true ]]; then
+    $message
+  else
+    echo "$message"
+  fi
+}
+
+function Write-PipelinePrependPath {
+  local prepend_path=''
+
+  while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    case "$opt" in
+      -path|-p)
+        prepend_path=$2
+        shift
+        ;;
+    esac
+    shift
+  done
+
+  export PATH="$prepend_path:$PATH"
+
+  if [[ "$ci" == true ]]; then
+    echo "##vso[task.prependpath]$prepend_path"
+  fi
+}
