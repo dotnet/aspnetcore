@@ -20,15 +20,17 @@
 
   <Target Name="_CheckForInvalidConfiguration">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
+
+    <Exec ContinueOnError="true" Command="node -v">
+       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    </Exec>
+
+    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with /p:BuildNodeJs=false." Condition="'$(ErrorCode)' != '0'"/>
   </Target>
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreExitCode="true" >
-      <Output TaskParameter="ExitCode" PropertyName="YarnExitCode" />
-    </Yarn>
-
-    <Error Condition="'$(YarnExitCode)' != '0'" Text="Yarn exited with non-zero exit code: $(YarnExitCode). Ensure NodeJS is installed or exclude NodeJS with -NoBuildNodeJS (cmd), --no-build-nodejs (sh) or /p:BuildNodeJS=false (dotnet cli)." />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
   <Target Name="PrepareForBuild">
