@@ -4,7 +4,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11522")]
+        [Fact]
         public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
         [Fact]
