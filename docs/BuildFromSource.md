@@ -27,7 +27,6 @@ Building ASP.NET Core on Windows requires:
         ```ps1
         PS> ./eng/scripts/InstallJdk.ps1
         ```
-* Yarn <https://yarnpkg.com> is required if you are building JS components. For example, this may be required for building Components and SignalR.
 
 ### macOS/Linux
 
@@ -41,7 +40,6 @@ Building ASP.NET Core on macOS or Linux requires:
 * Java Development Kit 11 or newer. Either:
     * OpenJDK <https://jdk.java.net/>
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
-* Yarn <https://yarnpkg.com> is required if you are building JS components. For example, this may be required for building Components and SignalR.
 
 ## Clone the source code
 
