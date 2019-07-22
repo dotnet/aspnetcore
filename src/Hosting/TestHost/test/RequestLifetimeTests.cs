@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             var client = host.GetTestServer().CreateClient();
-            var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.GetAsync("/", HttpCompletionOption.ResponseHeadersRead);
             responseReceived.SetResult(0);
             response.EnsureSuccessStatusCode();
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsByteArrayAsync());
