@@ -65,7 +65,7 @@
       "path": "GrpcService-CSharp.csproj"
     }
   ],
-  "defaultName": "GrpcService-CSharp1",
+  "defaultName": "GrpcService1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
