@@ -490,6 +490,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
+
+        [Fact]
+        public async Task EventHandlerThrowsSyncExceptionTerminatesTheCircuit()
+        {
+            // Arrange
+            var (interopCalls, dotNetCompletions, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
+            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
+            var logEvents = new List<(LogLevel logLevel, string eventIdName, Exception exception)>();
+            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
+
+            // Act
+            await Client.ClickAsync("event-handler-throw-sync");
+
+            Assert.Contains(
+                logEvents,
+                e => LogLevel.Warning == e.logLevel &&
+                    "UnhandledExceptionInCircuit" == e.eventIdName &&
+                    "Handler threw an exception" == e.exception.Message);
+
+            await ValidateClientKeepsWorking(Client, batches);
+        }
+
         private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>
             ValidateClientKeepsWorking(Client, () => batches.Count);
 

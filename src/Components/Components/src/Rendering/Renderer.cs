@@ -235,6 +235,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             catch (Exception e)
             {
                 HandleException(e);
+                return Task.CompletedTask;
             }
             finally
             {
