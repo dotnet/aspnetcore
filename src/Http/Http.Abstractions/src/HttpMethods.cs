@@ -7,15 +7,15 @@ namespace Microsoft.AspNetCore.Http
 {
     public static class HttpMethods
     {
-        public static readonly string Connect = "CONNECT";
-        public static readonly string Delete = "DELETE";
-        public static readonly string Get = "GET";
-        public static readonly string Head = "HEAD";
-        public static readonly string Options = "OPTIONS";
-        public static readonly string Patch = "PATCH";
-        public static readonly string Post = "POST";
-        public static readonly string Put = "PUT";
-        public static readonly string Trace = "TRACE";
+        public const string Connect = "CONNECT";
+        public const string Delete = "DELETE";
+        public const string Get = "GET";
+        public const string Head = "HEAD";
+        public const string Options = "OPTIONS";
+        public const string Patch = "PATCH";
+        public const string Post = "POST";
+        public const string Put = "PUT";
+        public const string Trace = "TRACE";
 
         public static bool IsConnect(string method)
         {
