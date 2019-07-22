@@ -17,7 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Defines the list of file extensions that VS will monitor to reload the application.
       We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
     -->
-    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' == ''">$(UpToDateReloadFileTypes);$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' != ''">$(UpToDateReloadFileTypes);$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,7 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="WebNestingDefaults" />
   </ItemGroup>
 
-  <!-- 
+  <!--
     For now we need to treat component files as if they have a single file generator. This will allow us
     to trigger a workspace update for the declaration files when they change.
   -->
@@ -84,9 +84,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyPageSchema>
   </ItemGroup>
 
-  <Target 
-    Name="RazorGenerateDesignTime" 
-    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths" 
+  <Target
+    Name="RazorGenerateDesignTime"
+    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths"
     Returns="@(RazorGenerateWithTargetPath)">
   </Target>
 
@@ -94,9 +94,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     Using DependsOnTargets here because real dependencies of this target aren't defined in
     a downlevel (pre-3.0) SDK.
   -->
-  <Target 
-    Name="RazorGenerateComponentDesignTime" 
-    DependsOnTargets="$(_RazorGenerateComponentDesignTimeDependsOn)" 
+  <Target
+    Name="RazorGenerateComponentDesignTime"
+    DependsOnTargets="$(_RazorGenerateComponentDesignTimeDependsOn)"
     Returns="@(RazorComponentWithTargetPath)">
   </Target>
 
@@ -107,8 +107,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     Called by the project system to update generated declaration files
   -->
-  <Target 
-    Name="RazorGenerateComponentDeclarationDesignTime" 
+  <Target
+    Name="RazorGenerateComponentDeclarationDesignTime"
     DependsOnTargets="$(_RazorGenerateComponentDeclarationDesignTimeDependsOn)">
   </Target>
 

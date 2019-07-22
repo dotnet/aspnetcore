@@ -38,4 +38,8 @@
     <Message Text="RazorLangVersion: $(RazorLangVersion)" Importance="High" />
     <Message Text="ResolvedRazorConfiguration: @(ResolvedRazorConfiguration)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectUpToDateReloadFileTypes">
+    <Message Text="UpToDateReloadFileTypes: $(UpToDateReloadFileTypes)" Importance="High" />
+  </Target>
 </Project>

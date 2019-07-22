@@ -865,14 +865,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(RazorDesignTimeTargets)" />
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(_RazorUpToDateReloadFileTypesAllowWorkaround)' != 'false'">
     <!--
       Defines the list of file extensions that VS will monitor to reload the application.
       We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
 
       This property can be removed after the next insertion in to VS.
     -->
-    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' == ''">$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(UpToDateReloadFileTypes)' == ''">$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
   </PropertyGroup>
 
   <!--

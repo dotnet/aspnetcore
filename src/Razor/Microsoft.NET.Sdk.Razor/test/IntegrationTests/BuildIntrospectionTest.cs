@@ -142,5 +142,57 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, "RazorLangVersion: 3.0");
             Assert.BuildOutputContainsLine(result, "ResolvedRazorConfiguration: MVC-3.0");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task UpToDateReloadFileTypes_Default()
+        {
+            var result = await DotnetMSBuild("_IntrospectUpToDateReloadFileTypes");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task UpToDateReloadFileTypes_WithRuntimeCompilation()
+        {
+            AddProjectFileContent(
+@"
+<PropertyGroup>
+    <RazorUpToDateReloadFileTypes>$(RazorUpToDateReloadFileTypes.Replace('.cshtml', ''))</RazorUpToDateReloadFileTypes>
+</PropertyGroup>");
+
+            var result = await DotnetMSBuild("_IntrospectUpToDateReloadFileTypes");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task UpToDateReloadFileTypes_WithwWorkAroundRemoved()
+        {
+            var result = await DotnetMSBuild("_IntrospectUpToDateReloadFileTypes", "/p:_RazorUpToDateReloadFileTypesAllowWorkaround=false");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task UpToDateReloadFileTypes_WithRuntimeCompilationAndWorkaroundRemoved()
+        {
+            AddProjectFileContent(
+@"
+<PropertyGroup>
+    <RazorUpToDateReloadFileTypes>$(RazorUpToDateReloadFileTypes.Replace('.cshtml', ''))</RazorUpToDateReloadFileTypes>
+</PropertyGroup>");
+
+            var result = await DotnetMSBuild("_IntrospectUpToDateReloadFileTypes", "/p:_RazorUpToDateReloadFileTypesAllowWorkaround=false");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
+        }
     }
 }
