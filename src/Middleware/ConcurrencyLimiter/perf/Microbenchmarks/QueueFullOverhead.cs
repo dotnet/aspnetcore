@@ -73,7 +73,6 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
             }
 
             _mres.Wait();
-            Console.Write($"request count: {_requestCount}");
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]

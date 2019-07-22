@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 if (isValid)
                 {
                     _mrvts.Reset();
-                    Volatile.Write(ref _queue._cachedResettableTCS, this);
+                    _queue._cachedResettableTCS = this;
                 }
             }
         }

@@ -41,11 +41,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
             Assert.False(task3.IsCompleted);
 
             var task4 = stack.TryEnterAsync();
-            //Assert.False(task4.IsCompleted);
-
-            //Assert.True(task1.IsCompleted);
-            //Assert.False(task1.Result);
-
+            
             Assert.True(task1.IsCompleted);
             Assert.False(task1.Result);
 

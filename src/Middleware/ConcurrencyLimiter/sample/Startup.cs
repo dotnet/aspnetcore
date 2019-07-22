@@ -17,10 +17,16 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLIFOQueue(options =>
+            {
+                options.MaxConcurrentRequests = Environment.ProcessorCount;
+                options.RequestQueueLimit = 25;
+            });
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            app.UseConcurrencyLimiter();
             app.Run(async context =>
             {
                 Task.Delay(100).Wait(); // 100ms sync-over-async

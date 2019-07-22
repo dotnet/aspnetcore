@@ -59,8 +59,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static void DoubleCallToGetResultCausesError()
         {
-            // this isn't necesarrily desireable behavior, but upstream stuff takes it into account
-            // so it's important to verify?
+            // important to verify it throws rather than acting like a new task
 
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
             var task = tcs.Task();

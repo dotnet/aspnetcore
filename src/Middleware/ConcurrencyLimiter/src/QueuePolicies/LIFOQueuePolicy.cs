@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                     _queueLength--;
                 }
 
-                var tcs = Interlocked.Exchange(ref _cachedResettableTCS, null) ?? new ResettableBooleanCompletionSource(this);
+                var tcs = _cachedResettableTCS ??= new ResettableBooleanCompletionSource(this);
+                _cachedResettableTCS = null;
 
                 if (_hasReachedCapacity || _queueLength < _buffer.Count)
                 {
