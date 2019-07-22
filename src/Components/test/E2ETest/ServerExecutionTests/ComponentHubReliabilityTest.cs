@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
                 "StartCircuit",
-                baseUri.GetLeftPart(UriPartial.Authority),
-                baseUri));
+                baseUri,
+                baseUri.GetLeftPart(UriPartial.Authority)));
 
             // Assert
             var actualError = Assert.Single(Errors);

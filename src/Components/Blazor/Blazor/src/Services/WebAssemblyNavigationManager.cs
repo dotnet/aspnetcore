@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
             var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
-            Initialize(uri, baseUri);
+            Initialize(baseUri, uri);
         }
 
         /// <inheritdoc />
@@ -49,32 +49,10 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string newAbsoluteUri, bool isInterceptedLink)
+        public static void NotifyLocationChanged(string uri, bool intercepted)
         {
-            Instance.SetAbsoluteUri(newAbsoluteUri);
-            Instance.NotifyLocationChanged(isInterceptedLink);
-        }
-
-        /// <summary>
-        /// Given the document's document.baseURI value, returns the URI
-        /// that can be prepended to relative URI paths to produce an absolute URI.
-        /// This is computed by removing anything after the final slash.
-        /// Internal for tests.
-        /// </summary>
-        /// <param name="absoluteBaseUri">The page's document.baseURI value.</param>
-        /// <returns>The URI prefix</returns>
-        internal static string ToBaseUri(string absoluteBaseUri)
-        {
-            if (absoluteBaseUri != null)
-            {
-                var lastSlashIndex = absoluteBaseUri.LastIndexOf('/');
-                if (lastSlashIndex >= 0)
-                {
-                    return absoluteBaseUri.Substring(0, lastSlashIndex + 1);
-                }
-            }
-
-            return "/";
+            Instance.Uri = uri;
+            Instance.NotifyLocationChanged(intercepted);
         }
     }
 }

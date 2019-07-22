@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                 var navigationManager = s.GetRequiredService<NavigationManager>();
                 return new HttpClient
                 {
-                    BaseAddress = new Uri(navigationManager.GetBaseUri())
+                    BaseAddress = new Uri(navigationManager.BaseUri)
                 };
             });
 

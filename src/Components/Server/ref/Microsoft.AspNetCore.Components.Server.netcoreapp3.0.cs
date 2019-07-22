@@ -51,15 +51,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public virtual System.Threading.Tasks.Task OnConnectionDownAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit circuit, System.Threading.CancellationToken cancellationToken) { throw null; }
         public virtual System.Threading.Tasks.Task OnConnectionUpAsync(Microsoft.AspNetCore.Components.Server.Circuits.Circuit circuit, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public partial class RemoteNavigationManager : Microsoft.AspNetCore.Components.NavigationManager, Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager
-    {
-        public RemoteNavigationManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager> logger) { }
-        public bool HasAttachedJSRuntime { get { throw null; } }
-        public new void Initialize(string absoluteUri, string baseUri) { }
-        protected override void NavigateToCore(string uri, bool forceLoad) { }
-        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
-    }
 }
 namespace Microsoft.Extensions.DependencyInjection
 {

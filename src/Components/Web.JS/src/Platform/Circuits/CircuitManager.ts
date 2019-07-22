@@ -13,7 +13,7 @@ export class CircuitDescriptor {
 }
 
 export async function startCircuit(connection: signalR.HubConnection): Promise<CircuitDescriptor> {
-  const result = await connection.invoke<string>('StartCircuit', navigationManagerFunctions.getLocationHref(), navigationManagerFunctions.getBaseURI());
+  const result = await connection.invoke<string>('StartCircuit', navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());
   if (result) {
     return new CircuitDescriptor(result);
   } else {

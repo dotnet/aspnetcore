@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        void IHostEnvironmentNavigationManager.Initialize(string absoluteUri, string baseUri) => Initialize(absoluteUri, baseUri);
+        void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
 
         protected override void NavigateToCore(string uri, bool forceLoad)
         {

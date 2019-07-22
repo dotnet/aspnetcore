@@ -308,18 +308,16 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class NavigationManager
     {
         protected NavigationManager() { }
+        public string BaseUri { get { throw null; } protected set { } }
+        public string Uri { get { throw null; } protected set { } }
         public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> LocationChanged { add { } remove { } }
         protected virtual void EnsureInitialized() { }
-        public string GetAbsoluteUri() { throw null; }
-        public virtual string GetBaseUri() { throw null; }
-        protected void Initialize(string uriAbsolute, string baseUriAbsolute) { }
+        protected void Initialize(string baseUri, string uri) { }
         public void NavigateTo(string uri, bool forceLoad = false) { }
         protected abstract void NavigateToCore(string uri, bool forceLoad);
         protected void NotifyLocationChanged(bool isInterceptedLink) { }
-        protected void SetAbsoluteBaseUri(string baseUri) { }
-        protected void SetAbsoluteUri(string uri) { }
         public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
-        public static string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
+        public string ToBaseRelativePath(string uri) { throw null; }
     }
     public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {
@@ -628,7 +626,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 {
     public partial interface IHostEnvironmentNavigationManager
     {
-        void Initialize(string absoluteUri, string baseUri);
+        void Initialize(string baseUri, string uri);
     }
     public partial interface INavigationInterception
     {

@@ -246,7 +246,7 @@ namespace Ignitor
             else
             {
                 await ExpectRenderBatch(
-                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", new Uri(uri.GetLeftPart(UriPartial.Authority)), uri),
+                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, new Uri(uri.GetLeftPart(UriPartial.Authority))),
                     TimeSpan.FromSeconds(10));
                 return CircuitId != null;
             }

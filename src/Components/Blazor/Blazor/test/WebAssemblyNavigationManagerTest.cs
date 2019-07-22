@@ -8,50 +8,6 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
 {
     public class WebAssemblyNavigationManagerTest
     {
-        private WebAssemblyNavigationManager _navigationManager = new WebAssemblyNavigationManager();
 
-        [Theory]
-        [InlineData("scheme://host/", "scheme://host/")]
-        [InlineData("scheme://host:123/", "scheme://host:123/")]
-        [InlineData("scheme://host/path", "scheme://host/")]
-        [InlineData("scheme://host/path/", "scheme://host/path/")]
-        [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path/")]
-        public void ComputesCorrectBaseUri(string baseUri, string expectedResult)
-        {
-            var actualResult = WebAssemblyNavigationManager.ToBaseUri(baseUri);
-            Assert.Equal(expectedResult, actualResult);
-        }
-
-        [Theory]
-        [InlineData("scheme://host/", "scheme://host", "")]
-        [InlineData("scheme://host/", "scheme://host/", "")]
-        [InlineData("scheme://host/", "scheme://host/path", "path")]
-        [InlineData("scheme://host/path/", "scheme://host/path/", "")]
-        [InlineData("scheme://host/path/", "scheme://host/path/more", "more")]
-        [InlineData("scheme://host/path/", "scheme://host/path", "")]
-        [InlineData("scheme://host/path/", "scheme://host/path#hash", "#hash")]
-        [InlineData("scheme://host/path/", "scheme://host/path/#hash", "#hash")]
-        [InlineData("scheme://host/path/", "scheme://host/path/more#hash", "more#hash")]
-        public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
-        {
-            var actualResult = WebAssemblyNavigationManager.ToBaseRelativePath(baseUri, absoluteUri);
-            Assert.Equal(expectedResult, actualResult);
-        }
-
-        [Theory]
-        [InlineData("scheme://host/", "otherscheme://host/")]
-        [InlineData("scheme://host/", "scheme://otherhost/")]
-        [InlineData("scheme://host/path/", "scheme://host/")]
-        public void ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
-        {
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                WebAssemblyNavigationManager.ToBaseRelativePath(baseUri, absoluteUri);
-            });
-
-            Assert.Equal(
-                $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
-                ex.Message);
-        }
     }
 }

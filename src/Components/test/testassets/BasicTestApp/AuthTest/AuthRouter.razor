@@ -27,8 +27,8 @@
     {
         // Start at AuthHome, not at any other component in the same app that happens to
         // register itself for the route ""
-        var absoluteUriPath = new Uri(NavigationManager.GetAbsoluteUri()).GetLeftPart(UriPartial.Path);
-        var relativeUri = NavigationManager.ToBaseRelativePath(NavigationManager.GetBaseUri(), absoluteUriPath);
+        var absoluteUriPath = new Uri(NavigationManager.Uri).GetLeftPart(UriPartial.Path);
+        var relativeUri = NavigationManager.ToBaseRelativePath(absoluteUriPath);
         if (relativeUri == string.Empty)
         {
             NavigationManager.NavigateTo("AuthHome");

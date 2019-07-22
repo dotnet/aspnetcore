@@ -12,7 +12,7 @@
 
     protected override void OnInitialized()
     {
-        UrlLocation = NavigationManager.GetAbsoluteUri();
+        UrlLocation = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
@@ -23,7 +23,7 @@
 
     void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        UrlLocation = NavigationManager.GetAbsoluteUri();
+        UrlLocation = NavigationManager.Uri;
         StateHasChanged();
     }
 

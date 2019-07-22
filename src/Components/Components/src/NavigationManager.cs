@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class NavigationManager
     {
-        private EventHandler<LocationChangedEventArgs> _locationChanged;
-
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
@@ -30,6 +28,8 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
+        private EventHandler<LocationChangedEventArgs> _locationChanged;
+
         // For the baseUri it's worth storing both the string form and Uri form and
         // keeping them in sync. These are always represented as absolute URIs with
         // a trailing slash.
@@ -42,10 +42,55 @@ namespace Microsoft.AspNetCore.Components
         private bool _isInitialized;
 
         /// <summary>
+        /// Gets or sets the current base URI. The <see cref="BaseUri" /> is always represented as an absolute URI in string form with trailing slash.
+        /// Typically this corresponds to the 'href' attribute on the document's &lt;base&gt; element.
+        /// </summary>
+        /// <remarks>
+        /// Setting <see cref="BaseUri" /> will not trigger the <see cref="LocationChanged" /> event.
+        /// </remarks>
+        public string BaseUri
+        {
+            get
+            {
+                AssertInitialized();
+                return _baseUriString;
+            }
+            protected set
+            {
+                if (value != null)
+                {
+                    value = NormalizeBaseUri(value);
+                }
+
+                _baseUriString = value ?? "/";
+                _baseUri = new Uri(_baseUriString);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current URI. The <see cref="Uri" /> is always represented as an absolute URI in string form.
+        /// </summary>
+        /// <remarks>
+        /// Setting <see cref="Uri" /> will not trigger the <see cref="LocationChanged" /> event.
+        /// </remarks>
+        public string Uri
+        {
+            get
+            {
+                AssertInitialized();
+                return _uri;
+            }
+            protected set
+            {
+                _uri = value;
+            }
+        }
+
+        /// <summary>
         /// Navigates to the specified URI.
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
-        /// (as returned by <see cref="GetBaseUri"/>).</param>
+        /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
         public void NavigateTo(string uri, bool forceLoad = false)
         {
@@ -57,24 +102,25 @@ namespace Microsoft.AspNetCore.Components
         /// Navigates to the specified URI.
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
-        /// (as returned by <see cref="GetBaseUri"/>).</param>
+        /// (as returned by <see cref="BaseUri"/>).</param>
         /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
         protected abstract void NavigateToCore(string uri, bool forceLoad);
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before these values are used for the first time.
-        /// Override this method to dynamically calculate these values.
+        /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
         /// </summary>
-        protected void Initialize(string uriAbsolute, string baseUriAbsolute)
+        protected void Initialize(string baseUri, string uri)
         {
-            if (uriAbsolute == null)
+            // Make sure it's possible/safe to call this method from constructors of derived classes.
+            if (uri == null)
             {
-                throw new ArgumentNullException(nameof(uriAbsolute));
+                throw new ArgumentNullException(nameof(uri));
             }
 
-            if (baseUriAbsolute == null)
+            if (baseUri == null)
             {
-                throw new ArgumentNullException(nameof(baseUriAbsolute));
+                throw new ArgumentNullException(nameof(baseUri));
             }
 
             if (_isInitialized)
@@ -83,8 +129,8 @@ namespace Microsoft.AspNetCore.Components
             }
             _isInitialized = true;
 
-            SetAbsoluteUri(uriAbsolute);
-            SetAbsoluteBaseUri(baseUriAbsolute);
+            Uri = uri;
+            BaseUri = baseUri;
         }
 
         /// <summary>
@@ -93,28 +139,6 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         protected virtual void EnsureInitialized()
         {
-        }
-
-        /// <summary>
-        /// Gets the current absolute URI.
-        /// </summary>
-        /// <returns>The current absolute URI.</returns>
-        public string GetAbsoluteUri()
-        {
-            AssertInitialized();
-            return _uri;
-        }
-
-        /// <summary>
-        /// Gets the base URI (with trailing slash) that can be prepended before relative URI paths to
-        /// produce an absolute URI. Typically this corresponds to the 'href' attribute on the
-        /// document's &lt;base&gt; element.
-        /// </summary>
-        /// <returns>The URI prefix, which has a trailing slash.</returns>
-        public virtual string GetBaseUri()
-        {
-            AssertInitialized();
-            return _baseUriString;
         }
 
         /// <summary>
@@ -130,26 +154,23 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
-        /// Given a base URI (e.g., one previously returned by <see cref="GetBaseUri"/>),
+        /// Given a base URI (e.g., one previously returned by <see cref="BaseUri"/>),
         /// converts an absolute URI into one relative to the base URI prefix.
         /// </summary>
-        /// <param name="baseUri">
-        /// The base URI prefix (e.g., previously returned by <see cref="GetBaseUri"/>).
-        /// </param>
-        /// <param name="locationAbsolute">An absolute URI that is within the space of the base URI.</param>
+        /// <param name="uri">An absolute URI that is within the space of the base URI.</param>
         /// <returns>A relative URI path.</returns>
-        public static string ToBaseRelativePath(string baseUri, string locationAbsolute)
+        public string ToBaseRelativePath(string uri)
         {
-            if (locationAbsolute.StartsWith(baseUri, StringComparison.Ordinal))
+            if (uri.StartsWith(_baseUriString, StringComparison.Ordinal))
             {
                 // The absolute URI must be of the form "{baseUri}something" (where
                 // baseUri ends with a slash), and from that we return "something"
-                return locationAbsolute.Substring(baseUri.Length);
+                return uri.Substring(_baseUriString.Length);
             }
 
-            var hashIndex = locationAbsolute.IndexOf('#');
-            var locationAbsoluteNoHash = hashIndex < 0 ? locationAbsolute : locationAbsolute.Substring(0, hashIndex);
-            if ($"{locationAbsoluteNoHash}/".Equals(baseUri, StringComparison.Ordinal))
+            var hashIndex = uri.IndexOf('#');
+            var uriWithoutHash = hashIndex < 0 ? uri : uri.Substring(0, hashIndex);
+            if ($"{uriWithoutHash}/".Equals(_baseUriString, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -157,45 +178,22 @@ namespace Microsoft.AspNetCore.Components
                 // whether the server would return the same page whether or not the
                 // slash is present, but ASP.NET Core at least does by default when
                 // using PathBase.
-                return locationAbsolute.Substring(baseUri.Length - 1);
+                return uri.Substring(_baseUriString.Length - 1);
             }
 
-            var message = $"The URI '{locationAbsolute}' is not contained by the base URI '{baseUri}'.";
+            var message = $"The URI '{uri}' is not contained by the base URI '{_baseUriString}'.";
             throw new ArgumentException(message);
         }
 
-        /// <summary>
-        /// Set the URI to the provided value.
-        /// </summary>
-        /// <param name="uri">The URI. Must be an absolute URI.</param>
-        /// <remarks>
-        /// Calling <see cref="SetAbsoluteUri(string)"/> does not trigger <see cref="LocationChanged"/>.
-        /// </remarks>
-        protected void SetAbsoluteUri(string uri)
+        internal static string NormalizeBaseUri(string baseUri)
         {
-            _uri = uri;
-        }
-
-        /// <summary>
-        /// Sets the base URI to the provided value (after normalization).
-        /// </summary>
-        /// <param name="baseUri">The base URI. Must be an absolute URI.</param>
-        /// <remarks>
-        /// Calling <see cref="SetAbsoluteBaseUri(string)"/> does not trigger <see cref="LocationChanged"/>.
-        /// </remarks>
-        protected void SetAbsoluteBaseUri(string baseUri)
-        {
-            if (baseUri != null)
+            var lastSlashIndex = baseUri.LastIndexOf('/');
+            if (lastSlashIndex >= 0)
             {
-                var lastSlashIndex = baseUri.LastIndexOf('/');
-                if (lastSlashIndex >= 0)
-                {
-                    baseUri = baseUri.Substring(0, lastSlashIndex + 1);
-                }
+                baseUri = baseUri.Substring(0, lastSlashIndex + 1);
             }
 
-            _baseUriString = baseUri ?? "/";
-            _baseUri = new Uri(_baseUriString);
+            return baseUri;
         }
 
         /// <summary>

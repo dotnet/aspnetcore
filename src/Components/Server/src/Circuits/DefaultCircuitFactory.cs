@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public override CircuitHost CreateCircuitHost(
             HttpContext httpContext,
             CircuitClientProxy client,
-            string uriAbsolute,
-            string baseUriAbsolute,
+            string baseUri,
+            string uri
             ClaimsPrincipal user)
         {
             var components = ResolveComponentMetadata(httpContext, client);
@@ -63,15 +63,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (client.Connected)
             {
                 navigationManager.AttachJsRuntime(jsRuntime);
-                navigationManager.Initialize(
-                    uriAbsolute,
-                    baseUriAbsolute);
+                navigationManager.Initialize(baseUri, uri);
 
                 navigationInterception.AttachJSRuntime(jsRuntime);
             }
             else
             {
-                navigationManager.Initialize(uriAbsolute, baseUriAbsolute);
+                navigationManager.Initialize(baseUri, uri);
             }
 
             var rendererRegistry = new RendererRegistry();

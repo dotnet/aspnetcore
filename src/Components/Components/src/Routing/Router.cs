@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         {
             _logger = LoggerFactory.CreateLogger<Router>();
             _renderHandle = renderHandle;
-            _baseUri = NavigationManager.GetBaseUri();
-            _locationAbsolute = NavigationManager.GetAbsoluteUri();
+            _baseUri = NavigationManager.BaseUri;
+            _locationAbsolute = NavigationManager.Uri;
             NavigationManager.LocationChanged += OnLocationChanged;
         }
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private void Refresh(bool isNavigationIntercepted)
         {
-            var locationPath = NavigationManager.ToBaseRelativePath(_baseUri, _locationAbsolute);
+            var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);

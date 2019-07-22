@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <summary>
         /// Initializes the <see cref="NavigationManager" />.
         /// </summary>
-        /// <param name="absoluteUri">The absolute URI.</param>
         /// <param name="baseUri">The base URI.</param>
-        public new void Initialize(string absoluteUri, string baseUri)
+        /// <param name="uri">The absolute URI.</param>
+        public new void Initialize(string baseUri, string uri)
         {
-            base.Initialize(absoluteUri, baseUri);
+            base.Initialize(baseUri, uri);
             NotifyLocationChanged(isInterceptedLink: false);
         }
 
@@ -56,12 +56,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _jsRuntime = jsRuntime;
         }
 
-        public void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink)
+        public void NotifyLocationChanged(string uri, bool intercepted)
         {
-            Log.ReceivedLocationChangedNotification(_logger, uriAbsolute, isInterceptedLink);
+            Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
-            SetAbsoluteUri(uriAbsolute);
-            NotifyLocationChanged(isInterceptedLink);
+            Uri = uri;
+            NotifyLocationChanged(intercepted);
         }
 
         /// <inheritdoc />

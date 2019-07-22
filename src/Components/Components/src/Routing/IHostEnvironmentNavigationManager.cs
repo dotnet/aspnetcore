@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Initializes the <see cref="NavigationManager" />.
         /// </summary>
-        /// <param name="absoluteUri">The absolute URI.</param>
         /// <param name="baseUri">The base URI.</param>
-        void Initialize(string absoluteUri, string baseUri);
+        /// <param name="uri">The absolute URI.</param>
+        void Initialize(string baseUri, string uri);
     }
 }

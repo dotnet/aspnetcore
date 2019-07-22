@@ -11,7 +11,7 @@
     void OnSelected(ChangeEventArgs e)
     {
         // Included fragment to preserve choice of Blazor client or server.
-        var redirect = new Uri(NavigationManager.GetAbsoluteUri()).GetComponents(UriComponents.PathAndQuery | UriComponents.Fragment, UriFormat.UriEscaped);
+        var redirect = new Uri(NavigationManager.Uri).GetComponents(UriComponents.PathAndQuery | UriComponents.Fragment, UriFormat.UriEscaped);
         var query = $"?culture={Uri.EscapeDataString((string)e.Value)}&redirectUri={redirect}";
         NavigationManager.NavigateTo("/Culture/SetCulture" + query, forceLoad: true);
     }

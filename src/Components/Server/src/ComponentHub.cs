@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -103,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public string StartCircuit(string baseUri, string uri)
         {
             if (CircuitHost != null)
             {
@@ -127,8 +125,8 @@ namespace Microsoft.AspNetCore.Components.Server
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 Context.GetHttpContext(),
                 circuitClient,
-                uriAbsolute,
-                baseUriAbsolute,
+                baseUri,
+                uri
                 Context.User);
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;

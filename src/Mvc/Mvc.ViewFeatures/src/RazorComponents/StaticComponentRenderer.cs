@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                 }
 
                 var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-                navigationManager?.Initialize(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+                navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
             }
         }
 
