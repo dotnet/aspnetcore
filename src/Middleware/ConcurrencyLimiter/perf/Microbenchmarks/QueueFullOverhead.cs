@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
+using System;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
 {
     public class QueueFullOverhead
     {
-        private const int _numRequests = 200;
+        private const int _numRequests = 2000;
         private int _requestCount = 0;
         private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
@@ -24,12 +25,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _middleware_FIFO = TestUtils.CreateTestMiddleware_TailDrop(
+            _middleware_FIFO = TestUtils.CreateTestMiddleware_FIFOQueue(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
                 next: IncrementAndCheck);
 
-            _middleware_LIFO = TestUtils.CreateTestMiddleware_StackPolicy(
+            _middleware_LIFO = TestUtils.CreateTestMiddleware_LIFOQueue(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
                 next: IncrementAndCheck);
@@ -64,6 +65,18 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
+        public void QueueingAll_LIFO()
+        {
+            for (int i = 0; i < _numRequests; i++)
+            {
+                _ = _middleware_LIFO.Invoke(null);
+            }
+
+            _mres.Wait();
+            Console.Write($"request count: {_requestCount}");
+        }
+
+        [Benchmark(OperationsPerInvoke = _numRequests)]
         public void QueueingAll_FIFO()
         {
             for (int i = 0; i < _numRequests; i++)
@@ -73,17 +86,5 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
 
             _mres.Wait();
         }
-
-        [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void QueueingAll_LIFO()
-        {
-            for (int i = 0; i < _numRequests; i++)
-            {
-                _ = _middleware_LIFO.Invoke(null);
-            }
-
-            _mres.Wait();
-        }
-
     }
 }

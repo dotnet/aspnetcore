@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-            _middlewareFIFO = TestUtils.CreateTestMiddleware_TailDrop(
+            _middlewareFIFO = TestUtils.CreateTestMiddleware_FIFOQueue(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 100,
                 next: _restOfServer);
 
-            _middlewareLIFO = TestUtils.CreateTestMiddleware_StackPolicy(
+            _middlewareLIFO = TestUtils.CreateTestMiddleware_LIFOQueue(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 100,
                 next: _restOfServer);

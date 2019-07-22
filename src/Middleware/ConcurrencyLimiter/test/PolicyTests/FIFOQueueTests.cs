@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            using var s = TestUtils.CreateTailDropQueue(2);
+            using var s = TestUtils.CreateFIFOPolicy(2);
 
             var t1 = s.TryEnterAsync();
             Assert.True(t1.IsCompleted);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            using var s = TestUtils.CreateTailDropQueue(1);
+            using var s = TestUtils.CreateFIFOPolicy(1);
             Assert.True(await s.TryEnterAsync().OrTimeout());
 
             var waitingTask = s.TryEnterAsync();
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public async Task IsEncapsulated()
         {
-            using var s1 = TestUtils.CreateTailDropQueue(1);
-            using var s2 = TestUtils.CreateTailDropQueue(1);
+            using var s1 = TestUtils.CreateFIFOPolicy(1);
+            using var s2 = TestUtils.CreateFIFOPolicy(1);
 
             Assert.True(await s1.TryEnterAsync().OrTimeout());
             Assert.True(await s2.TryEnterAsync().OrTimeout());

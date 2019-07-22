@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             Assert.True(task1.IsCompleted && task1.Result);
         }
-
+ 
         [Fact]
         public static void OldestRequestOverwritten()
         {
@@ -40,10 +41,17 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
             Assert.False(task3.IsCompleted);
 
             var task4 = stack.TryEnterAsync();
-            Assert.False(task4.IsCompleted);
+            //Assert.False(task4.IsCompleted);
+
+            //Assert.True(task1.IsCompleted);
+            //Assert.False(task1.Result);
 
             Assert.True(task1.IsCompleted);
             Assert.False(task1.Result);
+
+            Assert.False(task2.IsCompleted);
+            Assert.False(task3.IsCompleted);
+            Assert.False(task4.IsCompleted);
         }
 
         [Fact]

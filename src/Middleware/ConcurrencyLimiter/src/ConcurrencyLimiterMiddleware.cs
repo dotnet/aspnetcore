@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -36,6 +38,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _next = next;
             _logger = loggerFactory.CreateLogger<ConcurrencyLimiterMiddleware>();
             _onRejected = options.Value.OnRejected;
+
             _queuePolicy = queue;
         }
 
@@ -48,19 +51,23 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             var waitInQueueTask = _queuePolicy.TryEnterAsync();
 
+            // Make sure we only ever call GetResult once on the TryEnterAsync ValueTask b/c it resets.
+            var result = false;
+
             if (waitInQueueTask.IsCompleted)
             {
                 ConcurrencyLimiterEventSource.Log.QueueSkipped();
+                result = waitInQueueTask.Result;
             }
             else
             {
                 using (ConcurrencyLimiterEventSource.Log.QueueTimer())
                 {
-                    await waitInQueueTask;
+                    result = await waitInQueueTask;
                 }
             }
 
-            if (waitInQueueTask.Result)
+            if (result)
             {
                 try
                 {

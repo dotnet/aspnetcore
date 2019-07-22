@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 
-        public async Task<bool> TryEnterAsync()
+        public async ValueTask<bool> TryEnterAsync()
         {
             // a return value of 'false' indicates that the request is rejected
             // a return value of 'true' indicates that the request may proceed

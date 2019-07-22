@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     public partial interface IQueuePolicy
     {
         void OnExit();
-        System.Threading.Tasks.Task<bool> TryEnterAsync();
+        System.Threading.Tasks.ValueTask<bool> TryEnterAsync();
     }
     public partial class QueuePolicyOptions
     {

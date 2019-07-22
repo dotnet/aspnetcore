@@ -1,14 +1,19 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
     internal class LIFOQueuePolicy : IQueuePolicy
     {
-        private readonly List<ResettableBooleanTCS> _buffer;
+        private readonly List<ResettableBooleanCompletionSource> _buffer;
+        public ResettableBooleanCompletionSource _cachedResettableTCS;
+
         private readonly int _maxQueueCapacity;
         private readonly int _maxConcurrentRequests;
         private bool _hasReachedCapacity;
@@ -17,45 +22,46 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private readonly object _bufferLock = new Object();
 
+        private readonly static ValueTask<bool> _trueTask = new ValueTask<bool>(true);
+
         private int _freeServerSpots;
 
         public LIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
         {
-            _buffer = new List<ResettableBooleanTCS>();
+            _buffer = new List<ResettableBooleanCompletionSource>();
             _maxQueueCapacity = options.Value.RequestQueueLimit;
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             _freeServerSpots = options.Value.MaxConcurrentRequests;
         }
 
-        public async Task<bool> TryEnterAsync()
+        public ValueTask<bool> TryEnterAsync()
         {
-            ResettableBooleanTCS tcs;
-
             lock (_bufferLock)
             {
                 if (_freeServerSpots > 0)
                 {
                     _freeServerSpots--;
-                    return true;
+                    return _trueTask;
                 }
 
                 // if queue is full, cancel oldest request
                 if (_queueLength == _maxQueueCapacity)
                 {
                     _hasReachedCapacity = true;
-                    _buffer[_head].CompleteFalse();
+                    _buffer[_head].Complete(false);
                     _queueLength--;
                 }
 
-                // enqueue request with a tcs
-                //var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = Interlocked.Exchange(ref _cachedResettableTCS, null) ?? new ResettableBooleanCompletionSource(this);
 
-                if (!_hasReachedCapacity && _queueLength >= _buffer.Count)
+                if (_hasReachedCapacity || _queueLength < _buffer.Count)
                 {
-                    _buffer.Add(new ResettableBooleanTCS());
+                    _buffer[_head] = tcs;
                 }
-
-                tcs = _buffer[_head];
+                else
+                {
+                    _buffer.Add(tcs);
+                }
                 _queueLength++;
 
                 // increment _head for next time
@@ -64,9 +70,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 {
                     _head = 0;
                 }
-            }
 
-            return await tcs;
+                return tcs.Task();
+            }
         }
 
         public void OnExit()
@@ -96,7 +102,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                     _head--;
                 }
 
-                _buffer[_head].CompleteTrue();
+                _buffer[_head].Complete(true);
                 _queueLength--;
             }
         }

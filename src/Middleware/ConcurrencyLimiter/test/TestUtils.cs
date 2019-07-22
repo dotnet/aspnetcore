@@ -22,30 +22,30 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             return new ConcurrencyLimiterMiddleware(
                     next: next ?? (context => Task.CompletedTask),
                     loggerFactory: NullLoggerFactory.Instance,
-                    queue: queue ?? CreateTailDropQueue(1, 0),
+                    queue: queue ?? CreateFIFOPolicy(1, 0),
                     options: options
                 );
         }
 
-        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_TailDrop(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_FIFOQueue(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             return CreateTestMiddleware(
-                queue: CreateTailDropQueue(maxConcurrentRequests, requestQueueLimit),
+                queue: CreateFIFOPolicy(maxConcurrentRequests, requestQueueLimit),
                 onRejected: onRejected,
                 next: next
                 );
         }
 
-        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_LIFOQueue(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             return CreateTestMiddleware(
-                queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
+                queue: CreateLIFOPolicy(maxConcurrentRequests, requestQueueLimit),
                 onRejected: onRejected,
                 next: next
                 );
         }
 
-        internal static LIFOQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        internal static LIFOQueuePolicy CreateLIFOPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             return new LIFOQueuePolicy(options);
         }
 
-        internal static FIFOQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        internal static FIFOQueuePolicy CreateFIFOPolicy(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                return onTryEnter(state);
            }, onExit) { }
  
-        public async Task<bool> TryEnterAsync()
+        public async ValueTask<bool> TryEnterAsync()
         {
             Interlocked.Increment(ref _queuedRequests);
             var result = await _onTryEnter(this);
