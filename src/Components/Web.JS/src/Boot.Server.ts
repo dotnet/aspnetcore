@@ -105,7 +105,10 @@ async function initializeConnection(options: BlazorOptions, logger: Logger): Pro
   });
 
   connection.onclose(error => !renderingFailed && options.reconnectionHandler!.onConnectionDown(options.reconnectionOptions, error));
-  connection.on('JS.Error', error => unhandledError(connection, error, logger));
+  connection.on('JS.Error', error => {
+    renderingFailed = true;
+    unhandledError(connection, error, logger);
+  });
 
   window['Blazor']._internal.forceCloseConnection = () => connection.stop();
 
@@ -134,7 +137,6 @@ function unhandledError(connection: signalR.HubConnection, err: Error, logger: L
   //
   // Trying to call methods on the connection after its been closed will throw.
   if (connection) {
-    renderingFailed = true;
     connection.stop();
   }
 }
