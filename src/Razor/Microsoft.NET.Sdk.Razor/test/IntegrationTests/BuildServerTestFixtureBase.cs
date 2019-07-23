@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public abstract class BuildServerTestFixtureBase : IDisposable
     {
-        private static readonly TimeSpan _defaultShutdownTimeout = TimeSpan.FromSeconds(60);
-
+        private static readonly TimeSpan _defaultShutdownTimeout = TimeSpan.FromSeconds(120);
 
         protected BuildServerTestFixtureBase(string pipeName)
         {
