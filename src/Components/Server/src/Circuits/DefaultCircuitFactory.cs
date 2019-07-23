@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             HttpContext httpContext,
             CircuitClientProxy client,
             string baseUri,
-            string uri
+            string uri,
             ClaimsPrincipal user)
         {
             var components = ResolveComponentMetadata(httpContext, client);
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
             }
 
-            var navigationManaaer = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
+            var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
             {

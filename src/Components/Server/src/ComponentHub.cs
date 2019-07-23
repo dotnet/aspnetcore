@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 Context.GetHttpContext(),
                 circuitClient,
                 baseUri,
-                uri
+                uri,
                 Context.User);
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;
