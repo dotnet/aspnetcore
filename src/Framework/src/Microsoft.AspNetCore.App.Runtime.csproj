@@ -356,6 +356,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           EnvironmentVariables="COMPlus_PartialNGen=0"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
+
+    <Move Condition=" '$(GenerateCrossgenProfilingSymbols)' == 'true' "
+          SourceFiles="$(TargetDir)%(IntermediateCrossgenAssembly.FileName).ni.pdb"
+          DestinationFiles="$(TargetDir)%(IntermediateCrossgenAssembly.FileName).pdb" />
   </Target>
 
   <!--
