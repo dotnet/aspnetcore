@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Hosting
             2 => new KeyValuePair<string, object>(nameof(_request.ContentType), _request.ContentType),
             3 => new KeyValuePair<string, object>(nameof(_request.ContentLength), _request.ContentLength),
             4 => new KeyValuePair<string, object>(nameof(_request.Scheme), _request.Scheme),
-            5 => new KeyValuePair<string, object>(nameof(_request.Host), _request.Host.ToString()),
-            6 => new KeyValuePair<string, object>(nameof(_request.PathBase), _request.PathBase.ToString()),
-            7 => new KeyValuePair<string, object>(nameof(_request.Path), _request.Path.ToString()),
-            8 => new KeyValuePair<string, object>(nameof(_request.QueryString), _request.QueryString.ToString()),
+            5 => new KeyValuePair<string, object>(nameof(_request.Host), _request.Host.Value),
+            6 => new KeyValuePair<string, object>(nameof(_request.PathBase), _request.PathBase.Value),
+            7 => new KeyValuePair<string, object>(nameof(_request.Path), _request.Path.Value),
+            8 => new KeyValuePair<string, object>(nameof(_request.QueryString), _request.QueryString.Value),
             _ => throw new IndexOutOfRangeException(nameof(index)),
         };
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (_cachedToString == null)
             {
                 var request = _request;
-                _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host}{request.PathBase}{request.Path}{request.QueryString} {ValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
+                _cachedToString = $"{LogPreamble}{request.Protocol} {request.Method} {request.Scheme}://{request.Host.Value}{request.PathBase.Value}{request.Path.Value}{request.QueryString.Value} {EscapedValueOrEmptyMarker(request.ContentType)} {ValueOrEmptyMarker(request.ContentLength)}"; ;
             }
 
             return _cachedToString;
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Hosting
         internal string ToStringWithoutPreamble()
             => ToString().Substring(LogPreamble.Length);
 
-        internal static string ValueOrEmptyMarker(string potentialValue)
-            => potentialValue?.Length > 0 ? potentialValue : EmptyEntry;
+        internal static string EscapedValueOrEmptyMarker(string potentialValue)
+            => potentialValue?.Length > 0 ? Uri.EscapeDataString(potentialValue) : EmptyEntry;
 
         internal static string ValueOrEmptyMarker<T>(T? potentialValue) where T : struct, IFormattable
             => potentialValue?.ToString(null, CultureInfo.InvariantCulture) ?? EmptyEntry;

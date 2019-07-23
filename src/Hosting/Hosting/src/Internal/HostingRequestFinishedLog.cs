@@ -38,10 +38,10 @@ namespace Microsoft.AspNetCore.Hosting
                     4 => new KeyValuePair<string, object>(nameof(request.Protocol), request.Protocol),
                     5 => new KeyValuePair<string, object>(nameof(request.Method), request.Method),
                     6 => new KeyValuePair<string, object>(nameof(request.Scheme), request.Scheme),
-                    7 => new KeyValuePair<string, object>(nameof(request.Host), request.Host.ToString()),
-                    8 => new KeyValuePair<string, object>(nameof(request.PathBase), request.PathBase.ToString()),
-                    9 => new KeyValuePair<string, object>(nameof(request.Path), request.Path.ToString()),
-                    10 => new KeyValuePair<string, object>(nameof(request.QueryString), request.QueryString.ToString()),
+                    7 => new KeyValuePair<string, object>(nameof(request.Host), request.Host.Value),
+                    8 => new KeyValuePair<string, object>(nameof(request.PathBase), request.PathBase.Value),
+                    9 => new KeyValuePair<string, object>(nameof(request.Path), request.Path.Value),
+                    10 => new KeyValuePair<string, object>(nameof(request.QueryString), request.QueryString.Value),
                     _ => throw new IndexOutOfRangeException(nameof(index)),
                 };
             }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (_cachedToString == null)
             {
                 var response = _context.HttpContext.Response;
-                _cachedToString = $"Request finished {_context.StartLog.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {ValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
+                _cachedToString = $"Request finished {_context.StartLog.ToStringWithoutPreamble()} - {response.StatusCode.ToString(CultureInfo.InvariantCulture)} {ValueOrEmptyMarker(response.ContentLength)} {EscapedValueOrEmptyMarker(response.ContentType)} {Elapsed.TotalMilliseconds.ToString("0.0000", CultureInfo.InvariantCulture)}ms";
             }
 
             return _cachedToString;
