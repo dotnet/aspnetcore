@@ -71,7 +71,7 @@ function ReadGlobalJsonNativeTools {
   local native_tools_list=$(echo $native_tools_section | awk -F"[{}]" '{print $2}')
   native_tools_list=${native_tools_list//[\" ]/}
   native_tools_list=${native_tools_list//,/$'\n'}
-  native_tools_list="$(echo -e "${native_tools_list}" | tr -d '[:space:]')"
+  native_tools_list="$(echo -e "${native_tools_list}" | tr -d '[[:space:]]')"
 
   local old_IFS=$IFS
   while read -r line; do

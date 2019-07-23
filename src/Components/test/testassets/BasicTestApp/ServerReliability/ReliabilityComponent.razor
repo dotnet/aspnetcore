@@ -19,6 +19,8 @@
 <button id="triggerjsinterop-success" @onclick="@TriggerJSInteropSuccess">Trigger successfull JS interop callback</button>
 <button id="triggerjsinterop-failure" @onclick="@TriggerJSInteropFailure">Trigger error JS interop callback</button>
 
+<button id="event-handler-throw-sync" @onclick="@TriggerSyncException">Trigger sync exception</button>
+
 <button id="thecounter" @onclick="@IncrementCount">Click me</button>
 
 @code
@@ -32,6 +34,8 @@
     {
         currentCount++;
     }
+
+    void TriggerSyncException() => throw new Exception("Handler threw an exception");
 
     async Task TriggerJSInterop()
     {

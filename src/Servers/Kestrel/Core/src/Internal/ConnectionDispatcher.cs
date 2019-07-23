@@ -51,8 +51,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             break;
                         }
 
+                        // Add the connection to the connection manager before we queue it for execution
                         var id = Interlocked.Increment(ref _lastConnectionId);
-                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, _serviceContext.Log);
+                        var kestrelConnection = new KestrelConnection(id, _serviceContext, _connectionDelegate, connection, Log);
+
+                        _serviceContext.ConnectionManager.AddConnection(id, kestrelConnection);
+
+                        Log.ConnectionAccepted(connection.ConnectionId);
+
                         ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                     }
                 }

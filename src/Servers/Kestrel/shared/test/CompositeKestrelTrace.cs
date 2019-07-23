@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    internal class CompositeKestrelTrace: IKestrelTrace
+    internal class CompositeKestrelTrace : IKestrelTrace
     {
         private readonly IKestrelTrace _trace1;
         private readonly IKestrelTrace _trace2;
@@ -31,6 +31,12 @@ namespace Microsoft.AspNetCore.Testing
         public bool IsEnabled(LogLevel logLevel)
         {
             return _trace1.IsEnabled(logLevel) || _trace2.IsEnabled(logLevel);
+        }
+
+        public void ConnectionAccepted(string connectionId)
+        {
+            _trace1.ConnectionAccepted(connectionId);
+            _trace2.ConnectionAccepted(connectionId);
         }
 
         public IDisposable BeginScope<TState>(TState state)

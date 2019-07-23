@@ -36,22 +36,22 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets or sets the assembly that should be searched, along with its referenced
         /// assemblies, for components matching the URI.
         /// </summary>
-        [Parameter] public Assembly AppAssembly { get; private set; }
+        [Parameter] public Assembly AppAssembly { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment NotFoundContent { get; private set; }
+        [Parameter] public RenderFragment NotFoundContent { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
+        [Parameter] public RenderFragment<AuthenticationState> NotAuthorizedContent { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
-        [Parameter] public RenderFragment AuthorizingContent { get; private set; }
+        [Parameter] public RenderFragment AuthorizingContent { get; set; }
 
         private RouteTable Routes { get; set; }
 

@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
-            Assert.Equal("/navigation-redirect", response.Headers.Location.ToString());
+            Assert.Equal("http://localhost/navigation-redirect", response.Headers.Location.ToString());
         }
 
         [Fact]
@@ -100,9 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components/Navigation/false");
 
             // Assert
-            // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
-            Assert.Equal("/navigation-redirect", response.Headers.Location.ToString());
+            Assert.Equal("http://localhost/navigation-redirect", response.Headers.Location.ToString());
         }
 
         [Fact]

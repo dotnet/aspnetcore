@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created <c>ul</c> element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
 
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 

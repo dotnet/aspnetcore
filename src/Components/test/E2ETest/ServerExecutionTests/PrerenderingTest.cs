@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -53,6 +57,44 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanReadUrlHashOnlyOnceConnected()
+        {
+            var urlWithoutHash = "prerendered/show-uri?my=query&another=value";
+            var url = $"{urlWithoutHash}#some/hash?tokens";
+
+            // The server doesn't receive the hash part of the URL, so you can't
+            // read it during prerendering
+            Navigate(url);
+            Browser.Equal(
+                _serverFixture.RootUri + urlWithoutHash,
+                () => Browser.FindElement(By.TagName("strong")).Text);
+
+            // Once connected, you do have access to the full URL
+            BeginInteractivity();
+            Browser.Equal(
+                _serverFixture.RootUri + url,
+                () => Browser.FindElement(By.TagName("strong")).Text);
+        }
+
+        [Theory]
+        [InlineData("base/relative", "prerendered/base/relative")]
+        [InlineData("/root/relative", "/root/relative")]
+        [InlineData("http://absolute/url", "http://absolute/url")]
+        public async Task CanRedirectDuringPrerendering(string destinationParam, string expectedRedirectionLocation)
+        {
+            var requestUri = new Uri(
+                _serverFixture.RootUri,
+                "prerendered/prerendered-redirection?destination=" + destinationParam);
+
+            var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+            var response = await httpClient.GetAsync(requestUri);
+
+            var expectedUri = new Uri(_serverFixture.RootUri, expectedRedirectionLocation);
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(expectedUri, response.Headers.Location);
         }
 
         private void BeginInteractivity()

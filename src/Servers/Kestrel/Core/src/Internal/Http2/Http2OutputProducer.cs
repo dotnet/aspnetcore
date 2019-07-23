@@ -95,11 +95,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        public Task WriteChunkAsync(ReadOnlySpan<byte> span, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)

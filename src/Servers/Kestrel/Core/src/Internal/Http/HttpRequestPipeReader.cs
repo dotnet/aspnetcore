@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
-            void ThrowTaskCanceledException() => throw new TaskCanceledException();
+            static void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
+            static void ThrowTaskCanceledException() => throw new TaskCanceledException();
         }
     }
 }

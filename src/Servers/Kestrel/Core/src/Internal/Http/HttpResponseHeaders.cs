@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal sealed partial class HttpResponseHeaders : HttpHeaders
     {
-        private static ReadOnlySpan<byte> _CrLf => new[] { (byte)'\r', (byte)'\n' };
-        private static ReadOnlySpan<byte> _colonSpace => new[] { (byte)':', (byte)' ' };
+        private static ReadOnlySpan<byte> CrLf => new[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> ColonSpace => new[] { (byte)':', (byte)' ' };
 
         public Enumerator GetEnumerator()
         {
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (value != null)
                         {
-                            buffer.Write(_CrLf);
+                            buffer.Write(CrLf);
                             buffer.WriteAsciiNoValidation(kv.Key);
-                            buffer.Write(_colonSpace);
+                            buffer.Write(ColonSpace);
                             buffer.WriteAsciiNoValidation(value);
                         }
                     }

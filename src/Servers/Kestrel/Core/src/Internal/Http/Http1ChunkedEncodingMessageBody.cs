@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Mode _mode = Mode.Prefix;
         private volatile bool _canceled;
         private Task _pumpTask;
-        private Pipe _requestBodyPipe;
+        private readonly Pipe _requestBodyPipe;
         private ReadResult _readResult;
 
         public Http1ChunkedEncodingMessageBody(bool keepAlive, Http1Connection context)

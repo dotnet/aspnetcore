@@ -25,19 +25,19 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
-        public string ActiveClass { get; private set; }
+        public string ActiveClass { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be added to the generated
         /// <c>a</c> element.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the computed CSS class based on whether or not the link is active.
         /// </summary>
-        protected string CssClass { get; private set; }
+        protected string CssClass { get; set; }
 
         /// <summary>
         /// Gets or sets the child content of the component.
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets or sets a value representing the URL matching behavior.
         /// </summary>
         [Parameter]
-        public NavLinkMatch Match { get; private set; }
+        public NavLinkMatch Match { get; set; }
 
         [Inject] private IUriHelper UriHelper { get; set; }
 

@@ -187,8 +187,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public static unsafe bool ContainsDotSegments(byte* start, byte* end)
         {
             var src = start;
-            var dst = start;
-
             while (src < end)
             {
                 var ch1 = *src;

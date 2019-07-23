@@ -255,7 +255,6 @@ namespace System.Buffers
                 {
                     char ch = *(input + i);
                     *(output + i) = (byte)ch; // Cast convert
-                    i = length;
                 }
             }
         }

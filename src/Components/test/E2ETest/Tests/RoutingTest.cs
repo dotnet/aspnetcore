@@ -226,10 +226,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertHighlightedLinks("With parameters", "With more parameters");
 
             // Can remove parameters while remaining on same page
-            // WARNING: This only works because the WithParameters component overrides SetParametersAsync
-            // and explicitly resets its parameters to default when each new set of parameters arrives.
-            // Without that, the page would retain the old value.
-            // See https://github.com/aspnet/AspNetCore/issues/6864 where we reverted the logic to auto-reset.
             app.FindElement(By.LinkText("With parameters")).Click();
             Browser.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
@@ -386,6 +382,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             jsExecutor.ExecuteScript("history.back()");
 
             Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void UriHelperCanReadAbsoluteUriIncludingHash()
+        {
+            var app = MountTestComponent<UriHelperComponent>();
+            Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
+
+            var uri = "/mytestpath?my=query&another#some/hash?tokens";
+            var expectedAbsoluteUri = $"{_serverFixture.RootUri}subdir{uri}";
+
+            SetUrlViaPushState(uri);
+            Browser.Equal(expectedAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
         }
 
         [Fact]

@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task CanDispatchEventsToTopLevelComponents()
+        public void CanDispatchEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -482,12 +482,42 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // Does not throw
         }
 
         [Fact]
-        public async Task CanDispatchTypedEventsToTopLevelComponents()
+        public void DispatchEventHandlesSynchronousExceptionsFromEventHandlers()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer {
+                ShouldHandleExceptions = true
+            };
+
+            var component = new EventComponent
+            {
+                OnTest = args => throw new Exception("Error")
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Empty(renderer.HandledExceptions);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIEventArgs();
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.True(renderTask.IsCompletedSuccessfully);
+
+            var exception = Assert.Single(renderer.HandledExceptions);
+            Assert.Equal("Error", exception.Message);
+        }
+
+        [Fact]
+        public void CanDispatchTypedEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -513,12 +543,10 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]
-        public async Task CanDispatchActionEventsToTopLevelComponents()
+        public void CanDispatchActionEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -544,12 +572,10 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.NotNull(receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]
-        public async Task CanDispatchEventsToNestedComponents()
+        public void CanDispatchEventsToNestedComponents()
         {
             UIEventArgs receivedArgs = null;
 
@@ -586,8 +612,6 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
-
-            await renderTask; // does not throw
         }
 
         [Fact]

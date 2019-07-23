@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -121,6 +122,69 @@ namespace Microsoft.AspNetCore.Mvc
                 "Executed page model factory for page " +
                 "System.ValueTuple<int, string> (System.Private.CoreLib)",
                 write.State.ToString());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ExecutingHandlerMethod_LogsHandlerNameAndModelState(bool isValidModelState)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var context = new PageContext();
+            if (!isValidModelState)
+            {
+                context.ModelState.AddModelError("foo", "bar");
+            }
+            var handler = new HandlerMethodDescriptor
+            {
+                // Using a generic type to verify the use of a clean name
+                MethodInfo = typeof(ValueTuple<int, string>).GetMethod(nameof(ToString)),
+            };
+
+            // Act
+            logger.ExecutingHandlerMethod(context, handler, null);
+
+            // Assert
+            var write = Assert.Single(testSink.Writes);
+            var validationState = isValidModelState ? "Valid" : "Invalid";
+            Assert.Equal(
+                $"Executing handler method System.ValueTuple<int, string>.ToString - ModelState is {validationState}",
+                write.State.ToString());
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("foo", "foo")]
+        [InlineData("foo, 42", "foo", 42)]
+        public void ExecutingHandlerMethod_WithArguments_LogsArguments(string expectedArgumentsMessage, params object[] arguments)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
+            var logger = loggerFactory.CreateLogger("test");
+
+            var context = new PageContext();
+            var handler = new HandlerMethodDescriptor
+            {
+                // Using a generic type to verify the use of a clean name
+                MethodInfo = typeof(ValueTuple<int, string>).GetMethod(nameof(ToString)),
+            };
+
+            // Act
+            logger.ExecutingHandlerMethod(context, handler, arguments);
+
+            // Assert
+            Assert.Equal(2, testSink.Writes.Count);
+            var enumerator = testSink.Writes.GetEnumerator();
+            enumerator.MoveNext();
+            enumerator.MoveNext();
+            Assert.Equal(
+                $"Executing handler method System.ValueTuple<int, string>.ToString with arguments ({expectedArgumentsMessage})",
+                enumerator.Current.State.ToString());
         }
     }
 }
