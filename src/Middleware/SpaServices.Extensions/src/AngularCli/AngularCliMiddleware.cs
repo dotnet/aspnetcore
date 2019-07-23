@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 // Start Angular CLI and attach to middleware pipeline
                 var appBuilder = spaBuilder.ApplicationBuilder;
                 var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-                angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, logger);
+                angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, spaPort, logger);
             }
             else
             {
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
-            string sourcePath, string npmScriptName, ILogger logger)
+            string sourcePath, string npmScriptName, int? spaPort, ILogger logger)
         {
-            var portNumber = TcpPortFinder.FindAvailablePort();
+            var portNumber = spaPort ?? TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
 
             var npmScriptRunner = new NpmScriptRunner(
