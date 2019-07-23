@@ -376,6 +376,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
+                    if(string.IsNullOrEmpty(headerValues.ToString()))
+                    {
+                        throw new ArgumentException($"{headerPair.Key} header should be non-empty string");
+                    }
+
                     var isFirst = i == 0;
                     var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                     fixed (byte* pHeaderValue = headerValueBytes)
