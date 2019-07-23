@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public ParameterCollection Build()
             {
-                var builder = new RenderTreeBuilder(new TestRenderer());
+                var builder = new RenderTreeBuilder();
                 builder.OpenComponent<FakeComponent>(0);
                 foreach (var kvp in _keyValuePairs)
                 {

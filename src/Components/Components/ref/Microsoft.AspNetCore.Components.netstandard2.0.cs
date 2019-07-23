@@ -555,15 +555,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
-    public partial class RenderTreeBuilder : System.IDisposable
+    public sealed partial class RenderTreeBuilder : System.IDisposable
     {
-        public const string ChildContent = "ChildContent";
-        public RenderTreeBuilder(Microsoft.AspNetCore.Components.Rendering.Renderer renderer) { }
+        public RenderTreeBuilder() { }
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
-        public void AddAttribute(int sequence, string name, System.Action value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.Func<System.Threading.Tasks.Task> value) { }
         public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
         public void AddAttribute(int sequence, string name, object value) { }
         public void AddAttribute(int sequence, string name, string value) { }

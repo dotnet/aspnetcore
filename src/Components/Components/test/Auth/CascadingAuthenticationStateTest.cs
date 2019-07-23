@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Components
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenComponent<CascadingAuthenticationState>(0);
-                builder.AddAttribute(1, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(1, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<ReceiveAuthStateComponent>(0);
                     childBuilder.CloseComponent();

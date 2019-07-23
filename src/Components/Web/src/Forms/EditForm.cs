@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenComponent<CascadingValue<EditContext>>(3);
             builder.AddAttribute(4, "IsFixed", true);
             builder.AddAttribute(5, "Value", _fixedEditContext);
-            builder.AddAttribute(6, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
+            builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_fixedEditContext));
             builder.CloseComponent();
             builder.CloseElement();
 

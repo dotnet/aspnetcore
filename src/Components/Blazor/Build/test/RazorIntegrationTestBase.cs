@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected ArrayRange<RenderTreeFrame> GetFrames(RenderFragment fragment)
         {
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             fragment(builder);
             return builder.GetFrames();
         }
