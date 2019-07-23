@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
-            UseReactDevelopmentServer(spaBuilder, (options) => options.npmScript = npmScript);
+            UseReactDevelopmentServer(spaBuilder, (options) => options.NpmScript = npmScript);
         }
 
         /// <summary>

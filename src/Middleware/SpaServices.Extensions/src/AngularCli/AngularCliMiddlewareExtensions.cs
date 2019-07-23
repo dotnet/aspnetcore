@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
-            UseAngularCliServer(spaBuilder, (options) => options.NpmScript = NpmScript);
+            UseAngularCliServer(spaBuilder, (options) => options.NpmScript = npmScript);
         }
 
         /// <summary>

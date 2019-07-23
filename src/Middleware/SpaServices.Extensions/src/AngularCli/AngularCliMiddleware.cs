@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
 
             // We have to start the server by ourself if there wasn't any port specified
             // or the specified port is still free (unused).
-            var shouldStartServer = !spaPort.HasValue || TcpPortFinder.TestPortAvailability(spaPort.Value);
+            var shouldStartServer = !spaPort.HasValue || TcpPortFinder.IsPortAvailable(spaPort.Value);
 
             Task<AngularCliServerInfo> angularCliServerInfoTask;
             if (shouldStartServer)
