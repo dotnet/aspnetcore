@@ -13,21 +13,21 @@
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>5228d074e954ca0d8e1adb398d6e0e0043f5168e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview8.19372.4">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview8.19373.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b540bb276fa0d87d13a2fd62904e694f5230db69</Sha>
+      <Sha>25c43194c9b0d4095031e1eafc9dd9071beb124c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview8.19372.4">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview8.19373.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b540bb276fa0d87d13a2fd62904e694f5230db69</Sha>
+      <Sha>25c43194c9b0d4095031e1eafc9dd9071beb124c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview8.19372.4">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview8.19373.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b540bb276fa0d87d13a2fd62904e694f5230db69</Sha>
+      <Sha>25c43194c9b0d4095031e1eafc9dd9071beb124c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview8.19372.4">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview8.19373.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b540bb276fa0d87d13a2fd62904e694f5230db69</Sha>
+      <Sha>25c43194c9b0d4095031e1eafc9dd9071beb124c</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview8.19372.6">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
@@ -432,9 +432,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>47201721f98aafa1819a74e80d48bf5a825ef986</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19370-01">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19372-02">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>38a48bcc17ee85000669ccccbff517436bd23217</Sha>
+      <Sha>df3164d1fe34d6f4ce88733926860fffabcfbb0c</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
