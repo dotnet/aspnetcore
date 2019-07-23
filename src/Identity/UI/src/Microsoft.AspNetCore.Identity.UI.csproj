@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Content Remove="@(Content)" />
-    <Content Include="wwwroot\**\*" Pack="true" PackagePath="staticwebassets" />
+    <Content Include="wwwroot\**\*" Pack="true" PackagePath="swa" />
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/THIRD-PARTY-NOTICES.txt" />
   </ItemGroup>
