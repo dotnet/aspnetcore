@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Identity.DefaultUI.WebSite;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity.UI;
@@ -22,7 +21,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class ServerFactory<TStartup,TContext>: WebApplicationFactory<TStartup>
+    public class ServerFactory<TStartup, TContext> : WebApplicationFactory<TStartup>
         where TStartup : class
         where TContext : DbContext
     {
@@ -38,6 +37,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         public string BootstrapFrameworkVersion { get; set; } = "V4";
+        private bool IsHelix => typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "Microsoft.AspNetCore.Testing.IsHelixPayload");
 
         protected override IHostBuilder CreateHostBuilder()
         {
@@ -87,20 +88,52 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 {
                     typeof(StaticWebAssetsLoader)
                         .GetMethod("UseStaticWebAssetsCore", BindingFlags.NonPublic | BindingFlags.Static)
-                        .Invoke(null, new object[] { context.HostingEnvironment, manifest});
+                        .Invoke(null, new object[] { context.HostingEnvironment, manifest });
                 }
             });
-         }
+        }
 
         private void UpdateManifest(string versionedPath)
         {
-            var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
-            var content = File.ReadAllText(versionedPath);
+            if (!IsHelix)
+            {
+                var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
+                var content = File.ReadAllText(versionedPath);
 
-            var updatedContent = content.Replace("{TEST_PLACEHOLDER}", Path.Combine(path, "wwwroot"));
+                var updatedContent = content.Replace("{TEST_PLACEHOLDER}", Path.Combine(path, "wwwroot"));
 
-            File.WriteAllText(versionedPath, updatedContent);
+                File.WriteAllText(versionedPath, updatedContent);
+            }
+            else
+            {
+                var content = File.ReadAllText(versionedPath);
+
+                var path = FindHelixSlnFile();
+
+                var updatedContent = content.Replace("{TEST_PLACEHOLDER}", Path.Combine(path, "UI", "wwwroot"));
+
+                File.WriteAllText(versionedPath, updatedContent);
+            }
+        }
+
+        private string FindHelixSlnFile()
+        {
+            var applicationPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
+            var directoryInfo = new DirectoryInfo(applicationPath);
+            do
+            {
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.sln").FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    return directoryInfo.FullName;
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
         }
 
         protected override IHost CreateHost(IHostBuilder builder)

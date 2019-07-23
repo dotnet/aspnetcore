@@ -54,7 +54,14 @@
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
 
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildHelixPayload)' == 'true'">
+        <_Parameter1>Microsoft.AspNetCore.Testing.IsHelixPayload</_Parameter1>
+        <_Parameter2>true</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
+  </Target>
+
+  <Target Name="PrepareStaticWebAssetsForHelix" Condition="'$(BuildHelixPayload)' == 'true' ">
   </Target>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -64,10 +71,12 @@
       <_PublishFiles Include="$(ArtifactsBinDir)Identity.DefaultUI.WebSite\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
       <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
       <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
+      <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />
     <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
     <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
+    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
   </Target>
