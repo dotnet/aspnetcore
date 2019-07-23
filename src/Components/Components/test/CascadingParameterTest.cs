@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Hello");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Hello");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", regularParameterValue);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", providedValue);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", "Unchanging value");
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<CascadingParameterConsumerComponent<string>>(0);
                     childBuilder.AddAttribute(1, "RegularParameter", "Goodbye");
@@ -192,12 +192,12 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenComponent<CascadingValue<int>>(0);
                 builder.AddAttribute(1, "Value", 123);
                 builder.AddAttribute(2, "IsFixed", true);
-                builder.AddAttribute(3, RenderTreeBuilder.ChildContent, new RenderFragment(builder2 =>
+                builder.AddAttribute(3, "ChildContent", new RenderFragment(builder2 =>
                 {
                     // Then also have a non-fixed cascading value so we can show that unsubscription works
                     builder2.OpenComponent<CascadingValue<string>>(0);
                     builder2.AddAttribute(1, "Value", providedValue);
-                    builder2.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(builder3 =>
+                    builder2.AddAttribute(2, "ChildContent", new RenderFragment(builder3 =>
                     {
                         if (displayNestedComponent)
                         {
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", providedValue);
                 builder.AddAttribute(2, "IsFixed", true);
-                builder.AddAttribute(3, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(3, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     if (shouldIncludeChild)
                     {

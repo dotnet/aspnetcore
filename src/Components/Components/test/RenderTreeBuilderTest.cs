@@ -17,19 +17,10 @@ namespace Microsoft.AspNetCore.Components.Test
     public class RenderTreeBuilderTest
     {
         [Fact]
-        public void RequiresNonnullRenderer()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-            {
-                new RenderTreeBuilder(null);
-            });
-        }
-
-        [Fact]
         public void StartsEmpty()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Assert
             var frames = builder.GetFrames();
@@ -41,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var nullString = (string)null;
 
             // Act
@@ -61,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddMarkup()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "some elem");
@@ -84,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // as opposed to calling builder.AddMarkupContent directly.
 
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act - can use either constructor or cast
             builder.AddContent(0, (MarkupString)"Some markup");
@@ -101,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddNullMarkup()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddMarkupContent(0, null);
@@ -116,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddNonStringValueAsText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var nullObject = (object)null;
 
             // Act
@@ -134,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void UnclosedElementsHaveNoSubtreeLength()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "my element");
@@ -148,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ClosedEmptyElementsHaveSubtreeLengthOne()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddContent(0, "some frame so that the element isn't at position zero");
@@ -165,7 +156,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ClosedElementsHaveCorrectSubtreeLength()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "my element");
@@ -184,7 +175,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanNestElements()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddContent(0, "standalone text 1"); //  0: standalone text 1
@@ -224,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddAttributes()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<UIEventArgs> eventHandler = eventInfo => { };
 
             // Act
@@ -251,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddMultipleAttributes_AllowsNull()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "myelement");
@@ -269,7 +260,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddMultipleAttributes_InterspersedWithOtherAttributes()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<UIEventArgs> eventHandler = eventInfo => { };
 
             // Act
@@ -367,7 +358,7 @@ namespace Microsoft.AspNetCore.Components.Test
         private void CanAddMultipleAttributesTest(IEnumerable<KeyValuePair<string, object>> attributes)
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "myelement");
@@ -389,7 +380,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddAttributeAtRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -402,7 +393,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddDelegateAttributeAtRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -415,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddAttributeToText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -430,7 +421,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddEventHandlerAttributeToText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -445,7 +436,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddAttributeToRegion()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -459,7 +450,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddAttributeToElementReferenceCapture()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -474,7 +465,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddAttributeToComponentReferenceCapture()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -489,7 +480,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddChildComponentsUsingGenericParam()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(10, "parent");                   //  0: <parent>
@@ -516,7 +507,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddChildComponentsUsingTypeArgument()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             var componentType = typeof(TestComponent);
@@ -544,7 +535,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddRegions()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(10, "parent");                      //  0: <parent>
@@ -572,7 +563,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddFragments()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             RenderFragment fragment = fragmentBuilder =>
             {
                 fragmentBuilder.AddContent(0, "Hello from the fragment");
@@ -599,7 +590,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddElementReferenceCaptureInsideElement()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<ElementReference> referenceCaptureAction = elementReference => { };
 
             // Act
@@ -621,7 +612,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddElementReferenceCaptureWithNoParent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -634,7 +625,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddElementReferenceCaptureInsideComponent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -648,7 +639,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddElementReferenceCaptureInsideRegion()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -667,7 +658,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // just works.
 
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<ElementReference> referenceCaptureAction1 = elementReference => { };
             Action<ElementReference> referenceCaptureAction2 = elementReference => { };
 
@@ -688,7 +679,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddComponentReferenceCaptureInsideComponent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<object> myAction = elementReference => { };
 
             // Act
@@ -710,7 +701,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddComponentReferenceCaptureWithNoParent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -723,7 +714,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddComponentReferenceCaptureInsideElement()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -737,7 +728,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddComponentReferenceCaptureInsideRegion()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -756,7 +747,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // just works.
 
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             Action<object> referenceCaptureAction1 = elementReference => { };
             Action<object> referenceCaptureAction2 = elementReference => { };
 
@@ -777,7 +768,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanClear()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddContent(0, "some text");
@@ -794,7 +785,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_BoolTrue_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -812,7 +803,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_BoolFalse_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -831,7 +822,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_Bool_SetsAttributeValue(bool value)
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -849,7 +840,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_StringValue_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -867,7 +858,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_StringNull_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -886,7 +877,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_StringValue_SetsAttributeValue(string value)
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -904,7 +895,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventHandler_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action<UIEventArgs>((e) => { });
 
@@ -924,7 +915,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_NullEventHandler_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -941,7 +932,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_Action_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action(() => { });
 
@@ -961,7 +952,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_NullAction_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -985,7 +976,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_EventHandlerValue_SetsAttributeValue(Action<UIEventArgs> value)
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -1003,7 +994,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallback_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = new EventCallback(null, new Action(() => { }));
 
             // Act
@@ -1022,7 +1013,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallback_Default_DoesNotAddFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = default(EventCallback);
 
             // Act
@@ -1040,7 +1031,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallbackWithReceiver_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback(receiver, new Action(() => { }));
 
@@ -1060,7 +1051,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_EventCallback_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback(receiver, new Action(() => { }));
 
@@ -1080,7 +1071,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallbackOfT_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = new EventCallback<string>(null, new Action<string>((s) => { }));
 
             // Act
@@ -1099,7 +1090,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallbackOfT_Default_DoesNotAddFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = default(EventCallback<string>);
 
             // Act
@@ -1117,7 +1108,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_EventCallbackWithReceiverOfT_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
 
@@ -1137,7 +1128,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_EventCallbackOfT_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
 
@@ -1157,7 +1148,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectBoolTrue_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1175,7 +1166,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectBoolFalse_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1194,7 +1185,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_ObjectBoolValue_SetsAttributeValue(bool value)
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -1212,7 +1203,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectStringValue_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1230,7 +1221,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_ObjectStringValue_SetsAttributeValue()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -1248,7 +1239,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventHandler_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action<UIEventArgs>((e) => { });
 
@@ -1268,7 +1259,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_ObjectUIEventHandleValue_SetsAttributeValue()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action<UIEventArgs>((e) => { });
 
@@ -1288,7 +1279,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectAction_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action(() => { });
 
@@ -1308,7 +1299,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_ObjectAction_SetsAttributeValue()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             var value = new Action(() => { });
 
@@ -1328,7 +1319,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallback_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = new EventCallback(null, new Action(() => { }));
 
             // Act
@@ -1347,7 +1338,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallback_Default_DoesNotAddFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = default(EventCallback);
 
             // Act
@@ -1365,7 +1356,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallbackWithReceiver_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback(receiver, new Action(() => { }));
 
@@ -1385,7 +1376,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Component_ObjectEventCallback_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback(receiver, new Action(() => { }));
 
@@ -1405,7 +1396,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallbackOfT_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = new EventCallback<string>(null, new Action<string>((s) => { }));
 
             // Act
@@ -1424,7 +1415,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallbackOfT_Default_DoesNotAddFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var callback = default(EventCallback<string>);
 
             // Act
@@ -1442,7 +1433,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectEventCallbackWithReceiverOfT_AddsFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var receiver = Mock.Of<IHandleEvent>();
             var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
 
@@ -1462,7 +1453,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void AddAttribute_Element_ObjectNull_IgnoresFrame()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1479,7 +1470,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddKeyToElement()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var keyValue = new object();
 
             // Act
@@ -1505,7 +1496,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanAddKeyToComponent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             var keyValue = new object();
 
             // Act
@@ -1531,7 +1522,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddKeyOutsideComponentOrElement_TreeRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -1545,7 +1536,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CannotAddKeyOutsideComponentOrElement_RegionRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             builder.OpenElement(0, "some element");
@@ -1561,7 +1552,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void IgnoresNullElementKey()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1582,7 +1573,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void IgnoresNullComponentKey()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenComponent<TestComponent>(0);
@@ -1603,7 +1594,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesWithoutAddMultipleAttributes()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "id", "hi");
             builder.AddAttribute(0, "id", "bye");
@@ -1627,7 +1618,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var capture = (Action<ElementReference>)((_) => { });
 
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "id", "hi");
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1652,7 +1643,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Content()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "id", "hi");
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1677,7 +1668,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideElement()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "id", "hi");
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1700,7 +1691,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideComponent()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenComponent<TestComponent>(0);
             builder.AddAttribute(0, "id", "hi");
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1724,7 +1715,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_SilentFrameFollowedBySameAttribute()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenComponent<TestComponent>(0);
             builder.AddAttribute(0, "id", (string)null);
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1747,7 +1738,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesInsideChildElement()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "id", "hi");
             builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -1777,7 +1768,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void ProcessDuplicateAttributes_CanRemoveOverwrittenAttributes()
         {
             // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenElement(0, "div");
             builder.AddAttribute(0, "A", "hi");
             builder.AddAttribute(0, "2", new EventCallback(null, (Action)(() => { })));

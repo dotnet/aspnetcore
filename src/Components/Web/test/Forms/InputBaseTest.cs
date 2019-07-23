@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 builder.OpenComponent<CascadingValue<EditContext>>(0);
                 builder.AddAttribute(1, "Value", EditContext);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
+                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<TComponent>(0);
                     childBuilder.AddAttribute(0, "Value", Value);

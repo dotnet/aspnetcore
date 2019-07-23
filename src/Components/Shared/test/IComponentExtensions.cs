@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         private static ParameterCollection DictionaryToParameterCollection(
             IDictionary<string, object> parameters)
         {
-            var builder = new RenderTreeBuilder(new TestRenderer());
+            var builder = new RenderTreeBuilder();
             builder.OpenComponent<AbstractComponent>(0);
             foreach (var pair in parameters)
             {

@@ -814,7 +814,7 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), parentComponent.SomeMethod);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)parentComponent.SomeMethod);
                 builder.CloseComponent();
             };
             parentComponent.OnEvent = () =>
@@ -855,10 +855,10 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), () =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
                 {
                     parentComponent.SomeMethod();
-                });
+                }));
                 builder.CloseComponent();
             };
             parentComponent.OnEvent = () =>
@@ -1133,10 +1133,10 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), () =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
                 {
                     // Do nothing.
-                });
+                }));
                 builder.CloseComponent();
             };
 
@@ -1434,10 +1434,10 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
                 {
                     await tcs.Task;
-                });
+                }));
                 builder.CloseComponent();
             };
 
@@ -1543,11 +1543,11 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
                 {
                     await tcs.Task;
                     throw new TaskCanceledException();
-                });
+                }));
                 builder.CloseComponent();
             };
 
@@ -1661,11 +1661,11 @@ namespace Microsoft.AspNetCore.Components.Test
             parentComponent.RenderFragment = (builder) =>
             {
                 builder.OpenComponent<EventComponent>(0);
-                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), (Func<Task>)(async () =>
                 {
                     await tcs.Task;
                     throw new InvalidTimeZoneException();
-                });
+                }));
                 builder.CloseComponent();
             };
 

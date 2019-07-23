@@ -484,10 +484,10 @@ namespace Microsoft.AspNetCore.Components
             {
                 builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
                 builder.AddAttribute(1, nameof(CascadingValue<Task<AuthenticationState>>.Value), AuthenticationState);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, (RenderFragment)(builder =>
+                builder.AddAttribute(2, "ChildContent", (RenderFragment)(builder =>
                 {
                     builder.OpenComponent<NeverReRenderComponent>(0);
-                    builder.AddAttribute(1, RenderTreeBuilder.ChildContent, _childContent);
+                    builder.AddAttribute(1, "ChildContent", _childContent);
                     builder.CloseComponent();
                 }));
                 builder.CloseComponent();
