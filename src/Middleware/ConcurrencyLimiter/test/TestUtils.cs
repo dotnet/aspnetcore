@@ -22,30 +22,30 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             return new ConcurrencyLimiterMiddleware(
                     next: next ?? (context => Task.CompletedTask),
                     loggerFactory: NullLoggerFactory.Instance,
-                    queue: queue ?? CreateFIFOPolicy(1, 0),
+                    queue: queue ?? CreateQueuePolicy(1, 0),
                     options: options
                 );
         }
 
-        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_FIFOQueue(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_QueuePolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             return CreateTestMiddleware(
-                queue: CreateFIFOPolicy(maxConcurrentRequests, requestQueueLimit),
+                queue: CreateQueuePolicy(maxConcurrentRequests, requestQueueLimit),
                 onRejected: onRejected,
                 next: next
                 );
         }
 
-        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_LIFOQueue(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_StackPolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             return CreateTestMiddleware(
-                queue: CreateLIFOPolicy(maxConcurrentRequests, requestQueueLimit),
+                queue: CreateStackPolicy(maxConcurrentRequests, requestQueueLimit),
                 onRejected: onRejected,
                 next: next
                 );
         }
 
-        internal static LIFOQueuePolicy CreateLIFOPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        internal static StackPolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestsQueuelimit
             });
 
-            return new LIFOQueuePolicy(options);
+            return new StackPolicy(options);
         }
 
-        internal static FIFOQueuePolicy CreateFIFOPolicy(int maxConcurrentRequests, int requestQueueLimit = 100)
+        internal static QueuePolicy CreateQueuePolicy(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new FIFOQueuePolicy(options);
+            return new QueuePolicy(options);
         }
     }
 

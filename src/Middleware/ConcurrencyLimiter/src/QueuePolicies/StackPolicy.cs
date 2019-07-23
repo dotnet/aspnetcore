@@ -1,15 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class LIFOQueuePolicy : IQueuePolicy
+    internal class StackPolicy : IQueuePolicy
     {
         private readonly List<ResettableBooleanCompletionSource> _buffer;
         public ResettableBooleanCompletionSource _cachedResettableTCS;
@@ -26,7 +22,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private int _freeServerSpots;
 
-        public LIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
+        public StackPolicy(IOptions<QueuePolicyOptions> options)
         {
             _buffer = new List<ResettableBooleanCompletionSource>();
             _maxQueueCapacity = options.Value.RequestQueueLimit;
@@ -72,7 +68,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                     _head = 0;
                 }
 
-                return tcs.Task();
+                return tcs.GetValueTask();
             }
         }
 

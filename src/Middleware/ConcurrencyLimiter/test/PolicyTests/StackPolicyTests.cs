@@ -1,17 +1,16 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
-    public static class LIFOQueueTests
+    public static class StackPolicyTests
     {
         [Fact]
         public static void BaseFunctionality()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions {
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 0,
                 RequestQueueLimit = 2,
             }));
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static void OldestRequestOverwritten()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions {
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 0,
                 RequestQueueLimit = 3,
             }));
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static void RespectsMaxConcurrency()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions {
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 2,
                 RequestQueueLimit = 2,
             }));
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static void ExitRequestsPreserveSemaphoreState()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions {
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions {
                 MaxConcurrentRequests = 1,
                 RequestQueueLimit = 2,
             }));
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static void StaleRequestsAreProperlyOverwritten()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = 0,
                 RequestQueueLimit = 4,
@@ -112,7 +111,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public static async Task OneTryEnterAsyncOneOnExit()
         {
-            var stack = new LIFOQueuePolicy(Options.Create(new QueuePolicyOptions
+            var stack = new StackPolicy(Options.Create(new QueuePolicyOptions
             {
                 MaxConcurrentRequests = 1,
                 RequestQueueLimit = 4,

@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
     {
         private const int _numRequests = 20000;
 
-        private ConcurrencyLimiterMiddleware _middlewareFIFO;
-        private ConcurrencyLimiterMiddleware _middlewareLIFO;
+        private ConcurrencyLimiterMiddleware _middlewareQueue;
+        private ConcurrencyLimiterMiddleware _middlewareStack;
         private RequestDelegate _restOfServer;
 
         [GlobalSetup]
@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         {
             _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
-            _middlewareFIFO = TestUtils.CreateTestMiddleware_FIFOQueue(
+            _middlewareQueue = TestUtils.CreateTestMiddleware_QueuePolicy(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 100,
                 next: _restOfServer);
 
-            _middlewareLIFO = TestUtils.CreateTestMiddleware_LIFOQueue(
+            _middlewareStack = TestUtils.CreateTestMiddleware_StackPolicy(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 100,
                 next: _restOfServer);
@@ -46,20 +46,20 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task WithEmptyQueueOverhead_FIFO()
+        public async Task WithEmptyQueueOverhead_QueuePolicy()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                await _middlewareFIFO.Invoke(null);
+                await _middlewareQueue.Invoke(null);
             }
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public async Task WithEmptyQueueOverhead_LIFO()
+        public async Task WithEmptyQueueOverhead_StackPolicy()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                await _middlewareLIFO.Invoke(null);
+                await _middlewareStack.Invoke(null);
             }
         }
 

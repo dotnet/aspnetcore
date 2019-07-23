@@ -17,7 +17,7 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLIFOQueue(options =>
+            services.AddStackPolicy(options =>
             {
                 options.MaxConcurrentRequests = Environment.ProcessorCount;
                 options.RequestQueueLimit = 25;

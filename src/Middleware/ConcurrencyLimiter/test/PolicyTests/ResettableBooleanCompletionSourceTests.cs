@@ -1,14 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
-     public static class ResettableBooleanCompletionSourceTests
+    public static class ResettableBooleanCompletionSourceTests
      {
-        private static LIFOQueuePolicy _testQueue = TestUtils.CreateLIFOPolicy(8);
+        private static StackPolicy _testQueue = TestUtils.CreateStackPolicy(8);
 
         [Fact]
         public async static void CanBeAwaitedMultipleTimes()
@@ -16,16 +14,16 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
 
             tcs.Complete(true);
-            Assert.True(await tcs.Task());
+            Assert.True(await tcs.GetValueTask());
 
             tcs.Complete(true);
-            Assert.True(await tcs.Task());
+            Assert.True(await tcs.GetValueTask());
 
             tcs.Complete(false);
-            Assert.False(await tcs.Task());
+            Assert.False(await tcs.GetValueTask());
 
             tcs.Complete(false);
-            Assert.False(await tcs.Task());
+            Assert.False(await tcs.GetValueTask());
         }
 
         [Fact]
@@ -38,7 +36,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
                 tcs.Complete(true);
             });
 
-            var result = await tcs.Task();
+            var result = await tcs.GetValueTask();
             Assert.True(result);
         }
 
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
                 tcs.Complete(false);
             });
 
-            var result = await tcs.Task();
+            var result = await tcs.GetValueTask();
             Assert.False(result);
         }
 
@@ -62,7 +60,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
             // important to verify it throws rather than acting like a new task
 
             var tcs = new ResettableBooleanCompletionSource(_testQueue);
-            var task = tcs.Task();
+            var task = tcs.GetValueTask();
             tcs.Complete(true);
 
             Assert.True(task.Result);

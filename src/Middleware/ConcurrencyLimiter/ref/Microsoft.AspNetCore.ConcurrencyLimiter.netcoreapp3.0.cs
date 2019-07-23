@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class QueuePolicyServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddFIFOQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) { throw null; }
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddLIFOQueue(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddQueuePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddStackPolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ConcurrencyLimiter.QueuePolicyOptions> configure) { throw null; }
     }
 }

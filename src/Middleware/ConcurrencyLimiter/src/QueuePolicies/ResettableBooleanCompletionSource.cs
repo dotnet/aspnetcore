@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 
@@ -8,14 +7,14 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
     internal class ResettableBooleanCompletionSource : IValueTaskSource<bool>
     {
         ManualResetValueTaskSourceCore<bool> _mrvts;
-        private readonly LIFOQueuePolicy _queue;
+        private readonly StackPolicy _queue;
 
-        public ResettableBooleanCompletionSource(LIFOQueuePolicy queue)
+        public ResettableBooleanCompletionSource(StackPolicy queue)
         {
             _queue = queue;
         }
 
-        public ValueTask<bool> Task()
+        public ValueTask<bool> GetValueTask()
         {
             return new ValueTask<bool>(this, _mrvts.Version);
         }

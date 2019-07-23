@@ -14,19 +14,19 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         private int _rejectionCount = 0;
         private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
-        private ConcurrencyLimiterMiddleware _middlewareFIFO;
-        private ConcurrencyLimiterMiddleware _middlewareLIFO;
+        private ConcurrencyLimiterMiddleware _middlewareQueue;
+        private ConcurrencyLimiterMiddleware _middlewareStack;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _middlewareFIFO = TestUtils.CreateTestMiddleware_FIFOQueue(
+            _middlewareQueue = TestUtils.CreateTestMiddleware_QueuePolicy(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 20,
                 next: WaitForever,
                 onRejected: IncrementRejections);
 
-            _middlewareLIFO = TestUtils.CreateTestMiddleware_LIFOQueue(
+            _middlewareStack = TestUtils.CreateTestMiddleware_StackPolicy(
                 maxConcurrentRequests: 1,
                 requestQueueLimit: 20,
                 next: WaitForever,
@@ -68,24 +68,24 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRejects)]
-        public void RejectingRapidlyFIFO()
+        public void RejectingRapidly_QueuePolicy()
         {
             var toSend = _queueLength + _numRejects + 1;
             for (int i = 0; i < toSend; i++)
             {
-                _ = _middlewareFIFO.Invoke(new DefaultHttpContext());
+                _ = _middlewareQueue.Invoke(new DefaultHttpContext());
             }
 
             _mres.Wait();
         }
 
         [Benchmark(OperationsPerInvoke = _numRejects)]
-        public void RejectingRapidlyLIFO()
+        public void RejectingRapidly_StackPolicy()
         {
             var toSend = _queueLength + _numRejects + 1;
             for (int i = 0; i < toSend; i++)
             {
-                _ = _middlewareLIFO.Invoke(new DefaultHttpContext());
+                _ = _middlewareStack.Invoke(new DefaultHttpContext());
             }
 
             _mres.Wait();
