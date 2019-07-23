@@ -94,7 +94,16 @@ namespace Microsoft.AspNetCore.TestHost
 
             var readableBuffer = result.Buffer;
             var actual = Math.Min(readableBuffer.Length, count);
-            readableBuffer = readableBuffer.Slice(0, actual);
+            try
+            {
+                readableBuffer = readableBuffer.Slice(0, actual);
+            }
+            catch (ArgumentOutOfRangeException e) when (e.ParamName == "start")
+            {
+                throw new InvalidOperationException($"But how?? readableBuffer.Length = {readableBuffer.Length}, actual={actual}, offset={offset}, count={count}");
+            }
+
+
             readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
             _pipe.Reader.AdvanceTo(readableBuffer.End);
             return (int)actual;
