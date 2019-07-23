@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the error message used when displaying an a parsing error.
         /// </summary>
-        [Parameter] public string ParsingErrorMessage { get; private set; } = "The {0} field must be a date.";
+        [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a date.";
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

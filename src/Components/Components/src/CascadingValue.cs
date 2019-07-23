@@ -21,12 +21,12 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The content to which the value should be provided.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; private set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         /// <summary>
         /// The value to be provided.
         /// </summary>
-        [Parameter] public T Value { get; private set; }
+        [Parameter] public T Value { get; set; }
 
         /// <summary>
         /// Optionally gives a name to the provided value. Descendant components
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components
         /// If no name is specified, then descendant components will receive the
         /// value based the type of value they are requesting.
         /// </summary>
-        [Parameter] public string Name { get; private set; }
+        [Parameter] public string Name { get; set; }
 
         /// <summary>
         /// If true, indicates that <see cref="Value"/> will not change. This is a
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components
         /// change notifications. Set this flag only if you will not change
         /// <see cref="Value"/> during the component's lifetime.
         /// </summary>
-        [Parameter] public bool IsFixed { get; private set; }
+        [Parameter] public bool IsFixed { get; set; }
 
         object ICascadingValueComponent.CurrentValue => Value;
 

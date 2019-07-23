@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; private set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

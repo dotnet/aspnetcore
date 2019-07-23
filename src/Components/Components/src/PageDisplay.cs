@@ -24,25 +24,25 @@ namespace Microsoft.AspNetCore.Components
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
         [Parameter]
-        public Type Page { get; private set; }
+        public Type Page { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters to pass to the page.
         /// </summary>
         [Parameter]
-        public IDictionary<string, object> PageParameters { get; private set; }
+        public IDictionary<string, object> PageParameters { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
         [Parameter]
-        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
+        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
         [Parameter]
-        public RenderFragment AuthorizingContent { get; private set; }
+        public RenderFragment AuthorizingContent { get; set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)

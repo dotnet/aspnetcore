@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -32,27 +32,27 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <example>
         /// @bind-Value="model.PropertyName"
         /// </example>
-        [Parameter] public T Value { get; private set; }
+        [Parameter] public T Value { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
         /// </summary>
-        [Parameter] public EventCallback<T> ValueChanged { get; private set; }
+        [Parameter] public EventCallback<T> ValueChanged { get; set; }
 
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
         /// </summary>
-        [Parameter] public Expression<Func<T>> ValueExpression { get; private set; }
+        [Parameter] public Expression<Func<T>> ValueExpression { get; set; }
 
         /// <summary>
         /// Gets the associated <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.
         /// </summary>
-        protected EditContext EditContext { get; private set; }
+        protected EditContext EditContext { get; set; }
 
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
         /// </summary>
-        protected FieldIdentifier FieldIdentifier { get; private set; }
+        protected FieldIdentifier FieldIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets the current value of the input.

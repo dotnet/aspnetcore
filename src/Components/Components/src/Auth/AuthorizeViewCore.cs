@@ -20,28 +20,28 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The content that will be displayed if the user is authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> ChildContent { get; private set; }
+        [Parameter] public RenderFragment<AuthenticationState> ChildContent { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; private set; }
+        [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is authorized.
         /// If you specify a value for this parameter, do not also specify a value for <see cref="ChildContent"/>.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> Authorized { get; private set; }
+        [Parameter] public RenderFragment<AuthenticationState> Authorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
-        [Parameter] public RenderFragment Authorizing { get; private set; }
+        [Parameter] public RenderFragment Authorizing { get; set; }
 
         /// <summary>
         /// The resource to which access is being controlled.
         /// </summary>
-        [Parameter] public object Resource { get; private set; }
+        [Parameter] public object Resource { get; set; }
 
         [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
 
