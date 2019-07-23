@@ -52,7 +52,14 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     }
     public static partial class AngularCliMiddlewareExtensions
     {
+        public static void UseAngularCliServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, System.Action<Microsoft.AspNetCore.SpaServices.AngularCli.AngularCliMiddlewareOptions> configure) { }
         public static void UseAngularCliServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, string npmScript) { }
+    }
+    public partial class AngularCliMiddlewareOptions
+    {
+        public string NpmScript;
+        public int? SpaPort;
+        public AngularCliMiddlewareOptions() { }
     }
 }
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
@@ -66,7 +73,14 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 {
     public static partial class ReactDevelopmentServerMiddlewareExtensions
     {
+        public static void UseReactDevelopmentServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, System.Action<Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareOptions> configure) { }
         public static void UseReactDevelopmentServer(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, string npmScript) { }
+    }
+    public partial class ReactDevelopmentServerMiddlewareOptions
+    {
+        public string NpmScript;
+        public int? SpaPort;
+        public ReactDevelopmentServerMiddlewareOptions() { }
     }
 }
 namespace Microsoft.AspNetCore.SpaServices.StaticFiles
