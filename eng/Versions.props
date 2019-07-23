@@ -246,6 +246,7 @@
     <XunitAssertPackageVersion>$(XunitVersion)</XunitAssertPackageVersion>
     <XunitExtensibilityCorePackageVersion>$(XunitVersion)</XunitExtensibilityCorePackageVersion>
     <XunitExtensibilityExecutionPackageVersion>$(XunitVersion)</XunitExtensibilityExecutionPackageVersion>
+    <MicrosoftDataSqlClientPackageVersion>1.0.19189.1-Preview</MicrosoftDataSqlClientPackageVersion>
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
