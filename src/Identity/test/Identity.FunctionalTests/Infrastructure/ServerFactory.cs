@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         public string BootstrapFrameworkVersion { get; set; } = "V4";
-        private bool IsHelix => typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Any(a => a.Key == "Microsoft.AspNetCore.Testing.IsHelixPayload");
+        private bool IsHelixCI => typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Any(a => a.Key == "Microsoft.AspNetCore.Testing.IsHelixCI");
 
         protected override IHostBuilder CreateHostBuilder()
         {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         private void UpdateManifest(string versionedPath)
         {
-            if (!IsHelix)
+            if (!IsHelixCI)
             {
                 var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;

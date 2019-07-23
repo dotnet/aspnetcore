@@ -54,8 +54,8 @@
         <_Parameter2>$([System.IO.Path]::GetDirectoryName('%(_IdentitUIProjectPath.MSBuildSourceProjectFile)'))</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildHelixPayload)' == 'true'">
-        <_Parameter1>Microsoft.AspNetCore.Testing.IsHelixPayload</_Parameter1>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(HelixType)' == 'ci'">
+        <_Parameter1>Microsoft.AspNetCore.Testing.IsHelixCI</_Parameter1>
         <_Parameter2>true</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
