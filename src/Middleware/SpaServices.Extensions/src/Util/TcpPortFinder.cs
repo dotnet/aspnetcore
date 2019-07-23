@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.SpaServices.Util
@@ -20,6 +21,13 @@ namespace Microsoft.AspNetCore.SpaServices.Util
             {
                 listener.Stop();
             }
+        }
+
+        public static bool TestPortAvailability(int port)
+        {
+            var ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            var ipEndPoints = ipProperties.GetActiveTcpListeners();
+            return !ipEndpoints.Any(e => e.Port == port);
         }
     }
 }
