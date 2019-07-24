@@ -169,7 +169,7 @@ public async IAsyncEnumerable<int> Stream(int count)
     }
 }
 
-public IAsyncEnumerable<int> StreamFailure(int count)
+public async IAsyncEnumerable<int> StreamFailure(int count)
 {
     for (var i = 0; i < count; i++)
     {
