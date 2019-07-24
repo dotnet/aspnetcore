@@ -230,7 +230,7 @@ export class HttpConnection implements IConnection {
                     this.transport = this.constructTransport(HttpTransportType.WebSockets);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
-                    await this.transport!.connect(url, transferFormat);
+                    await this.startTransport(url, transferFormat);
                 } else {
                     throw new Error("Negotiation can only be skipped when using the WebSocket transport directly.");
                 }
@@ -341,9 +341,7 @@ export class HttpConnection implements IConnection {
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
-            this.transport.onreceive = this.onreceive;
-            this.transport.onclose = (e) => this.stopConnection(e);
-            await this.transport.connect(connectUrl, requestedTransferFormat);
+            await this.startTransport(connectUrl, requestedTransferFormat);
 
             return;
         }
@@ -366,9 +364,7 @@ export class HttpConnection implements IConnection {
                     connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
                 }
                 try {
-                    this.transport!.onreceive = this.onreceive;
-                    this.transport!.onclose = (e) => this.stopConnection(e);
-                    await this.transport!.connect(connectUrl, requestedTransferFormat);
+                    await this.startTransport(connectUrl, requestedTransferFormat);
                     return;
                 } catch (ex) {
                     this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
@@ -407,6 +403,12 @@ export class HttpConnection implements IConnection {
             default:
                 throw new Error(`Unknown transport: ${transport}.`);
         }
+    }
+
+    private startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
+        this.transport!.onreceive = this.onreceive;
+        this.transport!.onclose = (e) => this.stopConnection(e);
+        return this.transport!.connect(url, transferFormat);
     }
 
     private resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error {
