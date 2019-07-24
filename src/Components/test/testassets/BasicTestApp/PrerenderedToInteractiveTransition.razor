@@ -3,7 +3,10 @@
 @inject IComponentContext ComponentContext
 
 <CascadingAuthenticationState>
-    <h1>Hello</h1>
+    <AuthorizeView>
+        <Authorized><h1>Hello, @context.User.Identity.Name!</h1></Authorized>
+        <NotAuthorized><h1>Hello, anonymous!</h1></NotAuthorized>
+    </AuthorizeView>
 
     <p>
         Current state:
