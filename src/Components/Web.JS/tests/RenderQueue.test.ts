@@ -25,14 +25,15 @@ describe('RenderQueue', () => {
 
   });
 
-  it('processBatch does not render previous batches', () => {
+  it('processBatch acknowledges previously rendered batches', () => {
     const queue = RenderQueue.getOrCreateQueue(3, NullLogger.instance);
 
     const sendMock = jest.fn();
     const connection = { send: sendMock } as any as signalR.HubConnection;
-    queue.processBatch(1, new Uint8Array(0), connection);
+    queue.processBatch(2, new Uint8Array(0), connection);
 
-    expect(sendMock.mock.calls.length).toEqual(0);
+    expect(sendMock.mock.calls.length).toEqual(1);
+    expect(queue.getLastBatchid()).toEqual(2);
   });
 
   it('processBatch does not render out of order batches', () => {
