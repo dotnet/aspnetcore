@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(contentLength, httpResponse.ContentLength);
             Assert.Equal(Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt")), sendFile.Name);
             Assert.Equal(startResult, sendFile.Offset);
-            Assert.Equal(end.HasValue ? (long?)contentLength : end, sendFile.Length);
+            Assert.Equal((long?)contentLength, sendFile.Length);
         }
 
         [Fact]

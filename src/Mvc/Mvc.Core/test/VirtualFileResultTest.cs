@@ -70,8 +70,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -88,19 +89,18 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            start = start ?? 33 - end;
-            end = start + contentLength - 1;
+            var startResult = start ?? 33 - end;
+            var endResult = startResult + contentLength - 1;
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
-            var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, 33);
+            var contentRange = new ContentRangeHeaderValue(startResult.Value, endResult.Value, 33);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal(contentLength, httpResponse.ContentLength);
-            Assert.Equal(expectedString, body);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(startResult, sendFileFeature.Offset);
+            Assert.Equal((long?)contentLength, sendFileFeature.Length);
         }
 
         [Fact]
@@ -115,8 +115,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -129,7 +130,6 @@ namespace Microsoft.AspNetCore.Mvc
             requestHeaders.Range = new RangeHeaderValue(0, 3);
             requestHeaders.IfRange = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"Etag\""));
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -137,16 +137,15 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             var contentRange = new ContentRangeHeaderValue(0, 3, 33);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
             Assert.Equal(4, httpResponse.ContentLength);
-            Assert.Equal("File", body);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(0, sendFileFeature.Offset);
+            Assert.Equal(4, sendFileFeature.Length);
         }
 
         [Fact]
@@ -160,8 +159,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -174,7 +174,6 @@ namespace Microsoft.AspNetCore.Mvc
             requestHeaders.Range = new RangeHeaderValue(0, 3);
             requestHeaders.IfRange = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"Etag\""));
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -182,12 +181,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
-            Assert.Equal("FilePathResultTestFile contents¡", body);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(0, sendFileFeature.Offset);
+            Assert.Null(sendFileFeature.Length);
         }
 
         [Fact]
@@ -202,8 +200,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -216,7 +215,6 @@ namespace Microsoft.AspNetCore.Mvc
             requestHeaders.Range = new RangeHeaderValue(0, 3);
             requestHeaders.IfRange = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"NotEtag\""));
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -224,12 +222,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
             Assert.Equal(entityTag.ToString(), httpResponse.Headers[HeaderNames.ETag]);
-            Assert.Equal("FilePathResultTestFile contents¡", body);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(0, sendFileFeature.Offset);
+            Assert.Null(sendFileFeature.Length);
         }
 
         [Theory]
@@ -247,8 +244,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                     .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                     .AddSingleton(appEnvironment.Object)
                     .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -259,7 +257,6 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Request.Headers[HeaderNames.Range] = rangeString;
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue.AddDays(1);
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -267,13 +264,12 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Equal("FilePathResultTestFile contents¡", body);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(0, sendFileFeature.Offset);
+            Assert.Null(sendFileFeature.Length);
         }
 
         [Theory]
@@ -334,8 +330,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -346,7 +343,6 @@ namespace Microsoft.AspNetCore.Mvc
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
             httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -354,14 +350,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
-            Assert.Empty(body);
+            Assert.Null(sendFileFeature.Name); // Not called
         }
 
         [Fact]
@@ -376,8 +369,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -388,7 +382,6 @@ namespace Microsoft.AspNetCore.Mvc
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);
             httpContext.Request.Headers[HeaderNames.Range] = "bytes = 0-6";
             httpContext.Request.Method = HttpMethods.Get;
-            httpContext.Response.Body = new MemoryStream();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
@@ -396,15 +389,12 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var httpResponse = actionContext.HttpContext.Response;
-            httpResponse.Body.Seek(0, SeekOrigin.Begin);
-            var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
-            Assert.Empty(body);
+            Assert.Null(sendFileFeature.Name); // Not called
         }
 
         [Fact]
@@ -418,8 +408,9 @@ namespace Microsoft.AspNetCore.Mvc
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
                 .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
@@ -429,36 +420,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             await result.ExecuteResultAsync(context);
-            httpContext.Response.Body.Position = 0;
 
             // Assert
-            Assert.NotNull(httpContext.Response.Body);
-            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
-        }
-
-        [Fact]
-        public async Task ExecuteResultAsync_FallsbackToStreamCopy_IfNoIHttpSendFilePresent()
-        {
-            // Arrange
-            var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
-            var result = new TestVirtualFileResult(path, "text/plain")
-            {
-                FileProvider = GetFileProvider(path),
-            };
-
-            var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
-            var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-
-            // Act
-            await result.ExecuteResultAsync(context);
-            httpContext.Response.Body.Position = 0;
-
-            // Assert
-            Assert.NotNull(httpContext.Response.Body);
-            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
+            Assert.Equal(path, sendFileFeature.Name);
+            Assert.Equal(0, sendFileFeature.Offset);
+            Assert.Null(sendFileFeature.Length);
         }
 
         [Fact]
@@ -551,18 +517,17 @@ namespace Microsoft.AspNetCore.Mvc
                 FileProvider = GetFileProvider("FilePathResultTestFile_ASCII.txt"),
             };
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
             await result.ExecuteResultAsync(context);
 
             // Assert
-            var contents = Encoding.ASCII.GetString(memoryStream.ToArray());
-            Assert.Equal("FilePathResultTestFile contents ASCII encoded", contents);
             Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+            Assert.Equal("FilePathResultTestFile_ASCII.txt", sendFileFeature.Name);
         }
 
         [Fact]
@@ -575,18 +540,16 @@ namespace Microsoft.AspNetCore.Mvc
                 FileProvider = GetFileProvider(path),
             };
 
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            httpContext.Response.Body = new MemoryStream();
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
             await result.ExecuteResultAsync(context);
-            httpContext.Response.Body.Position = 0;
 
             // Assert
-            Assert.NotNull(httpContext.Response.Body);
-            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
+            Assert.Equal(path, sendFileFeature.Name);
         }
 
         [Theory]
@@ -603,20 +566,19 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FileProvider = GetFileProvider(path),
             };
+
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
 
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
             await result.ExecuteResultAsync(context);
-            httpContext.Response.Body.Position = 0;
 
             // Assert
-            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
             Mock.Get(result.FileProvider).Verify();
+            Assert.Equal(path, sendFileFeature.Name);
         }
 
         [Theory]
@@ -633,20 +595,19 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FileProvider = GetFileProvider(expectedPath),
             };
+
+            var sendFileFeature = new TestSendFileFeature();
             var httpContext = GetHttpContext();
-            var memoryStream = new MemoryStream();
-            httpContext.Response.Body = memoryStream;
+            httpContext.Features.Set<IHttpResponseBodyFeature>(sendFileFeature);
 
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             // Act
             await result.ExecuteResultAsync(context);
-            httpContext.Response.Body.Position = 0;
 
             // Assert
-            var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
             Mock.Get(result.FileProvider).Verify();
+            Assert.Equal(expectedPath, sendFileFeature.Name);
         }
 
         [Fact]
