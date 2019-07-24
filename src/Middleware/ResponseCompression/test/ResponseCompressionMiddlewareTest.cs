@@ -773,7 +773,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
-                        context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+                        context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
                         var feature = context.Features.Get<IHttpBodyControlFeature>();
                         if (feature != null)
@@ -836,7 +836,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
-                        context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+                        context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
                         foreach (var signal in responseReceived)
                         {

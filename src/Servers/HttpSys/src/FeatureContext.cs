@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         ITlsConnectionFeature,
         ITlsHandshakeFeature,
         // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
-        IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
@@ -357,15 +356,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return Request.IsHttps ? this : null;
         }
         */
-        void IHttpBufferingFeature.DisableRequestBuffering()
-        {
-            // There is no request buffering.
-        }
-
-        void IHttpBufferingFeature.DisableResponseBuffering()
-        {
-            // TODO: What about native buffering?
-        }
 
         void IHttpResponseBodyFeature.DisableBuffering()
         {

@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IHttpRequestLifetimeFeature,
                                             IHttpAuthenticationFeature,
                                             IServerVariablesFeature,
-                                            IHttpBufferingFeature,
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature
@@ -201,8 +200,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 return ResponsePipeWrapper;
             }
         }
-
-        void IHttpResponseBodyFeature.DisableBuffering() { }
 
         async Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
         {
@@ -392,11 +389,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        void IHttpBufferingFeature.DisableRequestBuffering()
-        {
-        }
-
-        void IHttpBufferingFeature.DisableResponseBuffering()
+        void IHttpResponseBodyFeature.DisableBuffering()
         {
             NativeMethods.HttpDisableBuffering(_pInProcessHandler);
             DisableCompression();

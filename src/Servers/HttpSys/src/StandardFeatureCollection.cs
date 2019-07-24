@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpResponseBodyFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-            { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },

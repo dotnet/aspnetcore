@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
         private static readonly Type IISHttpContextType = typeof(IISHttpContext);
         private static readonly Type IServerVariablesFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
-        private static readonly Type IHttpBufferingFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature);
         private static readonly Type IHttpMaxRequestBodySizeFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
 
         private object _currentIHttpRequestFeature;
@@ -48,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object _currentISessionFeature;
         private object _currentIHttpBodyControlFeature;
         private object _currentIServerVariablesFeature;
-        private object _currentIHttpBufferingFeature;
         private object _currentIHttpMaxRequestBodySizeFeature;
 
         private void Initialize()
@@ -63,7 +61,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _currentIHttpBodyControlFeature = this;
             _currentIHttpAuthenticationFeature = this;
             _currentIServerVariablesFeature = this;
-            _currentIHttpBufferingFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentITlsConnectionFeature = this;
         }
@@ -145,10 +142,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IServerVariablesFeature)
             {
                 return _currentIServerVariablesFeature;
-            }
-            if (key == IHttpBufferingFeature)
-            {
-                return _currentIHttpBufferingFeature;
             }
             if (key == IHttpMaxRequestBodySizeFeature)
             {
@@ -252,11 +245,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _currentIServerVariablesFeature = feature;
                 return;
             }
-            if (key == IHttpBufferingFeature)
-            {
-                _currentIHttpBufferingFeature = feature;
-                return;
-            }
             if (key == IHttpMaxRequestBodySizeFeature)
             {
                 _currentIHttpMaxRequestBodySizeFeature = feature;
@@ -341,10 +329,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIServerVariablesFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IServerVariablesFeature, _currentIServerVariablesFeature as global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
-            }
-            if (_currentIHttpBufferingFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpBufferingFeature, _currentIHttpBufferingFeature as global::Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature);
             }
             if (_currentIHttpMaxRequestBodySizeFeature != null)
             {
