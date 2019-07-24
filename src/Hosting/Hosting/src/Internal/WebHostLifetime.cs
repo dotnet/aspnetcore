@@ -73,6 +73,9 @@ namespace Microsoft.AspNetCore.Hosting
                     _cts.Cancel();
                 }
             }
+            // When hosting with IIS in-process, we detach the Console handle on main thread exit.
+            // Console.WriteLine may throw here as we are logging to console on ProcessExit.
+            // We catch and ignore all exceptions here. Do not log to Console in thie exception handler.
             catch (Exception) {}
             // Wait on the given reset event
             _resetEvent.Wait();
