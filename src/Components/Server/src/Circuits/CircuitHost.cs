@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +108,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 return result;
             });
+        }
+
+        public void SetCircuitUser(ClaimsPrincipal user)
+        {
+            var authenticationStateProvider = Services.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+            if (authenticationStateProvider != null)
+            {
+                var authenticationState = new AuthenticationState(user);
+                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            }
         }
 
         internal void InitializeCircuitAfterPrerender(UnhandledExceptionEventHandler unhandledException)
