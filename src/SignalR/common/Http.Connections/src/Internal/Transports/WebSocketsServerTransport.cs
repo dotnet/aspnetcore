@@ -278,8 +278,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 // Send the close frame before calling into user code
                 if (WebSocketCanSend(socket))
                 {
-                    // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    try
+                    {
+                        // We're done sending, send the close frame to the client if the websocket is still open
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.ClosingWebSocketFailed(_logger, ex);
+                    }
                 }
 
                 _application.Input.Complete();
