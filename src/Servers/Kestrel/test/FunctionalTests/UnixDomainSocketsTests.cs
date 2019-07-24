@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     await host.StartAsync();
 
-                    var factory = new SocketConnectionFactory(LoggerFactory);
+                    var factory = new SocketConnectionFactory(Options.Create(new SocketClientOptions()), LoggerFactory);
                     var endPoint = new UnixDomainSocketEndPoint(path);
                     await using (var connection = await factory.ConnectAsync(endPoint))
                     {
