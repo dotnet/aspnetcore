@@ -260,7 +260,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected void ResetHttp2Features()
         {
             _currentIHttp2StreamIdFeature = this;
-            _currentIHttpResponseCompletionFeature = this;
             _currentIHttpResponseTrailersFeature = this;
             _currentIHttpResetFeature = this;
         }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
-        Task StartAsync(CancellationToken cancellation = default);
+        Task StartAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sends the requested file in the response body. A response may include multiple writes.
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <param name="path">The full disk path to the file.</param>
         /// <param name="offset">The offset in the file to start at.</param>
         /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
-        /// <param name="cancellation">A <see cref="CancellationToken"/> used to abort the transmission.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to abort the transmission.</param>
         /// <returns></returns>
-        Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation = default);
+        Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Flush any remaining response headers, data, or trailers.

@@ -3390,8 +3390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await completionFeature.CompleteAsync().DefaultTimeout();
 
@@ -3446,8 +3445,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
                     await completionFeature.CompleteAsync().DefaultTimeout();
@@ -3514,8 +3512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     context.Response.ContentLength = 25;
                     context.Response.AppendTrailer("CustomName", "Custom Value");
@@ -3571,8 +3568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -3639,8 +3635,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await completionFeature.CompleteAsync().DefaultTimeout();
 
@@ -3698,8 +3693,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World").DefaultTimeout();
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -3768,8 +3762,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     var buffer = context.Response.BodyWriter.GetMemory();
                     var length = Encoding.UTF8.GetBytes("Hello World", buffer.Span);
@@ -3849,8 +3842,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -3925,8 +3917,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     context.Response.ContentLength = 25;
                     await context.Response.WriteAsync("Hello World");
@@ -4068,8 +4059,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4151,8 +4141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4235,8 +4224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4321,8 +4309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseCompletionFeature>();
-                    Assert.NotNull(completionFeature);
+                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.

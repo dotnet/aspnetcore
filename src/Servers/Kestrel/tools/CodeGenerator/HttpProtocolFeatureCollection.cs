@@ -35,7 +35,6 @@ namespace CodeGenerator
             {
                 "IHttpUpgradeFeature",
                 "IHttp2StreamIdFeature",
-                "IHttpResponseCompletionFeature",
                 "IHttpResponseTrailersFeature",
                 "IResponseCookiesFeature",
                 "IItemsFeature",
