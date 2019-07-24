@@ -373,12 +373,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             foreach (var headerPair in HttpResponseHeaders)
             {
                 var headerValues = headerPair.Value;
+
+                if (headerPair.Value.Count == 0)
+                {
+                    continue;
+                }
+
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
-                    if(string.IsNullOrEmpty(headerValues.ToString()))
+                    if (string.IsNullOrEmpty(headerValues[i]))
                     {
-                        throw new ArgumentException($"{headerPair.Key} header should be non-empty string");
+                        continue;
                     }
 
                     var isFirst = i == 0;
