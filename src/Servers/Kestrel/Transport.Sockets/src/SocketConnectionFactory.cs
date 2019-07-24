@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -18,13 +15,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     public class SocketConnectionFactory : IConnectionFactory
     {
         private readonly ILogger _logger;
+        private readonly SocketClientOptions _options;
 
         /// <summary>
         /// Creates the <see cref="SocketConnectionFactory"/>.
         /// </summary>
+        /// <param name="options">The options for this transport</param>
         /// <param name="loggerFactory">The logger factory</param>
-        public SocketConnectionFactory(ILoggerFactory loggerFactory)
+        public SocketConnectionFactory(IOptions<SocketClientOptions> options, ILoggerFactory loggerFactory)
         {
+            _options = options.Value;
             _logger = loggerFactory.CreateLogger<SocketConnectionFactory>();
         }
 
@@ -42,9 +42,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, protocolType);
 
+            // Only apply no delay to Tcp based endpoints
+            if (protocolType == ProtocolType.Tcp)
+            {
+                socket.NoDelay = _options.NoDelay;
+            }
+
             await socket.ConnectAsync(endPoint);
 
-            var connection = new SocketConnection(socket, memoryPool: null, PipeScheduler.ThreadPool, new SocketsTrace(_logger));
+            var connection = new SocketConnection(socket, memoryPool: null, _options.Scheduler, new SocketsTrace(_logger), _options.MaxReadBufferSize, _options.MaxWriteBufferSize);
             connection.Start();
 
             return connection;
