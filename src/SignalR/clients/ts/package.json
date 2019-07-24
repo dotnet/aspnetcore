@@ -4,11 +4,19 @@
   "description": "Provides a root to run npm scripts from. DO NOT PUBLISH",
   "private": true,
   "scripts": {
-    "build": "cd ./signalr && yarn run build && cd ../signalr-protocol-msgpack && yarn run build",
+    "build": "yarn install --mutex network && cd ./signalr && yarn run build && cd ../signalr-protocol-msgpack && yarn run build",
     "pretest": "node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr/tests/tsconfig.json && node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr-protocol-msgpack/tests/tsconfig.json",
     "test": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js",
     "coverage": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js --coverage"
   },
   "author": "Microsoft",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/eventsource": "^1.0.2",
+    "@types/jest": "^23.3.2",
+    "@types/node": "^10.9.4",
+    "@types/msgpack5": "^3.4.1",
+    "@types/request": "^2.47.1",
+    "es6-promise": "^4.2.2"
+  }
 }
