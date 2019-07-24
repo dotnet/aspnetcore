@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(expectedUri, response.Headers.Location);
         }
 
+        [Theory]
         [InlineData(null, null)]
         [InlineData(null, "Bert")]
         [InlineData("Bert", null)]
