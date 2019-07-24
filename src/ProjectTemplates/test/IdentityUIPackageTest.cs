@@ -123,16 +123,16 @@ namespace ProjectTemplates.Tests
 
         [Theory]
         [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
-        public async Task RazorPagesTemplate_IndividualAuthImplAsync(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
+        public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + string.Concat(packageOptions), Output);
+            Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
             var useLocalDB = false;
 
             var createResult = await Project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB, environmentVariables: packageOptions);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
-            Assert.DoesNotContain(".db", projectFileContents);
+            Assert.Contains(".db", projectFileContents);
 
             var publishResult = await Project.RunDotNetPublishAsync(packageOptions: packageOptions);
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
@@ -198,6 +198,10 @@ namespace ProjectTemplates.Tests
                     if (i + 1 == 3)
                     {
                         break;
+                    }
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        return response;
                     }
                 }
                 catch (Exception)
