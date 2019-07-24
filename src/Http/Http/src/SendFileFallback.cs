@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Copies the segment of the file to the destination stream.
         /// </summary>
-        /// <param name="destination"></param>
-        /// <param name="filePath"></param>
-        /// <param name="offset"></param>
-        /// <param name="count"></param>
-        /// <param name="cancellation"></param>
+        /// <param name="destination">The stream to write the file segment to.</param>
+        /// <param name="filePath">The full disk path to the file.</param>
+        /// <param name="offset">The offset in the file to start at.</param>
+        /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to abort the transmission.</param>
         /// <returns></returns>
-        public static async Task SendFileAsync(Stream destination, string filePath, long offset, long? count, CancellationToken cancellation)
+        public static async Task SendFileAsync(Stream destination, string filePath, long offset, long? count, CancellationToken cancellationToken)
         {
             var fileInfo = new FileInfo(filePath);
             if (offset < 0 || offset > fileInfo.Length)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
             }
 
-            cancellation.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             int bufferSize = 1024 * 16;
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
             using (fileStream)
             {
                 fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, bufferSize, cancellation);
+                await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, bufferSize, cancellationToken);
             }
         }
     }

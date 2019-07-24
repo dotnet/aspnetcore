@@ -417,17 +417,18 @@ namespace Microsoft.AspNetCore.Owin
                 await _responseBodyWrapper.FlushAsync(cancellationToken);
             }
 
+            // The pipe may or may not have flushed the stream. Make sure the stream gets flushed to trigger response start.
             await Prop<Stream>(OwinConstants.ResponseBody).FlushAsync(cancellationToken);
         }
 
-        async Task IHttpResponseBodyFeature.CompleteAsync()
+        Task IHttpResponseBodyFeature.CompleteAsync()
         {
             if (_responseBodyWrapper != null)
             {
-                await _responseBodyWrapper.FlushAsync();
+                return _responseBodyWrapper.FlushAsync().AsTask();
             }
 
-            await Prop<Stream>(OwinConstants.ResponseBody).FlushAsync();
+            return Task.CompletedTask;
         }
 
         public void Dispose()
