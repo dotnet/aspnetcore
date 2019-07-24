@@ -85,7 +85,8 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 Log.CircuitTerminatedGracefully(_logger, circuitHost.CircuitId);
-                await circuitHost.DisposeAsync().AsTask();
+                _circuitRegistry.PermanentDisconnect(circuitHost);
+                await circuitHost.DisposeAsync();
             }
             catch (Exception e)
             {
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
 
-            internal static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
+            public static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
         }
     }
 }

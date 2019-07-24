@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 var underlying = new DevHostServerFixture<TClientProgram>();
                 underlying.PathBase = PathBase;
                 _serverToDispose = underlying;
-                var uri = underlying.RootUri.AbsoluteUri;
+                var uri = underlying.RootUri.AbsoluteUri; // As a side-effect, this starts the server
 
                 Host = underlying.Host;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 underlying.AdditionalArguments.AddRange(AspNetFixtureAdditionalArguments);
                 underlying.BuildWebHostMethod = _buildWebHostMethod;
                 _serverToDispose = underlying;
-                var uri = underlying.RootUri.AbsoluteUri;
+                var uri = underlying.RootUri.AbsoluteUri; // As a side-effect, this starts the server
 
                 Host = underlying.Host;
 
