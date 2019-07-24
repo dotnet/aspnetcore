@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Features
     /// <summary>
     /// Provides an efficient mechanism for transferring files from disk to the network.
     /// </summary>
-    [Obsolete("TODO: Use IHttpResponseBodyFeature instead", error: false)]
+    [Obsolete("Use IHttpResponseBodyFeature instead.", error: true)]
     public interface IHttpSendFileFeature
     {
         /// <summary>

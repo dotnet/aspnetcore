@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
-    [Obsolete("TODO: See IHttpRequest/ResponseBodyFeature.DisableBuffering", error: false)]
+    [Obsolete("See IHttpRequestBodyFeature or IHttpResponseBodyFeature DisableBuffering", error: true)]
     public interface IHttpBufferingFeature
     {
         void DisableRequestBuffering();

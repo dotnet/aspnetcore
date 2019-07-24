@@ -172,6 +172,8 @@ namespace Microsoft.AspNetCore.Http
             return HttpResponseBodyFeature.StartAsync(cancellationToken);
         }
 
+        public override Task CompleteAsync() => HttpResponseBodyFeature.CompleteAsync();
+
         struct FeatureInterfaces
         {
             public IHttpResponseFeature Response;
