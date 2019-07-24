@@ -795,6 +795,42 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("transport handlers set before start", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "LongPolling", transferFormats: ["Text"] };
+            let handlersSet = false;
+
+            let httpClientGetCount = 0;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] }))
+                    .on("GET", () => {
+                        httpClientGetCount++;
+                        if (httpClientGetCount === 1) {
+                            if ((connection as any).transport.onreceive && (connection as any).transport.onclose) {
+                                handlersSet = true;
+                            }
+                            // First long polling request must succeed so start completes
+                            return "";
+                        }
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+            } finally {
+                await connection.stop();
+            }
+
+            expect(handlersSet).toBe(true);
+        });
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)

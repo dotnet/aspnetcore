@@ -281,9 +281,6 @@ export class HttpConnection implements IConnection {
                 this.features.inherentKeepAlive = true;
             }
 
-            this.transport!.onreceive = this.onreceive;
-            this.transport!.onclose = (e) => this.stopConnection(e);
-
             if (this.connectionState === ConnectionState.Connecting) {
                 // Ensure the connection transitions to the connected state prior to completing this.startInternalPromise.
                 // start() will handle the case when stop was called and startInternal exits still in the disconnecting state.
@@ -344,6 +341,8 @@ export class HttpConnection implements IConnection {
         if (this.isITransport(requestedTransport)) {
             this.logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
             this.transport = requestedTransport;
+            this.transport.onreceive = this.onreceive;
+            this.transport.onclose = (e) => this.stopConnection(e);
             await this.transport.connect(connectUrl, requestedTransferFormat);
 
             return;
@@ -367,6 +366,8 @@ export class HttpConnection implements IConnection {
                     connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
                 }
                 try {
+                    this.transport!.onreceive = this.onreceive;
+                    this.transport!.onclose = (e) => this.stopConnection(e);
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     return;
                 } catch (ex) {
