@@ -1,5 +1,4 @@
 import { DefaultReconnectDisplay } from "../src/Platform/Circuits/DefaultReconnectDisplay";
-import { AutoReconnectCircuitHandler } from "../src/Platform/Circuits/AutoReconnectCircuitHandler";
 import {JSDOM} from 'jsdom';
 
 describe('DefaultReconnectDisplay', () => {
