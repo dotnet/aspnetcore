@@ -62,19 +62,18 @@ namespace Microsoft.AspNetCore.Hosting
 
         private void Shutdown()
         {
-            if (!_cts.IsCancellationRequested)
+            try 
             {
-                if (!string.IsNullOrEmpty(_shutdownMessage))
+                if (!_cts.IsCancellationRequested)
                 {
-                    Console.WriteLine(_shutdownMessage);
-                }
-                try
-                {
+                    if (!string.IsNullOrEmpty(_shutdownMessage))
+                    {
+                        Console.WriteLine(_shutdownMessage);
+                    }
                     _cts.Cancel();
                 }
-                catch (ObjectDisposedException) { }
             }
-
+            catch (Exception) {}
             // Wait on the given reset event
             _resetEvent.Wait();
         }
