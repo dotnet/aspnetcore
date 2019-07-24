@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
-                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.Replace("Identity","").TrimStart('~').TrimStart('/')));
+                Path.Combine(wwwrootDir, scriptTag.FallbackSrc.Replace("Identity", "").TrimStart('~').TrimStart('/')));
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
         }
@@ -166,8 +166,28 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static string GetProjectBasePath()
         {
-            return typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
+            return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
+        }
+
+        private static string FindHelixSlnFileDirectory()
+        {
+            var applicationPath = Path.GetDirectoryName(typeof(IdentityUIScriptsTest).Assembly.Location);
+            var directoryInfo = new DirectoryInfo(applicationPath);
+            do
+            {
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.sln").FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    return directoryInfo.FullName;
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new InvalidOperationException($"Solution root could not be located using application root {applicationPath}.");
         }
 
         class RetryHandler : DelegatingHandler

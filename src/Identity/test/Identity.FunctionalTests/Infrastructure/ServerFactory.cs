@@ -95,29 +95,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         private void UpdateManifest(string versionedPath)
         {
-            if (!IsHelixCI)
-            {
-                var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            var content = File.ReadAllText(versionedPath);
+            var path = typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .Single(a => a.Key == "Microsoft.AspNetCore.Testing.IdentityUIProjectPath").Value;
-                var content = File.ReadAllText(versionedPath);
 
-                var updatedContent = content.Replace("{TEST_PLACEHOLDER}", Path.Combine(path, "wwwroot"));
+            path = Directory.Exists(path) ? Path.Combine(path, "wwwroot") : Path.Combine(FindHelixSlnFileDirectory(), "UI", "wwwroot");
 
-                File.WriteAllText(versionedPath, updatedContent);
-            }
-            else
-            {
-                var content = File.ReadAllText(versionedPath);
+            var updatedContent = content.Replace("{TEST_PLACEHOLDER}", path);
 
-                var path = FindHelixSlnFile();
-
-                var updatedContent = content.Replace("{TEST_PLACEHOLDER}", Path.Combine(path, "UI", "wwwroot"));
-
-                File.WriteAllText(versionedPath, updatedContent);
-            }
+            File.WriteAllText(versionedPath, updatedContent);
         }
 
-        private string FindHelixSlnFile()
+        private string FindHelixSlnFileDirectory()
         {
             var applicationPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
             var directoryInfo = new DirectoryInfo(applicationPath);
