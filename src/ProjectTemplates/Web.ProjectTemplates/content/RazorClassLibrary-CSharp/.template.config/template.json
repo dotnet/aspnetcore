@@ -79,7 +79,7 @@
       "path": "Areas/MyFeature/Pages/Page1.cshtml"
     }
   ],
-  "defaultName": "RazorClassLibrary1",
+  "defaultName": "RazorClassLibrary",
   "postActions": [
     {
       "condition": "(!skipRestore)",

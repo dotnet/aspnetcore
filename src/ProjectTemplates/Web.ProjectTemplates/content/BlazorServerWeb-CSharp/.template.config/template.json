@@ -364,7 +364,7 @@
       "path": "BlazorServerWeb-CSharp.csproj"
     }
   ],
-  "defaultName": "BlazorApp1",
+  "defaultName": "WebApplication",
   "postActions": [
     {
       "condition": "(!skipRestore)",
