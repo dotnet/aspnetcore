@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         /// <param name="message">A description of the exception.</param>
         /// <param name="details">Additional information, such as a Node.js stack trace, representing the exception.</param>
         public NodeInvocationException(string message, string details)
-            : base(string.IsNullOrWhiteSpace(details) ? message : message + Environment.NewLine + details)
+            : base(message + Environment.NewLine + details)
         {
         }
 
