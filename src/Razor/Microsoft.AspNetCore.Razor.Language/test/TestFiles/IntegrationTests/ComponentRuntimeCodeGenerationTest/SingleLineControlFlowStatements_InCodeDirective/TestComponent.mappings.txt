@@ -1,4 +1,4 @@
-Source Location: (61:2,7 [209] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (60:2,7 [209] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -6,7 +6,7 @@ Source Location: (61:2,7 [209] x:\dir\subdir\Test\TestComponent.cshtml)
         if (builder == null) output = "Builder is null!";
         else output = "Builder is not null!";
 |
-Generated Location: (802:26,7 [209] )
+Generated Location: (800:26,7 [209] )
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -15,10 +15,10 @@ Generated Location: (802:26,7 [209] )
         else output = "Builder is not null!";
 |
 
-Source Location: (302:9,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (301:9,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |    }
 |
-Generated Location: (1529:52,0 [7] )
+Generated Location: (1527:52,0 [7] )
 |    }
 |
 

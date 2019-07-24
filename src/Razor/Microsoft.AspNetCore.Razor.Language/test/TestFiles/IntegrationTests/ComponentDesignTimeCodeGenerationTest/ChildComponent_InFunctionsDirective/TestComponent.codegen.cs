@@ -10,7 +10,7 @@ namespace Test
     using Microsoft.AspNetCore.Components;
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 #line default
 #line hidden
@@ -25,7 +25,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"

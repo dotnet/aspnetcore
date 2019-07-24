@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"

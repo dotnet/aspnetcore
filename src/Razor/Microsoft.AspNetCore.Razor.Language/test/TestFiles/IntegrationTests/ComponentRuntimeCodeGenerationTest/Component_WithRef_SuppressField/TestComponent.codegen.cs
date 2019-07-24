@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddComponentReferenceCapture(1, (__value) => {

@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Components;
     public class TestComponent<TItem1, TItem2> : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.AddMarkupContent(0, "<h1>Item1</h1>\r\n");
 #nullable restore

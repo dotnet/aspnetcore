@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal($"{CodeGenerationConstants.ComponentBase.FullTypeName}", visitor.Class.BaseType);
+            Assert.Equal($"{ComponentsApi.ComponentBase.FullTypeName}", visitor.Class.BaseType);
             Assert.Equal(new[] { "public", }, visitor.Class.Modifiers);
             Assert.Equal("Test", visitor.Class.ClassName);
         }
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(CodeGenerationConstants.ComponentBase.BuildRenderTree, visitor.Method.MethodName);
+            Assert.Equal(ComponentsApi.ComponentBase.BuildRenderTree, visitor.Method.MethodName);
             Assert.Equal("void", visitor.Method.ReturnType);
             Assert.Equal(new[] { "protected", "override" }, visitor.Method.Modifiers);
         }

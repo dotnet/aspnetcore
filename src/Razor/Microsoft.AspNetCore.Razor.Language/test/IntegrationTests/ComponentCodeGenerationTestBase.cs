@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Components.RenderTree;
+@using Microsoft.AspNetCore.Components.Rendering;
 
 @code {
     void RenderChildComponent(RenderTreeBuilder builder)
@@ -83,7 +83,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Components.RenderTree;
+@using Microsoft.AspNetCore.Components.Rendering;
 
 @{ RenderChildComponent(builder); }
 

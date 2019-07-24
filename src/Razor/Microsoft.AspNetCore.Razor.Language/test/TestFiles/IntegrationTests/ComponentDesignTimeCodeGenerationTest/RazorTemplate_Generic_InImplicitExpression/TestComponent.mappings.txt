@@ -1,16 +1,16 @@
 Source Location: (1:0,1 [25] x:\dir\subdir\Test\TestComponent.cshtml)
 |RenderPerson((person) => |
-Generated Location: (849:24,6 [25] )
+Generated Location: (848:24,6 [25] )
 |RenderPerson((person) => |
 
 Source Location: (33:0,33 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |person.Name|
-Generated Location: (994:27,33 [11] )
+Generated Location: (993:27,33 [11] )
 |person.Name|
 
 Source Location: (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 |)|
-Generated Location: (1061:33,0 [1] )
+Generated Location: (1060:33,0 [1] )
 |)|
 
 Source Location: (60:1,7 [138] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -22,7 +22,7 @@ Source Location: (60:1,7 [138] x:\dir\subdir\Test\TestComponent.cshtml)
 
     object RenderPerson(RenderFragment<Person> p) => null;
 |
-Generated Location: (1241:42,7 [138] )
+Generated Location: (1240:42,7 [138] )
 |
     class Person
     {

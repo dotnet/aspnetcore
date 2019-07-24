@@ -18,7 +18,7 @@ using System.Globalization;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindConverter.FormatValue(

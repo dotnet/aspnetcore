@@ -3,7 +3,7 @@ Source Location: (37:1,7 [31] x:\dir\subdir\Test\TestComponent.cshtml)
     void OnClick() {
     }
 |
-Generated Location: (1043:30,7 [31] )
+Generated Location: (1042:30,7 [31] )
 |
     void OnClick() {
     }

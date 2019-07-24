@@ -12,7 +12,7 @@ namespace __GeneratedComponent
     public class AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 : Microsoft.AspNetCore.Components.ComponentBase, IDisposable
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", 

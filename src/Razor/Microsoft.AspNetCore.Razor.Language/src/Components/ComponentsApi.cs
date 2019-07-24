@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static class RenderTreeBuilder
         {
-            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder";
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
 
             public static readonly string OpenElement = nameof(OpenElement);
 

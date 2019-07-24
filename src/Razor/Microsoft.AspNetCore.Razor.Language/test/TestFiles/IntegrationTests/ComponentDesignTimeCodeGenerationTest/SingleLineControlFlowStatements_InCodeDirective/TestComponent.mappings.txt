@@ -1,9 +1,9 @@
-Source Location: (1:0,1 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-|using Microsoft.AspNetCore.Components.RenderTree;|
-Generated Location: (320:12,0 [49] )
-|using Microsoft.AspNetCore.Components.RenderTree;|
+Source Location: (1:0,1 [48] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components.Rendering;|
+Generated Location: (320:12,0 [48] )
+|using Microsoft.AspNetCore.Components.Rendering;|
 
-Source Location: (61:2,7 [217] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (60:2,7 [217] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -11,7 +11,7 @@ Source Location: (61:2,7 [217] x:\dir\subdir\Test\TestComponent.cshtml)
         if (builder == null) output = "Builder is null!";
         else output = "Builder is not null!";
         |
-Generated Location: (1070:33,7 [217] )
+Generated Location: (1068:33,7 [217] )
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
@@ -20,16 +20,16 @@ Generated Location: (1070:33,7 [217] )
         else output = "Builder is not null!";
         |
 
-Source Location: (290:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (289:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |output|
-Generated Location: (1429:46,20 [6] )
+Generated Location: (1427:46,20 [6] )
 |output|
 
-Source Location: (300:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (299:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     }
 |
-Generated Location: (1588:53,30 [9] )
+Generated Location: (1586:53,30 [9] )
 |
     }
 |

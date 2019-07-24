@@ -5,6 +5,6 @@ Generated Location: (285:11,0 [28] )
 
 Source Location: (50:1,19 [33] x:\dir\subdir\Test\TestComponent.cshtml)
 |async (e) => await Task.Delay(10)|
-Generated Location: (1115:31,19 [33] )
+Generated Location: (1114:31,19 [33] )
 |async (e) => await Task.Delay(10)|
 

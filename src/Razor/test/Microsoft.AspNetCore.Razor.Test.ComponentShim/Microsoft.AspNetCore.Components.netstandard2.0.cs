@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
         public ComponentBase() { }
-        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.Parameter Current { get { throw null; } }
         public bool MoveNext() { throw null; }
     }
-    public delegate void RenderFragment(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder);
+    public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
     public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<T>(T value);
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderHandle
@@ -701,37 +701,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
-    public partial class RenderTreeBuilder
-    {
-        public const string ChildContent = "ChildContent";
-        public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
-        public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
-        public void AddAttribute(int sequence, string name, System.Action value) { }
-        public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.Func<System.Threading.Tasks.Task> value) { }
-        public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
-        public void AddAttribute(int sequence, string name, object value) { }
-        public void AddAttribute(int sequence, string name, string value) { }
-        public void AddAttribute<T>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<T> value) { }
-        public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
-        public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
-        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
-        public void AddContent(int sequence, object textContent) { }
-        public void AddContent(int sequence, string textContent) { }
-        public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
-        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
-        public void AddMarkupContent(int sequence, string markupContent) { }
-        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
-        public void Clear() { }
-        public void CloseComponent() { }
-        public void CloseElement() { }
-        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
-        public void OpenComponent(int sequence, System.Type componentType) { }
-        public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
-        public void OpenElement(int sequence, string elementName) { }
-        public void SetKey(object value) { }
-        public void SetUpdatesAttributeName(string updatesAttributeName) { }
-    }
+    
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
     {
@@ -776,6 +746,40 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         ElementReferenceCapture = 6,
         ComponentReferenceCapture = 7,
         Markup = 8,
+    }
+}
+namespace Microsoft.AspNetCore.Components.Rendering
+{
+    public partial class RenderTreeBuilder
+    {
+        public const string ChildContent = "ChildContent";
+        public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
+        public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
+        public void AddAttribute(int sequence, string name, System.Action value) { }
+        public void AddAttribute(int sequence, string name, bool value) { }
+        public void AddAttribute(int sequence, string name, System.Func<System.Threading.Tasks.Task> value) { }
+        public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
+        public void AddAttribute(int sequence, string name, object value) { }
+        public void AddAttribute(int sequence, string name, string value) { }
+        public void AddAttribute<T>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<T> value) { }
+        public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
+        public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
+        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
+        public void AddContent(int sequence, object textContent) { }
+        public void AddContent(int sequence, string textContent) { }
+        public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
+        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
+        public void AddMarkupContent(int sequence, string markupContent) { }
+        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
+        public void Clear() { }
+        public void CloseComponent() { }
+        public void CloseElement() { }
+        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
+        public void OpenComponent(int sequence, System.Type componentType) { }
+        public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
+        public void OpenElement(int sequence, string elementName) { }
+        public void SetKey(object value) { }
+        public void SetUpdatesAttributeName(string updatesAttributeName) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Routing

@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.AddMarkupContent(0, "<!DOCTYPE html>\r\n");
             builder.AddMarkupContent(1, "<div>\r\n</div>");

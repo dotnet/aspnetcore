@@ -25,7 +25,7 @@ using System.Reflection;
     public class Counter : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             builder.OpenComponent<New.Test.Counter2>(0);
             builder.CloseComponent();

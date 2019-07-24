@@ -18,7 +18,7 @@ namespace Test
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
 #nullable restore
@@ -77,19 +77,19 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
         {
         builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
         builder.AddAttribute(__seq0, "Item", __arg0);
         builder.CloseComponent();
         }
-        public static void CreateMyComponent_1<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_1<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
         {
         builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
         builder.AddAttribute(__seq0, "Item", __arg0);
         builder.CloseComponent();
         }
-        public static void CreateMyComponent_2<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_2<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
         {
         builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
         builder.AddAttribute(__seq0, "Item", __arg0);

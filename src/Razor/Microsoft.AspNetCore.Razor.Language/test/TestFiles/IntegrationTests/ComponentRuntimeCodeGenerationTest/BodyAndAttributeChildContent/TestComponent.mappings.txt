@@ -1,10 +1,10 @@
 Source Location: (2:0,2 [46] x:\dir\subdir\Test\TestComponent.cshtml)
 | RenderFragment<string> header = (context) => |
-Generated Location: (577:17,2 [46] )
+Generated Location: (576:17,2 [46] )
 | RenderFragment<string> header = (context) => |
 
 Source Location: (87:0,87 [2] x:\dir\subdir\Test\TestComponent.cshtml)
 |; |
-Generated Location: (1231:37,87 [2] )
+Generated Location: (1230:37,87 [2] )
 |; |
 

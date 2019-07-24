@@ -25,7 +25,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"

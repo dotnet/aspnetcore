@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public Microsoft.AspNetCore.Components.RenderFragment AuthorizingContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
         public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
-        protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
+        protected virtual void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 }
