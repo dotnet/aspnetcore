@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -41,11 +42,19 @@ namespace Templates.Test.Helpers
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
 
-        internal async Task<ProcessEx> RunDotNetNewAsync(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false, string[] args = null)
+        internal async Task<ProcessEx> RunDotNetNewAsync(
+            string templateName,
+            string auth = null,
+            string language = null,
+            bool useLocalDB = false,
+            bool noHttps = false,
+            string[] args = null,
+            // Used to set special options in MSBuild
+            IDictionary<string, string> environmentVariables = null)
         {
             var hiveArg = $"--debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
             var argString = $"new {templateName} {hiveArg}";
-
+            environmentVariables ??= new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(auth))
             {
                 argString += $" --auth {auth}";
@@ -86,7 +95,7 @@ namespace Templates.Test.Helpers
             await DotNetNewLock.WaitAsync();
             try
             {
-                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString);
+                var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
                 await execution.Exited;
                 return execution;
             }
@@ -96,7 +105,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetPublishAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Publishing ASP.NET application...");
 
@@ -112,7 +121,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}", packageOptions);
                 await result.Exited;
                 return result;
             }
@@ -122,7 +131,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false)
+        internal async Task<ProcessEx> RunDotNetBuildAsync(bool takeNodeLock = false, IDictionary<string,string> packageOptions = null)
         {
             Output.WriteLine("Building ASP.NET application...");
 
@@ -133,7 +142,7 @@ namespace Templates.Test.Helpers
             await effectiveLock.WaitAsync();
             try
             {
-                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug");
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), "build -c Debug", packageOptions);
                 await result.Exited;
                 return result;
             }
