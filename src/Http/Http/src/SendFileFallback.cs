@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
             using (fileStream)
             {
                 fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperation.CopyToAsync(fileStream, destination, count, bufferSize, cancellation);
+                await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, bufferSize, cancellation);
             }
         }
     }

@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Http
 {
     // FYI: In most cases the source will be a FileStream and the destination will be to the network.
-    internal static class StreamCopyOperation
+    internal static class StreamCopyOperationInternal
     {
         private const int DefaultBufferSize = 4096;
 
-        /// <summary>Asynchronously reads the bytes from the source stream and writes them to another stream.</summary>
+        /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them to another stream.</summary>
         /// <returns>A task that represents the asynchronous copy operation.</returns>
         /// <param name="source">The stream from which the contents will be copied.</param>
         /// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
             return CopyToAsync(source, destination, count, DefaultBufferSize, cancel);
         }
 
-        /// <summary>Asynchronously reads the bytes from the source stream and writes them to another stream, using a specified buffer size.</summary>
+        /// <summary>Asynchronously reads the given number of bytes from the source stream and writes them to another stream, using a specified buffer size.</summary>
         /// <returns>A task that represents the asynchronous copy operation.</returns>
         /// <param name="source">The stream from which the contents will be copied.</param>
         /// <param name="destination">The stream to which the contents of the current stream will be copied.</param>
