@@ -516,11 +516,11 @@ namespace TestSite
         private async Task ReadAndWriteEchoLinesNoBuffering(HttpContext ctx)
         {
 #if FORWARDCOMPAT
-            var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
-            feature.DisableBuffering();
-#else
             var feature = ctx.Features.Get<IHttpBufferingFeature>();
             feature.DisableResponseBuffering();
+#else
+            var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
+            feature.DisableBuffering();
 #endif
 
             if (ctx.Request.Headers.TryGetValue("Response-Content-Type", out var contentType))
