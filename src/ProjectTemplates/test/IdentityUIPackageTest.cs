@@ -1,17 +1,15 @@
-using System;
-using System.Collections;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ProjectTemplates.Tests
+namespace Templates.Test
 {
     public class IdentityUIPackageTest
     {
@@ -40,7 +38,7 @@ namespace ProjectTemplates.Tests
                 "Bootstrap v3.4.1",
                 Bootstrap3ContentFiles);
 
-                // data.Add(new Dictionary<string, string>(), "Bootstrap v4.3.1", Bootstrap4ContentFiles);
+                data.Add(new Dictionary<string, string>(), "Bootstrap v4.3.1", Bootstrap4ContentFiles);
 
                 return data;
             }
@@ -50,7 +48,6 @@ namespace ProjectTemplates.Tests
         {
             "Identity/css/site.css",
             "Identity/js/site.js",
-            "Identity/lib/bootstrap/LICENSE",
             "Identity/lib/bootstrap/dist/css/bootstrap-theme.css",
             "Identity/lib/bootstrap/dist/css/bootstrap-theme.css.map",
             "Identity/lib/bootstrap/dist/css/bootstrap-theme.min.css",
@@ -83,42 +80,41 @@ namespace ProjectTemplates.Tests
 
         public static string[] Bootstrap4ContentFiles { get; } = new string[]
         {
-            "favicon.ico",
-            "css/site.css",
-            "js/site.js",
-            "lib/bootstrap/LICENSE",
-            "lib/bootstrap/dist/css/bootstrap-grid.css",
-            "lib/bootstrap/dist/css/bootstrap-grid.css.map",
-            "lib/bootstrap/dist/css/bootstrap-grid.min.css",
-            "lib/bootstrap/dist/css/bootstrap-grid.min.css.map",
-            "lib/bootstrap/dist/css/bootstrap-reboot.css",
-            "lib/bootstrap/dist/css/bootstrap-reboot.css.map",
-            "lib/bootstrap/dist/css/bootstrap-reboot.min.css",
-            "lib/bootstrap/dist/css/bootstrap-reboot.min.css.map",
-            "lib/bootstrap/dist/css/bootstrap.css",
-            "lib/bootstrap/dist/css/bootstrap.css.map",
-            "lib/bootstrap/dist/css/bootstrap.min.css",
-            "lib/bootstrap/dist/css/bootstrap.min.css.map",
-            "lib/bootstrap/dist/js/bootstrap.bundle.js",
-            "lib/bootstrap/dist/js/bootstrap.bundle.js.map",
-            "lib/bootstrap/dist/js/bootstrap.bundle.min.js",
-            "lib/bootstrap/dist/js/bootstrap.bundle.min.js.map",
-            "lib/bootstrap/dist/js/bootstrap.js",
-            "lib/bootstrap/dist/js/bootstrap.js.map",
-            "lib/bootstrap/dist/js/bootstrap.min.js",
-            "lib/bootstrap/dist/js/bootstrap.min.js.map",
-            "lib/jquery/LICENSE.txt",
-            "lib/jquery/dist/jquery.js",
-            "lib/jquery/dist/jquery.min.js",
-            "lib/jquery/dist/jquery.min.map",
-            "lib/jquery-validation/LICENSE.md",
-            "lib/jquery-validation/dist/additional-methods.js",
-            "lib/jquery-validation/dist/additional-methods.min.js",
-            "lib/jquery-validation/dist/jquery.validate.js",
-            "lib/jquery-validation/dist/jquery.validate.min.js",
-            "lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
-            "lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js",
-            "lib/jquery-validation-unobtrusive/LICENSE.txt",
+            "Identity/favicon.ico",
+            "Identity/css/site.css",
+            "Identity/js/site.js",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-grid.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap-reboot.min.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap.css.map",
+            "Identity/lib/bootstrap/dist/css/bootstrap.min.css",
+            "Identity/lib/bootstrap/dist/css/bootstrap.min.css.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.js.map",
+            "Identity/lib/bootstrap/dist/js/bootstrap.min.js",
+            "Identity/lib/bootstrap/dist/js/bootstrap.min.js.map",
+            "Identity/lib/jquery/LICENSE.txt",
+            "Identity/lib/jquery/dist/jquery.js",
+            "Identity/lib/jquery/dist/jquery.min.js",
+            "Identity/lib/jquery/dist/jquery.min.map",
+            "Identity/lib/jquery-validation/LICENSE.md",
+            "Identity/lib/jquery-validation/dist/additional-methods.js",
+            "Identity/lib/jquery-validation/dist/additional-methods.min.js",
+            "Identity/lib/jquery-validation/dist/jquery.validate.js",
+            "Identity/lib/jquery-validation/dist/jquery.validate.min.js",
+            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
+            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js",
+            "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
         [Theory]
@@ -154,8 +150,10 @@ namespace ProjectTemplates.Tests
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                var response = await GetFile(aspNetProcess, "/Identity/lib/bootstrap/dist/css/bootstrap.css");
+                var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
+                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -164,64 +162,20 @@ namespace ProjectTemplates.Tests
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                var response = await GetFile(aspNetProcess, "/Identity/lib/bootstrap/dist/css/bootstrap.css");
+                var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess.ListeningUri, expectedFiles);
+                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
             }
         }
 
-        private async Task ValidatePublishedFiles(Uri baseAddress, string[] expectedContentFiles)
+        private async Task ValidatePublishedFiles(AspNetProcess aspNetProcess, string[] expectedContentFiles)
         {
-            using HttpClient httpClient = new HttpClient { BaseAddress = baseAddress };
-
             foreach (var file in expectedContentFiles)
             {
-                var response = await GetFile(httpClient, file, assert: false);
+                var response = await aspNetProcess.SendRequest(file);
                 Assert.True(response?.StatusCode == HttpStatusCode.OK, $"Couldn't find file '{file}'");
             }
-        }
-
-        private static Task<HttpResponseMessage> GetFile(AspNetProcess aspNetProcess, string path, bool assert = true)
-        {
-            using HttpClient httpClient = new HttpClient { BaseAddress = aspNetProcess.ListeningUri };
-            return GetFile(httpClient, path, assert);
-        }
-
-        private static async Task<HttpResponseMessage> GetFile(HttpClient httpClient, string path, bool assert = true)
-        {
-            HttpResponseMessage response = null;
-            for (int i = 0; i < 3; i++)
-            {
-                try
-                {
-                    response = await httpClient.GetAsync(path);
-                    if (i + 1 == 3)
-                    {
-                        break;
-                    }
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        return response;
-                    }
-                }
-                catch (Exception)
-                {
-                    if (i + 1 == 3)
-                    {
-                        break;
-                    }
-
-                    await Task.Delay(3);
-                }
-            }
-
-            if (assert)
-            {
-                Assert.NotNull(response);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
-
-            return response;
         }
 
         private string ReadFile(string basePath, string path)
