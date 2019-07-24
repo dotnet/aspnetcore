@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop
@@ -14,54 +13,26 @@ namespace Microsoft.JSInterop
     /// To avoid leaking memory, the reference must later be disposed by JS code or by .NET code.
     /// </summary>
     /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
+    [JsonConverter(typeof(DotNetObjectReferenceJsonConverterFactory))]
     public sealed class DotNetObjectRef<TValue> : IDotNetObjectRef, IDisposable where TValue : class
     {
-        private long? _trackingId;
-
-        /// <summary>
-        /// This API is for meant for JSON deserialization and should not be used by user code.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public DotNetObjectRef()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of <see cref="DotNetObjectRef{TValue}" />.
         /// </summary>
+        /// <param name="objectId">The object Id.</param>
         /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectRef(TValue value)
+        internal DotNetObjectRef(long objectId, TValue value)
         {
+            ObjectId = objectId;
             Value = value;
-            _trackingId = DotNetObjectRefManager.Current.TrackObject(this);
         }
 
         /// <summary>
         /// Gets the object instance represented by this wrapper.
         /// </summary>
-        [JsonIgnore]
-        public TValue Value { get; private set; }
+        public TValue Value { get; }
 
-        /// <summary>
-        /// This API is for meant for JSON serialization and should not be used by user code.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public long __dotNetObject
-        {
-            get => _trackingId.Value;
-            set
-            {
-                if (_trackingId != null)
-                {
-                    throw new InvalidOperationException($"{nameof(DotNetObjectRef<TValue>)} cannot be reinitialized.");
-                }
-
-                _trackingId = value;
-                Value = (TValue)DotNetObjectRefManager.Current.FindDotNetObject(value);
-            }
-        }
-
-        object IDotNetObjectRef.Value => Value;
+        internal long ObjectId { get; }
 
         /// <summary>
         /// Stops tracking this object reference, allowing it to be garbage collected
@@ -70,7 +41,7 @@ namespace Microsoft.JSInterop
         /// </summary>
         public void Dispose()
         {
-            DotNetObjectRefManager.Current.ReleaseDotNetObject(_trackingId.Value);
+            DotNetObjectRefManager.Current.ReleaseDotNetObject(ObjectId);
         }
     }
 }

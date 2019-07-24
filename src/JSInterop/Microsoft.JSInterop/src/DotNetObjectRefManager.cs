@@ -10,7 +10,7 @@ namespace Microsoft.JSInterop
     internal class DotNetObjectRefManager
     {
         private long _nextId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
-        private readonly ConcurrentDictionary<long, IDotNetObjectRef> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectRef>();
+        private readonly ConcurrentDictionary<long, object> _trackedRefsById = new ConcurrentDictionary<long, object>();
 
         public static DotNetObjectRefManager Current
         {
@@ -25,7 +25,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        public long TrackObject(IDotNetObjectRef dotNetObjectRef)
+        public long TrackObject(object dotNetObjectRef)
         {
             var dotNetObjectId = Interlocked.Increment(ref _nextId);
             _trackedRefsById[dotNetObjectId] = dotNetObjectRef;
@@ -36,7 +36,7 @@ namespace Microsoft.JSInterop
         public object FindDotNetObject(long dotNetObjectId)
         {
             return _trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef)
-                ? dotNetObjectRef.Value
+                ? dotNetObjectRef
                 : throw new ArgumentException($"There is no tracked object with id '{dotNetObjectId}'. Perhaps the DotNetObjectRef instance was already disposed.", nameof(dotNetObjectId));
             
         }

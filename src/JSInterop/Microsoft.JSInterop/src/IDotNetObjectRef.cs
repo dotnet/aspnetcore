@@ -7,6 +7,5 @@ namespace Microsoft.JSInterop
 {
     internal interface IDotNetObjectRef : IDisposable
     {
-        public object Value { get; }
     }
 }
