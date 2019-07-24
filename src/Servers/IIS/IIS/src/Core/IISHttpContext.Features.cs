@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private static readonly Type IHttpRequestFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
+        private static readonly Type IHttpResponseBodyFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature);
         private static readonly Type IServiceProvidersFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IServiceProvidersFeature);
         private static readonly Type IHttpRequestLifetimeFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature);
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature);
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
         private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
-        private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
         private static readonly Type IISHttpContextType = typeof(IISHttpContext);
         private static readonly Type IServerVariablesFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
         private static readonly Type IHttpBufferingFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature);
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
+        private object _currentIHttpResponseBodyFeature;
         private object _currentIHttpRequestIdentifierFeature;
         private object _currentIServiceProvidersFeature;
         private object _currentIHttpRequestLifetimeFeature;
@@ -46,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private object _currentIHttpWebSocketFeature;
         private object _currentISessionFeature;
         private object _currentIHttpBodyControlFeature;
-        private object _currentIHttpSendFileFeature;
         private object _currentIServerVariablesFeature;
         private object _currentIHttpBufferingFeature;
         private object _currentIHttpMaxRequestBodySizeFeature;
@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _currentIHttpRequestFeature = this;
             _currentIHttpResponseFeature = this;
+            _currentIHttpResponseBodyFeature = this;
             _currentIHttpUpgradeFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
@@ -76,6 +77,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpResponseFeatureType)
             {
                 return _currentIHttpResponseFeature;
+            }
+            if (key == IHttpResponseBodyFeatureType)
+            {
+                return _currentIHttpResponseBodyFeature;
             }
             if (key == IHttpRequestIdentifierFeatureType)
             {
@@ -133,10 +138,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 return _currentIHttpBodyControlFeature;
             }
-            if (key == IHttpSendFileFeatureType)
-            {
-                return _currentIHttpSendFileFeature;
-            }
             if (key == IISHttpContextType)
             {
                 return this;
@@ -169,6 +170,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (key == IHttpResponseFeatureType)
             {
                 _currentIHttpResponseFeature = feature;
+                return;
+            }
+            if (key == IHttpResponseBodyFeatureType)
+            {
+                _currentIHttpResponseBodyFeature = feature;
                 return;
             }
             if (key == IHttpRequestIdentifierFeatureType)
@@ -241,11 +247,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _currentIHttpBodyControlFeature = feature;
                 return;
             }
-            if (key == IHttpSendFileFeatureType)
-            {
-                _currentIHttpSendFileFeature = feature;
-                return;
-            }
             if (key == IServerVariablesFeature)
             {
                 _currentIServerVariablesFeature = feature;
@@ -276,6 +277,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpResponseFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseFeature);
+            }
+            if (_currentIHttpResponseBodyFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseBodyFeatureType, _currentIHttpResponseBodyFeature as global::Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature);
             }
             if (_currentIHttpRequestIdentifierFeature != null)
             {
@@ -332,10 +337,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (_currentIHttpBodyControlFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpBodyControlFeatureType, _currentIHttpBodyControlFeature as global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
-            }
-            if (_currentIHttpSendFileFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, _currentIHttpSendFileFeature as global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
             }
             if (_currentIServerVariablesFeature != null)
             {

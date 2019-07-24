@@ -105,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal WindowsPrincipal WindowsUser { get; set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
+        public PipeWriter ResponsePipeWrapper { get; set; }
 
         protected IAsyncIOEngine AsyncIO { get; set; }
 
