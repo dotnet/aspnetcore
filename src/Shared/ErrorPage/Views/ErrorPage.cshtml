@@ -31,12 +31,11 @@
         @foreach (var errorDetail in Model.ErrorDetails)
         {
             <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
-            @{
-                var firstFrame = errorDetail.StackFrames.FirstOrDefault();
-                if (firstFrame != null)
-                {
-                    location = firstFrame.Function;
-                }
+
+            var firstFrame = errorDetail.StackFrames.FirstOrDefault();
+            if (firstFrame != null)
+            {
+                location = firstFrame.Function;
             }
             if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
             {
@@ -76,19 +75,15 @@
                 }
                 @foreach (var errorDetail in Model.ErrorDetails)
                 {
-                    @{
-                        exceptionCount++;
-                        exceptionDetailId = "exceptionDetail" + exceptionCount;
-                    }
+                    exceptionCount++;
+                    exceptionDetailId = "exceptionDetail" + exceptionCount;
                     <li>
                         <h2 class="stackerror">@errorDetail.Error.GetType().Name: @errorDetail.Error.Message</h2>
                         <ul>
                         @foreach (var frame in errorDetail.StackFrames)
                         {
-                            @{
-                                stackFrameCount++;
-                                frameId = "frame" + stackFrameCount;
-                            }
+                            stackFrameCount++;
+                            frameId = "frame" + stackFrameCount;
                             <li class="frame" id="@frameId">
                                 @if (string.IsNullOrEmpty(frame.File))
                                 {
@@ -149,9 +144,11 @@
                 }
             </ul>
         </div>
-        <footer>
-            @Model.RuntimeDisplayName @Model.RuntimeArchitecture v@(Model.ClrVersion) &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Microsoft.AspNetCore.Hosting version @Model.CurrentAssemblyVesion &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; @Model.OperatingSystemDescription &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="http://go.microsoft.com/fwlink/?LinkId=517394">Need help?</a>
-        </footer>
+        @if (Model.ShowRuntimeDetails) {
+            <footer>
+                @Model.RuntimeDisplayName @Model.RuntimeArchitecture v@(Model.ClrVersion) &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Microsoft.AspNetCore.Hosting version @Model.CurrentAssemblyVesion &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; @Model.OperatingSystemDescription &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="http://go.microsoft.com/fwlink/?LinkId=517394">Need help?</a>
+            </footer>
+        }
         <script>
             //<!--
             <%$ include: ErrorPage.js %>
