@@ -11,9 +11,21 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+    public partial class SharedSocketOptions
+    {
+        public SharedSocketOptions() { }
+        public long? MaxReadBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? MaxWriteBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool NoDelay { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public partial class SocketClientOptions : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SharedSocketOptions
+    {
+        public SocketClientOptions() { }
+        public System.IO.Pipelines.PipeScheduler Scheduler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     public partial class SocketConnectionFactory : Microsoft.AspNetCore.Connections.IConnectionFactory
     {
-        public SocketConnectionFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public SocketConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketClientOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> ConnectAsync(System.Net.EndPoint endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
@@ -22,12 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
-    public partial class SocketTransportOptions
+    public partial class SocketTransportOptions : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SharedSocketOptions
     {
         public SocketTransportOptions() { }
         public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long? MaxReadBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public long? MaxWriteBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool NoDelay { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
