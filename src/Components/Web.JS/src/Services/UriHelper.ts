@@ -1,4 +1,5 @@
 import '@dotnet/jsinterop';
+import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 
 let hasRegisteredNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
@@ -81,6 +82,13 @@ export function navigateTo(uri: string, forceLoad: boolean) {
 }
 
 function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean) {
+  // Since this was *not* triggered by a back/forward gesture (that goes through a different
+  // code path starting with a popstate event), we don't want to preserve the current scroll
+  // position, so reset it.
+  // To avoid ugly flickering effects, we don't want to change the scroll position until the
+  // we render the new page. As a best approximation, wait until the next batch.
+  resetScrollAfterNextBatch();
+
   history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   notifyLocationChanged(interceptedLink);
 }
