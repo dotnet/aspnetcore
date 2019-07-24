@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -65,6 +66,53 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 
             Assert.True(task.Result);
             Assert.Throws<InvalidOperationException>(() => task.Result);
+        }
+
+        [Fact]
+        public static Task RunsContinuationsAsynchronously()
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            async void RunTest()
+            {
+                try
+                {
+                    await RunsContinuationsAsynchronouslyInternally();
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                    throw;
+                }
+
+                tcs.SetResult(null);
+            }
+
+            // The Xunit TestSyncContext causes the resettable tcs to always dispatch in effect.
+            ThreadPool.UnsafeQueueUserWorkItem(_ => RunTest(), state: null);
+
+            return tcs.Task;
+        }
+
+        private static async Task RunsContinuationsAsynchronouslyInternally()
+        {
+            var tcs = new ResettableBooleanCompletionSource(_testQueue);
+            var mre = new ManualResetEventSlim();
+
+            async Task AwaitAndBlock()
+            {
+                await tcs.GetValueTask();
+                mre.Wait();
+            }
+
+            var task = AwaitAndBlock();
+
+            await Task.Run(() => tcs.Complete(true)).OrTimeout();
+
+            Assert.False(task.IsCompleted);
+
+            mre.Set();
+            await task.OrTimeout();
         }
     }
 }

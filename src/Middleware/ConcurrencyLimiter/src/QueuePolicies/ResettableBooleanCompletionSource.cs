@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         public ResettableBooleanCompletionSource(StackPolicy queue)
         {
             _queue = queue;
+            _mrvts.RunContinuationsAsynchronously = true;
         }
 
         public ValueTask<bool> GetValueTask()

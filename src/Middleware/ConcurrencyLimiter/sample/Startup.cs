@@ -19,7 +19,7 @@ namespace ConcurrencyLimiterSample
         {
             services.AddStackPolicy(options =>
             {
-                options.MaxConcurrentRequests = Environment.ProcessorCount;
+                options.MaxConcurrentRequests = 2; 
                 options.RequestQueueLimit = 25;
             });
         }
@@ -29,7 +29,7 @@ namespace ConcurrencyLimiterSample
             app.UseConcurrencyLimiter();
             app.Run(async context =>
             {
-                Task.Delay(100).Wait(); // 100ms sync-over-async
+                Task.Delay(4000).Wait(); // 100ms sync-over-async
 
                 await context.Response.WriteAsync("Hello World!");
             });

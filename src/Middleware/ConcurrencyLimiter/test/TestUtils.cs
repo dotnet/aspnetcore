@@ -83,11 +83,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
         }
 
         public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null) :
-            this(async (state) =>
-           {
-               await Task.CompletedTask;
-               return onTryEnter(state);
-           }, onExit) { }
+            this(state => Task.FromResult(onTryEnter(state))
+            , onExit) { }
  
         public async ValueTask<bool> TryEnterAsync()
         {

@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _next = next;
             _logger = loggerFactory.CreateLogger<ConcurrencyLimiterMiddleware>();
             _onRejected = options.Value.OnRejected;
-
             _queuePolicy = queue;
         }
 
