@@ -19,7 +19,7 @@ namespace Microsoft.JSInterop
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                    if (dotNetObjectId == 0 && reader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         dotNetObjectId = reader.GetInt64();
