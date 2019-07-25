@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Components.Test
             [CascadingParameter] T CascadingParameter { get; set; }
             [Parameter] public string RegularParameter { get; set; }
 
-            public override async Task SetParametersAsync(ParameterCollection parameters)
+            public override async Task SetParametersAsync(ParameterView parameters)
             {
                 NumSetParametersCalls++;
                 await base.SetParametersAsync(parameters);

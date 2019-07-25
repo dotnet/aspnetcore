@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 _renderHandle = renderHandle;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 _renderHandle.Render(builder =>
                 {

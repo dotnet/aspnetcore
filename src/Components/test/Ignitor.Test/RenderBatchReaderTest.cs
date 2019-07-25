@@ -331,7 +331,7 @@ namespace Ignitor
             public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => throw new NotImplementedException();
         }
 

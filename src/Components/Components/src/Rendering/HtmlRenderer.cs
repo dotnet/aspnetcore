@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -49,9 +48,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// of the HTML produced by the component.
         /// </summary>
         /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
         /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
+        public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
         {
             var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
 
@@ -66,9 +65,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// of the HTML produced by the component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
         /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterCollection initialParameters) where TComponent : IComponent
+        public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
         {
             return RenderComponentAsync(typeof(TComponent), initialParameters);
         }
@@ -224,7 +223,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return position + maxElements;
         }
 
-        private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderAsync(Type componentType, ParameterCollection initialParameters)
+        private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderAsync(Type componentType, ParameterView initialParameters)
+        {
+            var component = InstantiateComponent(componentType);
+            var componentId = AssignRootComponentId(component);
+
+            await RenderRootComponentAsync(componentId, initialParameters);
+
+            return (componentId, GetCurrentRenderTreeFrames(componentId));
+        }
+
+        private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderCoreAsync(Type componentType, ParameterView initialParameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);

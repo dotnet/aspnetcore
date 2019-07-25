@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
 
             var parametersCollection = parameters == null ?
-                ParameterCollection.Empty :
-                ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
+                ParameterView.Empty :
+                ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
 
             var result = await prerenderer.PrerenderComponentAsync(
                 new ComponentPrerenderingContext
