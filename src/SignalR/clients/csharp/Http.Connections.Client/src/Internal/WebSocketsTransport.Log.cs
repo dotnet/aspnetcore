@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 LoggerMessage.Define(LogLevel.Information, new EventId(16, "ClosingWebSocket"), "Closing WebSocket.");
 
             private static readonly Action<ILogger, Exception> _closingWebSocketFailed =
-                LoggerMessage.Define(LogLevel.Information, new EventId(17, "ClosingWebSocketFailed"), "Closing webSocket failed.");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(17, "ClosingWebSocketFailed"), "Closing webSocket failed.");
 
             private static readonly Action<ILogger, Exception> _cancelMessage =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(18, "CancelMessage"), "Canceled passing message to application.");
