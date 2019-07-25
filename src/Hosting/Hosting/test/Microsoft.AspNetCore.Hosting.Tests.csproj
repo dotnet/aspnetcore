@@ -25,8 +25,4 @@
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="testroot\temp\" />
-  </ItemGroup>
-
 </Project>
