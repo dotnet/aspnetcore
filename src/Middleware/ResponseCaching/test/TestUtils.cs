@@ -77,6 +77,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
+        internal static async Task TestRequestDelegateSendFileAsync(HttpContext context)
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "TestDocument.txt");
+            var uniqueId = Guid.NewGuid().ToString();
+            if (TestRequestDelegate(context, uniqueId))
+            {
+                await context.Response.SendFileAsync(path, 0, null);
+                await context.Response.WriteAsync(uniqueId);
+            }
+        }
+
         internal static Task TestRequestDelegateWrite(HttpContext context)
         {
             var uniqueId = Guid.NewGuid().ToString();
@@ -118,6 +129,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     {
                         contextAction?.Invoke(context);
                         return TestRequestDelegateWriteAsync(context);
+                    },
+                    context =>
+                    {
+                        contextAction?.Invoke(context);
+                        return TestRequestDelegateSendFileAsync(context);
                     },
                 });
         }
@@ -296,40 +312,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
         internal int EventId { get; }
         internal LogLevel LogLevel { get; }
-    }
-
-    internal class DummySendFileFeature : IHttpResponseBodyFeature
-    {
-        private IHttpResponseBodyFeature _innerFeature;
-
-        public DummySendFileFeature(IHttpResponseBodyFeature innerFeature)
-        {
-            _innerFeature = innerFeature;
-        }
-
-        public Stream Stream => throw new NotImplementedException();
-
-        public PipeWriter Writer => throw new NotImplementedException();
-
-        public Task CompleteAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void DisableBuffering()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task StartAsync(CancellationToken cancellation = default)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     internal class TestResponseCachingPolicyProvider : IResponseCachingPolicyProvider
