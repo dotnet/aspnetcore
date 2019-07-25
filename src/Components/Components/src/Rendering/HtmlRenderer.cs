@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
         };
+
+        private static readonly Task CancelledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
         private readonly Func<string, string> _htmlEncoder;
 
@@ -40,7 +43,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
-            return Task.CompletedTask;
+            // By default we return a cancelled task. This has the effect of making it so that the
+            // OnAfterRenderAsync callbacks on components don't run by default.
+            // This way, by default prerendering gets the correct behavior and other renderers
+            // override the UpdateDisplayAsync method already, so those components can cancel
+            // either complete a task when the client acknowledges the render, or a cancelled task
+            // when the renderer gets disposed.
+            return CancelledRenderTask;
         }
 
         /// <summary>

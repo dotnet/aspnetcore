@@ -59,6 +59,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         }
 
         [Fact]
+        public async Task RenderComponent_DoesNotInvokeOnAfterRenderInComponent()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var writer = new StringWriter();
+
+            // Act
+            var state = new State();
+            var result = await helper.RenderStaticComponentAsync<OnAfterRenderComponent>(new
+            {
+                State = state
+            });
+            result.WriteTo(writer, HtmlEncoder.Default);
+
+            // Assert
+            Assert.Equal("<p>Hello</p>", writer.ToString());
+            Assert.False(state.Value);
+        }
+
+        [Fact]
         public async Task CanCatch_ComponentWithSynchronousException()
         {
             // Arrange
@@ -307,6 +327,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                     throw new InvalidOperationException("Threw an exception asynchronously");
                 }
             }
+        }
+
+        private class OnAfterRenderComponent : ComponentBase
+        {
+            [Parameter] public State State { get; set; }
+
+            protected override void OnAfterRender()
+            {
+                State.Value = true;
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddMarkupContent(0, "<p>Hello</p>");
+            }
+        }
+
+        private class State
+        {
+            public bool Value { get; set; }
         }
 
         private class GreetingComponent : ComponentBase
