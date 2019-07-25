@@ -296,54 +296,16 @@ namespace Microsoft.AspNetCore.ResponseCompression
             _innerBodyFeature.DisableBuffering();
         }
 
-        // The IHttpSendFileFeature feature will only be registered if _innerSendFileFeature exists.
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
             OnWrite();
 
             if (_compressionStream != null)
             {
-                return InnerSendFileAsync(path, offset, count, cancellation);
+                return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
             }
 
             return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
-        }
-
-        private async Task InnerSendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-        {
-            cancellation.ThrowIfCancellationRequested();
-
-            var fileInfo = new FileInfo(path);
-            if (offset < 0 || offset > fileInfo.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-            }
-            if (count.HasValue &&
-                (count.Value < 0 || count.Value > fileInfo.Length - offset))
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
-            }
-
-            int bufferSize = 1024 * 16;
-
-            var fileStream = new FileStream(
-                path,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                bufferSize: bufferSize,
-                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            using (fileStream)
-            {
-                fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperation.CopyToAsync(fileStream, _compressionStream, count, cancellation);
-
-                if (_autoFlush)
-                {
-                    await _compressionStream.FlushAsync(cancellation);
-                }
-            }
         }
 
         public Task StartAsync(CancellationToken token = default)
