@@ -70,7 +70,7 @@ describe('DefaultReconnectionHandler', () => {
       dialogId: 'ignored'
     });
 
-    await delay(100);
+    await delay(500);
     expect(testDisplay.show).toHaveBeenCalled();
     expect(testDisplay.failed).toHaveBeenCalled();
     expect(reconnect).toHaveBeenCalledTimes(3);
