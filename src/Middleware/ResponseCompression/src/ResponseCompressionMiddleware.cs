@@ -54,14 +54,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
             var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
             var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
-            var bodyWrapperStream = new ResponseCompressionBody(context, _provider, originalBodyFeature);
-            context.Features.Set<IHttpResponseBodyFeature>(bodyWrapperStream);
-            context.Features.Set<IHttpsCompressionFeature>(bodyWrapperStream);
+            var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature);
+            context.Features.Set<IHttpResponseBodyFeature>(compressionBody);
+            context.Features.Set<IHttpsCompressionFeature>(compressionBody);
 
             try
             {
                 await _next(context);
-                await bodyWrapperStream.FinishCompressionAsync();
+                await compressionBody.FinishCompressionAsync();
             }
             finally
             {

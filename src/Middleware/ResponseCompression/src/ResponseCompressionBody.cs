@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private ICompressionProvider _compressionProvider = null;
         private bool _compressionChecked = false;
         private Stream _compressionStream = null;
+        private Stream _innerStream = null;
         private PipeWriter _pipeAdapter = null;
         private bool _providerCreated = false;
         private bool _autoFlush = false;
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             _context = context;
             _provider = provider;
             _innerBodyFeature = innerBodyFeature;
+            _innerStream = innerBodyFeature.Stream;
         }
 
         internal async Task FinishCompressionAsync()
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (_pipeAdapter != null)
             {
-                await _pipeAdapter.FlushAsync(); // TODO: CompleteAsync throws ODE.
+                await _pipeAdapter.CompleteAsync();
             }
 
             if (_compressionStream != null)
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => _innerBodyFeature.Stream.CanWrite;
+        public override bool CanWrite => _innerStream.CanWrite;
 
         public override long Length
         {
@@ -99,7 +101,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                _innerBodyFeature.Stream.Flush();
+                _innerStream.Flush();
                 return;
             }
 
@@ -109,7 +111,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _innerBodyFeature.Stream.Flush();
+                _innerStream.Flush();
             }
         }
 
@@ -120,7 +122,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                return _innerBodyFeature.Stream.FlushAsync(cancellationToken);
+                return _innerStream.FlushAsync(cancellationToken);
             }
 
             if (_compressionStream != null)
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return _compressionStream.FlushAsync(cancellationToken);
             }
 
-            return _innerBodyFeature.Stream.FlushAsync(cancellationToken);
+            return _innerStream.FlushAsync(cancellationToken);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -160,7 +162,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _innerBodyFeature.Stream.Write(buffer, offset, count);
+                _innerStream.Write(buffer, offset, count);
             }
         }
 
@@ -225,7 +227,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                await _innerBodyFeature.Stream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
 
@@ -261,7 +263,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                         _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
                         _context.Response.Headers.Remove(HeaderNames.ContentLength);
 
-                        _compressionStream = compressionProvider.CreateStream(_innerBodyFeature.Stream);
+                        _compressionStream = compressionProvider.CreateStream(_innerStream);
                     }
                 }
             }
@@ -357,7 +359,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return;
             }
 
-            await StartAsync();
             await FinishCompressionAsync(); // Sets _complete
             await _innerBodyFeature.CompleteAsync();
         }
