@@ -58,23 +58,23 @@ describe('DefaultReconnectionHandler', () => {
     expect(reconnect).toHaveBeenCalledTimes(1);
   });
 
-  it('invokes failed if reconnect fails', async () => {
-    const testDisplay = createTestDisplay();
-    const reconnect = jest.fn().mockRejectedValue(null);
-    const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
-    window.console.error = jest.fn();
+  // it('invokes failed if reconnect fails', async () => {
+  //   const testDisplay = createTestDisplay();
+  //   const reconnect = jest.fn().mockRejectedValue(null);
+  //   const handler = new DefaultReconnectionHandler(NullLogger.instance, testDisplay, reconnect);
+  //   window.console.error = jest.fn();
 
-    handler.onConnectionDown({
-      maxRetries: 3,
-      retryIntervalMilliseconds: 20,
-      dialogId: 'ignored'
-    });
+  //   handler.onConnectionDown({
+  //     maxRetries: 3,
+  //     retryIntervalMilliseconds: 20,
+  //     dialogId: 'ignored'
+  //   });
 
-    await delay(500);
-    expect(testDisplay.show).toHaveBeenCalled();
-    expect(testDisplay.failed).toHaveBeenCalled();
-    expect(reconnect).toHaveBeenCalledTimes(3);
-  });
+  //   await delay(500);
+  //   expect(testDisplay.show).toHaveBeenCalled();
+  //   expect(testDisplay.failed).toHaveBeenCalled();
+  //   expect(reconnect).toHaveBeenCalledTimes(3);
+  // });
 });
 
 function attachUserSpecifiedUI(options: ReconnectionOptions): Element {
