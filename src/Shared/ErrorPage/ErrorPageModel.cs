@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Hosting.Views
         /// </summary>
         public IEnumerable<ExceptionDetails> ErrorDetails { get; set; }
 
+        public bool ShowRuntimeDetails { get; set; }
+
         public string RuntimeDisplayName { get; set; }
 
         public string RuntimeArchitecture { get; set; }
