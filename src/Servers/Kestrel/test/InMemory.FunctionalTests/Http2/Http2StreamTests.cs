@@ -3390,9 +3390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
-
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
@@ -3445,11 +3443,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
-                    await completionFeature.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
+                    await context.Response.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
@@ -3512,12 +3509,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     context.Response.ContentLength = 25;
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => completionFeature.CompleteAsync().DefaultTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.CompleteAsync().DefaultTimeout());
                     Assert.Equal(CoreStrings.FormatTooFewBytesWritten(0, 25), ex.Message);
 
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully);
@@ -3568,14 +3564,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
-                    await completionFeature.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
+                    await context.Response.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout(); // Can be called twice, no-ops
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -3635,9 +3630,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
-
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
@@ -3693,13 +3686,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World").DefaultTimeout();
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -3762,7 +3754,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     var buffer = context.Response.BodyWriter.GetMemory();
                     var length = Encoding.UTF8.GetBytes("Hello World", buffer.Span);
@@ -3773,7 +3764,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
                     Assert.True(context.Response.Headers.IsReadOnly);
 
@@ -3842,7 +3833,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -3850,7 +3840,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -3917,7 +3907,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     context.Response.ContentLength = 25;
                     await context.Response.WriteAsync("Hello World");
@@ -3926,7 +3915,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => completionFeature.CompleteAsync().DefaultTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.CompleteAsync().DefaultTimeout());
                     Assert.Equal(CoreStrings.FormatTooFewBytesWritten(11, 25), ex.Message);
 
                     Assert.False(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
@@ -4059,7 +4048,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4067,7 +4055,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -4141,7 +4129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4149,7 +4136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -4224,7 +4211,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 try
                 {
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4232,7 +4218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
@@ -4309,7 +4295,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var requestBodyTask = context.Request.BodyReader.ReadAsync();
 
                     context.Response.OnStarting(() => { startingTcs.SetResult(0); return Task.CompletedTask; });
-                    var completionFeature = context.Features.Get<IHttpResponseBodyFeature>();
 
                     await context.Response.WriteAsync("Hello World");
                     Assert.True(startingTcs.Task.IsCompletedSuccessfully); // OnStarting got called.
@@ -4317,7 +4302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     context.Response.AppendTrailer("CustomName", "Custom Value");
 
-                    await completionFeature.CompleteAsync().DefaultTimeout();
+                    await context.Response.CompleteAsync().DefaultTimeout();
 
                     Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
