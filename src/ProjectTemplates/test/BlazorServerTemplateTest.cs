@@ -26,7 +26,6 @@ namespace Templates.Test
         public Project Project { get; private set; }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
@@ -84,7 +83,6 @@ namespace Templates.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
