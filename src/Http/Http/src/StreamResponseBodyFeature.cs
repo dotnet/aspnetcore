@@ -60,6 +60,10 @@ namespace Microsoft.AspNetCore.Http
                 if (_pipeWriter == null)
                 {
                     _pipeWriter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
+                    if (_completed)
+                    {
+                        _pipeWriter.Complete();
+                    }
                 }
 
                 return _pipeWriter;
@@ -122,11 +126,6 @@ namespace Microsoft.AspNetCore.Http
             if (_completed)
             {
                 return;
-            }
-
-            if (!_started)
-            {
-                await StartAsync();
             }
 
             _completed = true;
