@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.AspNetCore.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public partial class StartupAnalzyer : DiagnosticAnalyzer
+    public partial class StartupAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => Diagnostics.SupportedDiagnostics;
 

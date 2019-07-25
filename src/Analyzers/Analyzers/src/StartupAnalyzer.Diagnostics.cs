@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
-    public partial class StartupAnalzyer : DiagnosticAnalyzer
+    public partial class StartupAnalyzer : DiagnosticAnalyzer
     {
         internal static class Diagnostics
         {
