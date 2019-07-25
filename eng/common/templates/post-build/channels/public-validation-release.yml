@@ -91,29 +91,9 @@ stages:
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - job:
-    displayName: Gather Drop
-    dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], variables.PublicValidationRelease_30_Channel_Id)
-    variables:
-      - name: BARBuildId
-        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
-      - group: Publish-Build-Assets
-    pool:
-      vmImage: 'windows-2019'
-    steps:
-      - task: PowerShell@2
-        displayName: Setup Darc CLI
-        inputs:
-          targetType: filePath
-          filePath: '$(Build.SourcesDirectory)/eng/common/darc-init.ps1'
-
-      - task: PowerShell@2
-        displayName: Run Darc gather-drop
-        inputs:
-          targetType: inline
-          script: |
-            darc gather-drop --non-shipping --continue-on-error --id $(BARBuildId) --output-dir $(Agent.BuildDirectory)/Temp/Drop/ --bar-uri https://maestro-prod.westus2.cloudapp.azure.com --password $(MaestroAccessToken) --latest-location
+  - template: ../darc-gather-drop.yml
+    parameters:
+      ChannelId: ${{ variables.PublicValidationRelease_30_Channel_Id }}
 
   - template: ../promote-build.yml	
     parameters:	
