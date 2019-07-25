@@ -17,6 +17,11 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
+  <Target Name="Build">
+    <Yarn Command="run build:inner"
+      WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
+  </Target>
+
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running tests for $(MSBuildProjectName)" />
     <Yarn Condition="'$(DailyTests)' != 'true'" Command="$(NpmTestArgs)" />
