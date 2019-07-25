@@ -39,7 +39,7 @@ namespace LocalizationWebsite
             });
 
             var noAttributeStringLocalizer = stringLocalizerFactory.Create(typeof(ResourcesClassLibraryNoAttribute.Model));
-            var withAttributeStringLocalizer = stringLocalizerFactory.Create(typeof(ResourcesClassLibraryWithAttribute.Model));
+            var withAttributeStringLocalizer = stringLocalizerFactory.Create(typeof(ResourcesClassLibraryWithAttribute.Changed.Model));
 
             var noAttributeAssembly = typeof(ResourcesClassLibraryNoAttribute.Model).GetTypeInfo().Assembly;
             var noAttributeName = new AssemblyName(noAttributeAssembly.FullName).Name;
@@ -47,10 +47,10 @@ namespace LocalizationWebsite
                 nameof(ResourcesClassLibraryNoAttribute.Model),
                 noAttributeName);
 
-            var withAttributeAssembly = typeof(ResourcesClassLibraryWithAttribute.Model).GetTypeInfo().Assembly;
+            var withAttributeAssembly = typeof(ResourcesClassLibraryWithAttribute.Changed.Model).GetTypeInfo().Assembly;
             var withAttributeName = new AssemblyName(withAttributeAssembly.FullName).Name;
             var withAttributeNameStringLocalizer = stringLocalizerFactory.Create(
-                nameof(ResourcesClassLibraryWithAttribute.Model),
+                nameof(ResourcesClassLibraryWithAttribute.Changed.Model),
                 withAttributeName);
 
             app.Run(async (context) =>
