@@ -112,6 +112,17 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public void Setup_SetsUpFormatterMapping()
+        {
+            // Arrange & Act
+            var options = GetOptions<MvcOptions>();
+
+            // Assert
+            var mapping = options.FormatterMappings.GetMediaTypeMappingForFormat("json");
+            Assert.Equal("application/json", mapping);
+        }
+
+        [Fact]
         public void Setup_SetsUpModelValidatorProviders()
         {
             // Arrange & Act
