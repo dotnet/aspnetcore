@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
             var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context, _provider, originalBodyFeature);
+            var bodyWrapperStream = new ResponseCompressionBody(context, _provider, originalBodyFeature);
             context.Features.Set<IHttpResponseBodyFeature>(bodyWrapperStream);
             context.Features.Set<IHttpsCompressionFeature>(bodyWrapperStream);
 

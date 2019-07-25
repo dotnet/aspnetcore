@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
+    internal class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
     {
         private readonly HttpContext _context;
         private readonly IResponseCompressionProvider _provider;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private bool _autoFlush = false;
         private bool _complete = false;
 
-        internal BodyWrapperStream(HttpContext context, IResponseCompressionProvider provider,
+        internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
             IHttpResponseBodyFeature innerBodyFeature)
         {
             _context = context;
