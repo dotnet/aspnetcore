@@ -61,9 +61,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="PrepareStaticWebAssetsForHelix" Condition="'$(BuildHelixPayload)' == 'true' ">
-  </Target>
-
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Identity.UI\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
