@@ -4,9 +4,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
-using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
 {
