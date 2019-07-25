@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Hosting
             // IsEnabled isn't checked in the caller, startTimestamp > 0 is used as a fast proxy check
             // but that may be because diagnostics are enabled, which also uses startTimestamp,
             // so check if we logged the start event
-            if (context.StartLog is object)
+            if (context.StartLog != null)
             {
                 var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
 
