@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// A <see cref="Stream"/> that buffers content to be written to disk. Use <see cref="DrainBufferAsync(Stream, CancellationToken)" />
     /// to write buffered content to a target <see cref="Stream" />.
     /// </summary>
-    public sealed class FileBufferingWriteStream : Stream
+    public sealed class FileBufferingWriteStream : Stream, IBufferedWriteStream
     {
         private const int DefaultMemoryThreshold = 32 * 1024; // 32k
 
@@ -83,6 +83,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         internal FileStream FileStream { get; private set; }
 
         internal bool Disposed { get; private set; }
+
+        public Stream Buffer => this;
 
         /// <inheritdoc />
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
