@@ -331,7 +331,7 @@
       "path": "Company.WebApplication1.csproj"
     }
   ],
-  "defaultName": "WebApplication1",
+  "defaultName": "WebApplication",
   "postActions": [
     {
       "condition": "(!skipRestore)",
