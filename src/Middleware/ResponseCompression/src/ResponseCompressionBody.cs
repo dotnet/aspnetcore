@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -15,35 +16,48 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature, IHttpResponseStartFeature, IHttpsCompressionFeature
+    internal class ResponseCompressionBody : Stream, IHttpResponseBodyFeature, IHttpsCompressionFeature
     {
         private readonly HttpContext _context;
-        private readonly Stream _bodyOriginalStream;
         private readonly IResponseCompressionProvider _provider;
-        private readonly IHttpBufferingFeature _innerBufferFeature;
-        private readonly IHttpSendFileFeature _innerSendFileFeature;
-        private readonly IHttpResponseStartFeature _innerStartFeature;
+        private readonly IHttpResponseBodyFeature _innerBodyFeature;
 
         private ICompressionProvider _compressionProvider = null;
         private bool _compressionChecked = false;
         private Stream _compressionStream = null;
+        private Stream _innerStream = null;
+        private PipeWriter _pipeAdapter = null;
         private bool _providerCreated = false;
         private bool _autoFlush = false;
+        private bool _complete = false;
 
-        internal BodyWrapperStream(HttpContext context, Stream bodyOriginalStream, IResponseCompressionProvider provider,
-            IHttpBufferingFeature innerBufferFeature, IHttpSendFileFeature innerSendFileFeature, IHttpResponseStartFeature innerStartFeature)
+        internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
+            IHttpResponseBodyFeature innerBodyFeature)
         {
             _context = context;
-            _bodyOriginalStream = bodyOriginalStream;
             _provider = provider;
-            _innerBufferFeature = innerBufferFeature;
-            _innerSendFileFeature = innerSendFileFeature;
-            _innerStartFeature = innerStartFeature;
+            _innerBodyFeature = innerBodyFeature;
+            _innerStream = innerBodyFeature.Stream;
         }
 
-        internal ValueTask FinishCompressionAsync()
+        internal async Task FinishCompressionAsync()
         {
-            return _compressionStream?.DisposeAsync() ?? new ValueTask();
+            if (_complete)
+            {
+                return;
+            }
+
+            _complete = true;
+
+            if (_pipeAdapter != null)
+            {
+                await _pipeAdapter.CompleteAsync();
+            }
+
+            if (_compressionStream != null)
+            {
+                await _compressionStream.DisposeAsync();
+            }
         }
 
         HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
@@ -52,7 +66,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override bool CanSeek => false;
 
-        public override bool CanWrite => _bodyOriginalStream.CanWrite;
+        public override bool CanWrite => _innerStream.CanWrite;
 
         public override long Length
         {
@@ -65,6 +79,21 @@ namespace Microsoft.AspNetCore.ResponseCompression
             set { throw new NotSupportedException(); }
         }
 
+        public Stream Stream => this;
+
+        public PipeWriter Writer
+        {
+            get
+            {
+                if (_pipeAdapter == null)
+                {
+                    _pipeAdapter = PipeWriter.Create(Stream, new StreamPipeWriterOptions(leaveOpen: true));
+                }
+
+                return _pipeAdapter;
+            }
+        }
+
         public override void Flush()
         {
             if (!_compressionChecked)
@@ -72,7 +101,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                _bodyOriginalStream.Flush();
+                _innerStream.Flush();
                 return;
             }
 
@@ -82,7 +111,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _bodyOriginalStream.Flush();
+                _innerStream.Flush();
             }
         }
 
@@ -93,7 +122,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 OnWrite();
                 // Flush the original stream to send the headers. Flushing the compression stream won't
                 // flush the original stream if no data has been written yet.
-                return _bodyOriginalStream.FlushAsync(cancellationToken);
+                return _innerStream.FlushAsync(cancellationToken);
             }
 
             if (_compressionStream != null)
@@ -101,7 +130,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 return _compressionStream.FlushAsync(cancellationToken);
             }
 
-            return _bodyOriginalStream.FlushAsync(cancellationToken);
+            return _innerStream.FlushAsync(cancellationToken);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -133,7 +162,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                _bodyOriginalStream.Write(buffer, offset, count);
+                _innerStream.Write(buffer, offset, count);
             }
         }
 
@@ -198,7 +227,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
             else
             {
-                await _bodyOriginalStream.WriteAsync(buffer, offset, count, cancellationToken);
+                await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
 
@@ -234,7 +263,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                         _context.Response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
                         _context.Response.Headers.Remove(HeaderNames.ContentLength);
 
-                        _compressionStream = compressionProvider.CreateStream(_bodyOriginalStream);
+                        _compressionStream = compressionProvider.CreateStream(_innerStream);
                     }
                 }
             }
@@ -251,14 +280,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
             return _compressionProvider;
         }
 
-        public void DisableRequestBuffering()
-        {
-            // Unrelated
-            _innerBufferFeature?.DisableRequestBuffering();
-        }
-
         // For this to be effective it needs to be called before the first write.
-        public void DisableResponseBuffering()
+        public void DisableBuffering()
         {
             if (ResolveCompressionProvider()?.SupportsFlush == false)
             {
@@ -270,69 +293,36 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 _autoFlush = true;
             }
-            _innerBufferFeature?.DisableResponseBuffering();
+            _innerBodyFeature.DisableBuffering();
         }
 
-        // The IHttpSendFileFeature feature will only be registered if _innerSendFileFeature exists.
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
             OnWrite();
 
             if (_compressionStream != null)
             {
-                return InnerSendFileAsync(path, offset, count, cancellation);
+                return SendFileFallback.SendFileAsync(Stream, path, offset, count, cancellation);
             }
 
-            return _innerSendFileFeature.SendFileAsync(path, offset, count, cancellation);
-        }
-
-        private async Task InnerSendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-        {
-            cancellation.ThrowIfCancellationRequested();
-
-            var fileInfo = new FileInfo(path);
-            if (offset < 0 || offset > fileInfo.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-            }
-            if (count.HasValue &&
-                (count.Value < 0 || count.Value > fileInfo.Length - offset))
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
-            }
-
-            int bufferSize = 1024 * 16;
-
-            var fileStream = new FileStream(
-                path,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                bufferSize: bufferSize,
-                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            using (fileStream)
-            {
-                fileStream.Seek(offset, SeekOrigin.Begin);
-                await StreamCopyOperation.CopyToAsync(fileStream, _compressionStream, count, cancellation);
-
-                if (_autoFlush)
-                {
-                    await _compressionStream.FlushAsync(cancellation);
-                }
-            }
+            return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
         }
 
         public Task StartAsync(CancellationToken token = default)
         {
             OnWrite();
+            return _innerBodyFeature.StartAsync(token);
+        }
 
-            if (_innerStartFeature != null)
+        public async Task CompleteAsync()
+        {
+            if (_complete)
             {
-                return _innerStartFeature.StartAsync(token);
+                return;
             }
 
-            return Task.CompletedTask;
+            await FinishCompressionAsync(); // Sets _complete
+            await _innerBodyFeature.CompleteAsync();
         }
     }
 }

@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Http.Extensions
     }
     public static partial class StreamCopyOperation
     {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, int bufferSize, System.Threading.CancellationToken cancel) { throw null; }
         public static System.Threading.Tasks.Task CopyToAsync(System.IO.Stream source, System.IO.Stream destination, long? count, System.Threading.CancellationToken cancel) { throw null; }
     }

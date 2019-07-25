@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal ResponseCachingStream ResponseCachingStream { get; set; }
 
-        internal IHttpSendFileFeature OriginalSendFileFeature { get; set; }
-
         internal IHeaderDictionary CachedResponseHeaders { get; set; }
 
         internal DateTimeOffset? ResponseDate
