@@ -63,14 +63,14 @@ namespace Interop.FunctionalTests
                     webHostBuilder.ConfigureServices(AddTestLogging)
                     .Configure(app => app.Run(context => context.Response.WriteAsync("Hello World")));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
             using var client = CreateClient();
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync(url).DefaultTimeout();
             Assert.Equal(HttpVersion.Version20, response.Version);
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         [ConditionalTheory]
@@ -84,10 +84,10 @@ namespace Interop.FunctionalTests
                     webHostBuilder.ConfigureServices(AddTestLogging)
                     .Configure(app => app.Run(async context =>
                     {
-                        await context.Request.BodyReader.CopyToAsync(context.Response.BodyWriter);
+                        await context.Request.BodyReader.CopyToAsync(context.Response.BodyWriter).DefaultTimeout();
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -95,11 +95,11 @@ namespace Interop.FunctionalTests
             client.DefaultRequestHeaders.ExpectContinue = true;
 
             using var request = CreateRequestMessage(HttpMethod.Post, url, new BulkContent());
-            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
             Assert.Equal(HttpVersion.Version20, response.Version);
-            await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync());
-            await host.StopAsync();
+            await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync().DefaultTimeout());
+            await host.StopAsync().DefaultTimeout();
         }
 
         // Concurrency testing
@@ -123,10 +123,10 @@ namespace Interop.FunctionalTests
                         }
                         await allRequestsReceived.Task;
                         var content = new BulkContent();
-                        await content.CopyToAsync(context.Response.Body);
+                        await content.CopyToAsync(context.Response.Body).DefaultTimeout();
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -140,14 +140,14 @@ namespace Interop.FunctionalTests
 
             async Task RunRequest(string url)
             {
-                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
                 Assert.Equal(HttpVersion.Version20, response.Version);
-                await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync());
+                await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync()).DefaultTimeout();
             };
 
             await Task.WhenAll(requestTasks);
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         // Concurrency testing
@@ -170,10 +170,10 @@ namespace Interop.FunctionalTests
                             allRequestsReceived.SetResult(0);
                         }
                         await allRequestsReceived.Task;
-                        await context.Request.BodyReader.CopyToAsync(context.Response.BodyWriter);
+                        await context.Request.BodyReader.CopyToAsync(context.Response.BodyWriter).DefaultTimeout();
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -189,14 +189,14 @@ namespace Interop.FunctionalTests
             async Task RunRequest(string url)
             {
                 using var request = CreateRequestMessage(HttpMethod.Post, url, new BulkContent());
-                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
 
                 Assert.Equal(HttpVersion.Version20, response.Version);
-                await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync());
+                await BulkContent.VerifyContent(await response.Content.ReadAsStreamAsync().DefaultTimeout());
             };
 
             await Task.WhenAll(requestTasks);
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         private class BulkContent : HttpContent
@@ -219,7 +219,7 @@ namespace Interop.FunctionalTests
                 {
                     using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await stream.WriteAsync(Content, 0, Content.Length, timer.Token);
+                        await stream.WriteAsync(Content, 0, Content.Length, timer.Token).DefaultTimeout();
                     }
                     await Task.Yield(); // Intermix writes
                 }
@@ -239,7 +239,7 @@ namespace Interop.FunctionalTests
                 int read = 0;
                 using (var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                 {
-                    read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token);
+                    read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token).DefaultTimeout();
                 }
 
                 while (read > 0)
@@ -254,7 +254,7 @@ namespace Interop.FunctionalTests
                     }
 
                     using var timer = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                    read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token);
+                    read = await stream.ReadAsync(buffer, 0, buffer.Length, timer.Token).DefaultTimeout();
                 }
 
                 Assert.True(totalRead == Repititions * Content.Length, "Too Short");
@@ -276,24 +276,24 @@ namespace Interop.FunctionalTests
                         // Read Hello World and echo it back to the client, twice
                         for (var i = 0; i < 2; i++)
                         {
-                            var readResult = await reader.ReadAsync();
+                            var readResult = await reader.ReadAsync().DefaultTimeout();
                             while (!readResult.IsCompleted && readResult.Buffer.Length < "Hello World".Length)
                             {
                                 reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                                readResult = await reader.ReadAsync();
+                                readResult = await reader.ReadAsync().DefaultTimeout();
                             }
 
                             var sequence = readResult.Buffer.Slice(0, "Hello World".Length);
                             Assert.True(sequence.IsSingleSegment);
-                            await context.Response.BodyWriter.WriteAsync(sequence.First);
+                            await context.Response.BodyWriter.WriteAsync(sequence.First).DefaultTimeout();
                             reader.AdvanceTo(sequence.End);
                         }
 
-                        var finalResult = await reader.ReadAsync();
+                        var finalResult = await reader.ReadAsync().DefaultTimeout();
                         Assert.True(finalResult.IsCompleted && finalResult.Buffer.Length == 0);
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -308,7 +308,7 @@ namespace Interop.FunctionalTests
             var response = await responseTask;
 
             Assert.Equal(HttpVersion.Version20, response.Version);
-            var stream = await response.Content.ReadAsStreamAsync();
+            var stream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
             await ReadStreamHelloWorld(stream);
 
             await streamingContent.SendAsync("Hello World").DefaultTimeout();
@@ -316,7 +316,7 @@ namespace Interop.FunctionalTests
 
             await ReadStreamHelloWorld(stream);
             Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         [ConditionalTheory(Skip = "https://github.com/dotnet/corefx/issues/39404")]
@@ -333,34 +333,34 @@ namespace Interop.FunctionalTests
                     {
                         var reader = context.Request.BodyReader;
 
-                        var readResult = await reader.ReadAsync();
+                        var readResult = await reader.ReadAsync().DefaultTimeout();
                         while (!readResult.IsCompleted && readResult.Buffer.Length < "Hello World".Length)
                         {
                             reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                            readResult = await reader.ReadAsync();
+                            readResult = await reader.ReadAsync().DefaultTimeout();
                         }
 
                         var sequence = readResult.Buffer.Slice(0, "Hello World".Length);
                         Assert.True(sequence.IsSingleSegment);
-                        await context.Response.BodyWriter.WriteAsync(sequence.First);
+                        await context.Response.BodyWriter.WriteAsync(sequence.First).DefaultTimeout();
                         reader.AdvanceTo(sequence.End);
                         await context.Features.Get<IHttpResponseCompletionFeature>().CompleteAsync();
 
                         try
                         {
                             // The client sends one more packet after the server completes
-                            readResult = await reader.ReadAsync();
+                            readResult = await reader.ReadAsync().DefaultTimeout();
                             while (!readResult.IsCompleted && readResult.Buffer.Length < "Hello World".Length)
                             {
                                 reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                                readResult = await reader.ReadAsync();
+                                readResult = await reader.ReadAsync().DefaultTimeout();
                             }
 
                             Assert.True(readResult.Buffer.IsSingleSegment);
                             var result = Encoding.UTF8.GetString(readResult.Buffer.FirstSpan);
                             reader.AdvanceTo(readResult.Buffer.End);
 
-                            var finalResult = await reader.ReadAsync();
+                            var finalResult = await reader.ReadAsync().DefaultTimeout();
                             Assert.True(finalResult.IsCompleted && finalResult.Buffer.Length == 0);
                             lastPacket.SetResult(result);
                         }
@@ -370,7 +370,7 @@ namespace Interop.FunctionalTests
                         }
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -398,7 +398,7 @@ namespace Interop.FunctionalTests
             var lastData = await lastPacket.Task.DefaultTimeout();
             Assert.Equal("Hello World", lastData);
 
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         [ConditionalTheory(Skip = "https://github.com/dotnet/corefx/issues/39404")]
@@ -417,14 +417,14 @@ namespace Interop.FunctionalTests
                         // var readTask = context.Request.BodyReader.ReadAsync();
                         context.Response.ContentType = "text/plain";
                         await context.Response.WriteAsync("Hello World");
-                        await context.Features.Get<IHttpResponseCompletionFeature>().CompleteAsync();
+                        await context.Features.Get<IHttpResponseCompletionFeature>().CompleteAsync().DefaultTimeout();
 
                         try
                         {
                             // var readResult = await readTask;
                             // context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
                             using var streamReader = new StreamReader(context.Request.Body);
-                            var read = await streamReader.ReadToEndAsync();
+                            var read = await streamReader.ReadToEndAsync().DefaultTimeout();
                             clientEcho.SetResult(read);
                         }
                         catch (Exception ex)
@@ -433,7 +433,7 @@ namespace Interop.FunctionalTests
                         }
                     }));
                 });
-            using var host = await hostBuilder.StartAsync();
+            using var host = await hostBuilder.StartAsync().DefaultTimeout();
 
             var url = host.MakeUrl(scheme);
 
@@ -451,8 +451,8 @@ namespace Interop.FunctionalTests
             var read = await response.Content.ReadAsStringAsync().DefaultTimeout();
             Assert.Equal("Hello World", read);
             */
-            var stream = await response.Content.ReadAsStreamAsync();
-            await ReadStreamHelloWorld(stream);
+            var stream = await response.Content.ReadAsStreamAsync().DefaultTimeout();
+            await ReadStreamHelloWorld(stream).DefaultTimeout();
 
             Assert.Equal(0, await stream.ReadAsync(new byte[10], 0, 10).DefaultTimeout());
             stream.Dispose(); // https://github.com/dotnet/corefx/issues/39404 can be worked around by commenting out this Dispose
@@ -461,7 +461,7 @@ namespace Interop.FunctionalTests
             streamingContent.Complete();
 
             Assert.Equal("Hello World", await clientEcho.Task.DefaultTimeout());
-            await host.StopAsync();
+            await host.StopAsync().DefaultTimeout();
         }
 
         private class StreamingContent : HttpContent
