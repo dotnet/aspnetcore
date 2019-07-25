@@ -379,6 +379,12 @@ namespace TestSite
             await ctx.Response.WriteAsync("Request Complete");
         }
 
+        private async Task ResponseEmptyHeaders(HttpContext ctx)
+        {
+            ctx.Response.Headers["EmptyHeader"] = "";
+            await ctx.Response.WriteAsync("EmptyHeaderShouldBeSkipped");
+        }
+
         private async Task ResponseInvalidOrdering(HttpContext ctx)
         {
             if (ctx.Request.Path.Equals("/SetStatusCodeAfterWrite"))

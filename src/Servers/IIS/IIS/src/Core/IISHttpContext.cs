@@ -373,9 +373,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             foreach (var headerPair in HttpResponseHeaders)
             {
                 var headerValues = headerPair.Value;
+
+                if (headerPair.Value.Count == 0)
+                {
+                    continue;
+                }
+
                 var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
                 for (var i = 0; i < headerValues.Count; i++)
                 {
+                    if (string.IsNullOrEmpty(headerValues[i]))
+                    {
+                        continue;
+                    }
+
                     var isFirst = i == 0;
                     var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                     fixed (byte* pHeaderValue = headerValueBytes)
