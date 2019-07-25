@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -5,30 +8,32 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class LIFOQueuePolicy : IQueuePolicy
+    internal class StackPolicy : IQueuePolicy
     {
-        private readonly List<TaskCompletionSource<bool>> _buffer;
+        private readonly List<ResettableBooleanCompletionSource> _buffer;
+        public ResettableBooleanCompletionSource _cachedResettableTCS;
+
         private readonly int _maxQueueCapacity;
         private readonly int _maxConcurrentRequests;
         private bool _hasReachedCapacity;
         private int _head;
         private int _queueLength;
 
-        private static readonly Task<bool> _trueTask = Task.FromResult(true);
-
         private readonly object _bufferLock = new Object();
+
+        private readonly static ValueTask<bool> _trueTask = new ValueTask<bool>(true);
 
         private int _freeServerSpots;
 
-        public LIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
+        public StackPolicy(IOptions<QueuePolicyOptions> options)
         {
-            _buffer = new List<TaskCompletionSource<bool>>();
+            _buffer = new List<ResettableBooleanCompletionSource>();
             _maxQueueCapacity = options.Value.RequestQueueLimit;
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             _freeServerSpots = options.Value.MaxConcurrentRequests;
         }
 
-        public Task<bool> TryEnterAsync()
+        public ValueTask<bool> TryEnterAsync()
         {
             lock (_bufferLock)
             {
@@ -42,12 +47,13 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 if (_queueLength == _maxQueueCapacity)
                 {
                     _hasReachedCapacity = true;
-                    _buffer[_head].SetResult(false);
+                    _buffer[_head].Complete(false);
                     _queueLength--;
                 }
 
-                // enqueue request with a tcs
-                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = _cachedResettableTCS ??= new ResettableBooleanCompletionSource(this);
+                _cachedResettableTCS = null;
+
                 if (_hasReachedCapacity || _queueLength < _buffer.Count)
                 {
                     _buffer[_head] = tcs;
@@ -64,7 +70,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 {
                     _head = 0;
                 }
-                return tcs.Task;
+
+                return tcs.GetValueTask();
             }
         }
 
@@ -95,8 +102,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                     _head--;
                 }
 
-                _buffer[_head].SetResult(true);
-                _buffer[_head] = null;
+                _buffer[_head].Complete(true);
                 _queueLength--;
             }
         }

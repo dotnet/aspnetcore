@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
 
             var middleware = TestUtils.CreateTestMiddleware(
                 queue: TestQueue.AlwaysTrue,
-                next: httpContext => {
+                next: httpContext =>
+                {
                     flag = true;
                     return Task.CompletedTask;
                 });
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
         }
 
         [Fact]
-        public async void RequestRejectsIfQueueReturnsFalse()
+        public async Task RequestRejectsIfQueueReturnsFalse()
         {
             bool onRejectedInvoked = false;
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
         }
 
         [Fact]
-        public async void RequestsDoesNotEnterIfQueueFull()
+        public async Task RequestsDoesNotEnterIfQueueFull()
         {
             var middleware = TestUtils.CreateTestMiddleware(
                 queue: TestQueue.AlwaysFalse,
@@ -67,11 +68,13 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
 
             Assert.Equal(0, testQueue.QueuedRequests);
 
-            _ = middleware.Invoke(new DefaultHttpContext());
+            var task1 = middleware.Invoke(new DefaultHttpContext());
             Assert.Equal(1, testQueue.QueuedRequests);
+            Assert.False(task1.IsCompleted);
 
-            _ = middleware.Invoke(new DefaultHttpContext());
+            var task2 = middleware.Invoke(new DefaultHttpContext());
             Assert.Equal(2, testQueue.QueuedRequests);
+            Assert.False(task2.IsCompleted);
         }
 
         [Fact]
@@ -121,7 +124,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
         }
 
         [Fact]
-        public async void ExceptionThrownDuringOnRejected()
+        public async Task ExceptionThrownDuringOnRejected()
         {
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
 
@@ -174,6 +177,42 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             Assert.True(thirdRequest.IsCompletedSuccessfully);
             Assert.Equal(0, concurrent);
             Assert.Equal(0, testQueue.QueuedRequests);
+        }
+
+        [Fact]
+        public async Task MiddlewareOnlyCallsGetResultOnce()
+        {
+            var flag = false;
+
+            var queue = new TestQueueForResettableBoolean();
+            var middleware = TestUtils.CreateTestMiddleware(
+                queue,
+                next: async context =>
+                {
+                    await Task.CompletedTask;
+                    flag = true;
+                });
+
+            queue.Source.Complete(true);
+            await middleware.Invoke(new DefaultHttpContext());
+
+            Assert.True(flag);
+        }
+
+        private class TestQueueForResettableBoolean : IQueuePolicy
+        {
+            public ResettableBooleanCompletionSource Source;
+            public TestQueueForResettableBoolean()
+            {
+                Source = new ResettableBooleanCompletionSource(TestUtils.CreateStackPolicy(1));
+            }
+
+            public ValueTask<bool> TryEnterAsync()
+            {
+                return Source.GetValueTask();
+            }
+
+            public void OnExit() { }
         }
     }
 }

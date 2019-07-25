@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,9 +15,10 @@ namespace ConcurrencyLimiterSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLIFOQueue((options) => {
-                options.MaxConcurrentRequests = Environment.ProcessorCount;
-                options.RequestQueueLimit = 50;
+            services.AddStackPolicy(options =>
+            {
+                options.MaxConcurrentRequests = 2; 
+                options.RequestQueueLimit = 25;
             });
         }
 
@@ -28,8 +27,7 @@ namespace ConcurrencyLimiterSample
             app.UseConcurrencyLimiter();
             app.Run(async context =>
             {
-                var delay = 100;
-                Task.Delay(delay).Wait();
+                Task.Delay(100).Wait(); // 100ms sync-over-async
 
                 await context.Response.WriteAsync("Hello World!");
             });
@@ -39,7 +37,6 @@ namespace ConcurrencyLimiterSample
         {
             new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory()) // for cert file
                 .UseStartup<Startup>()
                 .Build()
                 .Run();
