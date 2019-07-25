@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
             {
-                throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
+                throw new InvalidEventIdException($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.");
             }
 
             Log.HandlingEvent(_logger, eventHandlerId, eventArgs);

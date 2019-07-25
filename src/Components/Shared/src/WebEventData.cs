@@ -11,11 +11,20 @@ namespace Microsoft.AspNetCore.Components.Web
     {
         // This class represents the second half of parsing incoming event data,
         // once the type of the eventArgs becomes known.
-
         public static WebEventData Parse(string eventDescriptorJson, string eventArgsJson)
         {
+            WebEventDescriptor eventDescriptor;
+            try
+            {
+                eventDescriptor = Deserialize<WebEventDescriptor>(eventDescriptorJson);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidWebEventInputException("Error parsing the event descriptor", e);
+            }
+
             return Parse(
-                Deserialize<WebEventDescriptor>(eventDescriptorJson),
+                eventDescriptor,
                 eventArgsJson);
         }
 
@@ -25,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 eventDescriptor.BrowserRendererId,
                 eventDescriptor.EventHandlerId,
                 InterpretEventFieldInfo(eventDescriptor.EventFieldInfo),
-                ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson));
+                ParseEventArgsJson(eventDescriptor.EventHandlerId, eventDescriptor.EventArgsType, eventArgsJson));
         }
 
         private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
@@ -44,43 +53,34 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public EventArgs EventArgs { get; }
 
-        private static EventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
+        private static EventArgs ParseEventArgsJson(ulong eventHandlerId, string eventArgsType, string eventArgsJson)
         {
-            switch (eventArgsType)
+            try
             {
-                case "change":
-                    return DeserializeChangeEventArgs(eventArgsJson);
-                case "clipboard":
-                    return Deserialize<UIClipboardEventArgs>(eventArgsJson);
-                case "drag":
-                    return Deserialize<UIDragEventArgs>(eventArgsJson);
-                case "error":
-                    return Deserialize<UIErrorEventArgs>(eventArgsJson);
-                case "focus":
-                    return Deserialize<UIFocusEventArgs>(eventArgsJson);
-                case "keyboard":
-                    return Deserialize<UIKeyboardEventArgs>(eventArgsJson);
-                case "mouse":
-                    return Deserialize<UIMouseEventArgs>(eventArgsJson);
-                case "pointer":
-                    return Deserialize<UIPointerEventArgs>(eventArgsJson);
-                case "progress":
-                    return Deserialize<UIProgressEventArgs>(eventArgsJson);
-                case "touch":
-                    return Deserialize<UITouchEventArgs>(eventArgsJson);
-                case "unknown":
-                    return EventArgs.Empty;
-                case "wheel":
-                    return Deserialize<UIWheelEventArgs>(eventArgsJson);
-                default:
-                    throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
+                return eventArgsType switch
+                {
+                    "change" => DeserializeChangeEventArgs(eventArgsJson),
+                    "clipboard" => Deserialize<UIClipboardEventArgs>(eventArgsJson),
+                    "drag" => Deserialize<UIDragEventArgs>(eventArgsJson),
+                    "error" => Deserialize<UIErrorEventArgs>(eventArgsJson),
+                    "focus" => Deserialize<UIFocusEventArgs>(eventArgsJson),
+                    "keyboard" => Deserialize<UIKeyboardEventArgs>(eventArgsJson),
+                    "mouse" => Deserialize<UIMouseEventArgs>(eventArgsJson),
+                    "pointer" => Deserialize<UIPointerEventArgs>(eventArgsJson),
+                    "progress" => Deserialize<UIProgressEventArgs>(eventArgsJson),
+                    "touch" => Deserialize<UITouchEventArgs>(eventArgsJson),
+                    "unknown" => EventArgs.Empty,
+                    "wheel" => Deserialize<UIWheelEventArgs>(eventArgsJson),
+                    _ => throw new InvalidWebEventInputException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
+                };
+            }
+            catch (Exception e)
+            {
+                throw new InvalidWebEventInputException($"There was an error parsing the event arguments. EventId: '{eventHandlerId}'.", e);
             }
         }
 
-        private static T Deserialize<T>(string json)
-        {
-            return JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options);
-        }
+        private static T Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options);
 
         private static EventFieldInfo InterpretEventFieldInfo(EventFieldInfo fieldInfo)
         {

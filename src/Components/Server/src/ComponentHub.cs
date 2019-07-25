@@ -4,7 +4,9 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
@@ -203,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             Log.ReceivedConfirmationForBatch(_logger, renderId);
-            _ = circuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+            _ = CircuitHost.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
         public async ValueTask OnLocationChanged(string uri, bool intercepted)
@@ -281,29 +283,17 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _circuitHostShutdown =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostShutdown"), "Call to '{CallSite}' received after the circuit was shut down");
 
-            private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
-
             private static readonly Action<ILogger, string, Exception> _invalidInputData =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
 
             private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(9, "CircuitInitializationFailed"), "Circuit initialization failed");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CircuitInitializationFailed"), "Circuit initialization failed");
 
-            public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
-            {
-                _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
-            }
+            public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName) => _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
 
-            public static void ReceivedConfirmationForBatch(ILogger logger, long batchId)
-            {
-                _receivedConfirmationForBatch(logger, batchId, null);
-            }
+            public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
 
-            public static void UnhandledExceptionInCircuit(ILogger logger, string circuitId, Exception exception)
-            {
-                _unhandledExceptionInCircuit(logger, circuitId, exception);
-            }
+            public static void UnhandledExceptionInCircuit(ILogger logger, string circuitId, Exception exception) => _unhandledExceptionInCircuit(logger, circuitId, exception);
 
             public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
 
@@ -311,9 +301,9 @@ namespace Microsoft.AspNetCore.Components.Server
 
             public static void CircuitHostShutdown(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostShutdown(logger, callSite, null);
 
-            public static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
-
             public static void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "") => _invalidInputData(logger, callSite, null);
+
+            public static void UnhandledExceptionFromBadInput(ILogger logger, string circuitId, Exception exception) => _unhandledExceptionFromBadInput(logger, circuitId, exception);
 
             public static void CircuitInitializationFailed(ILogger logger, Exception exception) => _circuitInitializationFailed(logger, exception);
         }

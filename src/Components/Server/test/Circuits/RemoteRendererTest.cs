@@ -414,12 +414,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            _ = renderer.OnRenderCompleted(4, null);
+            var exception = await Assert.ThrowsAsync<InvalidBatchIdAcknowledgementException>(() => renderer.OnRenderCompleted(4, null));
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 
             // Assert
-            var exception = Assert.Single(exceptions);
             Assert.Equal(
                 "Received an acknowledgement for batch with id '4' when the last batch produced was '3'.",
                 exception.Message);

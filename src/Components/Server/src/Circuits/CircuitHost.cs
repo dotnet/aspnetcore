@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -142,6 +143,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 }
             });
+        }
+
+        public Task OnRenderCompleted(long renderId, string errorMessageOrNull)
+        {
+            try
+            {
+                return Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+            }
+            catch (Exception e)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(e, isTerminating: false));
+            }
+
+            return Task.CompletedTask;
         }
 
         // We handle errors in DisposeAsync because there's no real value in letting it propagate.
@@ -565,7 +580,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private async Task ReportUnhandledException(Exception exception)
         {
-            Log.CircuitUnhandledException(_logger, CircuitId, exception);
+            if (!IsBadInput(exception))
+            {
+                Log.CircuitUnhandledException(_logger, CircuitId, exception);
+            }
+            else
+            {
+                Log.UnhandledExceptionFromBadInput(_logger, CircuitId, exception);
+            }
+
             if (!Client.Connected)
             {
                 _logger.LogDebug("Client is disconnected YO.");
@@ -592,6 +615,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        private bool IsBadInput(Exception exception) => exception switch
+        {
+            InvalidEventIdException _ => true,
+            InvalidWebEventInputException _ => true,
+            InvalidBatchIdAcknowledgementException _ => true,
+            _ => false
+        };
+
         private async Task NotifyClientError(IClientProxy client, string error)
         {
             _logger.LogDebug("About to notify of an error");
@@ -614,6 +645,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, Type, string, string, Exception> _circuitHandlerFailed;
             private static readonly Action<ILogger, string, Exception> _circuitUnhandledException;
             private static readonly Action<ILogger, string, Exception> _circuitUnhandledExceptionFailed;
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionFromBadInput;
 
             private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStatic;
             private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstance;
@@ -645,6 +677,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId CircuitHandlerFailed = new EventId(110, "CircuitHandlerFailed");
                 public static readonly EventId CircuitUnhandledException = new EventId(111, "CircuitUnhandledException");
                 public static readonly EventId CircuitUnhandledExceptionFailed = new EventId(112, "CircuitUnhandledExceptionFailed");
+                public static readonly EventId UnhandledExceptionFromBadInput = new EventId(113, "UnhandledExceptionFromBadInput");
 
                 // 200s used for interactive stuff
                 public static readonly EventId DispatchEventFailedToParseEventData = new EventId(200, "DispatchEventFailedToParseEventData");
@@ -718,15 +751,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.CircuitHandlerFailed,
                     "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}");
 
-                 _circuitUnhandledException = LoggerMessage.Define<string>(
-                    LogLevel.Error,
-                    EventIds.CircuitUnhandledException,
-                    "Unhandled exception in circuit {CircuitId}");
+                _circuitUnhandledException = LoggerMessage.Define<string>(
+                   LogLevel.Error,
+                   EventIds.CircuitUnhandledException,
+                   "Unhandled exception in circuit {CircuitId}");
 
-                 _circuitUnhandledExceptionFailed = LoggerMessage.Define<string>(
-                     LogLevel.Debug,
-                     EventIds.CircuitUnhandledExceptionFailed,
-                     "Failed to transmit exception to client in circuit {CircuitId}");
+                _circuitUnhandledExceptionFailed = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.CircuitUnhandledExceptionFailed,
+                    "Failed to transmit exception to client in circuit {CircuitId}");
+
+                _unhandledExceptionFromBadInput = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.UnhandledExceptionFromBadInput,
+                    "The circuit host '{CircuitId}' received bad input that resulted in an exception.");
 
                 _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
@@ -794,7 +832,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     "Location change to {URI} in circuit {CircuitId} failed.");
             }
 
-            public static void InitializationStarted(ILogger logger) =>_intializationStarted(logger, null);
+            public static void InitializationStarted(ILogger logger) => _intializationStarted(logger, null);
             public static void InitializationSucceeded(ILogger logger) => _intializationSucceded(logger, null);
             public static void InitializationFailed(ILogger logger, Exception exception) => _intializationFailed(logger, exception);
             public static void DisposeStarted(ILogger logger, string circuitId) => _disposeStarted(logger, circuitId, null);
@@ -802,7 +840,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void DisposeFailed(ILogger logger, string circuitId, Exception exception) => _disposeFailed(logger, circuitId, exception);
             public static void CircuitOpened(ILogger logger, string circuitId) => _onCircuitOpened(logger, circuitId, null);
             public static void ConnectionUp(ILogger logger, string circuitId, string connectionId) => _onConnectionUp(logger, circuitId, connectionId, null);
-            public static void ConnectionDown(ILogger logger, string circuitId, string connectionId) =>  _onConnectionDown(logger, circuitId, connectionId, null);
+            public static void ConnectionDown(ILogger logger, string circuitId, string connectionId) => _onConnectionDown(logger, circuitId, connectionId, null);
             public static void CircuitClosed(ILogger logger, string circuitId) => _onCircuitClosed(logger, circuitId, null);
 
             public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
@@ -851,6 +889,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void LocationChangeSucceeded(ILogger logger, string uri, string circuitId) => _locationChangeSucceeded(logger, uri, circuitId, null);
             public static void LocationChangeFailed(ILogger logger, string uri, string circuitId, Exception exception) => _locationChangeFailed(logger, uri, circuitId, exception);
             public static void LocationChangeFailedInCircuit(ILogger logger, string uri, string circuitId, Exception exception) => _locationChangeFailedInCircuit(logger, uri, circuitId, exception);
+            public static void UnhandledExceptionFromBadInput(ILogger logger, string circuitId, Exception exception) => _unhandledExceptionFromBadInput(logger, circuitId, exception);
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -500,8 +501,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Arrange
             await GoToTestComponent(Batches);
             var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
+            var logEvents = new List<(LogLevel logLevel, string eventIdName, Exception exception)>();
+            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
             var browserDescriptor = new WebEventDescriptor()
@@ -520,8 +521,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             });
 
             Assert.Contains(
-                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
-                logEvents);
+                logEvents,
+                e => e.eventIdName == "DispatchEventFailedToParseEventData" && e.logLevel == LogLevel.Debug &&
+                     e.exception.Message == "There was an error parsing the event arguments. EventId: '6'.");
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>

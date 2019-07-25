@@ -6,9 +6,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ComponentHubReliabilityTest : IClassFixture<AspNetSiteServerFixture>, IDisposable
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(Debugger.IsAttached ? 60 : 10);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
@@ -186,11 +189,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
             Assert.Empty(Batches);
 
+
             // Act
             await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "DispatchBrowserEvent",
                 "",
                 ""));
+
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -198,6 +203,119 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
             Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization"));
         }
+
+        private async Task GoToTestComponent(IList<Batch> batches)
+        {
+            var rootUri = _serverFixture.RootUri;
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
+            Assert.Single(batches);
+
+            await Client.SelectAsync("test-selector-select", "BasicTestApp.CounterComponent");
+            Assert.Equal(2, batches.Count);
+        }
+
+        [Fact]
+        public async Task DispatchingAnInvalidEventArgument_DoesNotProduceWarnings()
+        {
+            // Arrange
+            var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+
+            var eventDescriptor = Serialize(new WebEventDescriptor()
+            {
+                BrowserRendererId = 0,
+                EventHandlerId = 3,
+                EventArgsType = "mouse",
+            });
+
+            await GoToTestComponent(Batches);
+            Assert.Equal(2, Batches.Count);
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "DispatchBrowserEvent",
+                eventDescriptor,
+                "{sadfadsf]"));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Exception?.Message) == (LogLevel.Debug, "There was an error parsing the event arguments. EventId: '3'."));
+        }
+
+        [Fact]
+        public async Task DispatchingAnInvalidEvent_DoesNotTriggerWarnings()
+        {
+            // Arrange
+            var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+
+            var eventDescriptor = Serialize(new WebEventDescriptor()
+            {
+                BrowserRendererId = 0,
+                EventHandlerId = 1990,
+                EventArgsType = "mouse",
+            });
+
+            var eventArgs = new UIMouseEventArgs
+            {
+                Type = "click",
+                Detail = 1,
+                ScreenX = 47,
+                ScreenY = 258,
+                ClientX = 47,
+                ClientY = 155,
+            };
+
+            await GoToTestComponent(Batches);
+            Assert.Equal(2, Batches.Count);
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "DispatchBrowserEvent",
+                eventDescriptor,
+                Serialize(eventArgs)));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message, l.Exception?.Message) ==
+                (LogLevel.Debug,
+                $"The circuit host '{Client.CircuitId}' received bad input that resulted in an exception.",
+                "There is no event handler associated with this event. EventId: '1990'."));
+        }
+
+        [Fact]
+        public async Task DispatchingAnInvalidRenderAcknowledgement_DoesNotTriggerWarnings()
+        {
+            // Arrange
+            var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+
+            await GoToTestComponent(Batches);
+            Assert.Equal(2, Batches.Count);
+
+            Client.ConfirmRenderBatch = false;
+            await Client.ClickAsync("counter");
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "OnRenderCompleted",
+                1846,
+                null));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message, l.Exception?.Message) ==
+                (LogLevel.Debug,
+                $"The circuit host '{Client.CircuitId}' received bad input that resulted in an exception.",
+                "Received an acknowledgement for batch with id '1846' when the last batch produced was '4'."));
+        }
+
 
         [Fact]
         public async Task CannotInvokeOnRenderCompletedBeforeInitialization()
@@ -287,7 +405,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
                 "OnLocationChanged",
                 new Uri(baseUri, "/test").AbsoluteUri,
-                false)); 
+                false));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -373,6 +491,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             TestSink.MessageLogged -= LogMessages;
         }
 
+        private string Serialize<T>(T browserEventDescriptor) =>
+            JsonSerializer.Serialize(browserEventDescriptor, TestJsonSerializerOptionsProvider.Options);
+
+        [DebuggerDisplay("{LogLevel.ToString(),nq} - {Message ?? \"null\",nq} - {Exception?.Message,nq}")]
         private class LogMessage
         {
             public LogMessage(LogLevel logLevel, string message, Exception exception)
