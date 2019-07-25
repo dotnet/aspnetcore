@@ -35,12 +35,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task ResponseSendFile_MissingFile_Throws()
         {
             var appThrew = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (Utilities.CreateHttpServer(out var address, httpContext =>
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
                 try
                 {
-                    sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
+                    await sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None);
                     appThrew.SetResult(false);
                 }
                 catch (Exception)
@@ -48,7 +48,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     appThrew.SetResult(true);
                     throw;
                 }
-                return Task.FromResult(0);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);

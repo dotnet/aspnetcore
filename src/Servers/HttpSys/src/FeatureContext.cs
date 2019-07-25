@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private CancellationToken _disconnectToken;
         private Stream _responseStream;
         private PipeWriter _pipeWriter;
+        private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
 
         private Fields _initializedFields;
@@ -442,14 +443,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return OnResponseStart();
         }
 
-        async Task IHttpResponseBodyFeature.CompleteAsync()
-        {
-            // TODO: Check if already completed.
-            // TODO: End response body.
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
 
-            if (_pipeWriter != null)
+        internal async Task CompleteAsync()
+        {
+            if (!_responseStarted)
             {
-                await _pipeWriter.CompleteAsync();
+                await OnResponseStart();
+            }
+
+            if (!_bodyCompleted)
+            {
+                _bodyCompleted = true;
+                if (_pipeWriter != null)
+                {
+                    // Flush and complete the pipe
+                    await _pipeWriter.CompleteAsync();
+                }
+
+                // Ends the response body.
+                Response.Dispose();
             }
         }
 
@@ -542,6 +555,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _responseStarted = true;
             await NotifiyOnStartingAsync();
             ConsiderEnablingResponseCache();
+
+            Response.Headers.IsReadOnly = true; // Prohibit further modifications.
         }
 
         private async Task NotifiyOnStartingAsync()
