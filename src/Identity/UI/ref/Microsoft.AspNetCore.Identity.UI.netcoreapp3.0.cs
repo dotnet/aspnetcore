@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Identity
 namespace Microsoft.AspNetCore.Identity.UI
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, Inherited=false, AllowMultiple=false)]
-    public partial class UIFrameworkAttribute : System.Attribute
+    public sealed partial class UIFrameworkAttribute : System.Attribute
     {
         public UIFrameworkAttribute(string uiFramework) { }
         public string UIFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

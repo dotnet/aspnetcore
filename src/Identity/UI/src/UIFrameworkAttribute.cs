@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Identity.UI
     /// The UIFramework Identity UI will use on the application.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
-    public class UIFrameworkAttribute : Attribute
+    public sealed class UIFrameworkAttribute : Attribute
     {
-    
+
         /// <summary>
         /// Initializes a new instance of <see cref="UIFrameworkAttribute"/>.
         /// </summary>
