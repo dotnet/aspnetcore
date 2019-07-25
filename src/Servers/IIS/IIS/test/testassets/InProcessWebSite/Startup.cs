@@ -371,6 +371,7 @@ namespace TestSite
             }
         }
 
+#if !FORWARDCOMPAT
         private Task UnflushedResponsePipe(HttpContext ctx)
         {
             var writer = ctx.Response.BodyWriter;
@@ -391,7 +392,7 @@ namespace TestSite
             Assert.True(10 <= memory.Length);
             writer.Advance(10);
         }
-
+#endif
         private async Task ResponseHeaders(HttpContext ctx)
         {
             ctx.Response.Headers["UnknownHeader"] = "test123=foo";

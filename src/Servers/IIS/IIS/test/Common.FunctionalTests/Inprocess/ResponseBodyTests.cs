@@ -18,12 +18,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task ResponseBodyTest_UnflushedPipe_AutoFlushed()
         {
             Assert.Equal(new byte[10], await _fixture.Client.GetByteArrayAsync($"/UnflushedResponsePipe"));
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task ResponseBodyTest_FlushedPipeAndThenUnflushedPipe_AutoFlushed()
         {
             Assert.Equal(new byte[20], await _fixture.Client.GetByteArrayAsync($"/FlushedPipeAndThenUnflushedPipe"));
