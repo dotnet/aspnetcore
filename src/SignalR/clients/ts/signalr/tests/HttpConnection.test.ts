@@ -831,6 +831,48 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("transport handlers set before start for custom transports", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const availableTransport = { transport: "Custom", transferFormats: ["Text"] };
+            let handlersSet = false;
+            const transport: ITransport = {
+                connect: (url: string, transferFormat: TransferFormat) => {
+                    if (transport.onreceive && transport.onclose) {
+                        handlersSet = true;
+                    }
+                    return Promise.resolve();
+                },
+                onclose: null,
+                onreceive: null,
+                send: (data: any) => Promise.resolve(),
+                stop: () => {
+                    if (transport.onclose) {
+                        transport.onclose();
+                    }
+                    return Promise.resolve();
+                },
+            };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => ({ connectionId: "42", availableTransports: [availableTransport] })),
+                logger,
+                transport,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            connection.onreceive = () => null;
+            try {
+                await connection.start(TransferFormat.Text);
+            } finally {
+                await connection.stop();
+            }
+
+            expect(handlersSet).toBe(true);
+        });
+    });
+
     describe(".constructor", () => {
         it("throws if no Url is provided", async () => {
             // Force TypeScript to let us call the constructor incorrectly :)
