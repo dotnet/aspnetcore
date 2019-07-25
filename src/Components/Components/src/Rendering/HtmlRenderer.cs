@@ -232,16 +232,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             return (componentId, GetCurrentRenderTreeFrames(componentId));
         }
-
-        private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderCoreAsync(Type componentType, ParameterView initialParameters)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            await RenderRootComponentAsync(componentId, initialParameters);
-
-            return (componentId, GetCurrentRenderTreeFrames(componentId));
-        }
     }
 }
 
