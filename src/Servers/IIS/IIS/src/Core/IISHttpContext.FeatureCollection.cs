@@ -201,24 +201,31 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        async Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
+        Task IHttpResponseBodyFeature.StartAsync(CancellationToken cancellationToken)
         {
-            if (ResponsePipeWrapper != null)
+            if (!HasResponseStarted)
             {
-                await ResponsePipeWrapper.FlushAsync();
+                return InitializeResponse(flushHeaders: false);
             }
-            await ResponseBody.FlushAsync();
+
+            return Task.CompletedTask;
         }
 
         Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
             => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
 
-        async Task IHttpResponseBodyFeature.CompleteAsync()
+        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
+
+        // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
+        // any unflushed data gets flushed.
+        protected Task CompleteResponseBodyAsync()
         {
             if (ResponsePipeWrapper != null)
             {
-                await ResponsePipeWrapper.CompleteAsync();
+                return ResponsePipeWrapper.CompleteAsync().AsTask();
             }
+
+            return Task.CompletedTask;
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;

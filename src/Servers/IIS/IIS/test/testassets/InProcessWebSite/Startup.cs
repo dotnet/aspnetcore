@@ -371,6 +371,27 @@ namespace TestSite
             }
         }
 
+        private Task UnflushedResponsePipe(HttpContext ctx)
+        {
+            var writer = ctx.Response.BodyWriter;
+            var memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+            return Task.CompletedTask;
+        }
+
+        private async Task FlushedPipeAndThenUnflushedPipe(HttpContext ctx)
+        {
+            var writer = ctx.Response.BodyWriter;
+            var memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+            await writer.FlushAsync();
+            memory = writer.GetMemory(10);
+            Assert.True(10 <= memory.Length);
+            writer.Advance(10);
+        }
+
         private async Task ResponseHeaders(HttpContext ctx)
         {
             ctx.Response.Headers["UnknownHeader"] = "test123=foo";
