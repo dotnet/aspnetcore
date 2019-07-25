@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 ContentRootFileProvider = new NullFileProvider();
                 ContentRootPath = AppContext.BaseDirectory;
                 WebRootPath = AppContext.BaseDirectory;
+                TempDirectoryPath = Path.GetTempPath();
             }
 
             public string EnvironmentName { get; set; }
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             public IFileProvider WebRootFileProvider { get; set; }
             public string ContentRootPath { get; set; }
             public IFileProvider ContentRootFileProvider { get; set; }
+            public string TempDirectoryPath { get; set; }
         }
 
         protected RuntimePerformanceBenchmarkBase(params string[] viewPaths)

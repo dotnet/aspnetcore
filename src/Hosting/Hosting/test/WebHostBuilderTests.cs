@@ -651,6 +651,36 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuilders))]
+        public void DefaultTempDirectoryIsDefaultUserTempPath(IWebHostBuilder builder)
+        {
+            using (var host = builder
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build())
+            {
+                var temp = Path.GetTempPath();
+                Assert.Equal(temp, host.Services.GetService<IWebHostEnvironment>().TempDirectoryPath);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void UseTempDirectoryConfiguresTempDirectory(IWebHostBuilder builder)
+        {
+            var temp = Path.GetFullPath(Path.Combine("testroot", "temp"));
+
+            using (var host = builder
+                .UseServer(new TestServer())
+                .UseTempDirectory(temp)
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build())
+            {
+                Assert.Equal(temp, host.Services.GetService<IWebHostEnvironment>().TempDirectoryPath);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
         public void DefaultWebHostBuilderWithNoStartupThrows(IWebHostBuilder builder)
         {
             builder.UseServer(new TestServer());

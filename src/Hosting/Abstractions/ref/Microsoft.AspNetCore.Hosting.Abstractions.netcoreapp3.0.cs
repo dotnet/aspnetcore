@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseServer(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, Microsoft.AspNetCore.Hosting.Server.IServer server) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseShutdownTimeout(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, System.TimeSpan timeout) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, string startupAssemblyName) { throw null; }
+        public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseTempDirectory(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, string tempDirectory) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseUrls(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, params string[] urls) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseWebRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder hostBuilder, string webRoot) { throw null; }
     }
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Hosting
     }
     public partial interface IWebHostEnvironment : Microsoft.Extensions.Hosting.IHostEnvironment
     {
+        string TempDirectoryPath { get; set; }
         Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; }
         string WebRootPath { get; set; }
     }
@@ -123,6 +125,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static readonly string StartupAssemblyKey;
         public static readonly string StaticWebAssetsKey;
         public static readonly string SuppressStatusMessagesKey;
+        public static readonly string TempDirectoryKey;
         public static readonly string WebRootKey;
     }
 }
