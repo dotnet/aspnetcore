@@ -17,7 +17,7 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
-  <Target Name="Build">
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
     <Yarn Command="install --mutex network"
       WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
     <Yarn Command="run build:inner"
