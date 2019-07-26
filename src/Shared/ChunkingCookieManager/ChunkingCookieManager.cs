@@ -289,6 +289,7 @@ namespace Microsoft.AspNetCore.Internal
                     Secure = options.Secure,
                     IsEssential = options.IsEssential,
                     Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    HttpOnly = options.HttpOnly,
                 });
 
             for (int i = 1; i <= chunks; i++)
@@ -305,6 +306,7 @@ namespace Microsoft.AspNetCore.Internal
                         Secure = options.Secure,
                         IsEssential = options.IsEssential,
                         Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                        HttpOnly = options.HttpOnly,
                     });
             }
         }
