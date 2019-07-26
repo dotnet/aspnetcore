@@ -77,6 +77,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject(originalProjectName: "SimpleMvc", targetProjectName: "Whitespace in name", baseDirectory: "")]
         public async Task Build_AppWithWhitespaceInName_CanBuildSuccessfully()
         {
+            // We need to separately restore the project in order to ensure this project uses the latest Roslyn. Without this
+            // the Csc task from Roslyn would have already been loaded and any update to it from nuget packages would not have
+            // an effect. This allows us to create our obj/Whitespace in name.csproj.nuget.g.props file (we renamed the project)
+            // and then properly build the project with an appropriate Csc.
+            await DotnetMSBuild("Restore");
+
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:_RazorForceBuildServer=true");

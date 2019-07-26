@@ -95,6 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 "/p:RunningAsTest=true",
 
                 $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
+                $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
 
                 // Additional restore sources for projects that require built packages
                 $"/p:RuntimeAdditionalRestoreSources={additionalRestoreSources}",

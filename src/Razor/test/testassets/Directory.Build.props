@@ -6,6 +6,13 @@
     <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
     <RepositoryRoot>$(SolutionRoot)..\..\</RepositoryRoot>
 
+    <!--
+      In the case that a user is building a sample directly the MicrosoftNetCompilersToolsetPackagerVersion will not be provided.
+      We'll fall back to whatever the current SDK provides in regards to Roslyn's Microsoft.Net.Compilers.Toolset.
+    -->
+    <BuildingTestAppsIndependently>false</BuildingTestAppsIndependently>
+    <BuildingTestAppsIndependently Condition="'$(MicrosoftNetCompilersToolsetPackageVersion)' == ''">true</BuildingTestAppsIndependently>
+
     <!-- Retarget tests to use the copy of the Sdk from source -->
     <RazorSdkArtifactsDirectory>$(SolutionRoot)..\..\artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
 
@@ -18,6 +25,11 @@
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
       https://api.nuget.org/v3/index.json;
+    </RestoreSources>
+
+    <RestoreSources Condition="$(BuildingTestAppsIndependently) == false">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
 
@@ -34,6 +46,13 @@
   <ItemGroup>
     <!-- Have the SDK treat the MvcShim as an MVC assembly -->
     <_MvcAssemblyName Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(BuildingTestAppsIndependently) == false">
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
+        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
+        PrivateAssets="all"
+        IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
