@@ -154,26 +154,26 @@ public int SingleResultFailure(int x, int y)
 
 public IEnumerable<int> Batched(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
         yield return i;
     }
 }
 
-[return: Streamed] // This is a made-up attribute that is used to indicate to the .NET Binder that it should stream results
-public IEnumerable<int> Stream(int count)
+public async IAsyncEnumerable<int> Stream(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
+        await Task.Delay(10);
         yield return i;
     }
 }
 
-[return: Streamed] // This is a made-up attribute that is used to indicate to the .NET Binder that it should stream results
-public IEnumerable<int> StreamFailure(int count)
+public async IAsyncEnumerable<int> StreamFailure(int count)
 {
-    for(var i = 0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
+        await Task.Delay(10);
         yield return i;
     }
     throw new Exception("Ran out of data!");
@@ -185,17 +185,13 @@ public void NonBlocking(string caller)
     _callers.Add(caller);
 }
 
-public async Task<int> AddStream(ChannelReader<int> stream)
+public async Task<int> AddStream(IAsyncEnumerable<int> stream)
 {
     int sum = 0;
-    while (await stream.WaitToReadAsync())
+    await foreach(var item in stream)
     {
-        while (stream.TryRead(out var item))
-        {
-            sum += item;
-        }
+        sum += item;
     }
-
     return sum;
 }
 ```
