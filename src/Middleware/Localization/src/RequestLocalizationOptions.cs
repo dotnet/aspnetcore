@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Gets or sets the value of the reponse Content-Language header to a <see cref="CultureInfo.CurrentUICulture"/>.
-        /// Defaults to <c>true</c>
+        /// Defaults to <c>false</c>
         /// </summary>
-        public bool SetContentLanguageHeader { get; set; } = true;
+        public bool SetContentLanguageHeader { get; set; } = false;
 
         /// <summary>
         /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set

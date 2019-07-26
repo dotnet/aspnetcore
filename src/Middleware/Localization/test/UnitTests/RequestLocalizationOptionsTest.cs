@@ -59,13 +59,13 @@ namespace Microsoft.AspNetCore.Localization
         }
 
         [Fact]
-        public void ContentHeader_DefaultsToTrue()
+        public void ContentHeader_DefaultsToFalse()
         {
             // Arrange/Act
             var options = new RequestLocalizationOptions();
 
             // Assert
-            Assert.True(options.SetContentLanguageHeader);
+            Assert.False(options.SetContentLanguageHeader);
         }
 
         [Fact]

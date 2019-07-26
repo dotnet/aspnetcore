@@ -18,7 +18,19 @@ namespace LocalizationWebsite
         public void Configure(
             IApplicationBuilder app)
         {
-            app.UseRequestLocalization("ar-YE");
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = new List<CultureInfo>()
+                {
+                    new CultureInfo("ar-YE")
+                },
+                SupportedUICultures = new List<CultureInfo>()
+                {
+                    new CultureInfo("ar-YE")
+                },
+                SetContentLanguageHeader = true
+            });
 
             app.Run(async (context) =>
             {
