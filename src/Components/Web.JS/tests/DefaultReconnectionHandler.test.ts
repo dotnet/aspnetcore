@@ -58,6 +58,7 @@ describe('DefaultReconnectionHandler', () => {
     expect(reconnect).toHaveBeenCalledTimes(1);
   });
 
+  // Skipped while under investigation: https://github.com/aspnet/AspNetCore/issues/12578
   // it('invokes failed if reconnect fails', async () => {
   //   const testDisplay = createTestDisplay();
   //   const reconnect = jest.fn().mockRejectedValue(null);
