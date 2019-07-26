@@ -16,11 +16,13 @@
       ResolveProjectReferences;
       _Build;
     </BuildDependsOn>
+    <NpmBuildArgs Condition="'$(NpmBuildArgs)' == ''">run build</NpmBuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <TSFiles Include="$(MSBuildProjectDirectory)\*\*.ts" />
     <TSFiles Include="$(MSBuildProjectDirectory)\package.json" />
+    <TSFiles Include="$(MSBuildProjectDirectory)\*.npmproj" />
   </ItemGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
@@ -53,7 +55,7 @@
     Condition="'$(IsBuildable)' != 'false'"
     Inputs="@(TSFiles)"
     Outputs="$(BaseIntermediateOutputPath)\build-sentinel" >
-    <Yarn Command="run build" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="$(NpmBuildArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
     <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)\build-sentinel" />
   </Target>
 
