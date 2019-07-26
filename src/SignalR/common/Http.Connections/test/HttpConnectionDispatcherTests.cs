@@ -1148,9 +1148,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.True(request1.IsCompleted);
 
                 request1 = dispatcher.ExecuteAsync(context1, options, app);
+                // Wait until the request has started internally
+                while (connection.TransportTask.IsCompleted)
+                {
+                    await Task.Delay(1);
+                }
+                var transportTask = connection.TransportTask;
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 await request1;
+                // Wait until the second request has started internally
+                while (connection.TransportTask.IsCompleted)
+                {
+                    await Task.Delay(1);
+                }
 
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
                 Assert.Equal(HttpConnectionStatus.Active, connection.Status);
