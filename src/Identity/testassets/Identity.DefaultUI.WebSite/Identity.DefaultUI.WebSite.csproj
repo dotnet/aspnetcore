@@ -48,6 +48,13 @@
     <ResolveStaticWebAssetsInputsDependsOn>_SetBootstrapFrameworkVersion</ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
+    <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
+      <_Parameter1>$(IdentityDefaultUIFramework)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
   <Target Name="_SetBootstrapFrameworkVersion">
     <ItemGroup>
       <_StaticWebAssetsProjectReference Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
