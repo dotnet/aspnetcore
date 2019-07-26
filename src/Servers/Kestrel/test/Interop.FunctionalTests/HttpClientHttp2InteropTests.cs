@@ -344,7 +344,7 @@ namespace Interop.FunctionalTests
                         Assert.True(sequence.IsSingleSegment);
                         await context.Response.BodyWriter.WriteAsync(sequence.First).DefaultTimeout();
                         reader.AdvanceTo(sequence.End);
-                        await context.Features.Get<IHttpResponseCompletionFeature>().CompleteAsync();
+                        await context.Response.CompleteAsync().DefaultTimeout();
 
                         try
                         {
@@ -417,7 +417,7 @@ namespace Interop.FunctionalTests
                         // var readTask = context.Request.BodyReader.ReadAsync();
                         context.Response.ContentType = "text/plain";
                         await context.Response.WriteAsync("Hello World");
-                        await context.Features.Get<IHttpResponseCompletionFeature>().CompleteAsync().DefaultTimeout();
+                        await context.Response.CompleteAsync().DefaultTimeout();
 
                         try
                         {
