@@ -433,13 +433,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 () => StartResponseAsync(context));
             context.HttpContext.Response.Body = context.ResponseCachingStream;
 
-            // Shim IHttpSendFileFeature
-            context.OriginalSendFileFeature = context.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (context.OriginalSendFileFeature != null)
-            {
-                context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCachingStream));
-            }
-
             // Add IResponseCachingFeature
             AddResponseCachingFeature(context.HttpContext);
         }
@@ -451,9 +444,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Unshim response stream
             context.HttpContext.Response.Body = context.OriginalResponseStream;
-
-            // Unshim IHttpSendFileFeature
-            context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
             // Remove IResponseCachingFeature
             RemoveResponseCachingFeature(context.HttpContext);

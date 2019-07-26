@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             Routes = RouteTableFactory.Create(AppAssembly);

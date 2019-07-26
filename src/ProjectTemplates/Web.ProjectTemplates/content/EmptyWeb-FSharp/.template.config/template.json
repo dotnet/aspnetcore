@@ -115,7 +115,7 @@
       "path": "Company.WebApplication1.fsproj"
     }
   ],
-  "defaultName": "WebApplication1",
+  "defaultName": "WebApplication",
   "postActions": [
     {
       "condition": "(!skipRestore)",

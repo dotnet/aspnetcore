@@ -53,6 +53,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             private static readonly Action<ILogger, Exception> _closedPrematurely =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(14, "ClosedPrematurely"), "Socket connection closed prematurely.");
 
+            private static readonly Action<ILogger, Exception> _closingWebSocketFailed =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(15, "ClosingWebSocketFailed"), "Closing webSocket failed.");
+
             public static void SocketOpened(ILogger logger, string subProtocol)
             {
                 _socketOpened(logger, subProtocol, null);
@@ -121,6 +124,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             public static void ClosedPrematurely(ILogger logger, Exception ex)
             {
                 _closedPrematurely(logger, ex);
+            }
+
+            public static void ClosingWebSocketFailed(ILogger logger, Exception ex)
+            {
+                _closingWebSocketFailed(logger, ex);
             }
         }
     }

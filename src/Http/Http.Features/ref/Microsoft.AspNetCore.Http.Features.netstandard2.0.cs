@@ -156,6 +156,7 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         bool AllowSynchronousIO { get; set; }
     }
+    [System.ObsoleteAttribute("See IHttpRequestBodyFeature or IHttpResponseBodyFeature DisableBuffering", true)]
     public partial interface IHttpBufferingFeature
     {
         void DisableRequestBuffering();
@@ -204,12 +205,18 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         void Reset(int errorCode);
     }
-    public partial interface IHttpResponseCompletionFeature
+    public partial interface IHttpResponseBodyFeature
     {
+        System.IO.Stream Stream { get; }
+        System.IO.Pipelines.PipeWriter Writer { get; }
         System.Threading.Tasks.Task CompleteAsync();
+        void DisableBuffering();
+        System.Threading.Tasks.Task SendFileAsync(string path, long offset, long? count, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial interface IHttpResponseFeature
     {
+        [System.ObsoleteAttribute("Use IHttpResponseBodyFeature.Stream instead.", false)]
         System.IO.Stream Body { get; set; }
         bool HasStarted { get; }
         Microsoft.AspNetCore.Http.IHeaderDictionary Headers { get; set; }
@@ -217,10 +224,6 @@ namespace Microsoft.AspNetCore.Http.Features
         int StatusCode { get; set; }
         void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state);
         void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state);
-    }
-    public partial interface IHttpResponseStartFeature
-    {
-        System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken token = default(System.Threading.CancellationToken));
     }
     public partial interface IHttpResponseTrailersFeature
     {
@@ -230,6 +233,7 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         Microsoft.AspNetCore.Http.Features.HttpsCompressionMode Mode { get; set; }
     }
+    [System.ObsoleteAttribute("Use IHttpResponseBodyFeature instead.", true)]
     public partial interface IHttpSendFileFeature
     {
         System.Threading.Tasks.Task SendFileAsync(string path, long offset, long? count, System.Threading.CancellationToken cancellation);
@@ -259,10 +263,6 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IRequestCookiesFeature
     {
         Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get; set; }
-    }
-    public partial interface IResponseBodyPipeFeature
-    {
-        System.IO.Pipelines.PipeWriter Writer { get; }
     }
     public partial interface IResponseCookiesFeature
     {

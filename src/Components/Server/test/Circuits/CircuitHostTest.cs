@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public bool DidCallDispose { get; private set; }
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => Task.CompletedTask;
 
             public void Dispose()

@@ -2428,6 +2428,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public PhysicalFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(Microsoft.Extensions.Logging.ILogger)) { }
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result) { throw null; }
         protected virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.FileMetadata GetFileInfo(string path) { throw null; }
+        [System.ObsoleteAttribute("This API is no longer called.")]
         protected virtual System.IO.Stream GetFileStream(string path) { throw null; }
         protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
         protected partial class FileMetadata
@@ -2462,6 +2463,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         public VirtualFileResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment) : base (default(Microsoft.Extensions.Logging.ILogger)) { }
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result) { throw null; }
+        [System.ObsoleteAttribute("This API is no longer called.")]
         protected virtual System.IO.Stream GetFileStream(Microsoft.Extensions.FileProviders.IFileInfo fileInfo) { throw null; }
         protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result, Microsoft.Extensions.FileProviders.IFileInfo fileInfo, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
     }

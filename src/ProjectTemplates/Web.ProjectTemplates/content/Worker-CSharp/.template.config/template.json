@@ -74,7 +74,7 @@
       "path": "Company.Application1.csproj"
     }
   ],
-  "defaultName": "Application1",
+  "defaultName": "WorkerService",
   "postActions": [
     {
       "condition": "(!skipRestore)",

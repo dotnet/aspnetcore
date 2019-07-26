@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
             return new ConcurrencyLimiterMiddleware(
                     next: next ?? (context => Task.CompletedTask),
                     loggerFactory: NullLoggerFactory.Instance,
-                    queue: queue ?? CreateTailDropQueue(1, 0),
+                    queue: queue ?? CreateQueuePolicy(1, 0),
                     options: options
                 );
         }
 
-        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_TailDrop(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
+        public static ConcurrencyLimiterMiddleware CreateTestMiddleware_QueuePolicy(int maxConcurrentRequests, int requestQueueLimit, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             return CreateTestMiddleware(
-                queue: CreateTailDropQueue(maxConcurrentRequests, requestQueueLimit),
+                queue: CreateQueuePolicy(maxConcurrentRequests, requestQueueLimit),
                 onRejected: onRejected,
                 next: next
                 );
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 );
         }
 
-        internal static LIFOQueuePolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
+        internal static StackPolicy CreateStackPolicy(int maxConcurrentRequests, int requestsQueuelimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestsQueuelimit
             });
 
-            return new LIFOQueuePolicy(options);
+            return new StackPolicy(options);
         }
 
-        internal static FIFOQueuePolicy CreateTailDropQueue(int maxConcurrentRequests, int requestQueueLimit = 100)
+        internal static QueuePolicy CreateQueuePolicy(int maxConcurrentRequests, int requestQueueLimit = 100)
         {
             var options = Options.Create(new QueuePolicyOptions
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
                 RequestQueueLimit = requestQueueLimit
             });
 
-            return new FIFOQueuePolicy(options);
+            return new QueuePolicy(options);
         }
     }
 
@@ -83,13 +83,10 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests
         }
 
         public TestQueue(Func<TestQueue, bool> onTryEnter, Action onExit = null) :
-            this(async (state) =>
-           {
-               await Task.CompletedTask;
-               return onTryEnter(state);
-           }, onExit) { }
+            this(state => Task.FromResult(onTryEnter(state))
+            , onExit) { }
  
-        public async Task<bool> TryEnterAsync()
+        public async ValueTask<bool> TryEnterAsync()
         {
             Interlocked.Increment(ref _queuedRequests);
             var result = await _onTryEnter(this);

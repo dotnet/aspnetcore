@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Performance
 
             // A simple component for basic tests -- this is similar to what MVC scaffolding generates
             // for bootstrap3 form fields, but modified to be more Component-like.
-            original = new RenderTreeBuilder(renderer);
+            original = new RenderTreeBuilder();
             original.OpenElement(0, "div");
             original.AddAttribute(1, "class", "form-group");
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Performance
             original.CloseElement();
 
             // Now simulate some input
-            modified = new RenderTreeBuilder(renderer);
+            modified = new RenderTreeBuilder();
             modified.OpenElement(0, "div");
             modified.AddAttribute(1, "class", "form-group");
 

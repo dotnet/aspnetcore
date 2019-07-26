@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
+                await CompleteResponseBodyAsync();
                 _streams.Stop();
 
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)

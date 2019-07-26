@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Components
 
             public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters) => throw new NotImplementedException();
+            public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
         }
     }
 }

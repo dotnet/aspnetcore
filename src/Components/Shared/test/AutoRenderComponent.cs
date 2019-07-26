@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             _renderHandle = renderHandle;
         }
 
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             TriggerRender();

@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http
         public async Task ResponseStart_CallsFeatureIfSet()
         {
             var features = new FeatureCollection();
-            var mock = new Mock<IHttpResponseStartFeature>();
+            var mock = new Mock<IHttpResponseBodyFeature>();
             mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             features.Set(mock.Object);
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var features = new FeatureCollection();
 
-            var mock = new Mock<IHttpResponseStartFeature>();
+            var mock = new Mock<IHttpResponseBodyFeature>();
             var ct = new CancellationToken();
             mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
             features.Set(mock.Object);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var features = new FeatureCollection();
 
-            var startMock = new Mock<IHttpResponseStartFeature>();
+            var startMock = new Mock<IHttpResponseBodyFeature>();
             startMock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             features.Set(startMock.Object);
 

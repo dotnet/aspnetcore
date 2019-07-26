@@ -108,7 +108,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 1),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
                 frame => AssertFrame.Markup(frame, "\n  <div></div>\n", 2));
         }
 
@@ -131,7 +131,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContentString", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 1),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 2),
                 frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "hi", 5),
@@ -158,7 +158,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 1),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
                 frame => AssertFrame.Markup(frame, "\n    <div></div>\n  ", 2));
         }
 
@@ -183,10 +183,10 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 1),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
                 frame => AssertFrame.MarkupWhitespace(frame, 2),
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 3),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 4),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 4),
                 frame => AssertFrame.MarkupWhitespace(frame, 6),
                 frame => AssertFrame.Markup(frame, "\n    <div></div>\n  ", 5));
         }
@@ -208,7 +208,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "hi", 1));
         }
@@ -230,7 +230,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContentString", 3, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 4),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "hi", 1));
@@ -253,7 +253,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "hi", 1));
         }
@@ -275,7 +275,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "hi", 1));
         }
@@ -299,7 +299,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "hi", 1));
         }
@@ -327,7 +327,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "Name", "billg", 3),
                 frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 4),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 5),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, typeof(RenderFragment<string>), 6),
+                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
                 frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
                 frame => AssertFrame.Element(frame, "div", 2, 0),
                 frame => AssertFrame.Text(frame, "billg", 1),
@@ -360,7 +360,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
                 frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, typeof(RenderFragment<string>), 6),
+                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
                 frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "billg", 5),
@@ -395,7 +395,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
                 frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, typeof(RenderFragment<string>), 6),
+                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
                 frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "billg", 5),

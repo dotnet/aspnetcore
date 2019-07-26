@@ -165,7 +165,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase, IComponent
     {
-        Task IComponent.SetParametersAsync(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -345,7 +345,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "MyAttr", "abc", 1),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2));
+                frame => AssertFrame.Attribute(frame, "ChildContent", 2));
 
             // Assert: Captured ChildContent frames are correct
             var childFrames = GetFrames((RenderFragment)frames[2].AttributeValue);
@@ -385,7 +385,7 @@ namespace Test
             Assert.Collection(
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 0),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 1));
+                frame => AssertFrame.Attribute(frame, "ChildContent", 1));
 
             // Assert: first level of ChildContent is correct
             // Note that we don't really need the sequence numbers to continue on from the
@@ -397,7 +397,7 @@ namespace Test
             Assert.Collection(
                 innerFrames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 2),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 3));
+                frame => AssertFrame.Attribute(frame, "ChildContent", 3));
 
             // Assert: second level of ChildContent is correct
             Assert.Collection(
@@ -540,7 +540,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "body", 5, 3),
                 frame => AssertFrame.MarkupWhitespace(frame, 4),
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 5),
-                frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 6),
+                frame => AssertFrame.Attribute(frame, "ChildContent", 6),
                 frame => AssertFrame.MarkupWhitespace(frame, 16),
                 frame => AssertFrame.MarkupWhitespace(frame, 17));
 

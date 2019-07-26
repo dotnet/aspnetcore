@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         protected virtual System.Threading.Tasks.Task OnInitializedAsync() { throw null; }
         protected virtual void OnParametersSet() { }
         protected virtual System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+        public virtual System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
         protected virtual bool ShouldRender() { throw null; }
         protected void StateHasChanged() { }
     }
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Components
     public partial interface IComponent
     {
         void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
-        System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters);
+        System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters);
     }
     public partial interface IComponentContext
     {
@@ -309,16 +309,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Collections.Generic.IDictionary<string, object> PageParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct Parameter
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public bool Cascading { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class ParameterAttribute : System.Attribute
@@ -327,29 +318,35 @@ namespace Microsoft.AspNetCore.Components
         public bool CaptureUnmatchedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ParameterCollection
+    public readonly partial struct ParameterValue
     {
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public static Microsoft.AspNetCore.Components.ParameterCollection Empty { get { throw null; } }
-        public static Microsoft.AspNetCore.Components.ParameterCollection FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
-        public Microsoft.AspNetCore.Components.ParameterEnumerator GetEnumerator() { throw null; }
-        public T GetValueOrDefault<T>(string parameterName) { throw null; }
-        public T GetValueOrDefault<T>(string parameterName, T defaultValue) { throw null; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
-        public bool TryGetValue<T>(string parameterName, out T result) { throw null; }
-    }
-    public static partial class ParameterCollectionExtensions
-    {
-        public static void SetParameterProperties(this in Microsoft.AspNetCore.Components.ParameterCollection parameterCollection, object target) { }
+        public bool Cascading { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct ParameterEnumerator
+    public readonly partial struct ParameterView
     {
-        private object _dummy;
-        private int _dummyPrimitive;
-        public Microsoft.AspNetCore.Components.Parameter Current { get { throw null; } }
-        public bool MoveNext() { throw null; }
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
+        public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
+        public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
+        public T GetValueOrDefault<T>(string parameterName) { throw null; }
+        public T GetValueOrDefault<T>(string parameterName, T defaultValue) { throw null; }
+        public void SetParameterProperties(object target) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
+        public bool TryGetValue<T>(string parameterName, out T result) { throw null; }
+        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public partial struct Enumerator
+        {
+            private object _dummy;
+            private int _dummyPrimitive;
+            public Microsoft.AspNetCore.Components.ParameterValue Current { get { throw null; } }
+            public bool MoveNext() { throw null; }
+        }
     }
     public delegate void RenderFragment(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder);
     public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<T>(T value);
@@ -502,8 +499,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override void HandleException(System.Exception exception) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterCollection initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -529,7 +526,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected Microsoft.AspNetCore.Components.IComponent InstantiateComponent(System.Type componentType) { throw null; }
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
+        protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
         protected abstract System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch);
     }
 }
@@ -555,15 +552,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
-    public partial class RenderTreeBuilder : System.IDisposable
+    public sealed partial class RenderTreeBuilder : System.IDisposable
     {
-        public const string ChildContent = "ChildContent";
-        public RenderTreeBuilder(Microsoft.AspNetCore.Components.Rendering.Renderer renderer) { }
+        public RenderTreeBuilder() { }
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
-        public void AddAttribute(int sequence, string name, System.Action value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.Func<System.Threading.Tasks.Task> value) { }
         public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
         public void AddAttribute(int sequence, string name, object value) { }
         public void AddAttribute(int sequence, string name, string value) { }
@@ -666,6 +660,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose() { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
         protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }

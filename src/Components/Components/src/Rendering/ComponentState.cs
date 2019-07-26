@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
-            CurrrentRenderTree = new RenderTreeBuilder(renderer);
-            _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
+            CurrentRenderTree = new RenderTreeBuilder();
+            _renderTreeBuilderPrevious = new RenderTreeBuilder();
 
             if (_cascadingParameters != null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public int ComponentId { get; }
         public IComponent Component { get; }
         public ComponentState ParentComponentState { get; }
-        public RenderTreeBuilder CurrrentRenderTree { get; private set; }
+        public RenderTreeBuilder CurrentRenderTree { get; private set; }
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
@@ -61,17 +61,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             // Swap the old and new tree builders
-            (CurrrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrrentRenderTree);
+            (CurrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrentRenderTree);
 
-            CurrrentRenderTree.Clear();
-            renderFragment(CurrrentRenderTree);
+            CurrentRenderTree.Clear();
+            renderFragment(CurrentRenderTree);
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
                 batchBuilder,
                 ComponentId,
                 _renderTreeBuilderPrevious.GetFrames(),
-                CurrrentRenderTree.GetFrames());
+                CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 disposable.Dispose();
             }
 
-            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrrentRenderTree.GetFrames());
+            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
             if (_hasAnyCascadingParameterSubscriptions)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return Task.CompletedTask;
         }
 
-        public void SetDirectParameters(ParameterCollection parameters)
+        public void SetDirectParameters(ParameterView parameters)
         {
             // Note: We should be careful to ensure that the framework never calls
             // IComponent.SetParameters directly elsewhere. We should only call it
@@ -137,8 +137,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void NotifyCascadingValueChanged()
         {
             var directParams = _latestDirectParametersSnapshot != null
-                ? new ParameterCollection(_latestDirectParametersSnapshot.Buffer, 0)
-                : ParameterCollection.Empty;
+                ? new ParameterView(_latestDirectParametersSnapshot.Buffer, 0)
+                : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);
             _renderer.AddToPendingTasks(task);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private void DisposeBuffers()
         {
             ((IDisposable)_renderTreeBuilderPrevious).Dispose();
-            ((IDisposable)CurrrentRenderTree).Dispose();
+            ((IDisposable)CurrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
         }
     }

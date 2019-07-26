@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,7 +53,7 @@ namespace ResponseCompressionSample
                 {
                     context.Response.ContentType = "text/plain";
                     // Disables compression on net451 because that GZipStream does not implement Flush.
-                    context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+                    context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
                     for (int i = 0; i < 100; i++)
                     {

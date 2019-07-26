@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzers
                         if (!OptionsFacts.IsEndpointRoutingExplicitlyDisabled(optionsAnalysis))
                         {
                             context.ReportDiagnostic(Diagnostic.Create(
-                                StartupAnalzyer.Diagnostics.UnsupportedUseMvcWithEndpointRouting,
+                                StartupAnalyzer.Diagnostics.UnsupportedUseMvcWithEndpointRouting,
                                 middlewareItem.Operation.Syntax.GetLocation(),
                                 middlewareItem.UseMethod.Name,
                                 optionsAnalysis.ConfigureServicesMethod.Name));

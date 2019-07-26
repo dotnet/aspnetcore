@@ -195,6 +195,26 @@ namespace Microsoft.AspNetCore.Http
     {
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection> ReadFormAsync(this Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.Features.FormOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
+    public static partial class SendFileFallback
+    {
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task SendFileAsync(System.IO.Stream destination, string filePath, long offset, long? count, System.Threading.CancellationToken cancellationToken) { throw null; }
+    }
+    public partial class StreamResponseBodyFeature : Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature
+    {
+        public StreamResponseBodyFeature(System.IO.Stream stream) { }
+        public StreamResponseBodyFeature(System.IO.Stream stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature priorFeature) { }
+        public Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature PriorFeature { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.IO.Stream Stream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task CompleteAsync() { throw null; }
+        public virtual void DisableBuffering() { }
+        public void Dispose() { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task SendFileAsync(string path, long offset, long? count, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public virtual System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
 }
 namespace Microsoft.AspNetCore.Http.Features
 {
@@ -304,11 +324,6 @@ namespace Microsoft.AspNetCore.Http.Features
         public System.IServiceProvider RequestServices { get { throw null; } set { } }
         public void Dispose() { }
         public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
-    }
-    public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
-    {
-        public ResponseBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } }
     }
     public partial class ResponseCookiesFeature : Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
     {
