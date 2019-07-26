@@ -213,12 +213,16 @@ elif [ ! -z "$build_projects" ]; then
 elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ] && [ -z "$build_installers" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
-    __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh --help`` for more details."
+    __warn "No default group of projects was specified, so building the 'managed' and its dependent subset of projects. Run ``build.sh --help`` for more details."
     build_managed=true
 fi
 
 if [ "$build_deps" = false ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildProjectReferences=false"
+fi
+
+if [ "$build_nodejs" = false ] && [ "$build_managed" = true ]; then
+    __warn "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
 fi
 
 # Only set these MSBuild properties if they were explicitly set by build parameters.
