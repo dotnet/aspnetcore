@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
 
         /// <inheritdoc />
-        public override Task SetParametersAsync(ParameterCollection parameters)
+        public override Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
 
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-            return base.SetParametersAsync(ParameterCollection.Empty);
+            return base.SetParametersAsync(ParameterView.Empty);
         }
     }
 }

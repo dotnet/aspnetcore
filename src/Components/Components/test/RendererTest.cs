@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2776,7 +2776,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var task = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var task = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2809,7 +2809,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2842,7 +2842,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2876,7 +2876,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -2957,7 +2957,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3015,7 +3015,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3070,7 +3070,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3124,7 +3124,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3158,7 +3158,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3195,7 +3195,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            await renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.RenderRootComponentAsync(componentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
@@ -3428,7 +3428,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 _renderHandle = renderHandle;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 TriggerRender();
                 return Task.CompletedTask;
@@ -3497,7 +3497,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public void Attach(RenderHandle renderHandle)
                 => RenderHandle = renderHandle;
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 parameters.SetParameterProperties(this);
                 return Task.CompletedTask;
@@ -3646,7 +3646,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public void Attach(RenderHandle renderHandle)
                 => _renderHandle = renderHandle;
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 parameters.SetParameterProperties(this);
                 Render();
@@ -3677,7 +3677,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public void Attach(RenderHandle renderHandle)
                 => _renderHandles.Add(renderHandle);
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 return Task.CompletedTask;
             }
@@ -3734,7 +3734,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return Task.CompletedTask;
             }
 
-            Task IComponent.SetParametersAsync(ParameterCollection parameters)
+            Task IComponent.SetParametersAsync(ParameterView parameters)
             {
                 TriggerRender();
                 return Task.CompletedTask;
@@ -3793,7 +3793,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 _renderHandler = renderHandle;
             }
 
-            public async Task SetParametersAsync(ParameterCollection parameters)
+            public async Task SetParametersAsync(ParameterView parameters)
             {
                 int n;
                 while (Number > 0)
@@ -3842,7 +3842,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 return task;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 return TriggerRenderAsync();
             }

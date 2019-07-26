@@ -165,7 +165,7 @@ namespace Test
 {
     public class MyComponent : ComponentBase, IComponent
     {
-        Task IComponent.SetParametersAsync(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }

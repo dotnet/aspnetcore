@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 supplierParams.Add("Name", name);
             }
 
-            renderer.Dispatcher.InvokeAsync((Action)(() => supplier.SetParametersAsync(ParameterCollection.FromDictionary(supplierParams))));
+            renderer.Dispatcher.InvokeAsync((Action)(() => supplier.SetParametersAsync(ParameterView.FromDictionary(supplierParams))));
             return supplier;
         }
 
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => throw new NotImplementedException();
         }
 

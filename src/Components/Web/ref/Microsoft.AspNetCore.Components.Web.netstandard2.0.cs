@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<T>> ValueExpression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected virtual string FormatValueAsString(T value) { throw null; }
-        public override System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+        public override System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
         protected abstract bool TryParseValueFromString(string value, out T result, out string validationErrorMessage);
     }
     public partial class InputCheckbox : Microsoft.AspNetCore.Components.Forms.InputBase<bool>
