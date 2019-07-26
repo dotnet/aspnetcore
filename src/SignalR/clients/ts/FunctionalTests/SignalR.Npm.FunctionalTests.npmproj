@@ -20,6 +20,8 @@
   <Target Name="Build">
     <Yarn Command="run build:inner"
       WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
+    <Yarn Command="install --mutex network"
+      WorkingDirectory="$(RepoRoot)src/SignalR/clients/ts/FunctionalTests" />
   </Target>
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
