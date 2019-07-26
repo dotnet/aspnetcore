@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void MaxRequestHeadersTotalSizeDefault()
         {
-            Assert.Equal(32 * 1024, (new KestrelServerLimits()).MaxRequestHeadersTotalSize);
+            Assert.Equal(1 << 14, (new KestrelServerLimits()).MaxRequestHeadersTotalSize);
         }
 
         [Theory]
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void Http2MaxRequestHeaderFieldSizeDefault()
         {
-            Assert.Equal(8192, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);
+            Assert.Equal(32, new KestrelServerLimits().Http2.MaxRequestHeaderFieldSize);
         }
 
         [Theory]
