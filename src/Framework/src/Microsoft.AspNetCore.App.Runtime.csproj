@@ -357,7 +357,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="High" />
 
-    <Move Condition=" '$(GenerateCrossgenProfilingSymbols)' == 'true' "
+    <!-- crossgen tool generates e.g. *.ni.{53ae4659-8d91-47f1-8eb3-a458d3aa69ee}.map cross-plat. -->
+    <Move Condition=" '$(GenerateCrossgenProfilingSymbols)' == 'true' AND '$(OS)' == 'Windows_NT' "
           SourceFiles="$(TargetDir)%(IntermediateCrossgenAssembly.FileName).ni.pdb"
           DestinationFiles="$(TargetDir)%(IntermediateCrossgenAssembly.FileName).pdb" />
   </Target>
