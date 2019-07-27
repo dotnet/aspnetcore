@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -49,6 +49,10 @@
     <Compile Include="$(MessagePackRoot)SequencePool.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
+  </ItemGroup>
+
+  <ItemGroup Label="Sources packages">
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
   </ItemGroup>
 
   <PropertyGroup>

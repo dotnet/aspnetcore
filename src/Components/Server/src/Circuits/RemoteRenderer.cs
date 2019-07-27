@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -135,10 +137,15 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 var renderId = Interlocked.Increment(ref _nextRenderId);
 
+                var valueStopWatch = _logger.IsEnabled(LogLevel.Debug) ?
+                    ValueStopwatch.StartNew() :
+                    (ValueStopwatch?)null;
+
                 pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
-                    new TaskCompletionSource<object>());
+                    new TaskCompletionSource<object>(),
+                    valueStopWatch);
 
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
@@ -258,11 +265,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         {
             if (errorMessageOrNull == null)
             {
-                Log.CompletingBatchWithoutError(_logger, entry.BatchId);
+                Log.CompletingBatchWithoutError(_logger, entry.BatchId, entry.ValueStopwatch);
             }
             else
             {
-                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull);
+                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull, entry.ValueStopwatch);
             }
 
             entry.Data.Dispose();
@@ -283,16 +290,18 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         internal readonly struct UnacknowledgedRenderBatch
         {
-            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource, ValueStopwatch? valueStopwatch)
             {
                 BatchId = batchId;
                 Data = data;
                 CompletionSource = completionSource;
+                ValueStopwatch = valueStopwatch;
             }
 
             public long BatchId { get; }
             public ArrayBuilder<byte> Data { get; }
             public TaskCompletionSource<object> CompletionSource { get; }
+            public ValueStopwatch? ValueStopwatch { get; }
         }
 
         private void CaptureAsyncExceptions(Task task)
@@ -312,8 +321,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, long, int, string, Exception> _beginUpdateDisplayAsync;
             private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
-            private static readonly Action<ILogger, long, string, Exception> _completingBatchWithError;
-            private static readonly Action<ILogger, long, Exception> _completingBatchWithoutError;
+            private static readonly Action<ILogger, long, string, double, Exception> _completingBatchWithError;
+            private static readonly Action<ILogger, long, double, Exception> _completingBatchWithoutError;
             private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
 
             private static class EventIds
@@ -349,15 +358,15 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     EventIds.SendBatchDataFailed,
                     "Sending data for batch failed: {Message}");
 
-                _completingBatchWithError = LoggerMessage.Define<long, string>(
+                _completingBatchWithError = LoggerMessage.Define<long, string, double>(
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithError,
-                    "Completing batch {BatchId} with error: {ErrorMessage}");
+                    "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedTime}ms.");
 
-                _completingBatchWithoutError = LoggerMessage.Define<long>(
+                _completingBatchWithoutError = LoggerMessage.Define<long, double>(
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithoutError,
-                    "Completing batch {BatchId} without error");
+                    "Completing batch {BatchId} without error in {ElapsedTime}ms.");
 
                 _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
                     LogLevel.Debug,
@@ -396,20 +405,28 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     null);
             }
 
-            public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage)
+            public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, ValueStopwatch? stopwatch)
             {
+                Debug.Assert(stopwatch != null);
+                var elapsedTime = stopwatch.Value.GetElapsedTime().TotalMilliseconds;
+
                 _completingBatchWithError(
                     logger,
                     batchId,
                     errorMessage,
+                    elapsedTime,
                     null);
             }
 
-            public static void CompletingBatchWithoutError(ILogger logger, long batchId)
+            public static void CompletingBatchWithoutError(ILogger logger, long batchId, ValueStopwatch? stopwatch)
             {
+                Debug.Assert(stopwatch != null);
+                var elapsedTime = stopwatch.Value.GetElapsedTime().TotalMilliseconds;
+
                 _completingBatchWithoutError(
                     logger,
                     batchId,
+                    elapsedTime,
                     null);
             }
 
