@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -21,7 +22,8 @@ namespace Microsoft.AspNetCore.Http
             var body = request.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
+                var tempPath = request.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().TempDirectoryPath;
+                var fileStream = new FileBufferingStreamFactory(tempPath).CreateReadStream(body, bufferThreshold, bufferLimit);
                 request.Body = fileStream;
                 request.HttpContext.Response.RegisterForDispose(fileStream);
             }
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public static MultipartSection EnableRewind(this MultipartSection section, Action<IDisposable> registerForDispose,
-            int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
+            string tempDirectoryPath, int bufferThreshold = DefaultBufferThreshold, long? bufferLimit = null)
         {
             if (section == null)
             {
@@ -39,11 +41,15 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(registerForDispose));
             }
+            if (tempDirectoryPath == null)
+            {
+                throw new ArgumentNullException(nameof(tempDirectoryPath));
+            }
 
             var body = section.Body;
             if (!body.CanSeek)
             {
-                var fileStream = new FileBufferingReadStream(body, bufferThreshold, bufferLimit, AspNetCoreTempDirectory.TempDirectoryFactory);
+                var fileStream = new FileBufferingStreamFactory(tempDirectoryPath).CreateReadStream(body, bufferThreshold, bufferLimit);
                 section.Body = fileStream;
                 registerForDispose(fileStream);
             }
