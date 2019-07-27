@@ -41,17 +41,17 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment NotFoundContent { get; set; }
+        [Parameter] public RenderFragment NotFound { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> NotAuthorizedContent { get; set; }
+        [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
-        [Parameter] public RenderFragment AuthorizingContent { get; set; }
+        [Parameter] public RenderFragment Authorizing { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             builder.OpenComponent(0, typeof(PageDisplay));
             builder.AddAttribute(1, nameof(PageDisplay.Page), handler);
             builder.AddAttribute(2, nameof(PageDisplay.PageParameters), parameters);
-            builder.AddAttribute(3, nameof(PageDisplay.NotAuthorizedContent), NotAuthorizedContent);
-            builder.AddAttribute(4, nameof(PageDisplay.AuthorizingContent), AuthorizingContent);
+            builder.AddAttribute(3, nameof(PageDisplay.NotAuthorized), NotAuthorized);
+            builder.AddAttribute(4, nameof(PageDisplay.Authorizing), Authorizing);
             builder.CloseComponent();
         }
 
@@ -120,14 +120,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             else
             {
-                if (!isNavigationIntercepted && NotFoundContent != null)
+                if (!isNavigationIntercepted && NotFound != null)
                 {
-                    Log.DisplayingNotFoundContent(_logger, locationPath, _baseUri);
+                    Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
                     // We did not find a Component that matches the route.
-                    // Only show the NotFoundContent if the application developer programatically got us here i.e we did not
+                    // Only show the NotFound if the application developer programatically got us here i.e we did not
                     // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
-                    _renderHandle.Render(NotFoundContent);
+                    _renderHandle.Render(NotFound);
                 }
                 else
                 {
@@ -159,8 +159,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, string, Exception> _displayingNotFoundContent =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "DisplayingNotFoundContent"), $"Displaying {nameof(NotFoundContent)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route");
+            private static readonly Action<ILogger, string, string, Exception> _displayingNotFound =
+                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "DisplayingNotFound"), $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route");
 
             private static readonly Action<ILogger, Type, string, string, Exception> _navigatingToComponent =
                 LoggerMessage.Define<Type, string, string>(LogLevel.Debug, new EventId(2, "NavigatingToComponent"), "Navigating to component {ComponentType} in response to path '{Path}' with base URI '{BaseUri}'");
@@ -168,9 +168,9 @@ namespace Microsoft.AspNetCore.Components.Routing
             private static readonly Action<ILogger, string, string, string, Exception> _navigatingToExternalUri =
                 LoggerMessage.Define<string, string, string>(LogLevel.Debug, new EventId(3, "NavigatingToExternalUri"), "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'");
 
-            internal static void DisplayingNotFoundContent(ILogger logger, string path, string baseUri)
+            internal static void DisplayingNotFound(ILogger logger, string path, string baseUri)
             {
-                _displayingNotFoundContent(logger, path, baseUri, null);
+                _displayingNotFound(logger, path, baseUri, null);
             }
 
             internal static void NavigatingToComponent(ILogger logger, Type componentType, string path, string baseUri)

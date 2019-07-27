@@ -10,12 +10,12 @@
 
 <CascadingAuthenticationState>
     <Router AppAssembly=typeof(BasicTestApp.Program).Assembly>
-        <AuthorizingContent>Authorizing...</AuthorizingContent>
-        <NotAuthorizedContent>
+        <Authorizing>Authorizing...</Authorizing>
+        <NotAuthorized>
             <div id="auth-failure">
                 Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
             </div>
-        </NotAuthorizedContent>
+        </NotAuthorized>
     </Router>
 </CascadingAuthenticationState>
 
