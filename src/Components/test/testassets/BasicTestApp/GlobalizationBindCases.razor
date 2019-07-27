@@ -3,6 +3,8 @@
 <h3 id="globalization-cases">Globalization Bind Cases</h3>
 <h3 id="culture-name-display">Culture is: @System.Globalization.CultureInfo.CurrentCulture.Name</h3>
 
+@* There are a mix of cases here using bind and bind-value for coverage *@
+
 <div>
     <p>Numbers using bind in text fields</p>
     <div>
@@ -10,7 +12,7 @@
         <span id="input_type_text_int_value">@inputTypeTextInt</span>
     </div>
     <div>
-        decimal: <input type="text" id="input_type_text_decimal" @bind="inputTypeTextDecimal" />
+        decimal: <input type="text" id="input_type_text_decimal" @bind-value="inputTypeTextDecimal" />
         <span id="input_type_text_decimal_value">@inputTypeTextDecimal</span>
     </div>
 </div>
@@ -22,7 +24,7 @@
         <span id="input_type_text_datetime_value">@inputTypeTextDateTime</span>
     </div>
     <div>
-        DateTimeOffset: <input type="text" id="input_type_text_datetimeoffset" @bind="inputTypeTextDateTimeOffset" />
+        DateTimeOffset: <input type="text" id="input_type_text_datetimeoffset" @bind-value="inputTypeTextDateTimeOffset" />
         <span id="input_type_text_datetimeoffset_value">@inputTypeTextDateTimeOffset</span>
     </div>
 </div>
@@ -34,7 +36,7 @@
         <span id="input_type_number_int_value">@inputTypeNumberInt</span>
     </div>
     <div>
-        decimal: <input type="number" id="input_type_number_decimal" @bind="inputTypeNumberDecimal" />
+        decimal: <input type="number" id="input_type_number_decimal" @bind-value="inputTypeNumberDecimal" />
         <span id="input_type_number_decimal_value">@inputTypeNumberDecimal</span>
     </div>
 </div>
@@ -47,7 +49,7 @@
         <span id="input_type_date_datetime_value">@inputTypeDateDateTime</span>
     </div>
     <div>
-        DateTimeOffset: <input type="text" id="input_type_date_datetimeoffset_extrainput" @bind="inputTypeDateDateTimeOffset" />
+        DateTimeOffset: <input type="text" id="input_type_date_datetimeoffset_extrainput" @bind-value="inputTypeDateDateTimeOffset" />
         <input type="date" id="input_type_date_datetimeoffset" @bind="inputTypeDateDateTimeOffset" />
         <span id="input_type_date_datetimeoffset_value">@inputTypeDateDateTimeOffset</span>
     </div>
