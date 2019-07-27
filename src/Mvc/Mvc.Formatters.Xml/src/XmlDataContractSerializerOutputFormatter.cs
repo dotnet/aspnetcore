@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ILogger _logger;
         private DataContractSerializerSettings _serializerSettings;
         private MvcOptions _mvcOptions;
+        private IFileBufferingStreamFactory _fileBufferingStreamFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerOutputFormatter"/>
@@ -263,13 +265,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var response = httpContext.Response;
 
             _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
+            _fileBufferingStreamFactory ??= new FileBufferingStreamFactory(httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().TempDirectoryPath);
 
             var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            IBufferedWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                fileBufferingWriteStream = _fileBufferingStreamFactory.CreateWriteStream();
+                responseStream = fileBufferingWriteStream.Buffer;
             }
 
             try
@@ -284,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
-                    response.ContentLength = fileBufferingWriteStream.Length;
+                    response.ContentLength = fileBufferingWriteStream.Buffer.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }

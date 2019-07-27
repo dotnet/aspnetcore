@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
@@ -524,6 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(Options.Create(new MvcOptions()))
+                .AddSingleton(Mock.Of<IWebHostEnvironment>(e => e.TempDirectoryPath == Path.GetTempPath()))
                 .BuildServiceProvider();
             return httpContext;
         }
