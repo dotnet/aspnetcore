@@ -213,28 +213,23 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Act/Assert: Initally, it's valid and unmodified
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
-            Assert.Equal("valid", inputComponent.FieldClass);
-            Assert.Equal("valid", inputComponent.CssClass); // Same because no Class was specified
+            Assert.Equal("valid", inputComponent.CssClass); //  no Class was specified
 
             // Act/Assert: Modify the field
             rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
-            Assert.Equal("modified valid", inputComponent.FieldClass);
             Assert.Equal("modified valid", inputComponent.CssClass);
 
             // Act/Assert: Make it invalid
             var messages = new ValidationMessageStore(rootComponent.EditContext);
             messages.Add(fieldIdentifier, "I do not like this value");
-            Assert.Equal("modified invalid", inputComponent.FieldClass);
             Assert.Equal("modified invalid", inputComponent.CssClass);
 
             // Act/Assert: Clear the modification flag
             rootComponent.EditContext.MarkAsUnmodified(fieldIdentifier);
-            Assert.Equal("invalid", inputComponent.FieldClass);
             Assert.Equal("invalid", inputComponent.CssClass);
 
             // Act/Assert: Make it valid
             messages.Clear();
-            Assert.Equal("valid", inputComponent.FieldClass);
             Assert.Equal("valid", inputComponent.CssClass);
         }
 
@@ -256,12 +251,10 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Act/Assert
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
-            Assert.Equal("valid", inputComponent.FieldClass);
             Assert.Equal("my-class other-class valid", inputComponent.CssClass);
 
             // Act/Assert: Retains custom class when changing field class
             rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
-            Assert.Equal("modified valid", inputComponent.FieldClass);
             Assert.Equal("my-class other-class modified valid", inputComponent.CssClass);
         }
 
@@ -392,8 +385,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             public new EditContext EditContext => base.EditContext;
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
-
-            public new string FieldClass => base.FieldClass;
 
             protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
             {
