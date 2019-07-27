@@ -723,8 +723,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 LoggedMessage.ResponseCached);
         }
 
-        [Fact]
-        public async Task FinalizeCacheBody_DoNotCache_IfContentLengthMismatches()
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("HEAD")]
+        [InlineData("head")]
+        public async Task FinalizeCacheBody_DoNotCache_IfContentLengthMismatches(string method)
         {
             var cache = new TestResponseCache();
             var sink = new TestSink();
@@ -734,6 +737,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.ShouldCacheResponse = true;
             middleware.ShimResponseStream(context);
             context.HttpContext.Response.ContentLength = 9;
+            context.HttpContext.Request.Method = method;
 
             await context.HttpContext.Response.WriteAsync(new string('0', 10));
 
@@ -747,6 +751,41 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseContentLengthMismatchNotCached);
+        }
+
+        [Theory]
+        [InlineData("HEAD", false)]
+        [InlineData("head", false)]
+        [InlineData("HEAD", true)]
+        [InlineData("head", true)]
+        public async Task FinalizeCacheBody_RequestHead_Cache_IfContentLengthPresent_AndBodyAbsentOrOfSameLength(string method, bool includeBody)
+        {
+            var cache = new TestResponseCache();
+            var sink = new TestSink();
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+            var context = TestUtils.CreateTestContext();
+
+            context.ShouldCacheResponse = true;
+            middleware.ShimResponseStream(context);
+            context.HttpContext.Response.ContentLength = 10;
+            context.HttpContext.Request.Method = method;
+
+            if (includeBody)
+            {
+                // A response to HEAD should not include a body, but it may be present
+                await context.HttpContext.Response.WriteAsync(new string('0', 10));
+            }
+
+            context.CachedResponse = new CachedResponse();
+            context.BaseKey = "BaseKey";
+            context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            middleware.FinalizeCacheBody(context);
+
+            Assert.Equal(1, cache.SetCount);
+            TestUtils.AssertLoggedMessages(
+                sink.Writes,
+                LoggedMessage.ResponseCached);
         }
 
         [Fact]
