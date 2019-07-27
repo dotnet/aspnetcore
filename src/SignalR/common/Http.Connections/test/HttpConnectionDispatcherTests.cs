@@ -1148,18 +1148,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.True(request1.IsCompleted);
 
                 request1 = dispatcher.ExecuteAsync(context1, options, app);
+                var count = 0;
                 // Wait until the request has started internally
-                while (connection.TransportTask.IsCompleted)
+                while (connection.TransportTask.IsCompleted && count < 50)
                 {
+                    count++;
                     await Task.Delay(1);
                 }
                 var transportTask = connection.TransportTask;
                 var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
                 await request1;
+                count = 0;
                 // Wait until the second request has started internally
-                while (connection.TransportTask.IsCompleted)
+                while (connection.TransportTask.IsCompleted && count < 50)
                 {
+                    count++;
                     await Task.Delay(1);
                 }
 
