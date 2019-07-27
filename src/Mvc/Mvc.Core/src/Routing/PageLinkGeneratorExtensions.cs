@@ -135,6 +135,7 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A absolute URI, or <c>null</c> if a URI cannot be created.</returns>
+        /// <remarks>
         /// <para>
         /// The value of <paramref name="host" /> should be a trusted value. Relying on the value of the current request
         /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
@@ -193,6 +194,7 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A absolute URI, or <c>null</c> if a URI cannot be created.</returns>
+        /// <remarks>
         /// <para>
         /// The value of <paramref name="host" /> should be a trusted value. Relying on the value of the current request
         /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
