@@ -37,9 +37,11 @@
   </PropertyGroup>
 
   <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
-  <KnownFrameworkReference Update="NETStandard.Library">
-    <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
-  </KnownFrameworkReference>
+  <ItemGroup>
+    <KnownFrameworkReference Update="NETStandard.Library">
+      <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
+    </KnownFrameworkReference>
+  </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
   <ItemGroup>
