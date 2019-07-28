@@ -152,7 +152,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                     app.UseDefaultFiles(new DefaultFilesOptions
                     {
                         RequestPath = new PathString(baseUrl),
-                        FileProvider = fileProvider
+                        FileProvider = fileProvider,
+                        AppendTrailingSlash = appendTrailingSlash
                     });
                     app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 });
