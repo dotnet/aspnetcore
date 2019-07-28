@@ -118,10 +118,11 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("", @"./SubFolder", "/")]
         [InlineData("", @"./SubFolder", "/你好/")]
         [InlineData("", @"./SubFolder", "/你好/世界/")]
-        [InlineData("", @".\", "/SubFolder/",false)]
-        [InlineData("", @".\subFolder", "/", false)]
-        [InlineData("", @".\SubFolder", "/你好/", false)]
-        [InlineData("", @".\SubFolder", "/你好/世界/", false)]
+        [InlineData("", @".", "/SubFolder/", false)]
+        [InlineData("", @"./", "/SubFolder/", false)]
+        [InlineData("", @"./SubFolder", "/", false)]
+        [InlineData("", @"./SubFolder", "/你好/", false)]
+        [InlineData("", @"./SubFolder", "/你好/世界/", false)]
         public async Task FoundDirectoryWithDefaultFile_PathModified_All(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
         {
             await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl, appendTrailingSlash);
