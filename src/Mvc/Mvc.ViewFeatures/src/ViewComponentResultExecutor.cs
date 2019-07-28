@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
         private IHttpResponseStreamWriterFactory _writerFactory;
+        private IFileBufferingStreamFactory _bufferFactory;
 
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ViewComponentResultExecutor(
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             HtmlEncoder htmlEncoder,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataDictionaryFactory)
-            : this(mvcHelperOptions, loggerFactory, htmlEncoder, modelMetadataProvider, tempDataDictionaryFactory, null)
+            : this(mvcHelperOptions, loggerFactory, htmlEncoder, modelMetadataProvider, tempDataDictionaryFactory, null, null)
         {
         }
 
@@ -45,7 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             HtmlEncoder htmlEncoder,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataDictionaryFactory,
-            IHttpResponseStreamWriterFactory writerFactory)
+            IHttpResponseStreamWriterFactory writerFactory,
+            IFileBufferingStreamFactory bufferFactory)
         {
             if (mvcHelperOptions == null)
             {
@@ -78,6 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataDictionaryFactory = tempDataDictionaryFactory;
             _writerFactory = writerFactory;
+            _bufferFactory = bufferFactory;
         }
 
         /// <inheritdoc />
@@ -122,6 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             _writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
+            _bufferFactory ??= context.HttpContext.RequestServices.GetRequiredService<IFileBufferingStreamFactory>();
 
             using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
             {
@@ -149,8 +153,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
                 else
                 {
-                    using var bufferingStream = new FileBufferingWriteStream();
-                    using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
+                    using var bufferingStream = _bufferFactory.CreateWriteStream();
+                    using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream.Buffer, resolvedContentTypeEncoding))
                     {
                         viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
                     }

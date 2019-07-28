@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -260,6 +261,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<JsonResult>, SystemTextJsonResultExecutor>();
             services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
+            services.TryAddSingleton<IFileBufferingStreamFactory>(s =>
+            {
+                var environment = s.GetRequiredService<IWebHostEnvironment>();
+                return new FileBufferingStreamFactory(environment.TempDirectoryPath);
+            });
+
 
             //
             // Route Handlers

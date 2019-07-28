@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -685,6 +686,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
             services.AddSingleton<IActionResultExecutor<ViewComponentResult>, ViewComponentResultExecutor>();
             services.AddSingleton<IHttpResponseStreamWriterFactory, TestHttpResponseStreamWriterFactory>();
+            services.AddSingleton<IFileBufferingStreamFactory>(new FileBufferingStreamFactory(Path.GetTempPath()));
 
             return services;
         }
