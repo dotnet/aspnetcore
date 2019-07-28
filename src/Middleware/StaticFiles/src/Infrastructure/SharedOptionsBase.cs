@@ -48,5 +48,14 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
             get { return SharedOptions.FileProvider; }
             set { SharedOptions.FileProvider = value; }
         }
+
+        /// <summary>
+        /// Indicates whether to add trailing slash at the end of path
+        /// </summary>
+        public bool AppendTrailingSlash
+        {
+            get { return SharedOptions.AppendTrailingSlash; }
+            set { SharedOptions.AppendTrailingSlash = value; }
+        }
     }
 }

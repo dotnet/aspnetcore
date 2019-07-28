@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                             FileProvider = fileProvider
                         });
 
-                        app.UseEndpoints(endpoints => {});
+                        app.UseEndpoints(endpoints => { });
                     },
                     services => { services.AddDirectoryBrowser(); services.AddRouting(); });
 
@@ -133,9 +133,14 @@ namespace Microsoft.AspNetCore.StaticFiles
         [InlineData("/somedir", @".", "/somedir/")]
         [InlineData("/somedir", @"./", "/somedir/")]
         [InlineData("/somedir", @".", "/somedir/SubFolder/")]
-        public async Task FoundDirectory_Served_All(string baseUrl, string baseDir, string requestUrl)
+        [InlineData("", @".", "/", false)]
+        [InlineData("", @".", "/SubFolder/", false)]
+        [InlineData("/somedir", @".", "/somedir/", false)]
+        [InlineData("/somedir", @"./", "/somedir/", false)]
+        [InlineData("/somedir", @".", "/somedir/SubFolder/", false)]
+        public async Task FoundDirectory_Served_All(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
         {
-            await FoundDirectory_Served(baseUrl, baseDir, requestUrl);
+            await FoundDirectory_Served(baseUrl, baseDir, requestUrl, appendTrailingSlash);
         }
 
         [ConditionalTheory]
@@ -143,12 +148,14 @@ namespace Microsoft.AspNetCore.StaticFiles
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("/somedir", @".\", "/somedir/")]
         [InlineData("/somedir", @".", "/somedir/subFolder/")]
-        public async Task FoundDirectory_Served_Windows(string baseUrl, string baseDir, string requestUrl)
+        [InlineData("/somedir", @".\", "/somedir/", false)]
+        [InlineData("/somedir", @".", "/somedir/subFolder/", false)]
+        public async Task FoundDirectory_Served_Windows(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
         {
-            await FoundDirectory_Served(baseUrl, baseDir, requestUrl);
+            await FoundDirectory_Served(baseUrl, baseDir, requestUrl, appendTrailingSlash);
         }
 
-        private async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
+        private async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl, bool appendTrailingSlash = true)
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, baseDir)))
             {
@@ -156,7 +163,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
                         RequestPath = new PathString(baseUrl),
-                        FileProvider = fileProvider
+                        FileProvider = fileProvider,
+                        AppendTrailingSlash = true,
                     }),
                     services => services.AddDirectoryBrowser());
                 var response = await server.CreateRequest(requestUrl).GetAsync();
@@ -284,6 +292,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Null(response.Content.Headers.ContentLength);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
+        }
+
+        [Fact]
+        public void Options_AppendTrailingSlashByDefault()
+        {
+            Assert.True(new DirectoryBrowserOptions().AppendTrailingSlash);
         }
     }
 }

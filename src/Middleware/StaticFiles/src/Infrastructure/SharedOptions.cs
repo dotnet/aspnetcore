@@ -42,5 +42,10 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         /// The file system used to locate resources
         /// </summary>
         public IFileProvider FileProvider { get; set; }
+
+        /// <summary>
+        /// Indicates whether to add trailing slash at the end of path
+        /// </summary>
+        public bool AppendTrailingSlash { get; set; } = true;
     }
 }

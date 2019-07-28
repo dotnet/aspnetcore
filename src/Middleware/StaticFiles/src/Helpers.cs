@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -26,6 +29,24 @@ namespace Microsoft.AspNetCore.StaticFiles
         internal static bool PathEndsInSlash(PathString path)
         {
             return path.Value.EndsWith("/", StringComparison.Ordinal);
+        }
+
+        internal static string GetPathValueWithSlash(PathString path)
+        {
+            if (!PathEndsInSlash(path))
+            {
+                return path.Value + "/";
+            }
+            return path.Value;
+        }
+
+        internal static Task RedirectToPathWithSlash(HttpContext context)
+        {
+            context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
+            var request = context.Request;
+            var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
+            context.Response.Headers[HeaderNames.Location] = redirect;
+            return Task.CompletedTask;
         }
 
         internal static bool TryMatchPath(HttpContext context, PathString matchUrl, bool forDirectory, out PathString subpath)
