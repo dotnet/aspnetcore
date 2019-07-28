@@ -70,9 +70,8 @@ namespace Ignitor
                 throw new InvalidOperationException("Element does not have a change event.");
             }
 
-            var sleectEventArgs = new UIChangeEventArgs()
+            var args = new ChangeEventArgs()
             {
-                Type = changeEventDescriptor.EventName,
                 Value = value
             };
 
@@ -88,7 +87,7 @@ namespace Ignitor
                 }
             };
 
-            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(sleectEventArgs));
+            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(args));
         }
 
         public Task ClickAsync(HubConnection connection)

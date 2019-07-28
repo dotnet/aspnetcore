@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Provides extension methods for <see cref="EventCallbackFactory"/> and <see cref="UIEventArgs"/> types.
+    /// Provides extension methods for <see cref="EventCallbackFactory"/> and <see cref="EventArgs"/> types.
     /// </summary>
-    public static class EventCallbackFactoryUIEventArgsExtensions
+    public static class EventCallbackFactoryEventArgsExtensions
     {
         /// <summary>
         /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIEventArgs> callback)
+        public static EventCallback<EventArgs> Create(this EventCallbackFactory factory, object receiver, Action<EventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIEventArgs>(receiver, callback);
+            return factory.Create<EventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIEventArgs, Task> callback)
+        public static EventCallback<EventArgs> Create(this EventCallbackFactory factory, object receiver, Func<EventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIEventArgs>(receiver, callback);
+            return factory.Create<EventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIChangeEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIChangeEventArgs> callback)
+        public static EventCallback<ChangeEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ChangeEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return factory.Create<ChangeEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -73,14 +73,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIChangeEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIChangeEventArgs, Task> callback)
+        public static EventCallback<ChangeEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ChangeEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return factory.Create<ChangeEventArgs>(receiver, callback);
         }
     }
 }

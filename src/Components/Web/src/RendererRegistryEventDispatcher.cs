@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.Components.Web
             }
         }
 
-        private static UIEventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
+        private static EventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
         {
             switch (eventArgsType)
             {
                 case "change":
-                    return DeserializeUIEventChangeArgs(eventArgsJson);
+                    return DeserializeChangeEventArgs(eventArgsJson);
                 case "clipboard":
                     return Deserialize<UIClipboardEventArgs>(eventArgsJson);
                 case "drag":
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 case "touch":
                     return Deserialize<UITouchEventArgs>(eventArgsJson);
                 case "unknown":
-                    return Deserialize<UIEventArgs>(eventArgsJson);
+                    return EventArgs.Empty;
                 case "wheel":
                     return Deserialize<UIWheelEventArgs>(eventArgsJson);
                 default:
@@ -92,9 +92,9 @@ namespace Microsoft.AspNetCore.Components.Web
             return JsonSerializer.Deserialize<T>(eventArgsJson, JsonSerializerOptionsProvider.Options);
         }
 
-        private static UIChangeEventArgs DeserializeUIEventChangeArgs(string eventArgsJson)
+        private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)
         {
-            var changeArgs = Deserialize<UIChangeEventArgs>(eventArgsJson);
+            var changeArgs = Deserialize<ChangeEventArgs>(eventArgsJson);
             var jsonElement = (JsonElement)changeArgs.Value;
             switch (jsonElement.ValueKind)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Web
                     changeArgs.Value = jsonElement.GetBoolean();
                     break;
                 default:
-                    throw new ArgumentException($"Unsupported {nameof(UIChangeEventArgs)} value {jsonElement}.");
+                    throw new ArgumentException($"Unsupported {nameof(ChangeEventArgs)} value {jsonElement}.");
             }
             return changeArgs;
         }
