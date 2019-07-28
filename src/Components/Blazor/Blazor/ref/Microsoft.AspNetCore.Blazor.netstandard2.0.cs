@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get { throw null; } }
         public System.Threading.Tasks.Task AddComponentAsync(System.Type componentType, string domElementSelector) { throw null; }
         public System.Threading.Tasks.Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        public override System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo eventFieldInfo, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public override System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo eventFieldInfo, System.EventArgs eventArgs) { throw null; }
         protected override void Dispose(bool disposing) { }
         protected override void HandleException(System.Exception exception) { }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch batch) { throw null; }

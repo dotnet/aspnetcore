@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<string> setter,
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool> setter,
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<bool?> setter,
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int> setter,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<int?> setter,
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long> setter,
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<long?> setter,
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float> setter,
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<float?> setter,
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double> setter,
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<double?> setter,
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal> setter,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<decimal?> setter,
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime> setter,
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime?> setter,
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTime?> setter,
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset> setter,
@@ -378,7 +378,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset> setter,
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset?> setter,
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="format"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder(
+        public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
             Action<DateTimeOffset?> setter,
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="existingValue"></param>
         /// <param name="culture"></param>
         /// <returns></returns>
-        public static EventCallback<UIChangeEventArgs> CreateBinder<T>(
+        public static EventCallback<ChangeEventArgs> CreateBinder<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
@@ -449,14 +449,14 @@ namespace Microsoft.AspNetCore.Components
             return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
         }
 
-        private static EventCallback<UIChangeEventArgs> CreateBinderCore<T>(
+        private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
             CultureInfo culture,
             BindConverter.BindParser<T> converter)
         {
-            Action<UIChangeEventArgs> callback = e =>
+            Action<ChangeEventArgs> callback = e =>
             {
                 T value = default;
                 var converted = false;
@@ -489,10 +489,10 @@ namespace Microsoft.AspNetCore.Components
                     setter(default);
                 }
             };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return factory.Create<ChangeEventArgs>(receiver, callback);
         }
 
-        private static EventCallback<UIChangeEventArgs> CreateBinderCore<T>(
+        private static EventCallback<ChangeEventArgs> CreateBinderCore<T>(
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Components
             string format,
             BindConverter.BindParserWithFormat<T> converter)
         {
-            Action<UIChangeEventArgs> callback = e =>
+            Action<ChangeEventArgs> callback = e =>
             {
                 T value = default;
                 var converted = false;
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Components
                     setter(default);
                 }
             };
-            return factory.Create<UIChangeEventArgs>(receiver, callback);
+            return factory.Create<ChangeEventArgs>(receiver, callback);
         }
     }
 }
