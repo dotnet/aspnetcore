@@ -119,12 +119,14 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
     public partial class SharedOptions
     {
         public SharedOptions() { }
+        public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
     }
     public abstract partial class SharedOptionsBase
     {
         protected SharedOptionsBase(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) { }
+        public bool AppendTrailingSlash { get { throw null; } set { } }
         public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { get { throw null; } set { } }
         public Microsoft.AspNetCore.Http.PathString RequestPath { get { throw null; } set { } }
         protected Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions SharedOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
