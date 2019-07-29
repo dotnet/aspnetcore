@@ -408,6 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             Assert.Equal(badHttpRequestException.StatusCode, StatusCodes.Status400BadRequest);
+            Assert.Equal(RequestRejectionReason.TlsOverHttpError, badHttpRequestException.Reason);
         }
 
         [Fact]
