@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </remarks>
         protected Task RenderRootComponentAsync(int componentId)
         {
-            return RenderRootComponentAsync(componentId, ParameterCollection.Empty);
+            return RenderRootComponentAsync(componentId, ParameterView.Empty);
         }
 
         /// <summary>
@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// this more than once.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        /// <param name="initialParameters">The <see cref="ParameterView"/>with the initial parameters to use for rendering.</param>
         /// <remarks>
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
             {

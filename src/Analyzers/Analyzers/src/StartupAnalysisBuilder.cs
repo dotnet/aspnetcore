@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Analyzers
     internal class StartupAnalysisBuilder
     {
         private readonly Dictionary<INamedTypeSymbol, List<object>> _analysesByType;
-        private readonly StartupAnalzyer _analyzer;
+        private readonly StartupAnalyzer _analyzer;
         private readonly object _lock;
 
-        public StartupAnalysisBuilder(StartupAnalzyer analyzer, StartupSymbols startupSymbols)
+        public StartupAnalysisBuilder(StartupAnalyzer analyzer, StartupSymbols startupSymbols)
         {
             _analyzer = analyzer;
             StartupSymbols = startupSymbols;

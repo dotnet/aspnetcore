@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Analyzers
                     if (serviceItem.UseMethod.Name == "BuildServiceProvider")
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
-                            StartupAnalzyer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
+                            StartupAnalyzer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
                             serviceItem.Operation.Syntax.GetLocation(),
                             serviceItem.UseMethod.Name,
                             serviceAnalysis.ConfigureServicesMethod.Name));

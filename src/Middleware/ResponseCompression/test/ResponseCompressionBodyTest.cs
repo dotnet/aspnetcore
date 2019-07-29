@@ -1,19 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCompression.Tests
 {
-    public class BodyWrapperStreamTests
+    public class ResponseCompressionBodyTest
     {
         [Theory]
         [InlineData(null, "Accept-Encoding")]
@@ -26,7 +23,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Headers[HeaderNames.Vary] = providedVaryHeader;
-            var stream = new BodyWrapperStream(httpContext, new MemoryStream(), new MockResponseCompressionProvider(flushable: true), null, null, null);
+            var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()));
 
             stream.Write(new byte[] { }, 0, 0);
 
@@ -41,22 +38,14 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
 
             var buffer = new byte[] { 1 };
-            byte[] written = null;
 
-            var mock = new Mock<Stream>();
-            mock.SetupGet(s => s.CanWrite).Returns(true);
-            mock.Setup(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Callback<byte[], int, int>((b, o, c) =>
-                {
-                    written = new ArraySegment<byte>(b, 0, c).ToArray();
-                });
+            var memoryStream = new MemoryStream();
+            var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), mock.Object, new MockResponseCompressionProvider(flushable), null, null, null);
-
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             stream.Write(buffer, 0, buffer.Length);
 
-            Assert.Equal(buffer, written);
+            Assert.Equal(buffer, memoryStream.ToArray());
         }
 
         [Theory]
@@ -67,9 +56,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var buffer = new byte[] { 1 };
 
             var memoryStream = new MemoryStream();
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(flushable), null, null, null);
+            var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             await stream.WriteAsync(buffer, 0, buffer.Length);
 
             Assert.Equal(buffer, memoryStream.ToArray());
@@ -80,9 +69,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var memoryStream = new MemoryStream();
 
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(true), null, null, null);
+            var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(true), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
 
             var path = "testfile1kb.txt";
             await stream.SendFileAsync(path, 0, null, CancellationToken.None);
@@ -99,9 +88,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var memoryStream = new MemoryStream();
 
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(flushable), null, null, null);
+            var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
 
-            stream.DisableResponseBuffering();
+            stream.DisableBuffering();
             stream.BeginWrite(buffer, 0, buffer.Length, (o) => {}, null);
 
             Assert.Equal(buffer, memoryStream.ToArray());

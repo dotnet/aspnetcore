@@ -282,6 +282,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract Microsoft.AspNetCore.Http.IHeaderDictionary Headers { get; }
         public abstract Microsoft.AspNetCore.Http.HttpContext HttpContext { get; }
         public abstract int StatusCode { get; set; }
+        public virtual System.Threading.Tasks.Task CompleteAsync() { throw null; }
         public abstract void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state);
         public virtual void OnCompleted(System.Func<System.Threading.Tasks.Task> callback) { }
         public abstract void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state);

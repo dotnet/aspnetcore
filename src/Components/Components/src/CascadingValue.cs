@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             // Implementing the parameter binding manually, instead of just calling
             // parameters.SetParameterProperties(this), is just a very slight perf optimization
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components
             // because it serves no useful purpose to have a <CascadingValue> otherwise.
             if (!hasSuppliedValue)
             {
-                throw new ArgumentException($"Missing required parameter '{nameof(Value)}' for component '{nameof(Parameter)}'.");
+                throw new ArgumentException($"Missing required parameter '{nameof(Value)}' for component '{GetType().Name}'.");
             }
 
             // Rendering is most efficient when things are queued from rootmost to leafmost.

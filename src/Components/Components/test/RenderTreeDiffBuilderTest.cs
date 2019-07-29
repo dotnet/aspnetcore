@@ -2222,7 +2222,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public string NonParameterProperty { get; set; }
 
             public void Attach(RenderHandle renderHandle) { }
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 parameters.SetParameterProperties(this);
                 return Task.CompletedTask;
@@ -2235,7 +2235,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class CaptureSetParametersComponent : IComponent
@@ -2246,7 +2246,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 SetParametersCallCount++;
                 return Task.CompletedTask;
@@ -2260,14 +2260,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private class NonDisposableComponent : IComponent
         {
             public void Attach(RenderHandle renderHandle) { }
 
-            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
+            public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
         }
 
         private static void AssertEdit(

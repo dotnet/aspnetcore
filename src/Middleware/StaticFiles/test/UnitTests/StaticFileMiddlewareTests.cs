@@ -66,9 +66,10 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundIfSendFileThrows()
         {
-            var mockSendFile = new Mock<IHttpSendFileFeature>();
+            var mockSendFile = new Mock<IHttpResponseBodyFeature>();
             mockSendFile.Setup(m => m.SendFileAsync(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new FileNotFoundException());
+            mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {

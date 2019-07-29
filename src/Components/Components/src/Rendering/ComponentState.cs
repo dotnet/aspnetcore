@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return Task.CompletedTask;
         }
 
-        public void SetDirectParameters(ParameterCollection parameters)
+        public void SetDirectParameters(ParameterView parameters)
         {
             // Note: We should be careful to ensure that the framework never calls
             // IComponent.SetParameters directly elsewhere. We should only call it
@@ -137,8 +137,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void NotifyCascadingValueChanged()
         {
             var directParams = _latestDirectParametersSnapshot != null
-                ? new ParameterCollection(_latestDirectParametersSnapshot.Buffer, 0)
-                : ParameterCollection.Empty;
+                ? new ParameterView(_latestDirectParametersSnapshot.Buffer, 0)
+                : ParameterView.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);
             _renderer.AddToPendingTasks(task);

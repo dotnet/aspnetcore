@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Components
         /// Method invoked to apply initial or updated parameters to the component.
         /// </summary>
         /// <param name="parameters">The parameters to apply.</param>
-        public virtual Task SetParametersAsync(ParameterCollection parameters)
+        public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             if (!_initialized)

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var prerenderingContext = new ComponentPrerenderingContext
             {
                 ComponentType = typeof(UriDisplayComponent),
-                Parameters = ParameterCollection.Empty,
+                Parameters = ParameterView.Empty,
                 Context = httpContext
             };
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var prerenderingContext = new ComponentPrerenderingContext
             {
                 ComponentType = typeof(UriDisplayComponent),
-                Parameters = ParameterCollection.Empty,
+                Parameters = ParameterView.Empty,
                 Context = httpContext
             };
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var prerenderingContext = new ComponentPrerenderingContext
             {
                 ComponentType = typeof(UriDisplayComponent),
-                Parameters = ParameterCollection.Empty,
+                Parameters = ParameterView.Empty,
                 Context = httpContext
             };
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var prerenderingContext = new ComponentPrerenderingContext
             {
                 ComponentType = typeof(ThrowExceptionComponent),
-                Parameters = ParameterCollection.Empty,
+                Parameters = ParameterView.Empty,
                 Context = httpContext
             };
 
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
                 _renderHandle = renderHandle;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 _renderHandle.Render(builder =>
                 {
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             public void Attach(RenderHandle renderHandle)
                 => throw new InvalidTimeZoneException();
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                  => Task.CompletedTask;
         }
     }

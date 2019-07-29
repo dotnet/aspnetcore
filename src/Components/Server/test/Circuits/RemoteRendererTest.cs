@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -366,8 +366,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 new CircuitClientProxy());
 
             // Act
-            var first = await renderer.RenderComponentAsync<TestComponent>(ParameterCollection.Empty);
-            var second = await renderer.RenderComponentAsync<TestComponent>(ParameterCollection.Empty);
+            var first = await renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+            var second = await renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
 
             // Assert
             Assert.Equal(0, first.ComponentId);
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 return Task.CompletedTask;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 TriggerRender();
                 return Task.CompletedTask;
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 _renderHandle = renderHandle;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 Content = parameters.GetValueOrDefault<RenderFragment>(nameof(Content));
                 Trigger ??= parameters.GetValueOrDefault<Trigger>(nameof(Trigger));

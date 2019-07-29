@@ -7,29 +7,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Components.Reflection;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Reflection
 {
-    /// <summary>
-    /// Extension methods for the <see cref="ParameterCollection"/> type.
-    /// </summary>
-    public static class ParameterCollectionExtensions
+    internal static class ComponentProperties
     {
         private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
         private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
             = new ConcurrentDictionary<Type, WritersForType>();
 
-        /// <summary>
-        /// For each parameter property on <paramref name="target"/>, updates its value to
-        /// match the corresponding entry in the <see cref="ParameterCollection"/>.
-        /// </summary>
-        /// <param name="parameterCollection">The <see cref="ParameterCollection"/>.</param>
-        /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
-        public static void SetParameterProperties(
-            in this ParameterCollection parameterCollection,
-            object target)
+        public static void SetProperties(in ParameterView parameters, object target)
         {
             if (target == null)
             {
@@ -47,7 +35,7 @@ namespace Microsoft.AspNetCore.Components
             if (writers.CaptureUnmatchedValuesWriter == null)
             {
                 // Logic for components without a CaptureUnmatchedValues parameter
-                foreach (var parameter in parameterCollection)
+                foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
                     if (!writers.WritersByName.TryGetValue(parameterName, out var writer))
@@ -65,7 +53,7 @@ namespace Microsoft.AspNetCore.Components
                 // Logic with components with a CaptureUnmatchedValues parameter
                 var isCaptureUnmatchedValuesParameterSetExplicitly = false;
                 Dictionary<string, object> unmatched = null;
-                foreach (var parameter in parameterCollection)
+                foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
                     if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))

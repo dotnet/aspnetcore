@@ -432,7 +432,7 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>81467ed9151861025bf5d467ba743ad5f2d53a7e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19376-02">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19376-02" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>fc001df5a1fd806dcf265efc1974f7c9adefbe31</Sha>
     </Dependency>

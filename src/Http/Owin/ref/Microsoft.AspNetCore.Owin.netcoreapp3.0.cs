@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Owin
         public OwinEnvironmentFeature() { }
         public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class OwinFeatureCollection : Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature, Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature, Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature, Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
+    public partial class OwinFeatureCollection : Microsoft.AspNetCore.Http.Features.Authentication.IHttpAuthenticationFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature, Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature, Microsoft.AspNetCore.Owin.IOwinEnvironmentFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         public OwinFeatureCollection(System.Collections.Generic.IDictionary<string, object> environment) { }
         public System.Collections.Generic.IDictionary<string, object> Environment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -85,6 +85,8 @@ namespace Microsoft.AspNetCore.Owin
         string Microsoft.AspNetCore.Http.Features.IHttpRequestFeature.Scheme { get { throw null; } set { } }
         string Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature.TraceIdentifier { get { throw null; } set { } }
         System.Threading.CancellationToken Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature.RequestAborted { get { throw null; } set { } }
+        System.IO.Stream Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.Stream { get { throw null; } }
+        System.IO.Pipelines.PipeWriter Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.Writer { get { throw null; } }
         System.IO.Stream Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.Body { get { throw null; } set { } }
         bool Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.HasStarted { get { throw null; } }
         Microsoft.AspNetCore.Http.IHeaderDictionary Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.Headers { get { throw null; } set { } }
@@ -99,9 +101,13 @@ namespace Microsoft.AspNetCore.Owin
         public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>> GetEnumerator() { throw null; }
         public TFeature Get<TFeature>() { throw null; }
         void Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature.Abort() { }
+        System.Threading.Tasks.Task Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.CompleteAsync() { throw null; }
+        void Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.DisableBuffering() { }
+        System.Threading.Tasks.Task Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? length, System.Threading.CancellationToken cancellation) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        System.Threading.Tasks.Task Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature.StartAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
         void Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
         void Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
-        System.Threading.Tasks.Task Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, System.Threading.CancellationToken cancellation) { throw null; }
         System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket> Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature.AcceptAsync(Microsoft.AspNetCore.Http.WebSocketAcceptContext context) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2> Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature.GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken) { throw null; }

@@ -2,18 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
 {
-    public class TailDropTests
+    public class QueuePolicyTests
     {
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            using var s = TestUtils.CreateTailDropQueue(2);
+            using var s = TestUtils.CreateQueuePolicy(2);
 
             var t1 = s.TryEnterAsync();
             Assert.True(t1.IsCompleted);
@@ -28,7 +26,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            using var s = TestUtils.CreateTailDropQueue(1);
+            using var s = TestUtils.CreateQueuePolicy(1);
             Assert.True(await s.TryEnterAsync().OrTimeout());
 
             var waitingTask = s.TryEnterAsync();
@@ -41,8 +39,8 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         [Fact]
         public async Task IsEncapsulated()
         {
-            using var s1 = TestUtils.CreateTailDropQueue(1);
-            using var s2 = TestUtils.CreateTailDropQueue(1);
+            using var s1 = TestUtils.CreateQueuePolicy(1);
+            using var s2 = TestUtils.CreateQueuePolicy(1);
 
             Assert.True(await s1.TryEnterAsync().OrTimeout());
             Assert.True(await s2.TryEnterAsync().OrTimeout());

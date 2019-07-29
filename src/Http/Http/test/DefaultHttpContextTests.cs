@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Http
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+            features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
             features.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
-            features.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set. all cached interfaces are null.
             var context = new DefaultHttpContext(features);
@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.Http
             var newFeatures = new FeatureCollection();
             newFeatures.Set<IHttpRequestFeature>(new HttpRequestFeature());
             newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());
+            newFeatures.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
             newFeatures.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
-            newFeatures.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set to newFeatures. all cached interfaces are null.
             context.Initialize(newFeatures);
@@ -445,14 +445,6 @@ namespace Microsoft.AspNetCore.Http
             }
 
             public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class MockHttpResponseStartFeature : IHttpResponseStartFeature
-        {
-            public Task StartAsync(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }

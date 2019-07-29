@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter
 {
-    internal class FIFOQueuePolicy : IQueuePolicy, IDisposable
+    internal class QueuePolicy : IQueuePolicy, IDisposable
     {
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private object _totalRequestsLock = new object();
         public int TotalRequests { get; private set; }
 
-        public FIFOQueuePolicy(IOptions<QueuePolicyOptions> options)
+        public QueuePolicy(IOptions<QueuePolicyOptions> options)
         {
             _maxConcurrentRequests = options.Value.MaxConcurrentRequests;
             if (_maxConcurrentRequests <= 0)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 
-        public async Task<bool> TryEnterAsync()
+        public async ValueTask<bool> TryEnterAsync()
         {
             // a return value of 'false' indicates that the request is rejected
             // a return value of 'true' indicates that the request may proceed

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         }
 
         public async Task<IEnumerable<string>> PrerenderComponentAsync(
-            ParameterCollection parameters,
+            ParameterView parameters,
             HttpContext httpContext,
             Type componentType)
         {

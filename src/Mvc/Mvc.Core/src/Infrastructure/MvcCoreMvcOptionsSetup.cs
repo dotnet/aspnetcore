@@ -80,6 +80,9 @@ namespace Microsoft.AspNetCore.Mvc
             // Set up default input formatters.
             options.InputFormatters.Add(new SystemTextJsonInputFormatter(_jsonOptions.Value, _loggerFactory.CreateLogger<SystemTextJsonInputFormatter>()));
 
+            // Media type formatter mappings for JSON
+            options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValues.ApplicationJson);
+
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());

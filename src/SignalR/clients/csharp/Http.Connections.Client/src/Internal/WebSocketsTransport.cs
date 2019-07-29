@@ -269,10 +269,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 if (!_aborted)
                 {
                     _application.Output.Complete(ex);
-
-                    // We re-throw here so we can communicate that there was an error when sending
-                    // the close frame
-                    throw;
                 }
             }
             finally
@@ -347,8 +343,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 if (WebSocketCanSend(socket))
                 {
-                    // We're done sending, send the close frame to the client if the websocket is still open
-                    await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    try
+                    {
+                        // We're done sending, send the close frame to the client if the websocket is still open
+                        await socket.CloseOutputAsync(error != null ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.ClosingWebSocketFailed(_logger, ex);
+                    }
                 }
 
                 _application.Input.Complete();

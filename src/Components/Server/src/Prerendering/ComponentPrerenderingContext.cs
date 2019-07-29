@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Gets or sets the parameters for the component.
         /// </summary>
-        public ParameterCollection Parameters { get; set; }
+        public ParameterView Parameters { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="HttpContext"/> in which the prerendering has been initiated.

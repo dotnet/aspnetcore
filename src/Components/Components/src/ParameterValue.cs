@@ -7,8 +7,15 @@ namespace Microsoft.AspNetCore.Components
     /// Represents a single parameter supplied to an <see cref="IComponent"/>
     /// by its parent in the render tree.
     /// </summary>
-    public readonly struct Parameter
+    public readonly struct ParameterValue
     {
+        internal ParameterValue(string name, object value, bool cascading)
+        {
+            Name = name;
+            Value = value;
+            Cascading = cascading;
+        }
+
         /// <summary>
         /// Gets the name of the parameter.
         /// </summary>
@@ -24,12 +31,5 @@ namespace Microsoft.AspNetCore.Components
         /// was supplied by a <see cref="CascadingValue{T}"/>.
         /// </summary>
         public bool Cascading { get; }
-
-        internal Parameter(string name, object value, bool cascading)
-        {
-            Name = name;
-            Value = value;
-            Cascading = cascading;
-        }
     }
 }

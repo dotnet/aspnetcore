@@ -10,16 +10,16 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Test
+namespace Microsoft.AspNetCore.Components
 {
-    public class ParameterCollectionAssignmentExtensionsTest
+    public partial class ParameterViewTest
     {
         [Fact]
         public void IncomingParameterMatchesAnnotatedPrivateProperty_SetsValue()
         {
             // Arrange
             var someObject = new object();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasInstanceProperties.IntProp), 123 },
                 { nameof(HasInstanceProperties.StringProp), "Hello" },
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInstanceProperties();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -40,14 +40,14 @@ namespace Microsoft.AspNetCore.Components.Test
         public void IncomingParameterMatchesDeclaredParameterCaseInsensitively_SetsValue()
         {
             // Arrange
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasInstanceProperties.IntProp).ToLowerInvariant(), 123 }
             }.Build();
             var target = new HasInstanceProperties();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void IncomingParameterMatchesInheritedDeclaredParameter_SetsValue()
         {
             // Arrange
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasInheritedProperties.IntProp), 123 },
                 { nameof(HasInheritedProperties.DerivedClassIntProp), 456 },
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInheritedProperties();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Components.Test
                 ObjectPropCurrentValue = existingObjectValue
             };
 
-            var parameterCollection = new ParameterCollectionBuilder().Build();
+            var parameters = new ParameterViewBuilder().Build();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(456, target.IntProp);
@@ -100,14 +100,14 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasPropertyWithoutParameterAttribute();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { "AnyOtherKey", 123 },
             }.Build();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.SetParameterProperties(target));
+                () => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -121,14 +121,14 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasPropertyWithoutParameterAttribute();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasPropertyWithoutParameterAttribute.IntProp), 123 },
             }.Build();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.SetParameterProperties(target));
+                () => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(default, target.IntProp);
@@ -144,13 +144,13 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var target = new HasCaptureUnmatchedValuesProperty();
             var value = new Dictionary<string, object>();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), value },
             }.Build();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Same(value, target.CaptureUnmatchedValues);
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasCaptureUnmatchedValuesProperty();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasCaptureUnmatchedValuesProperty.StringProp), "hi" },
                 { "test1", 123 },
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Components.Test
             }.Build();
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal("hi", target.StringProp);
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasCaptureUnmatchedValuesProperty();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues), new Dictionary<string, object>() },
                 { "test1", 123 },
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.Test
             }.Build();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasCaptureUnmatchedValuesProperty();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { "test2", 456 },
                 { "test1", 123 },
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Components.Test
             }.Build();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -240,10 +240,10 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasDupliateCaptureUnmatchedValuesProperty();
-            var parameterCollection = new ParameterCollectionBuilder().Build();
+            var parameters = new ParameterViewBuilder().Build();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -261,10 +261,10 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasWrongTypeCaptureUnmatchedValuesProperty();
-            var parameterCollection = new ParameterCollectionBuilder().Build();
+            var parameters = new ParameterViewBuilder().Build();
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+            var ex = Assert.Throws<InvalidOperationException>(() => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var someObject = new object();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasInstanceProperties.IntProp), "string value" },
             }.Build();
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.SetParameterProperties(target));
+                () => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -301,14 +301,14 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var target = new HasPropertyWhoseSetterThrows();
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasPropertyWhoseSetterThrows.StringProp), "anything" },
             }.Build();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.SetParameterProperties(target));
+                () => parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -321,12 +321,12 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DeclaredParametersVaryOnlyByCase_Throws()
         {
             // Arrange
-            var parameterCollection = new ParameterCollectionBuilder().Build();
+            var parameters = new ParameterViewBuilder().Build();
             var target = new HasParametersVaryingOnlyByCase();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                parameterCollection.SetParameterProperties(target));
+                parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -344,12 +344,12 @@ namespace Microsoft.AspNetCore.Components.Test
             // base class can legitimately depend on it for correct functioning.
 
             // Arrange
-            var parameterCollection = new ParameterCollectionBuilder().Build();
+            var parameters = new ParameterViewBuilder().Build();
             var target = new HasParameterClashingWithInherited();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                parameterCollection.SetParameterProperties(target));
+                parameters.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void SupplyingNullWritesDefaultForType()
         {
             // Arrange
-            var parameterCollection = new ParameterCollectionBuilder
+            var parameters = new ParameterViewBuilder
             {
                 { nameof(HasInstanceProperties.IntProp), null },
                 { nameof(HasInstanceProperties.StringProp), null },
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInstanceProperties { IntProp = 123, StringProp = "Hello" };
 
             // Act
-            parameterCollection.SetParameterProperties(target);
+            parameters.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(0, target.IntProp);
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Components.Test
             [Parameter(CaptureUnmatchedValues = true)] public KeyValuePair<string, object>[] CaptureUnmatchedValuesProp { get; set; }
         }
 
-        class ParameterCollectionBuilder : IEnumerable
+        class ParameterViewBuilder : IEnumerable
         {
             private readonly List<(string Name, object Value)> _keyValuePairs
                 = new List<(string, object)>();
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public IEnumerator GetEnumerator()
                 => throw new NotImplementedException();
 
-            public ParameterCollection Build()
+            public ParameterView Build()
             {
                 var builder = new RenderTreeBuilder();
                 builder.OpenComponent<FakeComponent>(0);
@@ -466,17 +466,8 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.AddAttribute(1, kvp.Name, kvp.Value);
                 }
                 builder.CloseComponent();
-                return new ParameterCollection(builder.GetFrames().Array, ownerIndex: 0);
+                return new ParameterView(builder.GetFrames().Array, ownerIndex: 0);
             }
-        }
-
-        class FakeComponent : IComponent
-        {
-            public void Attach(RenderHandle renderHandle)
-                => throw new NotImplementedException();
-
-            public Task SetParametersAsync(ParameterCollection parameters)
-                => throw new NotImplementedException();
         }
     }
 }
