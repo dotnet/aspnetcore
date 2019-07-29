@@ -87,9 +87,10 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 // If the path matches a directory but does not end in a slash, redirect to add the slash.
                 // This prevents relative links from breaking.
-                if (!Helpers.PathEndsInSlash(context.Request.Path) && _options.AppendTrailingSlash)
+                if (!Helpers.PathEndsInSlash(context.Request.Path) && _options.RedirectToAppendTrailingSlash)
                 {
-                    return Helpers.RedirectToPathWithSlash(context);
+                    Helpers.RedirectToPathWithSlash(context);
+                    return Task.CompletedTask;
                 }
 
                 return _formatter.GenerateContentAsync(context, contents);

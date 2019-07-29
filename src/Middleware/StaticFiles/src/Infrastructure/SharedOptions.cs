@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
         public IFileProvider FileProvider { get; set; }
 
         /// <summary>
-        /// Indicates whether to add trailing slash at the end of path
+        /// Indicates whether to redirect to add a trailing slash at the end of path. Relative resource links may require this.
         /// </summary>
-        public bool AppendTrailingSlash { get; set; } = true;
+        public bool RedirectToAppendTrailingSlash { get; set; } = true;
     }
 }

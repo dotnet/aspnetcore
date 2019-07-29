@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         internal static IFileProvider ResolveFileProvider(IWebHostEnvironment hostingEnv)
         {
-            if (hostingEnv.WebRootFileProvider == null) {
+            if (hostingEnv.WebRootFileProvider == null)
+            {
                 throw new InvalidOperationException("Missing FileProvider.");
             }
             return hostingEnv.WebRootFileProvider;
@@ -40,13 +41,12 @@ namespace Microsoft.AspNetCore.StaticFiles
             return path.Value;
         }
 
-        internal static Task RedirectToPathWithSlash(HttpContext context)
+        internal static void RedirectToPathWithSlash(HttpContext context)
         {
             context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
             var request = context.Request;
             var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
             context.Response.Headers[HeaderNames.Location] = redirect;
-            return Task.CompletedTask;
         }
 
         internal static bool TryMatchPath(HttpContext context, PathString matchUrl, bool forDirectory, out PathString subpath)
