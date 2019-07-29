@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 
         public void SendPayload(string payload)
         {
-            // Dump the payload, we don't care
+            _counter?.Receive(payload);
         }
 
         public DateTime GetCurrentTime()

@@ -29,10 +29,11 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
             }
         }
 
-        public void Receive(string a) {
+        public void Receive(string payload)
+        {
             lock (_lock)
             {
-                _receivedCount += a.Length;
+                _receivedCount += payload.Length;
             }
         }
 
