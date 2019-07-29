@@ -999,10 +999,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (stream.DrainExpirationTicks == default)
                 {
-                    if (!stream.HasDecremented)
-                    {
-                        throw new Exception("uh oh");
-                    }
                     _serverActiveConnectionCount--;
                     stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
                 }

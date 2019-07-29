@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
-        public bool HasDecremented { get; private set; } = true;
+        private bool _hasIncremented;
         public Pipe RequestBodyPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
-                        Debug.Assert(HasDecremented);
+                        Debug.Assert(!_hasIncremented);
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
                         RequestBodyPipe.Writer.Complete();
@@ -486,22 +486,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void IncrementActiveStreamCount()
         {
-            if (!HasDecremented)
-            {
-                throw new Exception("Have no decremented");
-            }
-            HasDecremented = false;
+            Debug.Assert(!_hasIncremented);
+
+            _hasIncremented = true;
             _context.StreamLifetimeHandler.IncrementActiveStreamCount();
         }
 
         public void DecrementActiveStreamCount()
         {
-            if (HasDecremented)
+            if (!_hasIncremented)
             {
-                // Double decrement
-                throw new Exception("Already decremented");
+                return;
             }
-            HasDecremented = true;
+
+            _hasIncremented = false;
             _context.StreamLifetimeHandler.DecrementActiveStreamCount();
         }
 
