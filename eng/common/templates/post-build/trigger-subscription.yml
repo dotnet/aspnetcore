@@ -8,4 +8,6 @@ steps:
     filePath: $(Build.SourcesDirectory)/eng/common/post-build/trigger-subscriptions.ps1
     arguments: -SourceRepo $(Build.Repository.Uri)
       -ChannelId ${{ parameters.ChannelId }}
-      -BarToken $(MaestroAccessToken)
+      -MaestroApiAccessToken $(MaestroAccessToken)
+      -MaestroApiEndPoint $(MaestroApiEndPoint)
+      -MaestroApiVersion $(MaestroApiVersion)

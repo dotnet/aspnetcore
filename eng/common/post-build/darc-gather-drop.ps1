@@ -1,13 +1,12 @@
 param(
-  [Parameter(Mandatory=$true)][string] $BarBuildId,             # ID of the build which assets should be downloaded
-  [Parameter(Mandatory=$true)][string] $MaestroAccessToken,     # Token used to access Maestro API
-  [Parameter(Mandatory=$true)][string] $DropLocation            # Where the assets should be downloaded to
+  [Parameter(Mandatory=$true)][int] $BarBuildId,                # ID of the build which assets should be downloaded
+  [Parameter(Mandatory=$true)][string] $DropLocation,           # Where the assets should be downloaded to
+  [Parameter(Mandatory=$true)][string] $MaestroApiAccessToken,  # Token used to access Maestro API
+  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = "https://maestro-prod.westus2.cloudapp.azure.com",     # Maestro API URL
+  [Parameter(Mandatory=$false)][string] $MaestroApiVersion = "2019-01-16"                                            # Version of Maestro API to use
 )
 
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
-
-. $PSScriptRoot\..\tools.ps1
+. $PSScriptRoot\post-build-utils.ps1
 
 try {
   Write-Host "Installing DARC ..."
@@ -24,8 +23,8 @@ try {
     --continue-on-error `
     --id $BarBuildId `
     --output-dir $DropLocation `
-    --bar-uri https://maestro-prod.westus2.cloudapp.azure.com/ `
-    --password $MaestroAccessToken `
+    --bar-uri $MaestroApiEndpoint `
+    --password $MaestroApiAccessToken `
     --latest-location
 }
 catch {

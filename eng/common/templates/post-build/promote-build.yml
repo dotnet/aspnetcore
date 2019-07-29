@@ -11,7 +11,6 @@ jobs:
       value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
     - name: ChannelId
       value: ${{ parameters.ChannelId }}
-    - group: Publish-Build-Assets
   pool:
     vmImage: 'windows-2019'
   steps:
@@ -21,4 +20,6 @@ jobs:
         filePath: $(Build.SourcesDirectory)/eng/common/post-build/promote-build.ps1
         arguments: -BuildId $(BARBuildId) 
           -ChannelId $(ChannelId) 
-          -BarToken $(MaestroAccessToken)
+          -MaestroApiAccessToken $(MaestroApiAccessToken)
+          -MaestroApiEndPoint $(MaestroApiEndPoint)
+          -MaestroApiVersion $(MaestroApiVersion)

@@ -41,7 +41,6 @@ stages:
     dependsOn: setupMaestroVars
     variables:
       - group: DotNet-Blob-Feed
-      - group: Publish-Build-Assets
       - group: AzureDevOps-Artifact-Feeds-Pats
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
@@ -87,8 +86,8 @@ stages:
             /p:StaticInternalFeed=$(dotnetfeed-internal-nonstable-feed-url)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
             /p:BARBuildId=$(BARBuildId) 
-            /p:MaestroApiEndpoint='https://maestro-prod.westus2.cloudapp.azure.com'
-            /p:BuildAssetRegistryToken='$(MaestroAccessToken)' 
+            /p:MaestroApiEndpoint='$(MaestroApiEndPoint)' 
+            /p:BuildAssetRegistryToken='$(MaestroApiAccessToken)' 
             /p:ManifestsBasePath='$(Build.ArtifactStagingDirectory)/AssetManifests/' 
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
