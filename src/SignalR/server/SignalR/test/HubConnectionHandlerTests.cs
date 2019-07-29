@@ -332,6 +332,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                                                             sendHandshakeRequestMessage: true,
                                                             expectedHandshakeResponseMessage: false);
 
+                    var message = await client.ReadAsync(isHandshake: true).OrTimeout();
+
+                    Assert.Equal("Handshake was canceled.", ((HandshakeResponseMessage)message).Error);
+
                     // Connection closes
                     await connectionHandlerTask.OrTimeout();
 

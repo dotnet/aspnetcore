@@ -89,6 +89,7 @@ namespace Microsoft.AspNetCore.SignalR
                 KeepAliveInterval = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval,
                 ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
+                MaximumReceiveMessageSize = _maximumMessageSize,
             };
 
             Log.ConnectedStarting(_logger);
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.SignalR
             var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
 
             var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
-            if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _maximumMessageSize, _protocolResolver, _userIdProvider, _enableDetailedErrors))
+            if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }
