@@ -30,7 +30,7 @@ using System.Reflection;
         ((System.Action)(() => {
 #nullable restore
 #line 4 "x:\dir\subdir\Test\_Imports.razor"
-MainLayout __typeHelper = default(MainLayout);
+MainLayout __typeHelper = default!;
 
 #line default
 #line hidden

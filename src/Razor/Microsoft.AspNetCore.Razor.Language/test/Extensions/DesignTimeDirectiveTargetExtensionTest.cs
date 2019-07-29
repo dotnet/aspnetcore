@@ -60,7 +60,7 @@ private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
 #nullable restore
 #line 1 ""test.cshtml""
-System.String __typeHelper = default(System.String);
+System.String __typeHelper = default!;
 
 #line default
 #line hidden
@@ -142,7 +142,7 @@ private void __RazorDirectiveTokenHelpers__() {
 ((System.Action)(() => {
 #nullable restore
 #line 1 ""test.cshtml""
-global::System.Object Foo = null;
+global::System.Object Foo = null!;
 
 #line default
 #line hidden

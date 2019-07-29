@@ -27,7 +27,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         ((System.Action)(() => {
 #nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
-global::System.Object MySection = null;
+global::System.Object MySection = null!;
 
 #line default
 #line hidden
@@ -37,7 +37,7 @@ global::System.Object MySection = null;
         ((System.Action)(() => {
 #nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
-global::System.Object nestedsection = null;
+global::System.Object nestedsection = null!;
 
 #line default
 #line hidden

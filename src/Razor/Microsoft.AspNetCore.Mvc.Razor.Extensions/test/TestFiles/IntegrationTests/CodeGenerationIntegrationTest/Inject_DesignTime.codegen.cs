@@ -18,7 +18,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml"
-MyApp __typeHelper = default(MyApp);
+MyApp __typeHelper = default!;
 
 #line default
 #line hidden
@@ -28,7 +28,7 @@ MyApp __typeHelper = default(MyApp);
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml"
-global::System.Object MyPropertyName = null;
+global::System.Object MyPropertyName = null!;
 
 #line default
 #line hidden

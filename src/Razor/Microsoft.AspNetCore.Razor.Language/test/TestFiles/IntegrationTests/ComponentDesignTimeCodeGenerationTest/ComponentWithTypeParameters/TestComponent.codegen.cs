@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Components;
         ((System.Action)(() => {
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object TItem1 = null;
+global::System.Object TItem1 = null!;
 
 #line default
 #line hidden
@@ -31,7 +31,7 @@ global::System.Object TItem1 = null;
         ((System.Action)(() => {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-global::System.Object TItem2 = null;
+global::System.Object TItem2 = null!;
 
 #line default
 #line hidden

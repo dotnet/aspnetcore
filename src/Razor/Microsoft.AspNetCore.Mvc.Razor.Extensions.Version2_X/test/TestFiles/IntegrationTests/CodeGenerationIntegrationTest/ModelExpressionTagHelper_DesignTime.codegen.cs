@@ -23,7 +23,7 @@ namespace AspNetCore
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
-DateTime __typeHelper = default(DateTime);
+DateTime __typeHelper = default;
 
 #line default
 #line hidden

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
-foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
+foo.bar<baz<biz>>.boz __typeHelper = default!;
 
 #line default
 #line hidden

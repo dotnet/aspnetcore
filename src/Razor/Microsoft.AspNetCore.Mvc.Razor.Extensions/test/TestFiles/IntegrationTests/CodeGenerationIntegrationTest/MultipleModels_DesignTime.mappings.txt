@@ -5,6 +5,6 @@ Generated Location: (797:20,0 [21] )
 
 Source Location: (37:1,7 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml)
 |System.Collections.IEnumerable|
-Generated Location: (1086:30,0 [30] )
+Generated Location: (1064:30,0 [30] )
 |System.Collections.IEnumerable|
 

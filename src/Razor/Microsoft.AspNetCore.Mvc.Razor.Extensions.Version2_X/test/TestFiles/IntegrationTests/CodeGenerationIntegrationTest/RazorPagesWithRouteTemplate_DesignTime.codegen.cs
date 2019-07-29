@@ -31,7 +31,7 @@ global::System.Object __typeHelper = "/About";
         ))();
         ((System.Action)(() => {
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml"
-NewModel __typeHelper = default(NewModel);
+NewModel __typeHelper = default;
 
 #line default
 #line hidden

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
-global::System.Object Link = null;
+global::System.Object Link = null!;
 
 #line default
 #line hidden

@@ -24,7 +24,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-DateTime __typeHelper = default(DateTime);
+DateTime __typeHelper = default!;
 
 #line default
 #line hidden
@@ -44,7 +44,7 @@ global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
         ((System.Action)(() => {
 #nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-global::System.Object Section1 = null;
+global::System.Object Section1 = null!;
 
 #line default
 #line hidden

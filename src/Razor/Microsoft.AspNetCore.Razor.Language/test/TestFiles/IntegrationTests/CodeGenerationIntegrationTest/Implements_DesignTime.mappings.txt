@@ -7,7 +7,7 @@ Source Location: (39:2,12 [38] TestFiles/IntegrationTests/CodeGenerationIntegrat
 |
     void IDisposable.Dispose() { }
 |
-Generated Location: (1078:31,12 [38] )
+Generated Location: (1066:31,12 [38] )
 |
     void IDisposable.Dispose() { }
 |

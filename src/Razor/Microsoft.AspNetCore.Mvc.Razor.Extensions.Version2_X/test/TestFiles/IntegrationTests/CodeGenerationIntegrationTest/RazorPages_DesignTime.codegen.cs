@@ -28,7 +28,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
-NewModel __typeHelper = default(NewModel);
+NewModel __typeHelper = default;
 
 #line default
 #line hidden

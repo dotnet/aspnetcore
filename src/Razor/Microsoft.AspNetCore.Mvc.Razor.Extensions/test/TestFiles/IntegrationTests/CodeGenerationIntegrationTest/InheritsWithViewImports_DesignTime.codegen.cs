@@ -18,7 +18,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsWithViewImports.cshtml"
-MyModel __typeHelper = default(MyModel);
+MyModel __typeHelper = default!;
 
 #line default
 #line hidden

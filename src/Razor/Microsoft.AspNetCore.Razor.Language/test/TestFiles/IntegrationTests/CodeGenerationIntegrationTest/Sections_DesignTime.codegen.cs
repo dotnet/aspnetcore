@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ((System.Action)(() => {
 #nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-global::System.Object Section2 = null;
+global::System.Object Section2 = null!;
 
 #line default
 #line hidden
@@ -20,7 +20,7 @@ global::System.Object Section2 = null;
         ((System.Action)(() => {
 #nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-global::System.Object Section1 = null;
+global::System.Object Section1 = null!;
 
 #line default
 #line hidden
@@ -30,7 +30,7 @@ global::System.Object Section1 = null;
         ((System.Action)(() => {
 #nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-global::System.Object NestedDelegates = null;
+global::System.Object NestedDelegates = null!;
 
 #line default
 #line hidden

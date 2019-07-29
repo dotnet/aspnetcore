@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Implements.cshtml"
-IDisposable __typeHelper = default(IDisposable);
+IDisposable __typeHelper = default!;
 
 #line default
 #line hidden

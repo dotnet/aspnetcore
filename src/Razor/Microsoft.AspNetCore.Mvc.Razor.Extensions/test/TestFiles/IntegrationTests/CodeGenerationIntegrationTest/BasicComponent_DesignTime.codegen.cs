@@ -15,7 +15,7 @@ namespace __GeneratedComponent
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
-IDisposable __typeHelper = default(IDisposable);
+IDisposable __typeHelper = default!;
 
 #line default
 #line hidden

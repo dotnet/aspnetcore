@@ -5,6 +5,6 @@ Generated Location: (779:20,0 [19] )
 
 Source Location: (28:0,28 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml)
 |Helper|
-Generated Location: (1084:30,22 [6] )
+Generated Location: (1064:30,22 [6] )
 |Helper|
 

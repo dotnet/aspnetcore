@@ -58,7 +58,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
-MyService<TModel> __typeHelper = default(MyService<TModel>);
+MyService<TModel> __typeHelper = default!;
 
 #line default
 #line hidden

@@ -24,7 +24,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
-DateTime __typeHelper = default(DateTime);
+DateTime __typeHelper = default!;
 
 #line default
 #line hidden

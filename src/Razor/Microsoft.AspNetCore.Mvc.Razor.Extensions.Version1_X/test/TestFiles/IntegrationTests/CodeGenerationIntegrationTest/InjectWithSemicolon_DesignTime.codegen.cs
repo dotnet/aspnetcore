@@ -17,7 +17,7 @@ namespace AspNetCore
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml"
-MyModel __typeHelper = default(MyModel);
+MyModel __typeHelper = default;
 
 #line default
 #line hidden
@@ -25,7 +25,7 @@ MyModel __typeHelper = default(MyModel);
         ))();
         ((System.Action)(() => {
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml"
-MyApp __typeHelper = default(MyApp);
+MyApp __typeHelper = default;
 
 #line default
 #line hidden
@@ -41,7 +41,7 @@ global::System.Object MyPropertyName = null;
         ))();
         ((System.Action)(() => {
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml"
-MyService<TModel> __typeHelper = default(MyService<TModel>);
+MyService<TModel> __typeHelper = default;
 
 #line default
 #line hidden
@@ -57,7 +57,7 @@ global::System.Object Html = null;
         ))();
         ((System.Action)(() => {
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml"
-MyApp __typeHelper = default(MyApp);
+MyApp __typeHelper = default;
 
 #line default
 #line hidden
@@ -73,7 +73,7 @@ global::System.Object MyPropertyName2 = null;
         ))();
         ((System.Action)(() => {
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InjectWithSemicolon.cshtml"
-MyService<TModel> __typeHelper = default(MyService<TModel>);
+MyService<TModel> __typeHelper = default;
 
 #line default
 #line hidden

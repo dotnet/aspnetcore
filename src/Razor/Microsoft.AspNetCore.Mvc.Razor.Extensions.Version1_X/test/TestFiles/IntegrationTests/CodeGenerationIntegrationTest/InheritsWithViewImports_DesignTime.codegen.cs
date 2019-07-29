@@ -17,7 +17,7 @@ namespace AspNetCore
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsWithViewImports.cshtml"
-MyModel __typeHelper = default(MyModel);
+MyModel __typeHelper = default;
 
 #line default
 #line hidden

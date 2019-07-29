@@ -31,7 +31,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
         ((System.Action)(() => {
 #nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
-NewModel __typeHelper = default(NewModel);
+NewModel __typeHelper = default!;
 
 #line default
 #line hidden

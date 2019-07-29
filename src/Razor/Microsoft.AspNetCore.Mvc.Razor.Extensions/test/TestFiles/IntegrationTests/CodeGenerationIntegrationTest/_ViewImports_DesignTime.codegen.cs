@@ -18,7 +18,7 @@ namespace AspNetCore
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml"
-IHtmlHelper<TModel> __typeHelper = default(IHtmlHelper<TModel>);
+IHtmlHelper<TModel> __typeHelper = default!;
 
 #line default
 #line hidden
@@ -28,7 +28,7 @@ IHtmlHelper<TModel> __typeHelper = default(IHtmlHelper<TModel>);
         ((System.Action)(() => {
 #nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml"
-global::System.Object Helper = null;
+global::System.Object Helper = null!;
 
 #line default
 #line hidden

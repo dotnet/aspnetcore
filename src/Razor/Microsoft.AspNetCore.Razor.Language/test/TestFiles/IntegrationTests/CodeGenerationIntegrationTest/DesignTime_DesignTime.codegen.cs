@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ((System.Action)(() => {
 #nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
-global::System.Object Footer = null;
+global::System.Object Footer = null!;
 
 #line default
 #line hidden
