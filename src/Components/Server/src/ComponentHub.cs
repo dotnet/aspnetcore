@@ -48,6 +48,9 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// For unit testing only.
         /// </summary>
+        // We store the circuit host in Context.Items which is tied to the lifetime of the underlying
+        // SignalR connection. There's no need to clean this up, it's a non-owning reference and it
+        // will go away when the connection does.
         internal CircuitHost CircuitHost
         {
             get => (CircuitHost)Context.Items[CircuitKey];
@@ -65,7 +68,6 @@ namespace Microsoft.AspNetCore.Components.Server
                 return Task.CompletedTask;
             }
 
-            CircuitHost = null;
             if (exception != null)
             {
                 return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
@@ -92,6 +94,8 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 Log.UnhandledExceptionInCircuit(_logger, circuitHost.CircuitId, e);
             }
+
+            await _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>
@@ -149,8 +153,8 @@ namespace Microsoft.AspNetCore.Components.Server
             if (circuitHost != null)
             {
                 CircuitHost = circuitHost;
+                CircuitHost.UnhandledException += CircuitHost_UnhandledException;
 
-                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
                 circuitHost.SetCircuitUser(Context.User);
                 circuitHost.SendPendingBatches();
                 return true;

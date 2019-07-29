@@ -7,8 +7,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitClientProxy client,
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
-            IList<ComponentDescriptor> descriptors,
+            IReadOnlyList<ComponentDescriptor> descriptors,
             RemoteJSRuntime jsRuntime,
             CircuitHandler[] circuitHandlers,
             ILogger logger)
@@ -92,23 +90,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public RendererRegistry RendererRegistry { get; }
 
-        public IList<ComponentDescriptor> Descriptors { get; }
+        public IReadOnlyList<ComponentDescriptor> Descriptors { get; }
 
         public IServiceProvider Services { get; }
-
-        public Task<ComponentRenderedText> PrerenderComponentAsync(Type componentType, ParameterView parameters)
-        {
-            return Renderer.Dispatcher.InvokeAsync(async () =>
-            {
-                var result = await Renderer.RenderComponentAsync(componentType, parameters);
-
-                // When we prerender we start the circuit in a disconnected state. As such, we only call
-                // OnCircuitOpenenedAsync here and when the client reconnects we run OnConnectionUpAsync
-                await OnCircuitOpenedAsync(CancellationToken.None);
-
-                return result;
-            });
-        }
 
         public void SetCircuitUser(ClaimsPrincipal user)
         {
@@ -117,26 +101,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 var authenticationState = new AuthenticationState(user);
                 authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
-            }
-        }
-
-        internal void InitializeCircuitAfterPrerender(UnhandledExceptionEventHandler unhandledException)
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-                UnhandledException += unhandledException;
-                var uriHelper = (RemoteUriHelper)Services.GetRequiredService<IUriHelper>();
-                if (!uriHelper.HasAttachedJSRuntime)
-                {
-                    uriHelper.AttachJsRuntime(JSRuntime);
-                }
-
-                var navigationInterception = (RemoteNavigationInterception)Services.GetRequiredService<INavigationInterception>();
-                if (!navigationInterception.HasAttachedJSRuntime)
-                {
-                    navigationInterception.AttachJSRuntime(JSRuntime);
-                }
             }
         }
 
@@ -188,7 +152,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     return;
                 }
 
-
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
@@ -233,13 +196,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     // That's because AddComponentAsync waits for quiescence, which can take
                     // arbitrarily long. In the meantime we might need to be receiving and
                     // processing incoming JSInterop calls or similar.
-                    for (var i = 0; i < Descriptors.Count; i++)
+                    var count = Descriptors.Count;
+                    for (var i = 0; i < count; i++)
                     {
-                        var (componentType, domElementSelector, prerendered) = Descriptors[i];
-                        if (!prerendered)
-                        {
-                            await Renderer.AddComponentAsync(componentType, domElementSelector);
-                        }
+                        var (componentType, domElementSelector) = Descriptors[i];
+                        await Renderer.AddComponentAsync(componentType, domElementSelector);
                     }
                 }
                 catch (Exception ex)
@@ -256,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             try
             {
                 AssertInitialized();
-                if(assemblyName == "Microsoft.AspNetCore.Components.Web" && methodIdentifier == "DispatchEvent")
+                if (assemblyName == "Microsoft.AspNetCore.Components.Web" && methodIdentifier == "DispatchEvent")
                 {
                     Log.DispatchEventTroughJSInterop(_logger);
                     return;

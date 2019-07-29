@@ -65,9 +65,7 @@
        "Mvc.NewtonsoftJson\\test\\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj",
        "Mvc.Razor.RuntimeCompilation\\src\\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj",
        "Mvc.Razor.RuntimeCompilation\\test\\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test.csproj",
-       "test\\WebSites\\RazorBuildWebSite.PrecompiledViews\\RazorBuildWebSite.PrecompiledViews.csproj",
-       "Mvc.Components.Prerendering\\src\\Microsoft.AspNetCore.Mvc.Components.Prerendering.csproj",
-       "Mvc.Components.Prerendering\\test\\Microsoft.AspNetCore.Mvc.Components.Prerendering.Test.csproj",
+       "test\\WebSites\\RazorBuildWebSite.PrecompiledViews\\RazorBuildWebSite.PrecompiledViews.csproj"
     ]
   }
 }
