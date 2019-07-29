@@ -14,10 +14,6 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <RestoreSources>
-      $(RestoreSources);
-      $(ArtifactsNonShippingPackagesDir)
-    </RestoreSources>
     <NoSemVer20>true</NoSemVer20>
   </PropertyGroup>
 
@@ -38,8 +34,32 @@
     <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
+  <!-- XmlTransformation task is not available in 'dotnet msbuild'. -->
+  <Target Name="_CreateNuGetConfig" BeforeTargets="_GenerateRestoreGraph" Condition="'$(MSBuildRuntimeType)' != 'Core'">
+    <!-- Copy root NuGet.config into this directory and add $(ArtifactsNonShippingPackagesDir) as a feed. -->
+    <XslTransformation XmlInputPaths="$(RepoRoot)/NuGet.config"
+        OutputPaths="$(MSBuildProjectDirectory)/NuGet.config"
+        XslContent="&lt;?xml version='1.0'?&gt;
+        &lt;xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'&gt;
+          &lt;xsl:template match='@* | node()'&gt;
+            &lt;xsl:copy&gt;
+              &lt;xsl:apply-templates select='@* | node()' /&gt;
+            &lt;/xsl:copy&gt;
+          &lt;/xsl:template&gt;
+          &lt;xsl:template match='/configuration/packageSources/add[last()]'&gt;
+            &lt;xsl:copy-of select='.' /&gt;
+            &lt;xsl:text&gt;
+    &lt;/xsl:text&gt;&lt;add key='non-shipping-packages' value='$(ArtifactsNonShippingPackagesDir)' /&gt;
+          &lt;/xsl:template&gt;
+        &lt;/xsl:stylesheet&gt;" />
+  </Target>
 
+  <!-- Clean up file created above (as long as restore succeeds). -->
+  <Target Name="_DeleteNuGetConfig" AfterTargets="Restore">
+    <Delete Files="$(MSBuildProjectDirectory)/NuGet.config" />
+  </Target>
+
+  <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
         <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
         <!-- Temporarily skip the common files -->
@@ -47,7 +67,6 @@
 
         <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
     </ItemGroup>
-
   </Target>
 
 </Project>
