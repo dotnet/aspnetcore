@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.SignalR
         private bool _clientTimeoutActive;
         private bool _connectionAborted;
         private int _streamBufferCapacity;
+        private long? _maxMessageSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -55,6 +56,7 @@ namespace Microsoft.AspNetCore.SignalR
             _keepAliveInterval = contextOptions.KeepAliveInterval.Ticks;
             _clientTimeoutInterval = contextOptions.ClientTimeoutInterval.Ticks;
             _streamBufferCapacity = contextOptions.StreamBufferCapacity;
+            _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
 
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
@@ -406,10 +408,20 @@ namespace Microsoft.AspNetCore.SignalR
 
                             if (!buffer.IsEmpty)
                             {
-                                if (HandshakeProtocol.TryParseRequestMessage(ref buffer, out var handshakeRequestMessage))
+                                var segment = buffer;
+                                var overLength = false;
+
+                                if (_maxMessageSize != null && buffer.Length > _maxMessageSize.Value)
+                                {
+                                    // We give the parser a sliding window of the default message size
+                                    segment = segment.Slice(segment.Start, _maxMessageSize.Value);
+                                    overLength = true;
+                                }
+
+                                if (HandshakeProtocol.TryParseRequestMessage(ref segment, out var handshakeRequestMessage))
                                 {
                                     // We parsed the handshake
-                                    consumed = buffer.Start;
+                                    consumed = segment.Start;
                                     examined = consumed;
 
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
@@ -460,6 +472,12 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
+                                }
+                                else if (overLength)
+                                {
+                                    Log.HandshakeSizeLimitExceeded(_logger, _maxMessageSize.Value);
+                                    await WriteHandshakeResponseAsync(new HandshakeResponseMessage("Handshake was canceled."));
+                                    return false;
                                 }
                             }
 
@@ -619,6 +637,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, int, Exception> _clientTimeout =
                 LoggerMessage.Define<int>(LogLevel.Debug, new EventId(9, "ClientTimeout"), "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.");
 
+            private static readonly Action<ILogger, long, Exception> _handshakeSizeLimitExceeded =
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(10, "HandshakeSizeLimitExceeded"), "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.");
+
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
                 _handshakeComplete(logger, hubProtocol, null);
@@ -662,6 +683,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void ClientTimeout(ILogger logger, TimeSpan timeout)
             {
                 _clientTimeout(logger, (int)timeout.TotalMilliseconds, null);
+            }
+
+            public static void HandshakeSizeLimitExceeded(ILogger logger, long maxMessageSize)
+            {
+                _handshakeSizeLimitExceeded(logger, maxMessageSize, null);
             }
         }
     }

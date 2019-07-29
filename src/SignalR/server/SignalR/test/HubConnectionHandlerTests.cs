@@ -311,6 +311,40 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task ConnectionClosedWhenHandshakeLargerThanMaxMessageSize()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), loggerFactory: LoggerFactory,
+                    builder =>
+                    {
+                        builder.AddSignalR(o =>
+                        {
+                            o.MaximumReceiveMessageSize = 1;
+                        });
+                    });
+
+                using (var client = new TestClient())
+                {
+                    client.SupportedFormats = TransferFormat.Text;
+
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler,
+                                                            sendHandshakeRequestMessage: true,
+                                                            expectedHandshakeResponseMessage: false);
+
+                    var message = await client.ReadAsync(isHandshake: true).OrTimeout();
+
+                    Assert.Equal("Handshake was canceled.", ((HandshakeResponseMessage)message).Error);
+
+                    // Connection closes
+                    await connectionHandlerTask.OrTimeout();
+
+                    client.Dispose();
+                }
+            }
+        }
+
+        [Fact]
         public async Task SendingHandshakeRequestInChunksWorks()
         {
             using (StartVerifiableLog())
