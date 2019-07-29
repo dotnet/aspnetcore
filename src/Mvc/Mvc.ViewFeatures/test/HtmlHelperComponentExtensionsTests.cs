@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderStaticComponentAsync<TestComponent>();
+            var result = await helper.RenderComponentAsync<TestComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderStaticComponentAsync<GreetingComponent>(new
+            var result = await helper.RenderComponentAsync<GreetingComponent>(new
             {
                 Name = "Steve"
             });
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = false
             }));
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = true
             }));
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
             {
                 JsInterop = true
             }));
@@ -127,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<RedirectComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(new
             {
                 RedirectUri = "http://localhost/redirect"
             }));
@@ -151,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper(ctx);
 
             // Act
-            await helper.RenderStaticComponentAsync<RedirectComponent>(new
+            await helper.RenderComponentAsync<RedirectComponent>(new
             {
                 RedirectUri = "http://localhost/redirect"
             });
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 </table>";
 
             // Act
-            var result = await helper.RenderStaticComponentAsync<AsyncComponent>();
+            var result = await helper.RenderComponentAsync<AsyncComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 

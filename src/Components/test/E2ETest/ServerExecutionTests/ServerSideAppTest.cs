@@ -184,11 +184,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 _ => element.Text != currentValue);
         }
 
+        // Since we've removed stateful prerendering, the name which is passed in
+        // during prerendering cannot be retained. The first interactive render
+        // will remove it.
         [Fact]
-        public void RendersContinueAfterPrerendering()
+        public void RendersDoNotPreserveState()
         {
             Browser.FindElement(By.LinkText("Greeter")).Click();
-            Browser.Equal("Hello Guest", () => Browser.FindElement(By.ClassName("greeting")).Text);
+            Browser.Equal("Hello", () => Browser.FindElement(By.ClassName("greeting")).Text);
         }
 
         [Fact]
