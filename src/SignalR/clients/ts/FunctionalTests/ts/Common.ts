@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@microsoft/signalr";
+import { DefaultHttpClient, FetchHttpClient, HttpClient, HttpTransportType, IHubProtocol, JsonHubProtocol, XhrHttpClient } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { TestLogger } from "./TestLogger";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20 * 1000;
@@ -99,4 +100,12 @@ export function eachTransportAndProtocol(action: (transport: HttpTransportType, 
 
 export function getGlobalObject(): any {
     return typeof window !== "undefined" ? window : global;
+}
+
+export function eachHttpClient(action: (transport: HttpClient) => void) {
+    const httpClients: HttpClient[] = [new FetchHttpClient(TestLogger.instance), new XhrHttpClient(TestLogger.instance), new DefaultHttpClient(TestLogger.instance)];
+
+    return httpClients.forEach((t) => {
+        return action(t);
+    });
 }
