@@ -289,7 +289,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                     }
 
-                    // I don't think I should lock here...
+                    // Use the server _serverActiveConnectionCount to drain all requests on the server side.
+                    // Can't use _clientActiveConnectionCount now as we now decrement that count earlier/
+                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
                     while (_serverActiveConnectionCount > 0)
                     {
                         await _streamCompletionAwaitable;
@@ -620,7 +622,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 4), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
-
             ThrowIfIncomingFrameSentToIdleStream();
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
@@ -909,12 +910,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary
-            // counts get out of sync as the streams still exist in the dictionary until the client responds with a RST or END_STREAM.
-            // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+            // counts get out of sync during shutdown. The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
+            // Also, we care about the dictionary size for too much memory consumption.
             if (_streams.Count >= _serverSettings.MaxConcurrentStreams * 2)
             {
                 // Server is getting hit hard with connection resets.
                 // Tell client to calm down.
+                // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
             }
             // This must be initialized before we offload the request or else we may start processing request body frames without it.

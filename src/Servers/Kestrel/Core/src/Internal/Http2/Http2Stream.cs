@@ -486,6 +486,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void IncrementActiveStreamCount()
         {
+            // If increment is called, it should only be called if we haven't decremented before.
+            // This method is only called once from HttpConnection.
             Debug.Assert(!_hasIncremented);
 
             _hasIncremented = true;
@@ -494,6 +496,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void DecrementActiveStreamCount()
         {
+            // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
+            // Only decrement once total.
             if (!_hasIncremented)
             {
                 return;
