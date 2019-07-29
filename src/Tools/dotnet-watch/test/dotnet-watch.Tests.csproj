@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>TestSettings:RestoreSources</_Parameter1>
-      <_Parameter2>$(RestoreSources)</_Parameter2>
+      <_Parameter1>TestSettings:RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
