@@ -9,9 +9,9 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="0.10.0-preview8.19372.1">
+    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="5.0.0-alpha1.19379.1">
       <Uri>https://github.com/aspnet/Blazor</Uri>
-      <Sha>5228d074e954ca0d8e1adb398d6e0e0043f5168e</Sha>
+      <Sha>6abce40fe153289bc30cbb259cbaa06fef265045</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview8.19374.2">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
@@ -432,9 +432,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>45647cef001961bd82c8ac4c112d24d4254e44cf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19374-02" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19374-05" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e4e7c09bc4d22648b1a6193b3bf645b0aa8a23ea</Sha>
+      <Sha>e39bfe2ba0f24f4a2e4838e898d98df9613c7957</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
