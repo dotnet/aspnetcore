@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
             }
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server, ExpectedErrors))
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
             }
 
             var protocol = HubProtocols[protocolName];
@@ -901,16 +901,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [LogLevel(LogLevel.Trace)]
         public async Task CanCloseStreamMethodEarly(string protocolName, HttpTransportType transportType, string path)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                // Writing is not allowed after writer was completed.
-                // Can happen since we are closing the connection while the connection could still be writing the streaming data
-                return writeContext.LoggerName == typeof(HubConnectionContext).FullName &&
-                       writeContext.EventId.Name == "FailedWritingMessage";
-            }
-
             var protocol = HubProtocols[protocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
                 try
@@ -982,7 +974,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
             }
 
             var protocol = HubProtocols[protocolName];
@@ -1013,14 +1005,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolved(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1046,14 +1032,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolvedAndArgumentsPassedIn(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1079,14 +1059,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsList))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentCountMismatch(string hubProtocolName)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.LongPolling, hubProtocol, LoggerFactory);
                 try
@@ -1112,14 +1086,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1145,14 +1113,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfStreamingHubMethodCannotBeResolved(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1179,14 +1141,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnStreamingHubMethodArgumentCountMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1213,14 +1169,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnStreamingHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedInvokingHubMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1247,14 +1197,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfNonStreamMethodInvokedWithStreamAsync(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "NonStreamingMethodCalledWithStream";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1280,14 +1224,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfStreamMethodInvokedWithInvoke(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "StreamingMethodCalledWithInvoke";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1313,14 +1251,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfBuildingAsyncEnumeratorIsNotPossible(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "InvalidReturnValueFromStreamingMethod";
-            }
-
             var hubProtocol = HubProtocols[hubProtocolName];
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 try
@@ -1345,16 +1277,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task RandomGenericIsNotTreatedAsStream()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" == writeContext.LoggerName &&
-                    "FailedInvokingHubMethod" == writeContext.EventId.Name;
-            }
             var hubPath = HubPaths[0];
             var hubProtocol = HubProtocols.First().Value;
             var transportType = TransportTypes().First().Cast<HttpTransportType>().First();
 
-            using (StartServer<Startup>(out var server, ExpectedErrors))
+            using (StartServer<Startup>(out var server))
             {
                 var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
                 await connection.StartAsync().OrTimeout();
