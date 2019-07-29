@@ -8,7 +8,6 @@
     <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
     <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:inner --no-color --configuration $(Configuration)</NpmTestArgs>
-    <NpmBuildArgs>run build:inner</NpmBuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
