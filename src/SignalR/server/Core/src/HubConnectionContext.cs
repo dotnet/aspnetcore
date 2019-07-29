@@ -372,8 +372,8 @@ namespace Microsoft.AspNetCore.SignalR
             ThreadPool.QueueUserWorkItem(_abortedCallback, this);
         }
 
-        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
-            IUserIdProvider userIdProvider, bool enableDetailedErrors)
+        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, long? maxMessageSize,
+            IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider, bool enableDetailedErrors)
         {
             try
             {
@@ -406,10 +406,20 @@ namespace Microsoft.AspNetCore.SignalR
 
                             if (!buffer.IsEmpty)
                             {
-                                if (HandshakeProtocol.TryParseRequestMessage(ref buffer, out var handshakeRequestMessage))
+                                var segment = buffer;
+                                var overLength = false;
+
+                                if (maxMessageSize != null && buffer.Length > maxMessageSize.Value)
+                                {
+                                    // We give the parser a sliding window of the default message size
+                                    segment = segment.Slice(segment.Start, maxMessageSize.Value);
+                                    overLength = true;
+                                }
+
+                                if (HandshakeProtocol.TryParseRequestMessage(ref segment, out var handshakeRequestMessage))
                                 {
                                     // We parsed the handshake
-                                    consumed = buffer.Start;
+                                    consumed = segment.Start;
                                     examined = consumed;
 
                                     Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
@@ -460,6 +470,11 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
+                                }
+                                else if (overLength)
+                                {
+                                    Log.MessageTooBig(_logger, maxMessageSize.Value);
+                                    return false;
                                 }
                             }
 
@@ -619,6 +634,9 @@ namespace Microsoft.AspNetCore.SignalR
             private static readonly Action<ILogger, int, Exception> _clientTimeout =
                 LoggerMessage.Define<int>(LogLevel.Debug, new EventId(9, "ClientTimeout"), "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.");
 
+            private static readonly Action<ILogger, long, Exception> _messageTooBig =
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(10, "MessageTooBig"), "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.");
+
             public static void HandshakeComplete(ILogger logger, string hubProtocol)
             {
                 _handshakeComplete(logger, hubProtocol, null);
@@ -662,6 +680,11 @@ namespace Microsoft.AspNetCore.SignalR
             public static void ClientTimeout(ILogger logger, TimeSpan timeout)
             {
                 _clientTimeout(logger, (int)timeout.TotalMilliseconds, null);
+            }
+
+            public static void MessageTooBig(ILogger logger, long maxMessageSize)
+            {
+                _messageTooBig(logger, maxMessageSize, null);
             }
         }
     }
