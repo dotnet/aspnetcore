@@ -166,6 +166,11 @@ try {
         & dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
+    Write-Host "Re-generating Web.JS files"
+    Invoke-Block {
+        & dotnet build "$repoRoot\src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+    }
+
     Write-Host "Run git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr

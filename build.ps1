@@ -183,16 +183,12 @@ elseif ($Projects) {
 }
 # When adding new sub-group build flags, add them to this check.
 elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
-    Write-Warning "No default group of projects was specified, so building the 'managed' and its dependent subsets of projects. Run ``build.cmd -help`` for more details."
+    Write-Warning "No default group of projects was specified, so building the 'managed' subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
     # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
 
     $BuildManaged = $true
-}
-
-if ($BuildManaged -and ($NoBuildNodeJS)) {
-    Write-Warning "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
 }
 
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
