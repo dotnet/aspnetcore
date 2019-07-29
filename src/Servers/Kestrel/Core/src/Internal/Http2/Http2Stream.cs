@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
+        public bool HasDecremented { get; private set; } = true;
         public Pipe RequestBodyPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
@@ -97,6 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
+                        Debug.Assert(HasDecremented);
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
                         RequestBodyPipe.Writer.Complete();
@@ -460,6 +462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             Log.Http2StreamResetAbort(TraceIdentifier, error, abortReason);
 
+            DecrementActiveStreamCount();
             // Don't block on IO. This never faults.
             _ = _http2Output.WriteRstStreamAsync(error);
 
@@ -479,6 +482,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
+        }
+
+        public void IncrementActiveStreamCount()
+        {
+            if (!HasDecremented)
+            {
+                throw new Exception("Have no decremented");
+            }
+            HasDecremented = false;
+            _context.StreamLifetimeHandler.IncrementActiveStreamCount();
+        }
+
+        public void DecrementActiveStreamCount()
+        {
+            if (HasDecremented)
+            {
+                // Double decrement
+                throw new Exception("Already decremented");
+            }
+            HasDecremented = true;
+            _context.StreamLifetimeHandler.DecrementActiveStreamCount();
         }
 
         private Pipe CreateRequestBodyPipe(uint windowSize)
