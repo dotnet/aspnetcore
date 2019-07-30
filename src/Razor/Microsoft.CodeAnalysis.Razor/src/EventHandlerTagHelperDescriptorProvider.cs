@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     var attribute = attributes[j];
 
-                    if (attribute.AttributeClass == eventHandlerAttribute)
+                    if (Equals(attribute.AttributeClass, eventHandlerAttribute))
                     {
                         results.Add(new EventHandlerData(
                             type.ContainingAssembly.Name,

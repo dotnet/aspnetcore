@@ -327,7 +327,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var properties = new Dictionary<string, (IPropertySymbol, PropertyKind)>(StringComparer.Ordinal);
             do
             {
-                if (type == symbols.ComponentBase)
+                if (Equals(type, symbols.ComponentBase))
                 {
                     // The ComponentBase base class doesn't have any [Parameter].
                     // Bail out now to avoid walking through its many members, plus the members
@@ -380,7 +380,7 @@ namespace Microsoft.CodeAnalysis.Razor
                         kind = PropertyKind.Ignored;
                     }
 
-                    if (!property.GetAttributes().Any(a => a.AttributeClass == symbols.ParameterAttribute))
+                    if (!property.GetAttributes().Any(a => Equals(a.AttributeClass, symbols.ParameterAttribute)))
                     {
                         if (property.IsOverride)
                         {
@@ -398,7 +398,7 @@ namespace Microsoft.CodeAnalysis.Razor
                         kind = PropertyKind.Enum;
                     }
 
-                    if (kind == PropertyKind.Default && property.Type == symbols.RenderFragment)
+                    if (kind == PropertyKind.Default && Equals(property.Type, symbols.RenderFragment))
                     {
                         kind = PropertyKind.ChildContent;
                     }
@@ -406,12 +406,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     if (kind == PropertyKind.Default &&
                         property.Type is INamedTypeSymbol namedType &&
                         namedType.IsGenericType &&
-                        namedType.ConstructedFrom == symbols.RenderFragmentOfT)
+                        Equals(namedType.ConstructedFrom, symbols.RenderFragmentOfT))
                     {
                         kind = PropertyKind.ChildContent;
                     }
 
-                    if (kind == PropertyKind.Default && property.Type == symbols.EventCallback)
+                    if (kind == PropertyKind.Default && Equals(property.Type, symbols.EventCallback))
                     {
                         kind = PropertyKind.EventCallback;
                     }
@@ -419,7 +419,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     if (kind == PropertyKind.Default &&
                         property.Type is INamedTypeSymbol namedType2 &&
                         namedType2.IsGenericType &&
-                        namedType2.ConstructedFrom == symbols.EventCallbackOfT)
+                        Equals(namedType2.ConstructedFrom, symbols.EventCallbackOfT))
                     {
                         kind = PropertyKind.EventCallback;
                     }

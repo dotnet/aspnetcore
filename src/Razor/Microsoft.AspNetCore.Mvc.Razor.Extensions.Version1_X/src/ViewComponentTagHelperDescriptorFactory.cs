@@ -110,11 +110,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             if (string.Equals(selectedMethod.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal))
             {
                 // Will invoke asynchronously. Method must not return Task or Task<T>.
-                if (returnType == _taskSymbol)
+                if (Equals(returnType, _taskSymbol))
                 {
                     // This is ok.
                 }
-                else if (returnType.IsGenericType && returnType.ConstructedFrom == _genericTaskSymbol)
+                else if (returnType.IsGenericType && Equals(returnType.ConstructedFrom, _genericTaskSymbol))
                 {
                     // This is ok.
                 }
@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                     method = null;
                     return false;
                 }
-                else if (returnType == _taskSymbol)
+                else if (Equals(returnType, _taskSymbol))
                 {
                     diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
                     return false;
                 }
-                else if (returnType.IsGenericType && returnType.ConstructedFrom == _genericTaskSymbol)
+                else if (returnType.IsGenericType && Equals(returnType.ConstructedFrom, _genericTaskSymbol))
                 {
                     diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
@@ -208,13 +208,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         private string GetIndexerValueTypeName(IParameterSymbol parameter)
         {
             INamedTypeSymbol dictionaryType;
-            if ((parameter.Type as INamedTypeSymbol)?.ConstructedFrom == _iDictionarySymbol)
+            if (Equals((parameter.Type as INamedTypeSymbol)?.ConstructedFrom, _iDictionarySymbol))
             {
                 dictionaryType = (INamedTypeSymbol)parameter.Type;
             }
-            else if (parameter.Type.AllInterfaces.Any(s => s.ConstructedFrom == _iDictionarySymbol))
+            else if (parameter.Type.AllInterfaces.Any(s => Equals(s.ConstructedFrom, _iDictionarySymbol)))
             {
-                dictionaryType = parameter.Type.AllInterfaces.First(s => s.ConstructedFrom == _iDictionarySymbol);
+                dictionaryType = parameter.Type.AllInterfaces.First(s => Equals(s.ConstructedFrom, _iDictionarySymbol));
             }
             else
             {
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private string GetShortName(INamedTypeSymbol componentType)
         {
-            var viewComponentAttribute = componentType.GetAttributes().Where(a => a.AttributeClass == _viewComponentAttributeSymbol).FirstOrDefault();
+            var viewComponentAttribute = componentType.GetAttributes().Where(a => Equals(a.AttributeClass, _viewComponentAttributeSymbol)).FirstOrDefault();
             var name = viewComponentAttribute
                 ?.NamedArguments
                 .Where(namedArgument => string.Equals(namedArgument.Key, ViewComponentTypes.ViewComponent.Name, StringComparison.Ordinal))
