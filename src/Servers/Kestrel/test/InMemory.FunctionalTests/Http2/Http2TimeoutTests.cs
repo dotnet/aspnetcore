@@ -190,8 +190,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [Repeat(20)]
-        [InlineData((int)Http2FrameType.DATA)]
         [InlineData((int)Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(int intFinalFrameType)
         {

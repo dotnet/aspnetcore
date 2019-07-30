@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
+        private readonly Pipe _input;
+        private Task _inputTask;
+        private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
         private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(Http2PeerSettings.DefaultInitialWindowSize);
@@ -91,6 +94,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 context.MemoryPool,
                 context.ServiceContext.Log);
 
+            var inputOptions = new PipeOptions(pool: context.MemoryPool,
+                readerScheduler: PipeScheduler.ThreadPool,
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1,
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize(),
+                useSynchronizationContext: false);
+
+            _input = new Pipe(inputOptions);
+            _minAllocBufferSize = 4096; // TODO get this option from somewhere else
+
             _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
 
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
@@ -104,7 +118,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         public string ConnectionId => _context.ConnectionId;
-        public PipeReader Input => _context.Transport.Input;
+
+        public PipeReader Input
+        {
+            get
+            {
+                if (_inputTask == null)
+                {
+                    _inputTask = ReadInputAsync();
+                }
+
+                return _input.Reader;
+            }
+        }
+
         public IKestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
@@ -1259,6 +1286,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public void DecrementActiveClientStreamCount()
         {
             Interlocked.Decrement(ref _clientActiveStreamCount);
+        }
+
+        private async Task ReadInputAsync()
+        {
+            Exception error = null;
+            try
+            {
+                while (true)
+                {
+                    var reader = _context.Transport.Input;
+                    var writer = _input.Writer;
+
+                    var outputBuffer = writer.GetMemory(_minAllocBufferSize);
+                    var readResult = await reader.ReadAsync();
+
+                    var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
+                    var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
+
+                    bufferSlice.CopyTo(outputBuffer.Span);
+
+                    reader.AdvanceTo(bufferSlice.End);
+                    writer.Advance(copyAmount);
+
+                    var result = await writer.FlushAsync();
+
+                    if (readResult.IsCompleted)
+                    {
+                        // FIN
+                        break;
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        // flushResult should not be canceled.
+                        break;
+                    }
+                }
+
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Propagate the exception if it's ConnectionAbortedException	
+                error = ex as ConnectionAbortedException;
+            }
+            catch (Exception ex)
+            {
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.	
+                error = ex;
+            }
+            finally
+            {
+                _input.Writer.Complete(error);
+            }
         }
 
         private class StreamCloseAwaitable : ICriticalNotifyCompletion
