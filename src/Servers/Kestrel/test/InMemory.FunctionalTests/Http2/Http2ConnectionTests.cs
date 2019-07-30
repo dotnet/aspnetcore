@@ -920,32 +920,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
         {
             _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1; 
-            var tcs = new TaskCompletionSource<object>();
-            var tcs2 = new TaskCompletionSource<object>();
+            var firstRequestBlock = new TaskCompletionSource<object>();
+            var firstRequestReceived = new TaskCompletionSource<object>();
             var makeFirstRequestWait = false;
             await InitializeConnectionAsync(async context =>
             {
                 if (!makeFirstRequestWait)
                 {
                     makeFirstRequestWait = true;
-                    tcs2.SetResult(null);
-                    await tcs.Task;
+                    firstRequestReceived.SetResult(null);
+                    await firstRequestBlock.Task.DefaultTimeout();
                 }
             });
 
-            await StartStreamAsync(1, _postRequestHeaders, endStream: true);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(1);
 
-            await tcs2.Task;
+            await firstRequestReceived.Task.DefaultTimeout();
 
-            await StartStreamAsync(3, _postRequestHeaders, endStream: true);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 3);
 
-            tcs.SetResult(null);
+            firstRequestBlock.SetResult(null);
+
+            await StopConnectionAsync(3, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -958,11 +960,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await tcs.Task.DefaultTimeout();
             });
 
-            await StartStreamAsync(1, _postRequestHeaders, endStream: false);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await SendRstStreamAsync(1);
-            await StartStreamAsync(3, _postRequestHeaders, endStream: true);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
             await SendRstStreamAsync(3);
-            await StartStreamAsync(5, _postRequestHeaders, endStream: true);
+            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
 
             await WaitForStreamErrorAsync(
                 expectedStreamId: 5,
@@ -970,6 +972,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
 
             tcs.SetResult(null);
+
+            await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]

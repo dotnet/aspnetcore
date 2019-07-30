@@ -615,6 +615,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
   </data>
   <data name="Http2TellClientToCalmDown" xml:space="preserve">
-    <value>A new stream was refused because this connection has received too many new streams that haven't been unwound on the Server.</value>
+    <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
 </root>

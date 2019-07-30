@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
-        private bool _hasIncremented;
+        private bool _needsDecrement;
         public Pipe RequestBodyPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
-                        Debug.Assert(!_hasIncremented);
+                        Debug.Assert(!_needsDecrement);
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
                         RequestBodyPipe.Writer.Complete();
@@ -421,6 +421,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void AbortRstStreamReceived()
         {
+            // Client sent a reset stream frame, decrement total count.
+            DecrementActiveStreamCount();
+
             ApplyCompletionFlag(StreamCompletionFlags.RstStreamReceived);
             Abort(new IOException(CoreStrings.Http2StreamResetByClient));
         }
@@ -488,23 +491,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             // If increment is called, it should only be called if we haven't decremented before.
             // This method is only called once from HttpConnection.
-            Debug.Assert(!_hasIncremented);
+            Debug.Assert(!_needsDecrement);
 
-            _hasIncremented = true;
-            _context.StreamLifetimeHandler.IncrementActiveStreamCount();
+            _needsDecrement = true;
+            _context.StreamLifetimeHandler.IncrementActiveClientStreamCount();
         }
 
         public void DecrementActiveStreamCount()
         {
             // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
             // Only decrement once total.
-            if (!_hasIncremented)
+            if (!_needsDecrement)
             {
                 return;
             }
 
-            _hasIncremented = false;
-            _context.StreamLifetimeHandler.DecrementActiveStreamCount();
+            _needsDecrement = false;
+            _context.StreamLifetimeHandler.DecrementActiveServerStreamCount();
         }
 
         private Pipe CreateRequestBodyPipe(uint windowSize)

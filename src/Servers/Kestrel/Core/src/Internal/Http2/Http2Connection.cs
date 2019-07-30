@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _gracefulCloseStarted;
 
         private readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
-        private int _clientActiveConnectionCount = 0;
-        private int _serverActiveConnectionCount = 0;
+        private int _clientActiveStreamCount = 0;
+        private int _serverActiveStreamCount = 0;
 
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             catch (ConnectionResetException ex)
             {
                 // Don't log ECONNRESET errors when there are no active streams on the connection. Browsers like IE will reset connections regularly.
-                if (GetActiveStreamCount() > 0)
+                if (_clientActiveStreamCount > 0)
                 {
                     Log.RequestProcessingError(ConnectionId, ex);
                 }
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Use the server _serverActiveConnectionCount to drain all requests on the server side.
                     // Can't use _clientActiveConnectionCount now as we now decrement that count earlier/
                     // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
-                    while (_serverActiveConnectionCount > 0)
+                    while (_serverActiveStreamCount > 0)
                     {
                         await _streamCompletionAwaitable;
                         UpdateCompletedStreams();
@@ -633,8 +633,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamAborted(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
 
-                // Client sent a reset stream frame, decrement total count.
-                stream.DecrementActiveStreamCount();
                 // No additional inbound header or data frames are allowed for this stream after receiving a reset.
                 stream.AbortRstStreamReceived();
             }
@@ -904,7 +902,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (GetActiveStreamCount() >= _serverSettings.MaxConcurrentStreams)
+            if (_clientActiveStreamCount >= _serverSettings.MaxConcurrentStreams)
             {
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
             }
@@ -930,7 +928,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
             _currentHeadersStream.IncrementActiveStreamCount();
-            _serverActiveConnectionCount++;
+            _serverActiveStreamCount++;
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }
@@ -1001,7 +999,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (stream.DrainExpirationTicks == default)
                 {
-                    _serverActiveConnectionCount--;
+                    _serverActiveStreamCount--;
                     stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
                 }
 
@@ -1040,13 +1038,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 Log.Http2ConnectionClosing(_context.ConnectionId);
 
-                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && GetActiveStreamCount() > 0)
+                if (_gracefulCloseInitiator == GracefulCloseInitiator.Server && _clientActiveStreamCount > 0)
                 {
                     _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.NO_ERROR);
                 }
             }
 
-            if (GetActiveStreamCount() == 0)
+            if (_clientActiveStreamCount == 0)
             {
                 if (_gracefulCloseStarted)
                 {
@@ -1253,21 +1251,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return false;
         }
 
-        public void IncrementActiveStreamCount()
+        public void IncrementActiveClientStreamCount()
         {
-            Interlocked.Increment(ref _clientActiveConnectionCount);
+            Interlocked.Increment(ref _clientActiveStreamCount);
         }
 
-        public void DecrementActiveStreamCount()
+        public void DecrementActiveServerStreamCount()
         {
-            Interlocked.Decrement(ref _clientActiveConnectionCount);
-        }
-
-        private int GetActiveStreamCount()
-        {
-            // As a general policy, if you use Interlocked.Inc/Dec to change an int value,
-            // use it to ge the value too.
-            return Interlocked.CompareExchange(ref _clientActiveConnectionCount, 0, 0);
+            Interlocked.Decrement(ref _clientActiveStreamCount);
         }
 
         private class StreamCloseAwaitable : ICriticalNotifyCompletion
