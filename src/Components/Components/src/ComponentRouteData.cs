@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="pageComponentType">The type of the page component matching the route.</param>
         /// <param name="pageParameters">The parameters for the page component matching the route.</param>
-        public ComponentRouteData(Type pageComponentType, IDictionary<string, object> pageParameters)
+        public ComponentRouteData(Type pageComponentType, IReadOnlyDictionary<string, object> pageParameters)
         {
             PageComponentType = pageComponentType ?? throw new ArgumentNullException(nameof(pageComponentType));
             PageParameters = pageParameters ?? throw new ArgumentNullException(nameof(pageParameters));
@@ -31,6 +31,6 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets the parameters for the page component matching the route.
         /// </summary>
-        public IDictionary<string, object> PageParameters { get; }
+        public IReadOnlyDictionary<string, object> PageParameters { get; }
     }
 }
