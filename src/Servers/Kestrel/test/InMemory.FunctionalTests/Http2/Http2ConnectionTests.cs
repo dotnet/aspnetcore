@@ -917,6 +917,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_MultipleStreams()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tcs2 = new TaskCompletionSource<object>();
+            var makeFirstRequestWait = false;
+            await InitializeConnectionAsync(async context =>
+            {
+                if (!makeFirstRequestWait)
+                {
+                    makeFirstRequestWait = true;
+                    tcs2.SetResult(null);
+                    await tcs.Task;
+                }
+            });
+
+            await StartStreamAsync(1, _postRequestHeaders, endStream: true);
+
+            await tcs2.Task;
+
+            await StartStreamAsync(3, _postRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            tcs.SetResult(null);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+        }
+
+        [Fact]
         public async Task DATA_Received_StreamClosedImplicitly_ConnectionError()
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
