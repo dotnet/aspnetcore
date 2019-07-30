@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 useSynchronizationContext: false);
 
             _input = new Pipe(inputOptions);
-            _minAllocBufferSize = 4096; // TODO get this option from somewhere else
+            _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
             _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
 
@@ -115,6 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+            _inputTask = ReadInputAsync();
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -123,11 +124,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             get
             {
-                if (_inputTask == null)
-                {
-                    _inputTask = ReadInputAsync();
-                }
-
                 return _input.Reader;
             }
         }
@@ -1326,17 +1322,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
                 }
-
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Propagate the exception if it's ConnectionAbortedException	
-                error = ex as ConnectionAbortedException;
-            }
-            catch (Exception ex)
-            {
-                // Don't rethrow the exception. It should be handled by the Pipeline consumer.	
-                error = ex;
             }
             finally
             {
