@@ -135,18 +135,21 @@ namespace Microsoft.AspNetCore.Hosting
         {
             void Shutdown()
             {
-                if (!cts.IsCancellationRequested)
+                try
                 {
-                    if (!string.IsNullOrEmpty(shutdownMessage))
+                    if (!cts.IsCancellationRequested)
                     {
-                        Console.WriteLine(shutdownMessage);
-                    }
-                    try
-                    {
+                        if (!string.IsNullOrEmpty(shutdownMessage))
+                        {
+                            Console.WriteLine(shutdownMessage);
+                        }
                         cts.Cancel();
                     }
-                    catch (ObjectDisposedException) { }
                 }
+                // When hosting with IIS in-process, we detach the Console handle on main thread exit.
+                // Console.WriteLine may throw here as we are logging to console on ProcessExit.
+                // We catch and ignore all exceptions here. Do not log to Console in thie exception handler.
+                catch (Exception) { }
 
                 // Wait on the given reset event
                 resetEvent.Wait();
