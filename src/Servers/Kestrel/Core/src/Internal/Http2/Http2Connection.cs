@@ -289,8 +289,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                     }
 
-                    // Use the server _serverActiveConnectionCount to drain all requests on the server side.
-                    // Can't use _clientActiveConnectionCount now as we now decrement that count earlier/
+                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
                     // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
                     while (_serverActiveStreamCount > 0)
                     {
@@ -1256,7 +1256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Interlocked.Increment(ref _clientActiveStreamCount);
         }
 
-        public void DecrementActiveServerStreamCount()
+        public void DecrementActiveClientStreamCount()
         {
             Interlocked.Decrement(ref _clientActiveStreamCount);
         }

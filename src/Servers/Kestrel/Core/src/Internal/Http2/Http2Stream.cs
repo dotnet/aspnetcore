@@ -501,13 +501,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
             // Only decrement once total.
-            if (!_needsDecrement)
+            lock(_completionLock)
             {
-                return;
-            }
+                if (!_needsDecrement)
+                {
+                    return;
+                }
 
-            _needsDecrement = false;
-            _context.StreamLifetimeHandler.DecrementActiveServerStreamCount();
+                _needsDecrement = false;
+            }
+          
+            _context.StreamLifetimeHandler.DecrementActiveClientStreamCount();
         }
 
         private Pipe CreateRequestBodyPipe(uint windowSize)

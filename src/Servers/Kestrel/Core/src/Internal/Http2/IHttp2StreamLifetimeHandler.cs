@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         void OnStreamCompleted(Http2Stream stream);
         void IncrementActiveClientStreamCount();
-        void DecrementActiveServerStreamCount();
+        void DecrementActiveClientStreamCount();
     }
 }
