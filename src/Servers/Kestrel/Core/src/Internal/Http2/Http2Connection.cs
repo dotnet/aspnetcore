@@ -927,7 +927,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
-            _currentHeadersStream.IncrementActiveStreamCount();
+            IncrementActiveClientStreamCount();
             _serverActiveStreamCount++;
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
@@ -966,7 +966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_streams.TryGetValue(streamId, out var stream))
             {
-                stream.DecrementActiveStreamCount();
+                stream.DecrementActiveClientStreamCount();
                 stream.Abort(error);
             }
         }
