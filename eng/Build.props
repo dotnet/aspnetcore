@@ -4,14 +4,16 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative>true</BuildNative>
-    <BuildManaged>true</BuildManaged>
-    <BuildNodeJS>true</BuildNodeJS>
-    <BuildJava>true</BuildJava>
+    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
+    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
+    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
+    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
   </PropertyGroup>
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
+    <!-- Explicitly excluded projects -->
+    <ProjectToExclude Include="$(ProjectToExclude)" />
 
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
@@ -31,6 +33,7 @@
                       $(RepoRoot)src\submodules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
+                      $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
@@ -43,7 +46,6 @@
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
-
   </ItemGroup>
 
   <Choose>
@@ -102,6 +104,7 @@
         <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
+                          $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
                           "
@@ -116,6 +119,17 @@
 
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
+
+        <!-- These projects have a transitive dependency on Microsoft.AspNetCore.Components.Web.JS. Exclude these projects if we are not building NodeJS -->
+        <!-- Do not skip these projects on the CI since we don't want to accidentally miss building artifacts -->
+        <DotnetProjectsTransitiveNodeJsDependencies Include="
+                          $(RepoRoot)src\Framework\**\*.csproj;
+                          $(RepoRoot)src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj;
+                          $(RepoRoot)src\ProjectTemplates\*\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
+                          $(RepoRoot)src\Components\**\*.*proj;
+                          $(RepoRoot)src\Mvc\**\*.*proj;" />
+        <ProjectToExclude Include="@(DotnetProjectsTransitiveNodeJsDependencies)" Condition="'$(BuildNodeJS)' == 'false' and '$(ContinuousIntegrationBuild)' != 'true'" />
 
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
