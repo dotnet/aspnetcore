@@ -47,6 +47,13 @@
     </RestoreSources>
   </PropertyGroup>
 
+  <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
+  <ItemGroup>
+    <KnownFrameworkReference Update="NETStandard.Library">
+      <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
+    </KnownFrameworkReference>
+  </ItemGroup>
+
   <!-- Workaround until we can build our repo with a 3.0 Preview 7 SDK which has https://github.com/dotnet/core-sdk/pull/2401. -->
   <ItemGroup Condition="'$(PreReleasePreviewNumber)' == '7' ">
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
