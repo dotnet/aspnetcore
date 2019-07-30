@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
@@ -139,74 +140,78 @@ namespace Microsoft.AspNetCore.WebUtilities
             bool isFinalBlock,
             out int consumed)
         {
-            ReadOnlySpan<byte> key = default;
-            ReadOnlySpan<byte> value = default;
+            ReadOnlySpan<byte> key;
+            ReadOnlySpan<byte> value;
             consumed = 0;
             var equalsDelimiter = GetEqualsForEncoding();
             var andDelimiter = GetAndForEncoding();
 
             while (span.Length > 0)
             {
-                var equals = span.IndexOf(equalsDelimiter);
-
-                if (equals == -1)
-                {
-                    if (span.Length > KeyLengthLimit)
-                    {
-                        ThrowKeyTooLargeException();
-                    }
-                    break;
-                }
-
-                if (equals > KeyLengthLimit)
-                {
-                    ThrowKeyTooLargeException();
-                }
-
-                key = span.Slice(0, equals);
-
-                span = span.Slice(key.Length + equalsDelimiter.Length);
-                value = span;
-
+                // Find the end of the key=value pair.
                 var ampersand = span.IndexOf(andDelimiter);
+                ReadOnlySpan<byte> segment;
+                int equals;
+                var foundAmpersand = ampersand != -1;
 
-                if (ampersand == -1)
+                if (foundAmpersand)
                 {
-                    if (span.Length > ValueLengthLimit)
-                    {
-                        ThrowValueTooLargeException();
-                        return;
-                    }
-
-                    if (!isFinalBlock)
-                    {
-                        // We can't know that what is currently read is the end of the form value, that's only the case if this is the final block
-                        // If we're not in the final block, then consume nothing
-                        break;
-                    }
-
-                    // If we are on the final block, the remaining content in value is what we want to add to the KVAccumulator.
-                    // Clear out the remaining span such that the loop will exit.
-                    span = Span<byte>.Empty;
+                    segment = span.Slice(0, ampersand);
+                    span = span.Slice(segment.Length + andDelimiter.Length);
+                    consumed += segment.Length + andDelimiter.Length;
                 }
                 else
                 {
-                    if (ampersand > ValueLengthLimit)
+                    // We can't know that what is currently read is the end of the form value, that's only the case if this is the final block
+                    // If we're not in the final block, then consume nothing
+                    if (!isFinalBlock)
+                    {
+                        // Don't buffer indefinately
+                        if (span.Length > KeyLengthLimit + ValueLengthLimit)
+                        {
+                            ThrowKeyOrValueTooLargeException();
+                        }
+                        return;
+                    }
+
+                    segment = span;
+                    span = default;
+                    consumed += segment.Length;
+                }
+
+                equals = segment.IndexOf(equalsDelimiter);
+
+                if (equals == -1)
+                {
+                    // Too long for the whole segment to be a key.
+                    if (segment.Length > KeyLengthLimit)
+                    {
+                        ThrowKeyTooLargeException();
+                    }
+
+                    // There is no more data, this segment must be "key" with no equals or value.
+                    key = segment;
+                    value = Span<byte>.Empty;
+                }
+                else
+                {
+                    key = segment.Slice(0, equals);
+                    if (key.Length > KeyLengthLimit)
+                    {
+                        ThrowKeyTooLargeException();
+                    }
+
+                    value = segment.Slice(equals + equalsDelimiter.Length);
+                    if (value.Length > ValueLengthLimit)
                     {
                         ThrowValueTooLargeException();
                     }
-
-                    value = span.Slice(0, ampersand);
-                    span = span.Slice(ampersand + andDelimiter.Length);
                 }
 
                 var decodedKey = GetDecodedString(key);
                 var decodedValue = GetDecodedString(value);
 
                 AppendAndVerify(ref accumulator, decodedKey, decodedValue);
-
-                // Cover case where we don't have an ampersand at the end.
-                consumed += key.Length + value.Length + (ampersand == -1 ? equalsDelimiter.Length : equalsDelimiter.Length + andDelimiter.Length);
             }
         }
 
@@ -217,6 +222,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
+            ReadOnlySequence<byte> segment;
+
             var consumed = sequenceReader.Position;
             var consumedBytes = default(long);
             var equalsDelimiter = GetEqualsForEncoding();
@@ -224,46 +231,59 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             while (!sequenceReader.End)
             {
-                // TODO seems there is a bug with TryReadTo (advancePastDelimiter: true). It isn't advancing past the delimiter on second read.
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false) ||
-                    !sequenceReader.IsNext(equalsDelimiter, true))
-                {
-                    if ((sequenceReader.Consumed - consumedBytes) > KeyLengthLimit)
-                    {
-                        ThrowKeyTooLargeException();
-                    }
-
-                    break;
-                }
-
-                if (key.Length > KeyLengthLimit)
-                {
-                    ThrowKeyTooLargeException();
-                }
-
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> value, andDelimiter, false) ||
-                    !sequenceReader.IsNext(andDelimiter, true))
+                if (!sequenceReader.TryReadTo(out segment, andDelimiter))
                 {
                     if (!isFinalBlock)
                     {
-                        if ((sequenceReader.Consumed - consumedBytes - key.Length) > ValueLengthLimit)
+                        // Don't buffer indefinately
+                        if ((sequenceReader.Consumed - consumedBytes) > KeyLengthLimit + ValueLengthLimit)
                         {
-                            ThrowValueTooLargeException();
+                            ThrowKeyOrValueTooLargeException();
                         }
                         break;
                     }
 
-                    value = buffer.Slice(sequenceReader.Position);
-
-                    sequenceReader.Advance(value.Length);
+                    // This must be the final key=value pair
+                    segment = buffer.Slice(sequenceReader.Position);
+                    sequenceReader.Advance(segment.Length);
                 }
 
-                if (value.Length > ValueLengthLimit)
+                if (segment.IsSingleSegment)
                 {
-                    ThrowValueTooLargeException();
+                    ParseFormValuesFast(segment.First.Span, ref accumulator, isFinalBlock: true, out var segmentConsumed);
+                    Debug.Assert(segmentConsumed == segment.First.Span.Length);
+                    continue;
                 }
 
-                // Need to call ToArray if the key/value spans multiple segments 
+                var segmentReader = new SequenceReader<byte>(segment);
+                ReadOnlySequence<byte> value;
+
+                if (segmentReader.TryReadTo(out var key, equalsDelimiter))
+                {
+                    if (key.Length > KeyLengthLimit)
+                    {
+                        ThrowKeyTooLargeException();
+                    }
+
+                    value = segment.Slice(segmentReader.Position);
+                    if (value.Length > ValueLengthLimit)
+                    {
+                        ThrowValueTooLargeException();
+                    }
+                }
+                else
+                {
+                    // Too long for the whole segment to be a key.
+                    if (segment.Length > KeyLengthLimit)
+                    {
+                        ThrowKeyTooLargeException();
+                    }
+
+                    // There is no more data, this segment must be "key" with no equals or value.
+                    key = segment;
+                    value = ReadOnlySequence<byte>.Empty;
+                }
+
                 var decodedKey = GetDecodedStringFromReadOnlySequence(key);
                 var decodedValue = GetDecodedStringFromReadOnlySequence(value);
 
@@ -274,6 +294,11 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             buffer = buffer.Slice(consumed);
+        }
+
+        private void ThrowKeyOrValueTooLargeException()
+        {
+            throw new InvalidDataException($"Form key length limit {KeyLengthLimit} or value length limit {ValueLengthLimit} exceeded.");
         }
 
         private void ThrowKeyTooLargeException()
