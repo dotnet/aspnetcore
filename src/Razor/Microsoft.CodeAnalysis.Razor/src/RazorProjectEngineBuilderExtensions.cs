@@ -32,12 +32,15 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.Features.Remove(existingFeature);
             }
 
-            builder.Features.Add(new ConfigureParserForCSharpVersionFeature(csharpLanguageVersion));
+            // This will convert any "latest", "default" or "LatestMajor" LanguageVersions into their numerical equivalent.
+            var effectiveCSharpLanguageVersion = LanguageVersionFacts.MapSpecifiedToEffectiveVersion(csharpLanguageVersion);
+            builder.Features.Add(new ConfigureParserForCSharpVersionFeature(effectiveCSharpLanguageVersion));
 
             return builder;
         }
 
-        private class ConfigureParserForCSharpVersionFeature : IConfigureRazorCodeGenerationOptionsFeature
+        // Internal for testing
+        internal class ConfigureParserForCSharpVersionFeature : IConfigureRazorCodeGenerationOptionsFeature
         {
             public ConfigureParserForCSharpVersionFeature(LanguageVersion csharpLanguageVersion)
             {
