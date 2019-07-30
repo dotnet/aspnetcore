@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             // Decrement can be called twice, via calling CompleteAsync and then Abort on the HttpContext.
             // Only decrement once total.
-            lock(_completionLock)
+            lock (_completionLock)
             {
                 if (!_needsDecrement)
                 {
