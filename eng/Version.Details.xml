@@ -13,21 +13,21 @@
       <Uri>https://github.com/aspnet/Blazor</Uri>
       <Sha>cd9254a05cfa52defeacd31697d25b2a4ed17510</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview9.19379.4">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview9.19379.5">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b8ec5038ceb85463e32f93122045279a1bebcf09</Sha>
+      <Sha>e38883a1cfc48ee34e87257513f2f8a3d31dfe4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview9.19379.4">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview9.19379.5">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b8ec5038ceb85463e32f93122045279a1bebcf09</Sha>
+      <Sha>e38883a1cfc48ee34e87257513f2f8a3d31dfe4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview9.19379.4">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview9.19379.5">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b8ec5038ceb85463e32f93122045279a1bebcf09</Sha>
+      <Sha>e38883a1cfc48ee34e87257513f2f8a3d31dfe4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview9.19379.4">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview9.19379.5">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>b8ec5038ceb85463e32f93122045279a1bebcf09</Sha>
+      <Sha>e38883a1cfc48ee34e87257513f2f8a3d31dfe4e</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview9.19379.12">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
@@ -432,9 +432,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>6b97af1a6a52d64364942f5617449e9cda5a306e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19376-02" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta2-19374-05" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>fc001df5a1fd806dcf265efc1974f7c9adefbe31</Sha>
+      <Sha>e39bfe2ba0f24f4a2e4838e898d98df9613c7957</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
