@@ -137,15 +137,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 var renderId = Interlocked.Increment(ref _nextRenderId);
 
-                var valueStopWatch = _logger.IsEnabled(LogLevel.Debug) ?
-                    ValueStopwatch.StartNew() :
-                    (ValueStopwatch?)null;
-
                 pendingRender = new UnacknowledgedRenderBatch(
                     renderId,
                     arrayBuilder,
                     new TaskCompletionSource<object>(),
-                    valueStopWatch);
+                    ValueStopwatch.StartNew());
 
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
@@ -263,13 +259,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry)
         {
+            var elapsedTime = entry.ValueStopwatch.GetElapsedTime();
             if (errorMessageOrNull == null)
             {
-                Log.CompletingBatchWithoutError(_logger, entry.BatchId, entry.ValueStopwatch);
+                Log.CompletingBatchWithoutError(_logger, entry.BatchId, elapsedTime);
             }
             else
             {
-                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull, entry.ValueStopwatch);
+                Log.CompletingBatchWithError(_logger, entry.BatchId, errorMessageOrNull, elapsedTime);
             }
 
             entry.Data.Dispose();
@@ -290,7 +287,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         internal readonly struct UnacknowledgedRenderBatch
         {
-            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource, ValueStopwatch? valueStopwatch)
+            public UnacknowledgedRenderBatch(long batchId, ArrayBuilder<byte> data, TaskCompletionSource<object> completionSource, ValueStopwatch valueStopwatch)
             {
                 BatchId = batchId;
                 Data = data;
@@ -301,7 +298,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             public long BatchId { get; }
             public ArrayBuilder<byte> Data { get; }
             public TaskCompletionSource<object> CompletionSource { get; }
-            public ValueStopwatch? ValueStopwatch { get; }
+            public ValueStopwatch ValueStopwatch { get; }
         }
 
         private void CaptureAsyncExceptions(Task task)
@@ -361,12 +358,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 _completingBatchWithError = LoggerMessage.Define<long, string, double>(
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithError,
-                    "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedTime}ms.");
+                    "Completing batch {BatchId} with error: {ErrorMessage} in {ElapsedMilliseconds}ms.");
 
                 _completingBatchWithoutError = LoggerMessage.Define<long, double>(
                     LogLevel.Debug,
                     EventIds.CompletingBatchWithoutError,
-                    "Completing batch {BatchId} without error in {ElapsedTime}ms.");
+                    "Completing batch {BatchId} without error in {ElapsedMilliseconds}ms.");
 
                 _receivedDuplicateBatchAcknowledgement = LoggerMessage.Define<long>(
                     LogLevel.Debug,
@@ -405,28 +402,22 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     null);
             }
 
-            public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, ValueStopwatch? stopwatch)
+            public static void CompletingBatchWithError(ILogger logger, long batchId, string errorMessage, TimeSpan elapsedTime)
             {
-                Debug.Assert(stopwatch != null);
-                var elapsedTime = stopwatch.Value.GetElapsedTime().TotalMilliseconds;
-
                 _completingBatchWithError(
                     logger,
                     batchId,
                     errorMessage,
-                    elapsedTime,
+                    elapsedTime.TotalMilliseconds,
                     null);
             }
 
-            public static void CompletingBatchWithoutError(ILogger logger, long batchId, ValueStopwatch? stopwatch)
+            public static void CompletingBatchWithoutError(ILogger logger, long batchId, TimeSpan elapsedTime)
             {
-                Debug.Assert(stopwatch != null);
-                var elapsedTime = stopwatch.Value.GetElapsedTime().TotalMilliseconds;
-
                 _completingBatchWithoutError(
                     logger,
                     batchId,
-                    elapsedTime,
+                    elapsedTime.TotalMilliseconds,
                     null);
             }
 

@@ -14,12 +14,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
-    <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -51,15 +52,7 @@
     <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
   </ItemGroup>
 
-  <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
-  </ItemGroup>
-
   <PropertyGroup>
-    <!--
-      We check in the Release / Production build of blazor.*.js, but not the Debug builds. Consequently the former is always available to embed, the latter is only available
-      if Web.JS was built locally. Use the Debug build when available and building in Debug configuration.
-    -->
     <BlazorServerJSFile>..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
     <BlazorServerJSFile Condition="'$(Configuration)' == 'Debug' AND Exists('..\..\Web.JS\dist\Debug\blazor.server.js')">..\..\Web.JS\dist\Debug\blazor.server.js</BlazorServerJSFile>
   </PropertyGroup>
