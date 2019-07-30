@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Routing
     public class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
+        static readonly ReadOnlyDictionary<string, object> _emptyParametersDictionary
+            = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
         RenderHandle _renderHandle;
         string _baseUri;
@@ -113,7 +117,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                 Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
-                var routeData = new ComponentRouteData(context.Handler, context.Parameters);
+                var routeData = new ComponentRouteData(
+                    context.Handler,
+                    context.Parameters ?? _emptyParametersDictionary);
                 _renderHandle.Render(Found(routeData));
             }
             else
