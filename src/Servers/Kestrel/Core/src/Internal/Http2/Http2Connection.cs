@@ -1323,6 +1323,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                // Propagate the exception if it's ConnectionAbortedException		
+                error = ex as ConnectionAbortedException;
+            }
+            catch (Exception ex)
+            {
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.		
+                error = ex;
+            }
             finally
             {
                 await _context.Transport.Input.CompleteAsync();
