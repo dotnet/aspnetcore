@@ -917,8 +917,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task DATA_MultipleStreams()
+        public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
         {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1; 
             var tcs = new TaskCompletionSource<object>();
             var tcs2 = new TaskCompletionSource<object>();
             var makeFirstRequestWait = false;
@@ -933,6 +934,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             });
 
             await StartStreamAsync(1, _postRequestHeaders, endStream: true);
+            await SendRstStreamAsync(1);
 
             await tcs2.Task;
 
@@ -944,11 +946,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 3);
 
             tcs.SetResult(null);
+        }
 
-            await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
-                withStreamId: 1);
+        [Fact]
+        public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+            var tcs = new TaskCompletionSource<object>();
+            await InitializeConnectionAsync(async context =>
+            {
+                await tcs.Task.DefaultTimeout();
+            });
+
+            await StartStreamAsync(1, _postRequestHeaders, endStream: false);
+            await SendRstStreamAsync(1);
+            await StartStreamAsync(3, _postRequestHeaders, endStream: true);
+            await SendRstStreamAsync(3);
+            await StartStreamAsync(5, _postRequestHeaders, endStream: true);
+
+            await WaitForStreamErrorAsync(
+                expectedStreamId: 5,
+                expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
+                expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
+
+            tcs.SetResult(null);
         }
 
         [Fact]
