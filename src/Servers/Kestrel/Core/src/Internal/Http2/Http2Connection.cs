@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 context.ServiceContext.Log);
 
             var inputOptions = new PipeOptions(pool: context.MemoryPool,
-                readerScheduler: PipeScheduler.ThreadPool,
+                readerScheduler: context.ServiceContext.Scheduler,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
@@ -339,6 +339,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 finally
                 {
                     Input.Complete();
+                    _context.Transport.Input.CancelPendingRead();
+                    await _inputTask;
                 }
             }
         }
@@ -1298,8 +1300,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var reader = _context.Transport.Input;
                     var writer = _input.Writer;
 
-                    var outputBuffer = writer.GetMemory(_minAllocBufferSize);
                     var readResult = await reader.ReadAsync();
+
+                    if ((readResult.IsCompleted && readResult.Buffer.Length == 0) || readResult.IsCanceled)
+                    {
+                        // FIN
+                        break;
+                    }
+
+                    var outputBuffer = writer.GetMemory(_minAllocBufferSize);
 
                     var copyAmount = (int)Math.Min(outputBuffer.Length, readResult.Buffer.Length);
                     var bufferSlice = readResult.Buffer.Slice(0, copyAmount);
@@ -1311,13 +1320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     var result = await writer.FlushAsync();
 
-                    if (readResult.IsCompleted)
-                    {
-                        // FIN
-                        break;
-                    }
-
-                    if (result.IsCompleted)
+                    if (result.IsCompleted || result.IsCanceled)
                     {
                         // flushResult should not be canceled.
                         break;
@@ -1337,6 +1340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             finally
             {
+                await _context.Transport.Input.CompleteAsync();
                 _input.Writer.Complete(error);
             }
         }
