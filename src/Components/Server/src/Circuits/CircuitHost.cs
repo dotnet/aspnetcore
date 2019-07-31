@@ -106,7 +106,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Dispatch any buffered renders we accumulated during a disconnect.
             // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
             // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-            _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+            _ = Renderer.Dispatcher.InvokeAsync(() =>
+            {
+                return Renderer.ProcessBufferedRenderBatches();
+            });
         }
 
         public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
@@ -230,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             catch (Exception ex)
             {
                 // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
-                // however, we still want this to get logged if we do. 
+                // however, we still want this to get logged if we do.
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }

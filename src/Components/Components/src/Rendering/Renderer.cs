@@ -398,13 +398,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? componentState
                 : null;
 
-        private void ProcessRenderQueue()
+        /// <summary>
+        /// Processses pending renders requests from components.
+        /// </summary>
+        protected virtual void ProcessRenderQueue()
         {
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
             try
             {
+                if (_batchBuilder.ComponentRenderQueue.Count == 0)
+                {
+                    Log.NoPendingComponentRenderRequests(_logger);
+                    return;
+                }
+
                 // Process render queue until empty
                 while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
@@ -423,6 +432,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // Ensure we catch errors while running the render functions of the components.
                 HandleException(e);
+                return;
             }
             finally
             {

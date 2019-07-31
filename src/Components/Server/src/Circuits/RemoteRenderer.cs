@@ -9,6 +9,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
@@ -23,10 +24,13 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
+        private readonly CircuitOptions _options;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
         private bool _disposing = false;
+        private bool _queueIsFullNotified;
+        private ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -40,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             RendererRegistry rendererRegistry,
+            CircuitOptions options,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
             HtmlEncoder encoder,
@@ -49,12 +54,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
+            _options = options;
 
             Id = _rendererRegistry.Add(this);
             _logger = logger;
         }
-
-        internal ConcurrentQueue<UnacknowledgedRenderBatch> UnacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
@@ -81,6 +85,43 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             return RenderRootComponentAsync(componentId);
         }
 
+        protected override void ProcessRenderQueue()
+        {
+            // If we got here it means we are at max capacity, so we don't want to actually process the queue,
+            // as we have a client that is not acknowledging render batches fast enough (something we consider needs
+            // to be fast).
+            // The result is somethign as follows:
+            // Lets imagine an extreme case where the server produces a new batch every milisecond.
+            // Lets say the client is able to ACK a batch every 100 miliseconds.
+            // When the app starts the client might see the sequence 0.000->0.{MAXUnacknowledgeRenderBatches} and then
+            // after 100 miliseconds it sees it jump to 0.1xx, then to 0.2xx where xx is something between {0..99} the
+            // reason for this is that the server slows down rendering new batches to as fast as the client can consume
+            // them.
+            // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
+            // would still proces the events, but would not produce new renders until it gets an ack that frees up space
+            // for a new render.
+            if (_unacknowledgedRenderBatches.Count >= _options.MaxBufferedUnacknowledgedRenderBatches)
+            {
+                // We should never see UnacknowledgedRenderBatches.Count > _options.MaxBufferedUnacknowledgedRenderBatches
+                // But if we do, it's safer to simply disable the rendering in that case too instead of allow batches to
+                // keep piling up.
+                if (!_queueIsFullNotified)
+                {
+                    // We skip logging after the first time we run into this situation to avoid filling the logs with
+                    // entries on high frequency render scenarios.
+                    // We try our best to log the queue is full at most once, although we don't guarantee it due to
+                    // concurrency.
+                    // When we complete a render we set this flag to false, so the next time the queue gets filled it
+                    // also shows up.
+                    _queueIsFullNotified = true;
+                    Log.FullUnacknowledgedRenderBatchesQueue(_logger);
+                }
+
+                return;
+            }
+            base.ProcessRenderQueue();
+        }
+
         /// <inheritdoc />
         protected override void HandleException(Exception exception)
         {
@@ -104,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         {
             _disposing = true;
             _rendererRegistry.TryRemove(Id);
-            while (UnacknowledgedRenderBatches.TryDequeue(out var entry))
+            while (_unacknowledgedRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
                 entry.Data.Dispose();
@@ -146,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
 
-                UnacknowledgedRenderBatches.Enqueue(pendingRender);
+                _unacknowledgedRenderBatches.Enqueue(pendingRender);
             }
             catch
             {
@@ -167,7 +208,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // All the batches are sent in order based on the fact that SignalR
             // provides ordering for the underlying messages and that the batches
             // are always in order.
-            return Task.WhenAll(UnacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+            return Task.WhenAll(_unacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
         }
 
         private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)
@@ -234,7 +275,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
 
-            if (!UnacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
+            if (!_unacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
                 Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
             }
@@ -242,10 +283,13 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             {
                 var lastBatchId = nextUnacknowledgedBatch.BatchId;
                 // Order is important here so that we don't prematurely dequeue the last nextUnacknowledgedBatch
-                while (UnacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
+                while (_unacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
                 {
                     lastBatchId = nextUnacknowledgedBatch.BatchId;
-                    UnacknowledgedRenderBatches.TryDequeue(out _);
+                    // At this point the queue is no longer full, we have at least emptied one slot, so we allow a further
+                    // full queue log entry the next time it fills up.
+                    _queueIsFullNotified = false;
+                    _unacknowledgedRenderBatches.TryDequeue(out _);
                     ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
                 }
 
@@ -253,7 +297,18 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 {
                     HandleException(
                         new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
+                    return;
                 }
+
+                // Normally we will not have pending renders, but it might happen that we reached the limit of
+                // available buffered renders and new renders got queued.
+                // Invke ProcessBufferedRenderRequests so that we might produce any additional batch that is
+                // missing.
+                // Its also safe to use the discard as ProcessRenderQueue won't throw.
+                _ = Dispatcher.InvokeAsync(() =>
+                  {
+                      ProcessRenderQueue();
+                  });
             }
         }
 
@@ -321,6 +376,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, long, string, double, Exception> _completingBatchWithError;
             private static readonly Action<ILogger, long, double, Exception> _completingBatchWithoutError;
             private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
+            private static readonly Action<ILogger, Exception> _fullUnacknowledgedRenderBatchesQueue;
 
             private static class EventIds
             {
@@ -331,6 +387,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
                 public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
                 public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
+                public static readonly EventId FullUnacknowledgedRenderBatchesQueue = new EventId(107, "FullUnacknowledgedRenderBatchesQueue");
             }
 
             static Log()
@@ -369,6 +426,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     LogLevel.Debug,
                     EventIds.ReceivedDuplicateBatchAcknowledgement,
                     "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
+
+                _fullUnacknowledgedRenderBatchesQueue = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.FullUnacknowledgedRenderBatchesQueue,
+                    "The queue of unacknowledged render batches is full.");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -421,10 +483,27 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     null);
             }
 
-            internal static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
+            public static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
             {
                 _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
             }
+
+            public static void FullUnacknowledgedRenderBatchesQueue(ILogger logger)
+            {
+                _fullUnacknowledgedRenderBatchesQueue(logger, null);
+            }
         }
+    }
+
+    internal readonly struct PendingRender
+    {
+        public PendingRender(int componentId, RenderFragment renderFragment)
+        {
+            ComponentId = componentId;
+            RenderFragment = renderFragment;
+        }
+
+        public int ComponentId { get; }
+        public RenderFragment RenderFragment { get; }
     }
 }

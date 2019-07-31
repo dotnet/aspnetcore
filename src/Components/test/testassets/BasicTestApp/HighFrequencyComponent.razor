@@ -1,0 +1,29 @@
+@page "/highfrequency"
+@implements IDisposable
+@using System.Threading
+
+<h1>High frequency render component</h1>
+<p>This component renders updates at a really high frequency. We use it to test the server-side limits on the amount
+   of pending batches we keep buffered in the server while we wait for a client to acknowledge them.</p>
+<p id="tick-value">@tick</p>
+
+@code {
+    int tick;
+    private bool _isDisposed;
+
+    protected override void OnInitialized()
+    {
+        Task.Run(() => InvokeAsync(async () =>
+        {
+            while (!_isDisposed)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(1));
+                tick++;
+                StateHasChanged();
+            }
+        }));
+    }
+
+
+    public void Dispose() => _isDisposed = true;
+}

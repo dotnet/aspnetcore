@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -389,6 +390,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 serviceProvider,
                 NullLoggerFactory.Instance,
                 new RendererRegistry(),
+                new CircuitOptions(),
                 jsRuntime.Object,
                 circuitClientProxy,
                 HtmlEncoder.Default,
