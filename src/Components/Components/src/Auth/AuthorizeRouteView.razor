@@ -1,0 +1,40 @@
+@namespace Microsoft.AspNetCore.Components
+<CascadingAuthenticationState> @* TODO: Make this internal, or inline it here *@
+    @* TODO: Don't want to expose this, so find some way of avoiding it, e.g. by implementing this in C# *@
+    <AuthorizeRouteViewCore RouteData="@RouteData" Context="authState">
+        <Authorized>
+            <RouteView RouteData="@RouteData" DefaultLayout="@DefaultLayout" />
+        </Authorized>
+        <NotAuthorized>
+            <LayoutView Layout="@DefaultLayout" ChildContent="@NotAuthorized(authState)" />
+        </NotAuthorized>
+        <Authorizing>
+            <LayoutView Layout="@DefaultLayout" ChildContent="@Authorizing" />
+        </Authorizing>
+    </AuthorizeRouteViewCore>
+</CascadingAuthenticationState>
+@code {
+    /// <summary>
+    /// Gets or sets the route data.
+    /// </summary>
+    [Parameter]
+    public ComponentRouteData RouteData { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of a layout to be used if the page does not
+    /// declare any layout. If specified, the type must implement <see cref="IComponent"/>
+    /// and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
+    /// </summary>
+    [Parameter]
+    public Type DefaultLayout { get; set; }
+
+    /// <summary>
+    /// The content that will be displayed if the user is not authorized.
+    /// </summary>
+    [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
+
+    /// <summary>
+    /// The content that will be displayed while asynchronous authorization is in progress.
+    /// </summary>
+    [Parameter] public RenderFragment Authorizing { get; set; }
+}

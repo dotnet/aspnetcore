@@ -102,6 +102,12 @@ namespace Microsoft.AspNetCore.Components
         private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
         {
             var authorizeData = GetAuthorizeData();
+            if (authorizeData == null)
+            {
+                // No authorization applies, so no need to consult the authorization service
+                return true;
+            }
+
             EnsureNoAuthenticationSchemeSpecified(authorizeData);
 
             var policy = await AuthorizationPolicy.CombineAsync(
