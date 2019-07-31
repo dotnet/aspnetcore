@@ -813,7 +813,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 var expected = writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
                 if (expected)
                 {
                     hasErrorLog = true;
@@ -865,7 +865,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             using (StartVerifiableLog(ExpectedErrors))
@@ -1012,7 +1012,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return methodName == nameof(MethodHub.MethodThatThrows) && writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
-                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             using (StartVerifiableLog(ExpectedErrors))

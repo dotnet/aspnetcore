@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(7, "SendingResult"), "InvocationId {InvocationId}: Sending result of type '{ResultType}'.");
 
             private static readonly Action<ILogger, string, Exception> _failedInvokingHubMethod =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "FailedInvokingHubMethod"), "Failed to invoke hub method '{HubMethod}'.");
+                LoggerMessage.Define<string>(LogLevel.Error, new EventId(8, "FailedInvokingHubMethod"), "Failed to invoke hub method '{HubMethod}'.");
 
             private static readonly Action<ILogger, string, string, Exception> _hubMethodBound =
                 LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, "HubMethodBound"), "'{HubName}' hub method '{HubMethod}' is bound.");
@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             private static readonly Action<ILogger, Exception> _unexpectedStreamItem =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(21, "UnexpectedStreamItem"), "StreamItemMessage received unexpectedly.");
 
-            private static readonly Action<ILogger, string, Exception> _failedWhileRunningHubMethod =
-                LoggerMessage.Define<string>(LogLevel.Error, new EventId(22, "FailedWhileRunningHubMethod"), "Failed while running hub method '{HubMethod}'.");
+            private static readonly Action<ILogger, string, Exception> _invalidHubParameters =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(22, "InvalidHubParameters"), "Parameters to hub method '{HubMethod}' are incorrect.");
 
             public static void ReceivedHubInvocation(ILogger logger, InvocationMessage invocationMessage)
             {
@@ -182,9 +182,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _unexpectedStreamItem(logger, null);
             }
 
-            public static void FailedWhileRunningHubMethod(ILogger logger, string hubMethod, Exception exception)
+            public static void InvalidHubParameters(ILogger logger, string hubMethod, Exception exception)
             {
-                _failedWhileRunningHubMethod(logger, hubMethod, exception);
+                _invalidHubParameters(logger, hubMethod, exception);
             }
         }
     }

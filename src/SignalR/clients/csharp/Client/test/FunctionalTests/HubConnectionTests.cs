@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             var protocol = HubProtocols[protocolName];
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             bool ExpectedErrors(WriteContext writeContext)
             {
                 return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
-                       writeContext.EventId.Name == "FailedWhileRunningHubMethod";
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
             }
 
             var protocol = HubProtocols[protocolName];
