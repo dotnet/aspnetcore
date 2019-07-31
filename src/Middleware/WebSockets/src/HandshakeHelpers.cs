@@ -99,16 +99,10 @@ namespace Microsoft.AspNetCore.WebSockets
             {
                 return false;
             }
-            try
-            {
-                Span<byte> temp = stackalloc byte[16];
-                var success = Convert.TryFromBase64String(value, temp, out var written);
-                return written == 16 && success;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+
+            Span<byte> temp = stackalloc byte[16];
+            var success = Convert.TryFromBase64String(value, temp, out var written);
+            return success && written == 16;
         }
 
         public static string CreateResponseKey(string requestKey)
@@ -117,11 +111,6 @@ namespace Microsoft.AspNetCore.WebSockets
             // in Section 4.2.2, with the string "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", taking the SHA-1 hash of
             // this concatenated value to obtain a 20-byte value and base64-encoding"
             // https://tools.ietf.org/html/rfc6455#section-4.2.2
-
-            if (requestKey == null)
-            {
-                throw new ArgumentNullException(nameof(requestKey));
-            }
 
             if (_algorithm == null)
             {
