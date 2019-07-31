@@ -982,7 +982,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         private void AbortStream(int streamId, IOException error)
-        {I
+        {
             if (_streams.TryGetValue(streamId, out var stream))
             {
                 stream.DecrementActiveClientStreamCount();
