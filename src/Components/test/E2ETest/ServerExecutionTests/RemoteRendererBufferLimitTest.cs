@@ -235,13 +235,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(fullCount + 1, Batches.Count);
         }
 
-        private void LogMessages(WriteContext context)
-        {
-            Logs.Push(new LogMessage(context.LogLevel, context.Message, context.Exception));
-        }
+        private void LogMessages(WriteContext context) => Logs.Push(new LogMessage(context.LogLevel, context.Message, context.Exception));
 
         [DebuggerDisplay("{Message,nq}")]
-        private class LogMessage : IEquatable<LogMessage>
+        private class LogMessage
         {
             public LogMessage(LogLevel logLevel, string message, Exception exception)
             {
@@ -253,16 +250,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             public LogLevel LogLevel { get; set; }
             public string Message { get; set; }
             public Exception Exception { get; set; }
-
-            public override bool Equals(object obj) => Equals(obj as LogMessage);
-
-            public bool Equals([AllowNull] LogMessage other) =>
-                other != null &&
-                       LogLevel == other.LogLevel &&
-                       Message == other.Message &&
-                       EqualityComparer<Exception>.Default.Equals(Exception, other.Exception);
-
-            public override int GetHashCode() => HashCode.Combine(LogLevel, Message, Exception);
         }
 
         private class Batch

@@ -87,23 +87,24 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         protected override void ProcessRenderQueue()
         {
-            // If we got here it means we are at max capacity, so we don't want to actually process the queue,
-            // as we have a client that is not acknowledging render batches fast enough (something we consider needs
-            // to be fast).
-            // The result is somethign as follows:
-            // Lets imagine an extreme case where the server produces a new batch every milisecond.
-            // Lets say the client is able to ACK a batch every 100 miliseconds.
-            // When the app starts the client might see the sequence 0.000->0.{MAXUnacknowledgeRenderBatches} and then
-            // after 100 miliseconds it sees it jump to 0.1xx, then to 0.2xx where xx is something between {0..99} the
-            // reason for this is that the server slows down rendering new batches to as fast as the client can consume
-            // them.
-            // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
-            // would still proces the events, but would not produce new renders until it gets an ack that frees up space
-            // for a new render.
             if (_unacknowledgedRenderBatches.Count >= _options.MaxBufferedUnacknowledgedRenderBatches)
             {
+                // If we got here it means we are at max capacity, so we don't want to actually process the queue,
+                // as we have a client that is not acknowledging render batches fast enough (something we consider needs
+                // to be fast).
+                // The result is somethign as follows:
+                // Lets imagine an extreme case where the server produces a new batch every milisecond.
+                // Lets say the client is able to ACK a batch every 100 miliseconds.
+                // When the app starts the client might see the sequence 0.000->0.{MAXUnacknowledgeRenderBatches} and then
+                // after 100 miliseconds it sees it jump to 0.1xx, then to 0.2xx where xx is something between {0..99} the
+                // reason for this is that the server slows down rendering new batches to as fast as the client can consume
+                // them.
+                // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
+                // would still proces the events, but would not produce new renders until it gets an ack that frees up space
+                // for a new render.
                 // We should never see UnacknowledgedRenderBatches.Count > _options.MaxBufferedUnacknowledgedRenderBatches
-                // But if we do, it's safer to simply disable the rendering in that case too instead of allow batches to
+
+                // But if we do, it's safer to simply disable the rendering in that case too instead of allowing batches to
                 // keep piling up.
                 if (!_queueIsFullNotified)
                 {
@@ -305,10 +306,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Invke ProcessBufferedRenderRequests so that we might produce any additional batch that is
                 // missing.
                 // Its also safe to use the discard as ProcessRenderQueue won't throw.
-                _ = Dispatcher.InvokeAsync(() =>
-                  {
-                      ProcessRenderQueue();
-                  });
+                _ = Dispatcher.InvokeAsync(() => ProcessRenderQueue());
             }
         }
 
