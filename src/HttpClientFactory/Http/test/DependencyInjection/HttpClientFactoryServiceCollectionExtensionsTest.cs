@@ -62,6 +62,22 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.NotNull(handler);
         }
 
+        [Fact] // Verifies that AddHttpClient registers a default client
+        public void AddHttpClient_RegistersDefaultClientAsHttpClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+            var client = services.GetRequiredService<HttpClient>();
+
+            // Assert
+            Assert.NotNull(client);
+        }
+
         [Fact]
         public void AddHttpClient_WithDefaultName_ConfiguresDefaultClient()
         {
