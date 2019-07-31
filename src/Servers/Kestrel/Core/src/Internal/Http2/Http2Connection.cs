@@ -120,13 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public string ConnectionId => _context.ConnectionId;
 
-        public PipeReader Input
-        {
-            get
-            {
-                return _input.Reader;
-            }
-        }
+        public PipeReader Input => _input.Reader;
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
@@ -988,7 +982,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         private void AbortStream(int streamId, IOException error)
-        {
+        {I
             if (_streams.TryGetValue(streamId, out var stream))
             {
                 stream.DecrementActiveClientStreamCount();
@@ -1323,14 +1317,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
             }
-            catch (OperationCanceledException ex)
-            {
-                // Propagate the exception if it's ConnectionAbortedException		
-                error = ex as ConnectionAbortedException;
-            }
             catch (Exception ex)
             {
-                // Don't rethrow the exception. It should be handled by the Pipeline consumer.		
+                // Don't rethrow the exception. It should be handled by the Pipeline consumer.
                 error = ex;
             }
             finally
