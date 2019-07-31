@@ -18,6 +18,21 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public sealed class AuthorizeRouteView : RouteView
     {
+        private readonly RenderFragment<AuthenticationState> _renderAuthorizedDelegate;
+        private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
+        private readonly RenderFragment _renderAuthorizingDelegate;
+
+        public AuthorizeRouteView()
+        {
+            // Cache the rendering delegates so that we only construct new closure instances
+            // when they are actually used (e.g., we never prepare a RenderFragment bound to
+            // the Authorizing content except when you are displaying that particular state)
+            var renderBaseRouteViewDelegate = (RenderFragment)base.Render;
+            _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
+            _renderNotAuthorizedDelegate = authenticationState => RenderContentInDefaultLayout(NotAuthorized(authenticationState));
+            _renderAuthorizingDelegate = builder => RenderContentInDefaultLayout(Authorizing);
+        }
+
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
@@ -37,19 +52,11 @@ namespace Microsoft.AspNetCore.Components
             builder.OpenComponent<CascadingAuthenticationState>(0);
             builder.AddAttribute(1, nameof(CascadingAuthenticationState.ChildContent), (RenderFragment)(builder =>
             {
-                // TODO: Make AuthorizeRouteViewCore into a nested class here
                 builder.OpenComponent<AuthorizeRouteViewCore>(0);
                 builder.AddAttribute(1, nameof(AuthorizeRouteViewCore.RouteData), RouteData);
-
-                // TODO: Cache the delegate
-                builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), (RenderFragment<AuthenticationState>)(state => base.Render));
-
-                // TODO: Cache the delegate
-                builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), RenderContentInDefaultLayout(Authorizing));
-
-                // TODO: Cache the delegate
-                builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), (RenderFragment<AuthenticationState>)(state => RenderContentInDefaultLayout(NotAuthorized(state))));
-
+                builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
+                builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
+                builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
                 builder.CloseComponent();
             }));
             builder.CloseComponent();
