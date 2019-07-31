@@ -81,6 +81,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        public void PermanentDisconnect(CircuitHost circuitHost)
+        {
+            if (ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _))
+            {
+                Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
+                circuitHost.Client.SetDisconnected();
+            }
+        }
+
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
         {
             Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
@@ -314,6 +323,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, string, Exception> _circuitNotActive;
             private static readonly Action<ILogger, string, string, Exception> _circuitConnectedToDifferentConnection;
             private static readonly Action<ILogger, string, Exception> _circuitMarkedDisconnected;
+            private static readonly Action<ILogger, string, Exception> _circuitDisconnectedPermanently;
             private static readonly Action<ILogger, string, EvictionReason, Exception> _circuitEvicted;
 
             private static class EventIds
@@ -330,6 +340,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId CircuitConnectedToDifferentConnection = new EventId(109, "CircuitConnectedToDifferentConnection");
                 public static readonly EventId CircuitMarkedDisconnected = new EventId(110, "CircuitMarkedDisconnected");
                 public static readonly EventId CircuitEvicted = new EventId(111, "CircuitEvicted");
+                public static readonly EventId CircuitDisconnectedPermanently = new EventId(112, "CircuitDisconnectedPermanently");
             }
 
             static Log()
@@ -394,6 +405,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.CircuitMarkedDisconnected,
                     "Circuit with id {CircuitId} is disconnected.");
 
+                _circuitDisconnectedPermanently = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.CircuitDisconnectedPermanently,
+                    "Circuit with id {CircuitId} has been removed from the registry for permanent disconnection.");
+
                 _circuitEvicted = LoggerMessage.Define<string, EvictionReason>(
                     LogLevel.Debug,
                     EventIds.CircuitEvicted,
@@ -435,6 +451,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public static void CircuitMarkedDisconnected(ILogger logger, string circuitId) =>
                 _circuitMarkedDisconnected(logger, circuitId, null);
+
+            public static void CircuitDisconnectedPermanently(ILogger logger, string circuitId) =>
+                _circuitDisconnectedPermanently(logger, circuitId, null);
 
             public static void CircuitEvicted(ILogger logger, string circuitId, EvictionReason evictionReason) =>
                _circuitEvicted(logger, circuitId, evictionReason, null);

@@ -8,7 +8,7 @@
 </select>
 
 @code {
-    void OnSelected(UIChangeEventArgs e)
+    void OnSelected(ChangeEventArgs e)
     {
         // Included fragment to preserve choice of Blazor client or server.
         var redirect = new Uri(UriHelper.GetAbsoluteUri()).GetComponents(UriComponents.PathAndQuery | UriComponents.Fragment, UriFormat.UriEscaped);

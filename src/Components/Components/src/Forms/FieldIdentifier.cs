@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// Uniquely identifies a single field that can be edited. This may correspond to a property on a
     /// model object, or can be any other named value.
     /// </summary>
-    public readonly struct FieldIdentifier
+    public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
@@ -68,8 +68,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         public override bool Equals(object obj)
             => obj is FieldIdentifier otherIdentifier
-            && otherIdentifier.Model == Model
-            && string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
+            && Equals(otherIdentifier);
+
+        /// <inheritdoc />
+        public bool Equals(FieldIdentifier otherIdentifier)
+        {
+            return
+                otherIdentifier.Model == Model &&
+                string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
+        }
 
         private static void ParseAccessor<T>(Expression<Func<T>> accessor, out object model, out string fieldName)
         {

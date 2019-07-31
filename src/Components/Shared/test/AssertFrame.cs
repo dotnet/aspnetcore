@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             Assert.Equal(attributeValue, frame.AttributeValue);
         }
 
-        public static void Attribute(RenderTreeFrame frame, string attributeName, Action<UIEventArgs> attributeEventHandlerValue, int? sequence = null)
+        public static void Attribute(RenderTreeFrame frame, string attributeName, Action<EventArgs> attributeEventHandlerValue, int? sequence = null)
         {
             AssertFrame.Attribute(frame, attributeName, sequence);
             Assert.Equal(attributeEventHandlerValue, frame.AttributeValue);

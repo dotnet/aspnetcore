@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Supplies information about an error event that is being raised.
     /// </summary>
-    public class UIErrorEventArgs : UIEventArgs
+    public class UIErrorEventArgs : EventArgs
     {
         /// <summary>
         /// Gets a a human-readable error message describing the problem.
@@ -27,5 +29,10 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the column number of the script file on which the error occurred.
         /// </summary>
         public int Colno { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the event.
+        /// </summary>
+        public string Type { get; set; }
     }
 }

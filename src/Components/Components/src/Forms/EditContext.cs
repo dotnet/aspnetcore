@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -159,6 +160,16 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <summary>
+        /// Gets the current validation messages for the specified field.
+        ///
+        /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
+        /// </summary>
+        /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
+        /// <returns>The current validation messages for the specified field.</returns>
+        public IEnumerable<string> GetValidationMessages(Expression<Func<object>> accessor)
+            => GetValidationMessages(FieldIdentifier.Create(accessor));
+
+        /// <summary>
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
         /// </summary>
         /// <returns>True if the field has been modified; otherwise false.</returns>
@@ -166,6 +177,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             => _fieldStates.TryGetValue(fieldIdentifier, out var state)
             ? state.IsModified
             : false;
+
+        /// <summary>
+        /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
+        /// </summary>
+        /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
+        /// <returns>True if the field has been modified; otherwise false.</returns>
+        public bool IsModified(Expression<Func<object>> accessor)
+            => IsModified(FieldIdentifier.Create(accessor));
 
         /// <summary>
         /// Validates this <see cref="EditContext"/>.

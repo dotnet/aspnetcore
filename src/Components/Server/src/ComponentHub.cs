@@ -66,7 +66,32 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             CircuitHost = null;
-            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            if (exception != null)
+            {
+                return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            }
+            else
+            {
+                // The client will gracefully disconnect when using websockets by correctly closing the TCP connection.
+                // This happens when the user closes a tab, navigates away from the page or reloads the page.
+                // In these situations we know the user is done with the circuit, so we can get rid of it at that point.
+                // This is important to be able to more efficiently manage resources, specially memory.
+                return TerminateCircuitGracefully(circuitHost);
+            }
+        }
+
+        private async Task TerminateCircuitGracefully(CircuitHost circuitHost)
+        {
+            try
+            {
+                Log.CircuitTerminatedGracefully(_logger, circuitHost.CircuitId);
+                _circuitRegistry.PermanentDisconnect(circuitHost);
+                await circuitHost.DisposeAsync();
+            }
+            catch (Exception e)
+            {
+                Log.UnhandledExceptionInCircuit(_logger, circuitHost.CircuitId, e);
+            }
         }
 
         /// <summary>
@@ -248,6 +273,8 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
 
+            private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully.");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
@@ -272,6 +299,8 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
 
             public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
+
+            public static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
         }
     }
 }

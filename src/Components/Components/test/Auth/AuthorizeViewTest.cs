@@ -53,13 +53,13 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void RendersNotAuthorizedContentIfNotAuthorized()
+        public void RendersNotAuthorizedIfNotAuthorized()
         {
             // Arrange
             var authorizationService = new TestAuthorizationService();
             var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
-                notAuthorizedContent:
+                notAuthorized:
                     context => builder => builder.AddContent(0, $"You are not authorized, even though we know you are {context.User.Identity.Name}"));
             rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void RendersNothingIfAuthorizedButNoChildContentOrAuthorizedContentProvided()
+        public void RendersNothingIfAuthorizedButNoChildContentOrAuthorizedProvided()
         {
             // Arrange
             var authorizationService = new TestAuthorizationService();
@@ -152,14 +152,14 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void RendersAuthorizedContentIfAuthorized()
+        public void RendersAuthorizedIfAuthorized()
         {
             // Arrange
             var authorizationService = new TestAuthorizationService();
             authorizationService.NextResult = AuthorizationResult.Success();
             var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
-                authorizedContent: context => builder =>
+                authorized: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
             rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
@@ -235,13 +235,13 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void ThrowsIfBothChildContentAndAuthorizedContentProvided()
+        public void ThrowsIfBothChildContentAndAuthorizedProvided()
         {
             // Arrange
             var authorizationService = new TestAuthorizationService();
             var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
-                authorizedContent: context => builder => { },
+                authorized: context => builder => { },
                 childContent: context => builder => { });
 
             // Act/Assert
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components
             var renderer = CreateTestRenderer(authorizationService);
             renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
-                notAuthorizedContent:
+                notAuthorized:
                     context => builder => builder.AddContent(0, "You are not authorized"));
             var authTcs = new TaskCompletionSource<AuthenticationState>();
             rootComponent.AuthenticationState = authTcs.Task;
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void RendersAuthorizingContentUntilAuthorizationCompleted()
+        public void RendersAuthorizingUntilAuthorizationCompleted()
         {
             // Arrange
             var @event = new ManualResetEventSlim();
@@ -302,8 +302,8 @@ namespace Microsoft.AspNetCore.Components
             var renderer = CreateTestRenderer(authorizationService);
             renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
-                authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
-                authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
+                authorizing: builder => builder.AddContent(0, "Auth pending..."),
+                authorized: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
             var authTcs = new TaskCompletionSource<AuthenticationState>();
             rootComponent.AuthenticationState = authTcs.Task;
 
@@ -447,9 +447,9 @@ namespace Microsoft.AspNetCore.Components
 
         private static TestAuthStateProviderComponent WrapInAuthorizeView(
             RenderFragment<AuthenticationState> childContent = null,
-            RenderFragment<AuthenticationState> authorizedContent = null,
-            RenderFragment<AuthenticationState> notAuthorizedContent = null,
-            RenderFragment authorizingContent = null,
+            RenderFragment<AuthenticationState> authorized = null,
+            RenderFragment<AuthenticationState> notAuthorized = null,
+            RenderFragment authorizing = null,
             string policy = null,
             string roles = null,
             object resource = null)
@@ -458,9 +458,9 @@ namespace Microsoft.AspNetCore.Components
             {
                 builder.OpenComponent<AuthorizeView>(0);
                 builder.AddAttribute(1, nameof(AuthorizeView.ChildContent), childContent);
-                builder.AddAttribute(2, nameof(AuthorizeView.Authorized), authorizedContent);
-                builder.AddAttribute(3, nameof(AuthorizeView.NotAuthorized), notAuthorizedContent);
-                builder.AddAttribute(4, nameof(AuthorizeView.Authorizing), authorizingContent);
+                builder.AddAttribute(2, nameof(AuthorizeView.Authorized), authorized);
+                builder.AddAttribute(3, nameof(AuthorizeView.NotAuthorized), notAuthorized);
+                builder.AddAttribute(4, nameof(AuthorizeView.Authorizing), authorizing);
                 builder.AddAttribute(5, nameof(AuthorizeView.Policy), policy);
                 builder.AddAttribute(6, nameof(AuthorizeView.Roles), roles);
                 builder.AddAttribute(7, nameof(AuthorizeView.Resource), resource);

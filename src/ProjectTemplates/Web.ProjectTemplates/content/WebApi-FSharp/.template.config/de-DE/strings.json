@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API",
+    "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit einem Beispielcontroller für einen RESTful HTTP-Dienst. Diese Vorlage kann auch für ASP.NET Core-MVC-Ansichten und -Controller verwendet werden."
+  }
+}

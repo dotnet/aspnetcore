@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public async Task DispatchingEventsWithInvalidUIEventArgs()
+        public async Task DispatchingEventsWithInvalidEventArgs()
         {
             // Arrange
             var (interopCalls, dotNetCompletions, batches) = ConfigureClient();
