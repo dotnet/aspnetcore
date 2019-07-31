@@ -3,7 +3,6 @@
 
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -12,11 +11,9 @@ namespace Microsoft.AspNetCore.Components
     /// Displays the specified page component, rendering it inside its layout
     /// and any further nested layouts.
     /// </summary>
-    public class RouteView : IComponent
+    public class RouteView : ComponentBase
     {
-        private readonly RenderFragment _renderDelegate;
         private readonly RenderFragment _renderPageWithParametersDelegate;
-        private RenderHandle _renderHandle;
 
         /// <summary>
         /// Gets or sets the route data. This determines the page that will be
@@ -35,37 +32,17 @@ namespace Microsoft.AspNetCore.Components
 
         public RouteView()
         {
-            // Cache the delegate instances
-            _renderDelegate = Render;
             _renderPageWithParametersDelegate = RenderPageWithParameters;
         }
 
         /// <inheritdoc />
-        public void Attach(RenderHandle renderHandle)
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            _renderHandle = renderHandle;
-        }
-
-        /// <inheritdoc />
-        public Task SetParametersAsync(ParameterView parameters)
-        {
-            parameters.SetParameterProperties(this);
-
             if (RouteData == null)
             {
                 throw new InvalidOperationException($"The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.");
             }
 
-            _renderHandle.Render(_renderDelegate);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Renders the component.
-        /// </summary>
-        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
-        protected virtual void Render(RenderTreeBuilder builder)
-        {
             var pageLayoutType = RouteData.PageComponentType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
                 ?? DefaultLayout;
 

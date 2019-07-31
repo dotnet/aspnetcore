@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Auth;
@@ -10,27 +11,31 @@ namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Combines the behaviors of <see cref="AuthorizeView"/> and <see cref="RouteView"/>,
-    /// so that it displays the page matching the specified route but only if the user
+    /// so that it displays the page matching the specified route, but only if the user
     /// is authorized to see it.
     ///
     /// Additionally, this component supplies a cascading parameter of type <see cref="Task{AuthenticationState}"/>,
     /// which makes the user's current authentication state available to descendants.
     /// </summary>
-    public sealed class AuthorizeRouteView : RouteView
+    public sealed class AuthorizeRouteView : RouteView, IDisposable
     {
         private readonly RenderFragment<AuthenticationState> _renderAuthorizedDelegate;
         private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
         private readonly RenderFragment _renderAuthorizingDelegate;
+        private readonly RenderFragment _renderAuthorizeRouteViewCore;
+
+        private Task<AuthenticationState> _currentAuthenticationStateTask;
 
         public AuthorizeRouteView()
         {
             // Cache the rendering delegates so that we only construct new closure instances
             // when they are actually used (e.g., we never prepare a RenderFragment bound to
             // the Authorizing content except when you are displaying that particular state)
-            var renderBaseRouteViewDelegate = (RenderFragment)base.Render;
+            var renderBaseRouteViewDelegate = (RenderFragment)base.BuildRenderTree;
             _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
             _renderNotAuthorizedDelegate = authenticationState => RenderContentInDefaultLayout(NotAuthorized(authenticationState));
             _renderAuthorizingDelegate = builder => RenderContentInDefaultLayout(Authorizing);
+            _renderAuthorizeRouteViewCore = RenderAuthorizeRouteViewCore;
         }
 
         /// <summary>
@@ -43,22 +48,35 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         [Parameter] public RenderFragment Authorizing { get; set; }
 
+        [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
         /// <inheritdoc />
-        protected override void Render(RenderTreeBuilder builder)
+        protected override void OnInitialized()
         {
-            // TODO: Consider merging the behavior of CascadingAuthenticationState into this
-            // component (i.e., rendering the CascadingValue directly) to avoid the extra
-            // layer of component nesting and eliminate CascadingAuthenticationState as public API.
-            builder.OpenComponent<CascadingAuthenticationState>(0);
-            builder.AddAttribute(1, nameof(CascadingAuthenticationState.ChildContent), (RenderFragment)(builder =>
-            {
-                builder.OpenComponent<AuthorizeRouteViewCore>(0);
-                builder.AddAttribute(1, nameof(AuthorizeRouteViewCore.RouteData), RouteData);
-                builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
-                builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
-                builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
-                builder.CloseComponent();
-            }));
+            base.OnInitialized();
+
+            AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            _currentAuthenticationStateTask = AuthenticationStateProvider.GetAuthenticationStateAsync();
+        }
+
+        /// <inheritdoc />
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
+            builder.AddAttribute(1, nameof(CascadingValue<Task<AuthenticationState>>.Value),
+                _currentAuthenticationStateTask);
+            builder.AddAttribute(2, nameof(CascadingValue<Task<AuthenticationState>>.ChildContent),
+                _renderAuthorizeRouteViewCore);
+            builder.CloseComponent();
+        }
+
+        private void RenderAuthorizeRouteViewCore(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<AuthorizeRouteViewCore>(0);
+            builder.AddAttribute(1, nameof(AuthorizeRouteViewCore.RouteData), RouteData);
+            builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
+            builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
+            builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
             builder.CloseComponent();
         }
 
@@ -87,6 +105,20 @@ namespace Microsoft.AspNetCore.Components
 
             protected override IAuthorizeData[] GetAuthorizeData()
                 => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageComponentType);
+        }
+
+        private void OnAuthenticationStateChanged(Task<AuthenticationState> newAuthStateTask)
+        {
+            _ = InvokeAsync(() =>
+            {
+                _currentAuthenticationStateTask = newAuthStateTask;
+                StateHasChanged();
+            });
+        }
+
+        void IDisposable.Dispose()
+        {
+            AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
     }
 }
