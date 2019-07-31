@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
@@ -40,20 +40,23 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         /// <inheritdoc />
         public async Task Build(ISpaBuilder spaBuilder)
         {
+            var pkgManagerName = spaBuilder.Options.PackageManagerName;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new InvalidOperationException($"To use {nameof(AngularCliBuilder)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
+
             var logger = LoggerFinder.GetOrCreateLogger(
                 spaBuilder.ApplicationBuilder,
                 nameof(AngularCliBuilder));
-            var npmScriptRunner = new NpmScriptRunner(
+            var npmScriptRunner = new NodeScriptRunner(
                 sourcePath,
                 _npmScriptName,
                 "--watch",
-                null);
+                null,
+                pkgManagerName);
             npmScriptRunner.AttachToLogger(logger);
 
             using (var stdOutReader = new EventedStreamStringReader(npmScriptRunner.StdOut))

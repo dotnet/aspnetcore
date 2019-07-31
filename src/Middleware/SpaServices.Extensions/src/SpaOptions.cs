@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.FileProviders;
-using System;
 
 namespace Microsoft.AspNetCore.SpaServices
 {
@@ -15,6 +14,7 @@ namespace Microsoft.AspNetCore.SpaServices
     public class SpaOptions
     {
         private PathString _defaultPage = "/index.html";
+        private string _defaultPackageManagerName = "npm";
 
         /// <summary>
         /// Constructs a new instance of <see cref="SpaOptions"/>.
@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices
         internal SpaOptions(SpaOptions copyFromOptions)
         {
             _defaultPage = copyFromOptions.DefaultPage;
+            _defaultPackageManagerName = copyFromOptions.PackageManagerName;
             DefaultPageStaticFileOptions = copyFromOptions.DefaultPageStaticFileOptions;
             SourcePath = copyFromOptions.SourcePath;
         }
@@ -68,6 +69,27 @@ namespace Microsoft.AspNetCore.SpaServices
         /// development. The directory may not exist in published applications.
         /// </summary>
         public string SourcePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the package manager executible, (e.g npm,
+        /// yarn) to run the SPA.
+        /// 
+        /// If not set, npm will be assumed as the default package manager 
+        /// executable
+        /// </summary>
+        public string PackageManagerName
+        {
+            get => _defaultPackageManagerName;
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException($"The value for {nameof(PackageManagerName)} cannot be null or empty.");
+                }
+
+                _defaultPackageManagerName = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the maximum duration that a request will wait for the SPA
