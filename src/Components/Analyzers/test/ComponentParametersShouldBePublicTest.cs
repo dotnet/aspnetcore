@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty1' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 7, 32)
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty2' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 8, 40)
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty3' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 9, 42)
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty4' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 10, 41)
