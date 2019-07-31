@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Auth;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
@@ -69,6 +71,15 @@ namespace Microsoft.AspNetCore.Components
             {
                 return content;
             }
+        }
+
+        private class AuthorizeRouteViewCore : AuthorizeViewCore
+        {
+            [Parameter]
+            public ComponentRouteData RouteData { get; set; }
+
+            protected override IAuthorizeData[] GetAuthorizeData()
+                => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageComponentType);
         }
     }
 }
