@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 
         public static void Attach(
             ISpaBuilder spaBuilder,
-            string npmScriptName)
+            string scriptName)
         {
             var pkgManagerName = spaBuilder.Options.PackageManagerName;
             var sourcePath = spaBuilder.Options.SourcePath;
@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 throw new ArgumentException("Cannot be null or empty", nameof(sourcePath));
             }
 
-            if (string.IsNullOrEmpty(npmScriptName))
+            if (string.IsNullOrEmpty(scriptName))
             {
-                throw new ArgumentException("Cannot be null or empty", nameof(npmScriptName));
+                throw new ArgumentException("Cannot be null or empty", nameof(scriptName));
             }
 
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, pkgManagerName, logger);
+            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerName, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         }
 
         private static async Task<int> StartCreateReactAppServerAsync(
-            string sourcePath, string npmScriptName, string pkgManagerName, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerName, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 { "PORT", portNumber.ToString() },
                 { "BROWSER", "none" }, // We don't want create-react-app to open its own extra browser window pointing to the internal dev server port
             };
-            var npmScriptRunner = new NodeScriptRunner(
-                sourcePath, npmScriptName, null, envVars, pkgManagerName);
-            npmScriptRunner.AttachToLogger(logger);
+            var scriptRunner = new NodeScriptRunner(
+                sourcePath, scriptName, null, envVars, pkgManagerName);
+            scriptRunner.AttachToLogger(logger);
 
-            using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
+            using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
             {
                 try
                 {
@@ -84,13 +84,13 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                     // it doesn't do so until it's finished compiling, and even then only if there were
                     // no compiler warnings. So instead of waiting for that, consider it ready as soon
                     // as it starts listening for requests.
-                    await npmScriptRunner.StdOut.WaitForMatch(
+                    await scriptRunner.StdOut.WaitForMatch(
                         new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{npmScriptName}' exited without indicating that the " +
+                        $"The {pkgManagerName} script '{scriptName}' exited without indicating that the " +
                         $"create-react-app server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
