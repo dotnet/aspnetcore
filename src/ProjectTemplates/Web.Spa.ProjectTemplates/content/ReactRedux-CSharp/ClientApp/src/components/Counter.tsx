@@ -17,11 +17,11 @@ class Counter extends React.PureComponent<CounterProps> {
 
                 <p>This is a simple example of a React component.</p>
 
-                <p>Current count: <strong>{this.props.count}</strong></p>
+                <p aria-live="polite">Current count: <strong>{this.props.count}</strong></p>
 
                 <button type="button"
-                        className="btn btn-primary btn-lg"
-                        onClick={() => { this.props.increment(); }}>
+                    className="btn btn-primary btn-lg"
+                    onClick={() => { this.props.increment(); }}>
                     Increment
                 </button>
             </React.Fragment>
