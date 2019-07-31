@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Auth;
 
 namespace Microsoft.AspNetCore.Components
 {
-    public class AuthorizeRouteViewCore : AuthorizeViewCore
+    internal class AuthorizeRouteViewCore : AuthorizeViewCore
     {
         /// <summary>
         /// Gets or sets the route data.

@@ -60,7 +60,11 @@ namespace Microsoft.AspNetCore.Components
             return Task.CompletedTask;
         }
 
-        private void Render(RenderTreeBuilder builder)
+        /// <summary>
+        /// Renders the component.
+        /// </summary>
+        /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+        protected virtual void Render(RenderTreeBuilder builder)
         {
             var pageLayoutType = RouteData.PageComponentType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
                 ?? DefaultLayout;
