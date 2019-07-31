@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
@@ -30,11 +31,9 @@ namespace Microsoft.AspNetCore.Components
 
         private EventHandler<LocationChangedEventArgs> _locationChanged;
 
-        // For the baseUri it's worth storing both the string form and Uri form and
-        // keeping them in sync. These are always represented as absolute URIs with
-        // a trailing slash.
+        // For the baseUri it's worth storing as a System.Uri so we can do operations
+        // on that type. System.Uri gives us access to the original string anyway.
         private Uri _baseUri;
-        private string _baseUriString;
 
         // The URI. Always represented an absolute URI.
         private string _uri;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Components
             get
             {
                 AssertInitialized();
-                return _baseUriString;
+                return _baseUri.OriginalString;
             }
             protected set
             {
@@ -62,8 +61,7 @@ namespace Microsoft.AspNetCore.Components
                     value = NormalizeBaseUri(value);
                 }
 
-                _baseUriString = value ?? "/";
-                _baseUri = new Uri(_baseUriString);
+                _baseUri = new Uri(value, UriKind.Absolute);
             }
         }
 
@@ -82,6 +80,7 @@ namespace Microsoft.AspNetCore.Components
             }
             protected set
             {
+                Validate(_baseUri, value);
                 _uri = value;
             }
         }
@@ -125,8 +124,9 @@ namespace Microsoft.AspNetCore.Components
 
             if (_isInitialized)
             {
-                throw new InvalidOperationException($"'{typeof(NavigationManager).Name}' already initialized.");
+                throw new InvalidOperationException($"'{GetType().Name}' already initialized.");
             }
+
             _isInitialized = true;
 
             Uri = uri;
@@ -161,16 +161,16 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A relative URI path.</returns>
         public string ToBaseRelativePath(string uri)
         {
-            if (uri.StartsWith(_baseUriString, StringComparison.Ordinal))
+            if (uri.StartsWith(_baseUri.OriginalString, StringComparison.Ordinal))
             {
                 // The absolute URI must be of the form "{baseUri}something" (where
                 // baseUri ends with a slash), and from that we return "something"
-                return uri.Substring(_baseUriString.Length);
+                return uri.Substring(_baseUri.OriginalString.Length);
             }
 
             var hashIndex = uri.IndexOf('#');
             var uriWithoutHash = hashIndex < 0 ? uri : uri.Substring(0, hashIndex);
-            if ($"{uriWithoutHash}/".Equals(_baseUriString, StringComparison.Ordinal))
+            if ($"{uriWithoutHash}/".Equals(_baseUri.OriginalString, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -178,10 +178,10 @@ namespace Microsoft.AspNetCore.Components
                 // whether the server would return the same page whether or not the
                 // slash is present, but ASP.NET Core at least does by default when
                 // using PathBase.
-                return uri.Substring(_baseUriString.Length - 1);
+                return uri.Substring(_baseUri.OriginalString.Length - 1);
             }
 
-            var message = $"The URI '{uri}' is not contained by the base URI '{_baseUriString}'.";
+            var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";
             throw new ArgumentException(message);
         }
 
@@ -214,6 +214,48 @@ namespace Microsoft.AspNetCore.Components
             if (!_isInitialized)
             {
                 throw new InvalidOperationException($"'{GetType().Name}' has not been initialized.");
+            }
+        }
+
+        private static bool TryGetLengthOfBaseUriPrefix(Uri baseUri, string uri, out int length)
+        {
+            if (uri.StartsWith(baseUri.OriginalString, StringComparison.Ordinal))
+            {
+                // The absolute URI must be of the form "{baseUri}something" (where
+                // baseUri ends with a slash), and from that we return "something"
+                length = baseUri.OriginalString.Length;
+                return true;
+            }
+
+            var hashIndex = uri.IndexOf('#');
+            var uriWithoutHash = hashIndex < 0 ? uri : uri.Substring(0, hashIndex);
+            if ($"{uriWithoutHash}/".Equals(baseUri.OriginalString, StringComparison.Ordinal))
+            {
+                // Special case: for the base URI "/something/", if you're at
+                // "/something" then treat it as if you were at "/something/" (i.e.,
+                // with the trailing slash). It's a bit ambiguous because we don't know
+                // whether the server would return the same page whether or not the
+                // slash is present, but ASP.NET Core at least does by default when
+                // using PathBase.
+                length = baseUri.OriginalString.Length - 1;
+                return true;
+            }
+
+            length = 0;
+            return false;
+        }
+
+        private static void Validate(Uri baseUri, string uri)
+        {
+            if (baseUri == null || uri == null)
+            {
+                return;
+            }
+
+            if (!TryGetLengthOfBaseUriPrefix(baseUri, uri, out _))
+            {
+                var message = $"The URI '{uri}' is not contained by the base URI '{baseUri}'.";
+                throw new ArgumentException(message);
             }
         }
     }

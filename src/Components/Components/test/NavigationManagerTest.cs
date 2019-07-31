@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices.ComTypes;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
@@ -43,7 +42,25 @@ namespace Microsoft.AspNetCore.Components
         [InlineData("scheme://host/", "otherscheme://host/")]
         [InlineData("scheme://host/", "scheme://otherhost/")]
         [InlineData("scheme://host/path/", "scheme://host/")]
-        public void ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
+        public void Uri_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                navigationManager.ToBaseRelativePath(absoluteUri);
+            });
+
+            Assert.Equal(
+                $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
+                ex.Message);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/", "otherscheme://host/")]
+        [InlineData("scheme://host/", "scheme://otherhost/")]
+        [InlineData("scheme://host/path/", "scheme://host/")]
+        public void ToBaseRelativePath_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
         {
             var navigationManager = new TestNavigationManager(baseUri);
 

@@ -292,19 +292,6 @@ namespace Microsoft.AspNetCore.Components
         public NavigationException(string uri) { }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public abstract partial class OwningComponentBase : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
-    {
-        protected OwningComponentBase() { }
-        protected bool IsDisposed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected System.IServiceProvider ScopedServices { get { throw null; } }
-        protected virtual void Dispose(bool disposing) { }
-        void System.IDisposable.Dispose() { }
-    }
-    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
-    {
-        protected OwningComponentBase() { }
-        protected TService Service { get { throw null; } }
-    }
     public abstract partial class NavigationManager
     {
         protected NavigationManager() { }
@@ -318,6 +305,19 @@ namespace Microsoft.AspNetCore.Components
         protected void NotifyLocationChanged(bool isInterceptedLink) { }
         public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
         public string ToBaseRelativePath(string uri) { throw null; }
+    }
+    public abstract partial class OwningComponentBase : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected bool IsDisposed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.IServiceProvider ScopedServices { get { throw null; } }
+        protected virtual void Dispose(bool disposing) { }
+        void System.IDisposable.Dispose() { }
+    }
+    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected TService Service { get { throw null; } }
     }
     public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {

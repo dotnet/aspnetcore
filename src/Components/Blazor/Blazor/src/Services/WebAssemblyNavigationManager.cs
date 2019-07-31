@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Services
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
     /// <summary>
     /// Default client-side implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class WebAssemblyNavigationManager : NavigationManager
+    internal class WebAssemblyNavigationManager : NavigationManager
     {
         /// <summary>
         /// Gets the instance of <see cref="WebAssemblyNavigationManager"/>.
@@ -34,6 +33,12 @@ namespace Microsoft.AspNetCore.Blazor.Services
             Initialize(baseUri, uri);
         }
 
+        public void SetLocation(string uri, bool isInterceptedLink)
+        {
+            Uri = uri;
+            NotifyLocationChanged(isInterceptedLink);
+        }
+
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
@@ -43,16 +48,6 @@ namespace Microsoft.AspNetCore.Blazor.Services
             }
 
             WebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
-        }
-
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string uri, bool intercepted)
-        {
-            Instance.Uri = uri;
-            Instance.NotifyLocationChanged(intercepted);
         }
     }
 }

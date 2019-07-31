@@ -1,6 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Blazor
+{
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+    public static partial class JSInteropMethods
+    {
+        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
+        public static void NotifyLocationChanged(string uri, bool isInterceptedLink) { }
+    }
+}
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
     public static partial class BlazorWebAssemblyHost
@@ -66,18 +75,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         protected override void Dispose(bool disposing) { }
         protected override void HandleException(System.Exception exception) { }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch batch) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Blazor.Services
-{
-    public partial class WebAssemblyNavigationManager : Microsoft.AspNetCore.Components.NavigationManager
-    {
-        internal WebAssemblyNavigationManager() { }
-        public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyNavigationManager Instance;
-        protected override void EnsureInitialized() { }
-        protected override void NavigateToCore(string uri, bool forceLoad) { }
-        [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string uri, bool intercepted) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder
