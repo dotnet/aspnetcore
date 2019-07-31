@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components
         private readonly RenderFragment<AuthenticationState> _renderAuthorizedDelegate;
         private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
         private readonly RenderFragment _renderAuthorizingDelegate;
+        private readonly RenderFragment _renderAuthorizeRouteViewCoreDelegate;
 
         public AuthorizeRouteView()
         {
@@ -31,53 +32,61 @@ namespace Microsoft.AspNetCore.Components
             _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
             _renderNotAuthorizedDelegate = authenticationState => RenderContentInDefaultLayout(NotAuthorized(authenticationState));
             _renderAuthorizingDelegate = builder => RenderContentInDefaultLayout(Authorizing);
+            _renderAuthorizeRouteViewCoreDelegate = RenderAuthorizeRouteViewCore;
         }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
-        [Parameter] public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
+        [Parameter]
+        public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
-        [Parameter] public RenderFragment Authorizing { get; set; }
+        [Parameter]
+        public RenderFragment Authorizing { get; set; }
+
+        [CascadingParameter]
+        private Task<AuthenticationState> ExistingCascadedAuthenticationState { get; set; }
 
         /// <inheritdoc />
         protected override void Render(RenderTreeBuilder builder)
         {
-            // TODO: Consider merging the behavior of CascadingAuthenticationState into this
-            // component (i.e., rendering the CascadingValue directly) to avoid the extra
-            // layer of component nesting and eliminate CascadingAuthenticationState as public API.
-            builder.OpenComponent<CascadingAuthenticationState>(0);
-            builder.AddAttribute(1, nameof(CascadingAuthenticationState.ChildContent), (RenderFragment)(builder =>
+            if (ExistingCascadedAuthenticationState != null)
             {
-                builder.OpenComponent<AuthorizeRouteViewCore>(0);
-                builder.AddAttribute(1, nameof(AuthorizeRouteViewCore.RouteData), RouteData);
-                builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
-                builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
-                builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
+                // If this component is already wrapped in a <CascadingAuthenticationState> (or another
+                // compatible provider), then don't interfere with the cascaded authentication state.
+                _renderAuthorizeRouteViewCoreDelegate(builder);
+            }
+            else
+            {
+                // Otherwise, implicitly wrap the output in a <CascadingAuthenticationState>
+                builder.OpenComponent<CascadingAuthenticationState>(0);
+                builder.AddAttribute(1, nameof(CascadingAuthenticationState.ChildContent), _renderAuthorizeRouteViewCoreDelegate);
                 builder.CloseComponent();
-            }));
+            }
+        }
+
+        private void RenderAuthorizeRouteViewCore(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<AuthorizeRouteViewCore>(0);
+            builder.AddAttribute(1, nameof(AuthorizeRouteViewCore.RouteData), RouteData);
+            builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
+            builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
+            builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
             builder.CloseComponent();
         }
 
         private RenderFragment RenderContentInDefaultLayout(RenderFragment content)
         {
-            if (DefaultLayout != null)
+            return builder =>
             {
-                return builder =>
-                {
-                    builder.OpenComponent<LayoutView>(0);
-                    builder.AddAttribute(1, nameof(LayoutView.Layout), DefaultLayout);
-                    builder.AddAttribute(2, nameof(LayoutView.ChildContent), content);
-                    builder.CloseComponent();
-                };
-            }
-            else
-            {
-                return content;
-            }
+                builder.OpenComponent<LayoutView>(0);
+                builder.AddAttribute(1, nameof(LayoutView.Layout), DefaultLayout);
+                builder.AddAttribute(2, nameof(LayoutView.ChildContent), content);
+                builder.CloseComponent();
+            };
         }
 
         private class AuthorizeRouteViewCore : AuthorizeViewCore
