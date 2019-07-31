@@ -150,15 +150,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 // Find the end of the key=value pair.
                 var ampersand = span.IndexOf(andDelimiter);
-                ReadOnlySpan<byte> segment;
+                ReadOnlySpan<byte> keyValuePair;
                 int equals;
                 var foundAmpersand = ampersand != -1;
 
                 if (foundAmpersand)
                 {
-                    segment = span.Slice(0, ampersand);
-                    span = span.Slice(segment.Length + andDelimiter.Length);
-                    consumed += segment.Length + andDelimiter.Length;
+                    keyValuePair = span.Slice(0, ampersand);
+                    span = span.Slice(keyValuePair.Length + andDelimiter.Length);
+                    consumed += keyValuePair.Length + andDelimiter.Length;
                 }
                 else
                 {
@@ -174,34 +174,34 @@ namespace Microsoft.AspNetCore.WebUtilities
                         return;
                     }
 
-                    segment = span;
+                    keyValuePair = span;
                     span = default;
-                    consumed += segment.Length;
+                    consumed += keyValuePair.Length;
                 }
 
-                equals = segment.IndexOf(equalsDelimiter);
+                equals = keyValuePair.IndexOf(equalsDelimiter);
 
                 if (equals == -1)
                 {
                     // Too long for the whole segment to be a key.
-                    if (segment.Length > KeyLengthLimit)
+                    if (keyValuePair.Length > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
 
                     // There is no more data, this segment must be "key" with no equals or value.
-                    key = segment;
-                    value = Span<byte>.Empty;
+                    key = keyValuePair;
+                    value = default;
                 }
                 else
                 {
-                    key = segment.Slice(0, equals);
+                    key = keyValuePair.Slice(0, equals);
                     if (key.Length > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
 
-                    value = segment.Slice(equals + equalsDelimiter.Length);
+                    value = keyValuePair.Slice(equals + equalsDelimiter.Length);
                     if (value.Length > ValueLengthLimit)
                     {
                         ThrowValueTooLargeException();
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             bool isFinalBlock)
         {
             var sequenceReader = new SequenceReader<byte>(buffer);
-            ReadOnlySequence<byte> segment;
+            ReadOnlySequence<byte> keyValuePair;
 
             var consumed = sequenceReader.Position;
             var consumedBytes = default(long);
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             while (!sequenceReader.End)
             {
-                if (!sequenceReader.TryReadTo(out segment, andDelimiter))
+                if (!sequenceReader.TryReadTo(out keyValuePair, andDelimiter))
                 {
                     if (!isFinalBlock)
                     {
@@ -244,28 +244,28 @@ namespace Microsoft.AspNetCore.WebUtilities
                     }
 
                     // This must be the final key=value pair
-                    segment = buffer.Slice(sequenceReader.Position);
-                    sequenceReader.Advance(segment.Length);
+                    keyValuePair = buffer.Slice(sequenceReader.Position);
+                    sequenceReader.Advance(keyValuePair.Length);
                 }
 
-                if (segment.IsSingleSegment)
+                if (keyValuePair.IsSingleSegment)
                 {
-                    ParseFormValuesFast(segment.First.Span, ref accumulator, isFinalBlock: true, out var segmentConsumed);
-                    Debug.Assert(segmentConsumed == segment.First.Span.Length);
+                    ParseFormValuesFast(keyValuePair.FirstSpan, ref accumulator, isFinalBlock: true, out var segmentConsumed);
+                    Debug.Assert(segmentConsumed == keyValuePair.FirstSpan.Length);
                     continue;
                 }
 
-                var segmentReader = new SequenceReader<byte>(segment);
+                var keyValueReader = new SequenceReader<byte>(keyValuePair);
                 ReadOnlySequence<byte> value;
 
-                if (segmentReader.TryReadTo(out var key, equalsDelimiter))
+                if (keyValueReader.TryReadTo(out var key, equalsDelimiter))
                 {
                     if (key.Length > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
 
-                    value = segment.Slice(segmentReader.Position);
+                    value = keyValuePair.Slice(keyValueReader.Position);
                     if (value.Length > ValueLengthLimit)
                     {
                         ThrowValueTooLargeException();
@@ -274,14 +274,14 @@ namespace Microsoft.AspNetCore.WebUtilities
                 else
                 {
                     // Too long for the whole segment to be a key.
-                    if (segment.Length > KeyLengthLimit)
+                    if (keyValuePair.Length > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
 
                     // There is no more data, this segment must be "key" with no equals or value.
-                    key = segment;
-                    value = ReadOnlySequence<byte>.Empty;
+                    key = keyValuePair;
+                    value = default;
                 }
 
                 var decodedKey = GetDecodedStringFromReadOnlySequence(key);
