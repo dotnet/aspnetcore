@@ -507,15 +507,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            await Client.ClickAsync("event-handler-throw-sync");
+            await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
 
             Assert.Contains(
                 logEvents,
                 e => LogLevel.Warning == e.logLevel &&
                     "UnhandledExceptionInCircuit" == e.eventIdName &&
                     "Handler threw an exception" == e.exception.Message);
-
-            await ValidateClientKeepsWorking(Client, batches);
         }
 
         private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>
