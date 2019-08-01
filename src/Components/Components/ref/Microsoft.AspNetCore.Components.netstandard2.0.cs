@@ -302,6 +302,19 @@ namespace Microsoft.AspNetCore.Components
         public NavigationException(string uri) { }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public abstract partial class OwningComponentBase : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected bool IsDisposed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.IServiceProvider ScopedServices { get { throw null; } }
+        protected virtual void Dispose(bool disposing) { }
+        void System.IDisposable.Dispose() { }
+    }
+    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected TService Service { get { throw null; } }
+    }
     public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {
         public PageDisplay() { }
