@@ -37,13 +37,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         public string BootstrapFrameworkVersion { get; set; } = "V4";
-        private bool IsHelixCI => typeof(ServerFactory<,>).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Any(a => a.Key == "Microsoft.AspNetCore.Testing.IsHelixCI");
 
         protected override IHostBuilder CreateHostBuilder()
         {
-            Program.UseStartup = false;
-            return base.CreateHostBuilder();
+            return Program.CreateHostBuilder(new[] { "--use-startup=false" });
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)

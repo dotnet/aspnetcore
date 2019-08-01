@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
             }
 
-            internal static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, UIEventArgs eventArgs)
+            internal static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs eventArgs)
             {
-                _handlingEvent(logger, eventHandlerId, eventArgs?.Type ?? "null", null);
+                _handlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null", null);
             }
         }
     }

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Biblioteca de clases de Razor",
+    "description": "Plantilla de proyecto para crear una biblioteca de clases de Razor."
+  }
+}

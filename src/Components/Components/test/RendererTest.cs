@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIEventArgs receivedArgs = null;
+            EventArgs receivedArgs = null;
 
             var component = new EventComponent
             {
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // This should always be run synchronously
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIEventArgs receivedArgs = null;
+            EventArgs receivedArgs = null;
 
             var component = new EventComponent
             {
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Empty(renderer.HandledExceptions);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
 
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public void CanDispatchEventsToNestedComponents()
         {
-            UIEventArgs receivedArgs = null;
+            EventArgs receivedArgs = null;
 
             // Arrange: Render parent component
             var renderer = new TestRenderer();
@@ -608,7 +608,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            UIEventArgs receivedArgs = null;
+            EventArgs receivedArgs = null;
 
             var state = 0;
             var tcs = new TaskCompletionSource<object>();
@@ -646,7 +646,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.Equal(1, state);
             Assert.Same(eventArgs, receivedArgs);
@@ -746,7 +746,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanAsyncDispatchEventsToNestedComponents()
         {
-            UIEventArgs receivedArgs = null;
+            EventArgs receivedArgs = null;
 
             var state = 0;
             var tcs = new TaskCompletionSource<object>();
@@ -786,7 +786,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
-            var eventArgs = new UIEventArgs();
+            var eventArgs = new EventArgs();
             var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.Equal(1, state);
             Assert.Same(eventArgs, receivedArgs);
@@ -1774,7 +1774,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                return renderer.DispatchEventAsync(0, new UIEventArgs());
+                return renderer.DispatchEventAsync(0, new EventArgs());
             });
         }
 
@@ -2052,7 +2052,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
+            Action<EventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
@@ -2094,7 +2094,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
+            Action<EventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
@@ -2129,7 +2129,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
+            Action<EventArgs> origEventHandler = args => { eventCount++; };
             var component = new ConditionalParentComponent<EventComponent>
             {
                 IncludeChild = true,
@@ -2180,7 +2180,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var renderer = new TestRenderer();
             var eventCount = 0;
-            Action<UIEventArgs> origEventHandler = args => { eventCount++; };
+            Action<EventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
@@ -2222,7 +2222,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.AddContent(0, "Child event count: " + eventCount);
                 builder.OpenComponent<EventComponent>(1);
-                builder.AddAttribute(2, nameof(EventComponent.OnTest), new Action<UIEventArgs>(args =>
+                builder.AddAttribute(2, nameof(EventComponent.OnTest), new Action<EventArgs>(args =>
                 {
                     eventCount++;
                     rootComponent.TriggerRender();
@@ -2468,7 +2468,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .AttributeEventHandlerId;
 
             // Act: Toggle the checkbox
-            var eventArgs = new UIChangeEventArgs { Value = true };
+            var eventArgs = new ChangeEventArgs { Value = true };
             var renderTask =  renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
 
             Assert.True(renderTask.IsCompletedSuccessfully);
@@ -2713,7 +2713,7 @@ namespace Microsoft.AspNetCore.Components.Test
             };
             var numEventsFired = 0;
             EventComponent component = null;
-            Action<UIEventArgs> eventHandler = null;
+            Action<EventArgs> eventHandler = null;
 
             eventHandler = _ =>
             {
@@ -2737,14 +2737,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert 1: Event can be fired for the first time
             var render1TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render1TCS.Task;
-            await renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
+            await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             Assert.Equal(1, numEventsFired);
 
             // Act/Assert 2: *Same* event handler ID can be reused prior to completion of
             // preceding UI update
             var render2TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render2TCS.Task;
-            await renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
+            await renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             Assert.Equal(2, numEventsFired);
 
             // Act/Assert 3: After we complete the first UI update in which a given
@@ -2760,7 +2760,7 @@ namespace Microsoft.AspNetCore.Components.Test
             await awaitableTask;
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                return renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
+                return renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             });
             Assert.Equal($"There is no event handler with ID {eventHandlerId}", ex.Message);
             Assert.Equal(2, numEventsFired);
@@ -3318,7 +3318,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 FieldValue = "new property value",
                 ComponentId = componentId
             };
-            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, eventFieldInfo, new UIChangeEventArgs
+            var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, eventFieldInfo, new ChangeEventArgs
             {
                 Value = "new property value"
             });
@@ -3336,7 +3336,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 // show that the diff does *not* update the BoundString value attribute.
                 Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                 var attributeFrame = batch2.ReferenceFrames[edit.ReferenceFrameIndex];
-                AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
                 Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
                 Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
             });
@@ -3370,7 +3370,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     ComponentId = componentId,
                     FieldValue = newPropertyValue,
                 };
-                var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, fieldInfo, new UIChangeEventArgs
+                var dispatchEventTask = renderer.DispatchEventAsync(eventHandlerId, fieldInfo, new ChangeEventArgs
                 {
                     Value = newPropertyValue
                 });
@@ -3388,7 +3388,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     // show that the diff does *not* update the BoundString value attribute.
                     Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
                     var attributeFrame = latestBatch.ReferenceFrames[edit.ReferenceFrameIndex];
-                    AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<UIChangeEventArgs>));
+                    AssertFrame.Attribute(attributeFrame, "ontestevent", typeof(Action<ChangeEventArgs>));
                     Assert.NotEqual(default, attributeFrame.AttributeEventHandlerId);
                     Assert.NotEqual(eventHandlerId, attributeFrame.AttributeEventHandlerId);
                 });
@@ -3507,10 +3507,10 @@ namespace Microsoft.AspNetCore.Components.Test
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
             [Parameter]
-            public Action<UIEventArgs> OnTest { get; set; }
+            public Action<EventArgs> OnTest { get; set; }
 
             [Parameter]
-            public Func<UIEventArgs, Task> OnTestAsync { get; set; }
+            public Func<EventArgs, Task> OnTestAsync { get; set; }
 
             [Parameter]
             public Action<DerivedEventArgs> OnClick { get; set; }
@@ -3664,7 +3664,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => _renderHandle.Render(builder =>
                 {
                     builder.OpenElement(0, "my button");
-                    builder.AddAttribute(1, "my click handler", new Action<UIEventArgs>(eventArgs => OnClick(eventArgs)));
+                    builder.AddAttribute(1, "my click handler", new Action<EventArgs>(eventArgs => OnClick(eventArgs)));
                     builder.CloseElement();
                 });
         }
@@ -4095,7 +4095,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
                 builder.OpenElement(0, "element with event");
                 builder.AddAttribute(1, nameof(BoundString), BoundString);
-                builder.AddAttribute(2, "ontestevent", new Action<UIChangeEventArgs>((UIChangeEventArgs eventArgs) =>
+                builder.AddAttribute(2, "ontestevent", new Action<ChangeEventArgs>((ChangeEventArgs eventArgs) =>
                 {
                     BoundString = (string)eventArgs.Value;
                     TriggerRender();
@@ -4106,7 +4106,7 @@ namespace Microsoft.AspNetCore.Components.Test
             }
         }
 
-        private class DerivedEventArgs : UIEventArgs
+        private class DerivedEventArgs : EventArgs
         {
         }
     }

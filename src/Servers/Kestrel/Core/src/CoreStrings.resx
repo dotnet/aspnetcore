@@ -606,13 +606,16 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
   </data>
   <data name="HTTP2NoTlsOsx" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on OSX due to missing ALPN support.</value>
+    <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
   </data>
   <data name="HTTP2NoTlsWin7" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.</value>
   </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
+  </data>
+  <data name="Http2TellClientToCalmDown" xml:space="preserve">
+    <value>A new stream was refused because this connection has too many streams that haven't finished processing. This may happen if many streams are aborted but not yet cleaned up.</value>
   </data>
   <data name="HttpParserTlsOverHttpError" xml:space="preserve">
     <value>Detected a TLS handshake to an endpoint that does not have TLS enabled.</value>

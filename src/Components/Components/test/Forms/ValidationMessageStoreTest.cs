@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         [Fact]
-        public void CanAddMessagesByRange()
+        public void CanAddMessagesMultiple()
         {
             // Arrange
             var messages = new ValidationMessageStore(new EditContext(new object()));
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var entries = new[] { "A", "B", "C" };
 
             // Act
-            messages.AddRange(field1, entries);
+            messages.Add(field1, entries);
 
             // Assert
             Assert.Equal(entries, messages[field1]);

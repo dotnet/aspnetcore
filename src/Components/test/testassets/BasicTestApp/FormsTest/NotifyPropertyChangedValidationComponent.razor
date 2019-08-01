@@ -18,11 +18,11 @@
 <form @onsubmit="HandleSubmit">
     <p class="user-name">
         User name:
-        <input @bind="person.UserName" class="@editContext.FieldClass(() => person.UserName)" />
+        <input @bind="person.UserName" class="@editContext.FieldCssClass(() => person.UserName)" />
     </p>
     <p class="accepts-terms">
         Accept terms:
-        <input type="checkbox" @bind="person.AcceptsTerms" class="@editContext.FieldClass(() => person.AcceptsTerms)" />
+        <input type="checkbox" @bind="person.AcceptsTerms" class="@editContext.FieldCssClass(() => person.AcceptsTerms)" />
     </p>
 
     <button type="submit">Submit</button>

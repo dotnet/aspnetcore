@@ -24,9 +24,11 @@ namespace Microsoft.AspNetCore.Components
 
     // type="number" is invariant culture
     [BindInputElement("number", null, "value", "onchange", isInvariantCulture: true, format: null)]
+    [BindInputElement("number", "value", "value", "onchange", isInvariantCulture: true, format: null)]
 
     // type="date" is invariant culture with a specific format
     [BindInputElement("date", null, "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-dd")]
+    [BindInputElement("date", "value", "value", "onchange", isInvariantCulture: true, format: "yyyy-MM-dd")]
 
     [BindElement("select", null, "value", "onchange")]
     [BindElement("textarea", null, "value", "onchange")]

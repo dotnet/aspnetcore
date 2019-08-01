@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets a string that indicates the status of the field being edited. This will include
         /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
         /// </summary>
-        protected string FieldClass
-            => EditContext.FieldClass(FieldIdentifier);
+        private string FieldClass
+            => EditContext.FieldCssClass(FieldIdentifier);
 
         /// <summary>
         /// Gets a CSS class string that combines the <c>class</c> attribute and <see cref="FieldClass"/>

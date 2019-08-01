@@ -6,7 +6,9 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.BindElementAttribute("select", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange", false, null)]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", "value", "value", "onchange", true, "yyyy-MM-dd")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("date", null, "value", "onchange", true, "yyyy-MM-dd")]
+    [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", "value", "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("number", null, "value", "onchange", true, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("text", null, "value", "onchange", false, null)]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute(null, "value", "value", "onchange", false, null)]
@@ -51,23 +53,23 @@ namespace Microsoft.AspNetCore.Components
         public System.Type EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onabort", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforeactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforecopy", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforecut", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforedeactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforepaste", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onactivate", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforeactivate", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforecopy", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforecut", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforedeactivate", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onbeforepaste", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onblur", typeof(Microsoft.AspNetCore.Components.UIFocusEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncanplay", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncanplaythrough", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onchange", typeof(Microsoft.AspNetCore.Components.UIChangeEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncanplay", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncanplaythrough", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onchange", typeof(Microsoft.AspNetCore.Components.ChangeEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onclick", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncontextmenu", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncopy", typeof(Microsoft.AspNetCore.Components.UIClipboardEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncuechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncuechange", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("oncut", typeof(Microsoft.AspNetCore.Components.UIClipboardEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondblclick", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondeactivate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondeactivate", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondrag", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondragend", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondragenter", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
@@ -75,24 +77,24 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondragover", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondragstart", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondrop", typeof(Microsoft.AspNetCore.Components.UIDragEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondurationchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onemptied", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onended", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ondurationchange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onemptied", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onended", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onerror", typeof(Microsoft.AspNetCore.Components.UIErrorEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfocus", typeof(Microsoft.AspNetCore.Components.UIFocusEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfocusin", typeof(Microsoft.AspNetCore.Components.UIFocusEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfocusout", typeof(Microsoft.AspNetCore.Components.UIFocusEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenerror", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenchange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onfullscreenerror", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ongotpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninput", typeof(Microsoft.AspNetCore.Components.UIChangeEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninvalid", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninput", typeof(Microsoft.AspNetCore.Components.ChangeEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("oninvalid", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onkeydown", typeof(Microsoft.AspNetCore.Components.UIKeyboardEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onkeypress", typeof(Microsoft.AspNetCore.Components.UIKeyboardEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onkeyup", typeof(Microsoft.AspNetCore.Components.UIKeyboardEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onload", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadeddata", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadedmetadata", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadeddata", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadedmetadata", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadend", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onloadstart", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onlostpointercapture", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
@@ -103,50 +105,51 @@ namespace Microsoft.AspNetCore.Components
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onmouseup", typeof(Microsoft.AspNetCore.Components.UIMouseEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onmousewheel", typeof(Microsoft.AspNetCore.Components.UIWheelEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpaste", typeof(Microsoft.AspNetCore.Components.UIClipboardEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpause", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplay", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplaying", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpause", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplay", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onplaying", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointercancel", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerdown", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerenter", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerleave", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockerror", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockchange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerlockerror", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointermove", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerout", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerover", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onpointerup", typeof(Microsoft.AspNetCore.Components.UIPointerEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onprogress", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onratechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onreadystatechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onreset", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onscroll", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onseeked", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onseeking", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselect", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselectionchange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselectstart", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onstalled", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onstop", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsubmit", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsuspend", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onratechange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onreadystatechange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onreset", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onscroll", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onseeked", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onseeking", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselect", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselectionchange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onselectstart", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onstalled", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onstop", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsubmit", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsuspend", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeout", typeof(Microsoft.AspNetCore.Components.UIProgressEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeupdate", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeupdate", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchcancel", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchend", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchenter", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchleave", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchmove", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchstart", typeof(Microsoft.AspNetCore.Components.UITouchEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onvolumechange", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
-    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onwaiting", typeof(Microsoft.AspNetCore.Components.UIEventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onvolumechange", typeof(System.EventArgs))]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("onwaiting", typeof(System.EventArgs))]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onwheel", typeof(Microsoft.AspNetCore.Components.UIWheelEventArgs))]
     public static partial class EventHandlers
     {
     }
-    public partial class UIClipboardEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIClipboardEventArgs : System.EventArgs
     {
         public UIClipboardEventArgs() { }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UIDataTransferItem
     {
@@ -159,19 +162,21 @@ namespace Microsoft.AspNetCore.Components
         public UIDragEventArgs() { }
         public Microsoft.AspNetCore.Components.DataTransfer DataTransfer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIErrorEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIErrorEventArgs : System.EventArgs
     {
         public UIErrorEventArgs() { }
         public int Colno { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Filename { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int Lineno { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Message { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIFocusEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIFocusEventArgs : System.EventArgs
     {
         public UIFocusEventArgs() { }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIKeyboardEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIKeyboardEventArgs : System.EventArgs
     {
         public UIKeyboardEventArgs() { }
         public bool AltKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -182,8 +187,9 @@ namespace Microsoft.AspNetCore.Components
         public bool MetaKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool Repeat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ShiftKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIMouseEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIMouseEventArgs : System.EventArgs
     {
         public UIMouseEventArgs() { }
         public bool AltKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -197,6 +203,7 @@ namespace Microsoft.AspNetCore.Components
         public double ScreenX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public double ScreenY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ShiftKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UIPointerEventArgs : Microsoft.AspNetCore.Components.UIMouseEventArgs
     {
@@ -210,14 +217,15 @@ namespace Microsoft.AspNetCore.Components
         public float TiltY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public float Width { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UIProgressEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UIProgressEventArgs : System.EventArgs
     {
         public UIProgressEventArgs() { }
         public bool LengthComputable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Loaded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public long Total { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class UITouchEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
+    public partial class UITouchEventArgs : System.EventArgs
     {
         public UITouchEventArgs() { }
         public bool AltKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -228,6 +236,7 @@ namespace Microsoft.AspNetCore.Components
         public bool ShiftKey { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Components.UITouchPoint[] TargetTouches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Components.UITouchPoint[] Touches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class UITouchPoint
     {
@@ -276,8 +285,8 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     public static partial class EditContextFieldClassExtensions
     {
-        public static string FieldClass(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
-        public static string FieldClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
+        public static string FieldCssClass(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
+        public static string FieldCssClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
     }
     public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase
     {
@@ -308,7 +317,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected T CurrentValue { get { throw null; } set { } }
         protected string CurrentValueAsString { get { throw null; } set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected string FieldClass { get { throw null; } }
         protected Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -372,6 +380,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<T>> For { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected virtual void Dispose(bool disposing) { }
         protected override void OnParametersSet() { }
         void System.IDisposable.Dispose() { }
     }
@@ -381,6 +390,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
         public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected virtual void Dispose(bool disposing) { }
         protected override void OnParametersSet() { }
         void System.IDisposable.Dispose() { }
     }

@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder();
-            Action<UIEventArgs> eventHandler = eventInfo => { };
+            Action<EventArgs> eventHandler = eventInfo => { };
 
             // Act
             builder.OpenElement(0, "myelement");                    //  0: <myelement
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder();
-            Action<UIEventArgs> eventHandler = eventInfo => { };
+            Action<EventArgs> eventHandler = eventInfo => { };
 
             // Act
             builder.OpenElement(0, "myelement");
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 builder.OpenElement(0, "some element");
                 builder.AddContent(1, "hello");
-                builder.AddAttribute(2, "name", new Action<UIEventArgs>(eventInfo => { }));
+                builder.AddAttribute(2, "name", new Action<EventArgs>(eventInfo => { }));
             });
         }
 
@@ -897,7 +897,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var builder = new RenderTreeBuilder();
 
-            var value = new Action<UIEventArgs>((e) => { });
+            var value = new Action<EventArgs>((e) => { });
 
             // Act
             builder.OpenElement(0, "elem");
@@ -919,7 +919,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "attr", (Action<UIEventArgs>)null);
+            builder.AddAttribute(1, "attr", (Action<EventArgs>)null);
             builder.CloseElement();
 
             // Assert
@@ -965,7 +965,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
-        public static TheoryData<Action<UIEventArgs>> EventHandlerValues => new TheoryData<Action<UIEventArgs>>
+        public static TheoryData<Action<EventArgs>> EventHandlerValues => new TheoryData<Action<EventArgs>>
         {
             null,
             (e) => { },
@@ -973,7 +973,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         [Theory]
         [MemberData(nameof(EventHandlerValues))]
-        public void AddAttribute_Component_EventHandlerValue_SetsAttributeValue(Action<UIEventArgs> value)
+        public void AddAttribute_Component_EventHandlerValue_SetsAttributeValue(Action<EventArgs> value)
         {
             // Arrange
             var builder = new RenderTreeBuilder();
@@ -1241,7 +1241,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var builder = new RenderTreeBuilder();
 
-            var value = new Action<UIEventArgs>((e) => { });
+            var value = new Action<EventArgs>((e) => { });
 
             // Act
             builder.OpenElement(0, "elem");
@@ -1261,7 +1261,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Arrange
             var builder = new RenderTreeBuilder();
 
-            var value = new Action<UIEventArgs>((e) => { });
+            var value = new Action<EventArgs>((e) => { });
 
             // Act
             builder.OpenComponent<TestComponent>(0);

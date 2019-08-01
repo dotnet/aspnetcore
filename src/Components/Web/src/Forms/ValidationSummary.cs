@@ -82,9 +82,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             StateHasChanged();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         void IDisposable.Dispose()
         {
             DetachValidationStateChangedListener();
+            Dispose(disposing: true);
         }
 
         private void DetachValidationStateChangedListener()

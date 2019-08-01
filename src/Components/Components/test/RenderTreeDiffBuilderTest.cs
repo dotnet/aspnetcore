@@ -835,9 +835,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RecognizesAttributeEventHandlerValuesChanged()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
-            Action<UIEventArgs> removedHandler = _ => { };
-            Action<UIEventArgs> addedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
+            Action<EventArgs> removedHandler = _ => { };
+            Action<EventArgs> addedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "onfoo", retainedHandler);
             oldTree.AddAttribute(2, "onbar", removedHandler);
@@ -1575,7 +1575,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "ontest", retainedHandler);
             oldTree.CloseElement();
@@ -1601,7 +1601,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void PreservesEventHandlerIdsForRetainedEventHandlers_SlowPath()
         {
             // Arrange
-            Action<UIEventArgs> retainedHandler = _ => { };
+            Action<EventArgs> retainedHandler = _ => { };
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(0, "ontest", retainedHandler);
             oldTree.CloseElement();
