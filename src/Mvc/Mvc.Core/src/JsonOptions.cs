@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -26,6 +27,9 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Use camel casing for properties
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+
+            // Does not encode all non-ASCII characters which matches Json.NET"s behavior.
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
     }
 }

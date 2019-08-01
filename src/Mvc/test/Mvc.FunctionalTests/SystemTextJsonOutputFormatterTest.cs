@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11459")]
+        [Fact]
         public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 
         [Fact]

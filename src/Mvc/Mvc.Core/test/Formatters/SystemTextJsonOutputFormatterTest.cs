@@ -18,39 +18,5 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             return new SystemTextJsonOutputFormatter(new JsonOptions());
         }
-
-        [Theory]
-        [MemberData(nameof(WriteCorrectCharacterEncoding))]
-        public async Task WriteToStreamAsync_UsesCorrectCharacterEncoding(
-           string content,
-           string encodingAsString,
-           bool isDefaultEncoding)
-        {
-            // Arrange
-            var formatter = GetOutputFormatter();
-            var expectedContent = "\"" + JavaScriptEncoder.Default.Encode(content) + "\"";
-            var mediaType = MediaTypeHeaderValue.Parse(string.Format("application/json; charset={0}", encodingAsString));
-            var encoding = CreateOrGetSupportedEncoding(formatter, encodingAsString, isDefaultEncoding);
-
-
-            var body = new MemoryStream();
-            var actionContext = GetActionContext(mediaType, body);
-
-            var outputFormatterContext = new OutputFormatterWriteContext(
-                actionContext.HttpContext,
-                new TestHttpResponseStreamWriterFactory().CreateWriter,
-                typeof(string),
-                content)
-            {
-                ContentType = new StringSegment(mediaType.ToString()),
-            };
-
-            // Act
-            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding(encodingAsString));
-
-            // Assert
-            var actualContent = encoding.GetString(body.ToArray());
-            Assert.Equal(expectedContent, actualContent, StringComparer.OrdinalIgnoreCase);
-        }
     }
 }
