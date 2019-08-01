@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         /// sure not to enable the Angular CLI server.
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
-        /// <param name="scriptName">The name of the script in your package.json file that launches the Angular CLI process.</param>
+        /// <param name="npmScript">The name of the script in your package.json file that launches the Angular CLI process.</param>
         public static void UseAngularCliServer(
             this ISpaBuilder spaBuilder,
-            string scriptName)
+            string npmScript)
         {
             if (spaBuilder == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new InvalidOperationException($"To use {nameof(UseAngularCliServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
-            AngularCliMiddleware.Attach(spaBuilder, scriptName);
+            AngularCliMiddleware.Attach(spaBuilder, npmScript);
         }
     }
 }

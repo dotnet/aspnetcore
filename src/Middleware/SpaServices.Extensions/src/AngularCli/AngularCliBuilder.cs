@@ -26,15 +26,15 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         /// <summary>
         /// Constructs an instance of <see cref="AngularCliBuilder"/>.
         /// </summary>
-        /// <param name="scriptName">The name of the script in your package.json file that builds the server-side bundle for your Angular application.</param>
-        public AngularCliBuilder(string scriptName)
+        /// <param name="npmScript">The name of the script in your package.json file that builds the server-side bundle for your Angular application.</param>
+        public AngularCliBuilder(string npmScript)
         {
-            if (string.IsNullOrEmpty(scriptName))
+            if (string.IsNullOrEmpty(npmScript))
             {
-                throw new ArgumentException("Cannot be null or empty.", nameof(scriptName));
+                throw new ArgumentException("Cannot be null or empty.", nameof(npmScript));
             }
 
-            _scriptName = scriptName;
+            _scriptName = npmScript;
         }
 
         /// <inheritdoc />
