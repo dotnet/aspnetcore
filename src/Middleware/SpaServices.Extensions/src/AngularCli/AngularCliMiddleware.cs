@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             ISpaBuilder spaBuilder,
             string scriptName)
         {
-            var pkgManagerName = spaBuilder.Options.PackageManagerName;
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             // Start Angular CLI and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerName, logger);
+            var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -63,13 +63,13 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
-            string sourcePath, string scriptName, string pkgManagerName, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerCommand, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
 
             var scriptRunner = new NodeScriptRunner(
-                sourcePath, scriptName, $"--port {portNumber}", null, pkgManagerName);
+                sourcePath, scriptName, $"--port {portNumber}", null, pkgManagerCommand);
             scriptRunner.AttachToLogger(logger);
 
             Match openBrowserLine;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The {pkgManagerName} script '{scriptName}' exited without indicating that the " +
+                        $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
                         $"Angular CLI was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }

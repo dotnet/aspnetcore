@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         /// <inheritdoc />
         public async Task Build(ISpaBuilder spaBuilder)
         {
-            var pkgManagerName = spaBuilder.Options.PackageManagerName;
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 _scriptName,
                 "--watch",
                 null,
-                pkgManagerName);
+                pkgManagerCommand);
             scriptRunner.AttachToLogger(logger);
 
             using (var stdOutReader = new EventedStreamStringReader(scriptRunner.StdOut))
@@ -69,14 +69,14 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The {pkgManagerName} script '{_scriptName}' exited without indicating success.\n" +
+                        $"The {pkgManagerCommand} script '{_scriptName}' exited without indicating success.\n" +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }
                 catch (OperationCanceledException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The {pkgManagerName} script '{_scriptName}' timed out without indicating success. " +
+                        $"The {pkgManagerCommand} script '{_scriptName}' timed out without indicating success. " +
                         $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }

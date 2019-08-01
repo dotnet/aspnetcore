@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
 
         private static Regex AnsiColorRegex = new Regex("\x001b\\[[0-9;]*m", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-        public NodeScriptRunner(string workingDirectory, string scriptName, string arguments, IDictionary<string, string> envVars, string pkgManagerName)
+        public NodeScriptRunner(string workingDirectory, string scriptName, string arguments, IDictionary<string, string> envVars, string pkgManagerCommand)
         {
             if (string.IsNullOrEmpty(workingDirectory))
             {
@@ -35,12 +35,12 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
                 throw new ArgumentException("Cannot be null or empty.", nameof(scriptName));
             }
 
-            if (string.IsNullOrEmpty(pkgManagerName))
+            if (string.IsNullOrEmpty(pkgManagerCommand))
             {
-                throw new ArgumentException("Cannot be null or empty.", nameof(pkgManagerName));
+                throw new ArgumentException("Cannot be null or empty.", nameof(pkgManagerCommand));
             }
 
-            var exeToRun = pkgManagerName;
+            var exeToRun = pkgManagerCommand;
             var completeArguments = $"run {scriptName} -- {arguments ?? string.Empty}";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
                 // directly (except with UseShellExecute=true, but that's no good, because
                 // it prevents capturing stdio). So we need to invoke it via "cmd /c".
                 exeToRun = "cmd";
-                completeArguments = $"/c {pkgManagerName} {completeArguments}";
+                completeArguments = $"/c {pkgManagerCommand} {completeArguments}";
             }
 
             var processStartInfo = new ProcessStartInfo(exeToRun)
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
                 }
             }
 
-            var process = LaunchNodeProcess(processStartInfo, pkgManagerName);
+            var process = LaunchNodeProcess(processStartInfo, pkgManagerCommand);
             StdOut = new EventedStreamReader(process.StandardOutput);
             StdErr = new EventedStreamReader(process.StandardError);
         }

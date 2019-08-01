@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             ISpaBuilder spaBuilder,
             string scriptName)
         {
-            var pkgManagerName = spaBuilder.Options.PackageManagerName;
+            var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerName, logger);
+            var portTask = StartCreateReactAppServerAsync(sourcePath, scriptName, pkgManagerCommand, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         }
 
         private static async Task<int> StartCreateReactAppServerAsync(
-            string sourcePath, string scriptName, string pkgManagerName, ILogger logger)
+            string sourcePath, string scriptName, string pkgManagerCommand, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
             logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 { "BROWSER", "none" }, // We don't want create-react-app to open its own extra browser window pointing to the internal dev server port
             };
             var scriptRunner = new NodeScriptRunner(
-                sourcePath, scriptName, null, envVars, pkgManagerName);
+                sourcePath, scriptName, null, envVars, pkgManagerCommand);
             scriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(scriptRunner.StdErr))
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The {pkgManagerName} script '{scriptName}' exited without indicating that the " +
+                        $"The {pkgManagerCommand} script '{scriptName}' exited without indicating that the " +
                         $"create-react-app server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }

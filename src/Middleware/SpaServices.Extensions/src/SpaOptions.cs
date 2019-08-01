@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SpaServices
     public class SpaOptions
     {
         private PathString _defaultPage = "/index.html";
-        private string _defaultPackageManagerName = "npm";
+        private string _packageManagerCommand = "npm";
 
         /// <summary>
         /// Constructs a new instance of <see cref="SpaOptions"/>.
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices
         internal SpaOptions(SpaOptions copyFromOptions)
         {
             _defaultPage = copyFromOptions.DefaultPage;
-            _defaultPackageManagerName = copyFromOptions.PackageManagerName;
+            _packageManagerCommand = copyFromOptions.PackageManagerCommand;
             DefaultPageStaticFileOptions = copyFromOptions.DefaultPageStaticFileOptions;
             SourcePath = copyFromOptions.SourcePath;
         }
@@ -74,20 +74,19 @@ namespace Microsoft.AspNetCore.SpaServices
         /// Gets or sets the name of the package manager executible, (e.g npm,
         /// yarn) to run the SPA.
         /// 
-        /// If not set, npm will be assumed as the default package manager 
-        /// executable
+        /// The default value is 'npm'.
         /// </summary>
-        public string PackageManagerName
+        public string PackageManagerCommand
         {
-            get => _defaultPackageManagerName;
+            get => _packageManagerCommand;
             set
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentException($"The value for {nameof(PackageManagerName)} cannot be null or empty.");
+                    throw new ArgumentException($"The value for {nameof(PackageManagerCommand)} cannot be null or empty.");
                 }
 
-                _defaultPackageManagerName = value;
+                _packageManagerCommand = value;
             }
         }
 
