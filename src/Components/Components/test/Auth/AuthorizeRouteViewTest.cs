@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Components
             var authStateTcs = new TaskCompletionSource<AuthenticationState>();
             _authenticationStateProvider.CurrentAuthStateTask = authStateTcs.Task;
             RenderFragment customAuthorizing =
-                builder => builder.AddContent(0, "Hold on, we're check your papers.");
+                builder => builder.AddContent(0, "Hold on, we're checking your papers.");
 
             // Act
             var firstRenderTask = _renderer.RenderRootComponentAsync(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Components
             var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
             Assert.Collection(layoutDiff.Edits,
                 edit => AssertPrependText(batch, edit, "Layout starts here"),
-                edit => AssertPrependText(batch, edit, "Hold on, we're check your papers."),
+                edit => AssertPrependText(batch, edit, "Hold on, we're checking your papers."),
                 edit => AssertPrependText(batch, edit, "Layout ends here"));
         }
 
