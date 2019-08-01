@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             MountTestComponent<ReconnectTicker>();
 
-            Browser.FindElement(By.LinkText("Ticker")).Click();
             var selector = By.ClassName("tick-value");
             var element = Browser.FindElement(selector);
 

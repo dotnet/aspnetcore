@@ -89,8 +89,6 @@ async function initializeConnection(options: BlazorOptions, logger: Logger): Pro
     unhandledError(connection, error, logger);
   });
 
-  window['Blazor']._internal.forceCloseConnection = () => connection.stop();
-
   try {
     await connection.start();
   } catch (ex) {
