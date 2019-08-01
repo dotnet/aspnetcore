@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -21,6 +22,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected const string PageRequiringAuthorization = "Page requiring any authentication";
         protected const string PageRequiringPolicy = "Page requiring policy";
         protected const string PageRequiringRole = "Page requiring role";
+
+        public string SessionIdentifier { get; } = Guid.NewGuid().ToString();
 
         public AuthTest(
             BrowserFixture browserFixture,
@@ -188,6 +191,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected IWebElement MountAndNavigateToAuthTest(string authLinkText)
         {
             Navigate(ServerPathBase);
+
+            Browser.Manage().Cookies.DeleteCookieNamed("WebSockets.Identifier");
+            Browser.Manage().Cookies.AddCookie(new Cookie("WebSockets.Identifier", SessionIdentifier));
+            Browser.Navigate().Refresh();
+
             var appElement = MountTestComponent<BasicTestApp.AuthTest.AuthRouter>();
             WaitUntilExists(By.Id("auth-links"));
             appElement.FindElement(By.LinkText(authLinkText)).Click();

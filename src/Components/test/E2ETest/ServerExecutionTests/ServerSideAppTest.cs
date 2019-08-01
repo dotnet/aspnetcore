@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
 
+        public string SessionIdentifier { get; } = Guid.NewGuid().ToString();
+
         public override async Task InitializeAsync()
         {
             await base.InitializeAsync();
@@ -138,52 +140,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
-        public void ReconnectUI()
-        {
-            Browser.FindElement(By.LinkText("Counter")).Click();
-
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
-
-            // We should see the 'reconnecting' UI appear
-            var reconnectionDialog = WaitUntilReconnectionDialogExists();
-            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
-
-            // Then it should disappear
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
-        }
-
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
-        public void RendersContinueAfterReconnect()
-        {
-            Browser.FindElement(By.LinkText("Ticker")).Click();
-            var selector = By.ClassName("tick-value");
-            var element = Browser.FindElement(selector);
-
-            var initialValue = element.Text;
-
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
-
-            // We should see the 'reconnecting' UI appear
-            var reconnectionDialog = WaitUntilReconnectionDialogExists();
-            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
-
-            // Then it should disappear
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
-
-            // We should receive a render that occurred while disconnected
-            var currentValue = element.Text;
-            Assert.NotEqual(initialValue, currentValue);
-
-            // Verify it continues to tick
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                _ => element.Text != currentValue);
-        }
-
         // Since we've removed stateful prerendering, the name which is passed in
         // during prerendering cannot be retained. The first interactive render
         // will remove it.
@@ -203,14 +159,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.FindElement(By.Id("cause-error")).Click();
             Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
                 .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
-        }
-
-        private IWebElement WaitUntilReconnectionDialogExists()
-        {
-            IWebElement reconnectionDialog = null;
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => (reconnectionDialog = driver.FindElement(By.Id("components-reconnect-modal"))) != null);
-            return reconnectionDialog;
         }
     }
 }

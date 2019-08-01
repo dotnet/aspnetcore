@@ -1,0 +1,14 @@
+<h1>Reconnect component</h1>
+
+<p>This component demonstrates reconnection capabilities for blazor server-side. We click this button a few times,
+    we force a disconnection and we make sure we are able to successfully reconnect and continue interacting with
+    the application.</p>
+
+<p>Current count: <span id="counter-count">@currentCount</span></p>
+<p><button id="counter-click" @onclick="@IncrementCount">Click me</button></p>
+
+@code {
+        int currentCount = 0;
+
+        void IncrementCount() => currentCount++;
+}

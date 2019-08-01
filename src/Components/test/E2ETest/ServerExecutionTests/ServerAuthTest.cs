@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private void PerformReconnection()
         {
-            ((IJavaScriptExecutor)Browser).ExecuteScript("Blazor._internal.forceCloseConnection()");
+            ((IJavaScriptExecutor)Browser).ExecuteScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}')");
 
             // Wait until the reconnection dialog has been shown but is now hidden
             new WebDriverWait(Browser, TimeSpan.FromSeconds(10))

@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.RouterTest;
+using Components.TestServer.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +54,11 @@ namespace TestServer
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseInterruptibleWebSockets(new InterruptibleWebSocketOptions
+            {
+                WebSocketPath = "/subdir/_blazor",
+            });
+
             // It's not enough just to return "Access-Control-Allow-Origin: *", because
             // browsers don't allow wildcards in conjunction with credentials. So we must
             // specify explicitly which origin we want to allow.
@@ -82,7 +89,7 @@ namespace TestServer
                     options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
 
                     // We want the default to be en-US so that the tests for bind can work consistently.
-                    options.SetDefaultCulture("en-US"); 
+                    options.SetDefaultCulture("en-US");
                 });
 
                 app.UseRouting();

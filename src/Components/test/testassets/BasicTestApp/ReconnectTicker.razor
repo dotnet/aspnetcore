@@ -1,6 +1,13 @@
-@page "/ticker"
-@implements IDisposable
+@implements System.IDisposable
 @using System.Threading
+
+<h1>Reconnect component</h1>
+
+<p>
+    This component demonstrates reconnection capabilities for blazor server-side. The ticker starts ticking for a,
+    few seconds. Then the application reconnects and the renders resume updating the ticker value. (The renders happened
+    while the circuit was disconnected).
+</p>
 
 <h1>Ticker</h1>
 <p class="tick-value">@tick</p>
