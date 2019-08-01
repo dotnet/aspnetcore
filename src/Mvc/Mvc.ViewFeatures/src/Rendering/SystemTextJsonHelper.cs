@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         public SystemTextJsonHelper(IOptions<JsonOptions> options)
         {
-            _htmlSafeJsonSerializerOptions = CreateHtmlSafeSerializerOptions(options.Value.JsonSerializerOptions);
+            _htmlSafeJsonSerializerOptions = GetHtmlSafeSerializerOptions(options.Value.JsonSerializerOptions);
         }
 
         /// <inheritdoc />
@@ -27,31 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             return new HtmlString(json);
         }
 
-        private static JsonSerializerOptions CreateHtmlSafeSerializerOptions(JsonSerializerOptions serializerOptions)
+        private static JsonSerializerOptions GetHtmlSafeSerializerOptions(JsonSerializerOptions serializerOptions)
         {
-            var htmlSafeOptions = new JsonSerializerOptions
+            if (serializerOptions.Encoder is null || serializerOptions.Encoder == JavaScriptEncoder.Default)
             {
-                AllowTrailingCommas = serializerOptions.AllowTrailingCommas,
-                DefaultBufferSize = serializerOptions.DefaultBufferSize,
-                DictionaryKeyPolicy = serializerOptions.DictionaryKeyPolicy,
-                IgnoreNullValues = serializerOptions.IgnoreNullValues,
-                IgnoreReadOnlyProperties = serializerOptions.IgnoreReadOnlyProperties,
-                MaxDepth = serializerOptions.MaxDepth,
-                PropertyNameCaseInsensitive = serializerOptions.PropertyNameCaseInsensitive,
-                PropertyNamingPolicy = serializerOptions.PropertyNamingPolicy,
-                ReadCommentHandling = serializerOptions.ReadCommentHandling,
-                WriteIndented = serializerOptions.WriteIndented
-            };
-
-            // Use the HTML safe encoder
-            htmlSafeOptions.Encoder = JavaScriptEncoder.Default;
-
-            for (var i = 0; i < serializerOptions.Converters.Count; i++)
-            {
-                htmlSafeOptions.Converters.Add(serializerOptions.Converters[i]);
+                return serializerOptions;
             }
 
-            return htmlSafeOptions;
+            return serializerOptions.Copy(JavaScriptEncoder.Default);
         }
     }
 }
