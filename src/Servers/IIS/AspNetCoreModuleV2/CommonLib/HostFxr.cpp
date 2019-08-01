@@ -32,7 +32,15 @@ void HostFxrErrorRedirector::HostFxrErrorRedirectorCallback(const WCHAR* message
 
 void HostFxr::Load(HMODULE moduleHandle)
 {
+    // A hostfxr may already be loaded here if we tried to start with an
+    // invalid configuration. Release hostfxr before loading it again.
+    if (m_hHostFxrDll != nullptr)
+    {
+        m_hHostFxrDll.release();
+    }
+
     m_hHostFxrDll = moduleHandle;
+
     try
     {
         m_hostfxr_get_native_search_directories_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(moduleHandle, "hostfxr_get_native_search_directories");
