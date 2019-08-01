@@ -214,24 +214,27 @@ namespace Microsoft.AspNetCore.Razor.Tools
             foreach (var result in results)
             {
                 var errorCount = result.CSharpDocument.Diagnostics.Count;
-                if (errorCount > 0)
+                for (var i = 0; i < errorCount; i++)
                 {
-                    success = false;
-
-                    for (var i = 0; i < errorCount; i++)
+                    var error = result.CSharpDocument.Diagnostics[i];
+                    if (error.Severity == RazorDiagnosticSeverity.Error)
                     {
-                        var error = result.CSharpDocument.Diagnostics[i];
+                        success = false;
+                    }
+
+                    if (i < 100)
+                    {
                         Error.WriteLine(error.ToString());
 
                         // Only show the first 100 errors to prevent massive string allocations.
                         if (i == 99)
                         {
-                            Error.WriteLine($"And {errorCount - i + 1} more errors.");
-                            break;
+                            Error.WriteLine($"And {errorCount - i + 1} more warnings/errors.");
                         }
                     }
                 }
-                else
+
+                if (success)
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;

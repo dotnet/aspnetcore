@@ -46,6 +46,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("ComponentApp")]
+        public async Task Build_Successful_WhenThereAreWarnings()
+        {
+            ReplaceContent("<UnrecognizedComponent />", "Components", "Pages", "Index.razor");
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "ComponentApp.dll");
+            Assert.FileExists(result, OutputPath, "ComponentApp.pdb");
+
+            // Verify component compilation succeeded
+            Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "ComponentApp.dll"), "ComponentApp.Components.Pages.Counter");
+
+            Assert.BuildWarning(result, "RZ10014");
+        }
+
+        [Fact]
         [InitializeTestProject("ComponentLibrary")]
         public async Task Build_WithoutRazorLangVersion_ProducesWarning()
         {

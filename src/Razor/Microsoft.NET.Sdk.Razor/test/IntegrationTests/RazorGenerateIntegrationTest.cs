@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildFailed(result);
 
-            Assert.BuildOutputContainsLine(result, "And 101 more errors.");
+            Assert.BuildOutputContainsLine(result, "And 101 more warnings/errors.");
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");

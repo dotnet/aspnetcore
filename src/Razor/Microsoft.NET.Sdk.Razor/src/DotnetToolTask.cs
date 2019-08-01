@@ -165,6 +165,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     {
                         // Server execution succeeded.
                         Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}.");
+
+                        // There might still be warnings in the error output.
+                        if (LogStandardErrorAsError)
+                        {
+                            LogErrors(completedResponse.ErrorOutput);
+                        }
+                        else
+                        {
+                            LogMessages(completedResponse.ErrorOutput, StandardErrorLoggingImportance);
+                        }
+
                         return true;
                     }
                     else if (result == 2)
