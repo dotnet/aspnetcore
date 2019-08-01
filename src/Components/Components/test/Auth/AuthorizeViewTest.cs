@@ -330,15 +330,9 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
-            Assert.Collection(diff2.Edits,
-            edit =>
+            Assert.Collection(diff2.Edits, edit =>
             {
-                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
-                Assert.Equal(0, edit.SiblingIndex);
-            },
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 Assert.Equal(0, edit.SiblingIndex);
                 AssertFrame.Text(
                     batch2.ReferenceFrames[edit.ReferenceFrameIndex],
@@ -511,15 +505,6 @@ namespace Microsoft.AspNetCore.Components
         public static Task<AuthenticationState> CreateAuthenticationState(string username)
             => Task.FromResult(new AuthenticationState(
                 new ClaimsPrincipal(new TestIdentity { Name = username })));
-
-        class TestIdentity : IIdentity
-        {
-            public string AuthenticationType => "Test";
-
-            public bool IsAuthenticated => true;
-
-            public string Name { get; set; }
-        }
 
         public TestRenderer CreateTestRenderer(IAuthorizationService authorizationService)
         {

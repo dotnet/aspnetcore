@@ -18,20 +18,28 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public sealed class AuthorizeRouteView : RouteView
     {
+        // We expect applications to supply their own authorizing/not-authorized content, but
+        // it's better to have defaults than to make the parameters mandatory because in some
+        // cases they will never be used (e.g., "authorizing" in out-of-box server-side Blazor)
+        private static readonly RenderFragment<AuthenticationState> _defaultNotAuthorizedContent
+            = state => builder => builder.AddContent(0, "Not authorized");
+        private static readonly RenderFragment _defaultAuthorizingContent
+            = builder => builder.AddContent(0, "Authorizing...");
+
+        private readonly RenderFragment _renderAuthorizeRouteViewCoreDelegate;
         private readonly RenderFragment<AuthenticationState> _renderAuthorizedDelegate;
         private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
         private readonly RenderFragment _renderAuthorizingDelegate;
-        private readonly RenderFragment _renderAuthorizeRouteViewCoreDelegate;
 
         public AuthorizeRouteView()
         {
             // Cache the rendering delegates so that we only construct new closure instances
             // when they are actually used (e.g., we never prepare a RenderFragment bound to
-            // the Authorizing content except when you are displaying that particular state)
+            // the NotAuthorized content except when you are displaying that particular state)
             var renderBaseRouteViewDelegate = (RenderFragment)base.Render;
             _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
-            _renderNotAuthorizedDelegate = authenticationState => RenderContentInDefaultLayout(NotAuthorized(authenticationState));
-            _renderAuthorizingDelegate = builder => RenderContentInDefaultLayout(Authorizing);
+            _renderNotAuthorizedDelegate = authenticationState => builder => RenderNotAuthorizedInDefaultLayout(builder, authenticationState);
+            _renderAuthorizingDelegate = RenderAuthorizingInDefaultLayout;
             _renderAuthorizeRouteViewCoreDelegate = RenderAuthorizeRouteViewCore;
         }
 
@@ -78,15 +86,24 @@ namespace Microsoft.AspNetCore.Components
             builder.CloseComponent();
         }
 
-        private RenderFragment RenderContentInDefaultLayout(RenderFragment content)
+        private void RenderContentInDefaultLayout(RenderTreeBuilder builder, RenderFragment content)
         {
-            return builder =>
-            {
-                builder.OpenComponent<LayoutView>(0);
-                builder.AddAttribute(1, nameof(LayoutView.Layout), DefaultLayout);
-                builder.AddAttribute(2, nameof(LayoutView.ChildContent), content);
-                builder.CloseComponent();
-            };
+            builder.OpenComponent<LayoutView>(0);
+            builder.AddAttribute(1, nameof(LayoutView.Layout), DefaultLayout);
+            builder.AddAttribute(2, nameof(LayoutView.ChildContent), content);
+            builder.CloseComponent();
+        }
+
+        private void RenderNotAuthorizedInDefaultLayout(RenderTreeBuilder builder, AuthenticationState authenticationState)
+        {
+            var content = NotAuthorized ?? _defaultNotAuthorizedContent;
+            RenderContentInDefaultLayout(builder, content(authenticationState));
+        }
+
+        private void RenderAuthorizingInDefaultLayout(RenderTreeBuilder builder)
+        {
+            var content = Authorizing ?? _defaultAuthorizingContent;
+            RenderContentInDefaultLayout(builder, content);
         }
 
         private class AuthorizeRouteViewCore : AuthorizeViewCore
