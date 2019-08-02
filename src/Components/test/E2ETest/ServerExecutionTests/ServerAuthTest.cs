@@ -55,7 +55,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private void PerformReconnection()
         {
-            ((IJavaScriptExecutor)Browser).ExecuteScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}')");
+            Browser.ExecuteAsyncScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}').then(r => window['WebSockets.{SessionIdentifier}'] = r.ok)");
+            Browser.HasJavaScriptValue(true, $"window['WebSockets.{SessionIdentifier}']", (r) => r != null);
 
             // Wait until the reconnection dialog has been shown but is now hidden
             new WebDriverWait(Browser, TimeSpan.FromSeconds(10))

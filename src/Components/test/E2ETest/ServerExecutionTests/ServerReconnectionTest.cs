@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void Disconnect()
         {
             var javascript = (IJavaScriptExecutor)Browser;
-            Browser.ExecuteScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}').then(r => window['WebSockets.{SessionIdentifier}'] = r.ok)");
-            Assert.True(Browser.HasJavaScriptValue($"window['WebSockets.{ SessionIdentifier}']", (r) => r != null));
+            Browser.ExecuteAsyncScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}').then(r => window['WebSockets.{SessionIdentifier}'] = r.ok)");
+            Browser.HasJavaScriptValue(true, $"window['WebSockets.{SessionIdentifier}']", (r) => r != null);
         }
 
         private IWebElement WaitUntilReconnectionDialogExists()

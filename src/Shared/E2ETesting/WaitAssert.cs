@@ -36,19 +36,43 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public static T HasJavaScriptValue<T>(
-            this IWebDriver driver,
-            string script, Func<object,T> converter = null)
+        public static void ExecuteAsyncScript(this IWebDriver driver, string script)
         {
-            converter ??= (v) => (T)v;
-            if(!(driver is IJavaScriptExecutor javaScript))
+            if (!(driver is IJavaScriptExecutor javaScript))
             {
                 Assert.False(true, "The driver can't execute JavaScript.");
-                return default;
+                return;
             }
             else
             {
-                return WaitAssertCore(driver, () => converter(javaScript.ExecuteScript(script)));
+                var scriptWithCallback = $"const cb = arguments[arguments.length - 1];{script}.then(cb, cb)";
+                javaScript.ExecuteAsyncScript(scriptWithCallback);
+            }
+        }
+        public static void HasJavaScriptValue<T>(
+            this IWebDriver driver,
+            T expectedValue,
+            string script,
+            Func<object, T> converter = null)
+        {
+            if(!script.StartsWith("return "))
+            {
+                script = $"return {script}";
+            }
+
+            converter ??= (v) => (T)v;
+            if (!(driver is IJavaScriptExecutor javaScript))
+            {
+                Assert.False(true, "The driver can't execute JavaScript.");
+            }
+            else
+            {
+                driver.True(() =>
+                {
+                    var result = javaScript.ExecuteScript(script);
+                    T convertedResult = converter(result);
+                    return expectedValue.Equals(convertedResult);
+                });
             }
         }
 
@@ -75,25 +99,19 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
         {
-            _ = WaitAssertCore<object>(driver, () => assertion, timeout);
-        }
-
-        private static T WaitAssertCore<T>(IWebDriver driver, Func<T> assertion, TimeSpan timeout = default)
-        {
             if (timeout == default)
             {
                 timeout = DefaultTimeout;
             }
 
             Exception lastException = null;
-            T result = default;
             try
             {
                 new WebDriverWait(driver, timeout).Until(_ =>
                 {
                     try
                     {
-                        result = assertion();
+                        assertion();
                         return true;
                     }
                     catch (Exception e)
@@ -115,8 +133,6 @@ namespace Microsoft.AspNetCore.E2ETesting
                     assertion();
                 }
             }
-
-            return result;
         }
     }
 }
