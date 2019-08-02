@@ -194,5 +194,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.BuildOutputContainsLine(result, "UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task IntrospectJsonContentFiles()
+        {
+            var result = await DotnetMSBuild("_IntrospectContentItems");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "Content: Properties\\launchSettings.json CopyToOutputDirectory=Never CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
+            Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
+            Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
+        }
     }
 }
