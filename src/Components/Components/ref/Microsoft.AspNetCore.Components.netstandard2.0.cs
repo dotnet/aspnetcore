@@ -278,6 +278,10 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public sealed partial class LocationChangeException : System.Exception
+    {
+        public LocationChangeException(string message, System.Exception innerException) { }
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
     {
