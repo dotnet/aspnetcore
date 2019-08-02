@@ -184,10 +184,10 @@ namespace Microsoft.AspNetCore.Components
         /// value for all parameters that are logically understood by the component.
         /// </para>
         /// <para>
-        /// The default implementation of <see cref="SetParametersAsync(ParameterView)"/> will set a value for every property
-        /// decorated with <see cref="ParameterAttribute"/> or <see cref="CascadingParameterAttribute"/> each time
-        /// <see cref="SetParametersAsync(ParameterView)"/> is called. Any parameter or cascading parameter whose corresponding
-        /// parameter value is missing will be assigned the value <c>default</c>.
+        /// The default implementation of <see cref="SetParametersAsync(ParameterView)"/> will set the value of each property
+        /// decorated with <see cref="ParameterAttribute" /> or <see cref="CascadingParameterAttribute" /> that has
+        /// a corresponding value in the <see cref="ParameterView" />. Parameters that do not have a corresponding value
+        /// will be unchanged.
         /// </para>
         /// </remarks>
         public virtual Task SetParametersAsync(ParameterView parameters)

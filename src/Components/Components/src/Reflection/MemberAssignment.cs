@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
-        public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property)
+        public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property, bool cascading)
         {
             if (property.SetMethod == null)
             {
@@ -37,18 +37,22 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
             return (IPropertySetter)Activator.CreateInstance(
                 typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
-                property.SetMethod);
+                property.SetMethod,
+                cascading);
         }
 
         class PropertySetter<TTarget, TValue> : IPropertySetter
         {
             private readonly Action<TTarget, TValue> _setterDelegate;
 
-            public PropertySetter(MethodInfo setMethod)
+            public PropertySetter(MethodInfo setMethod, bool cascading)
             {
                 _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
                     typeof(Action<TTarget, TValue>), setMethod);
+                Cascading = cascading;
             }
+
+            public bool Cascading { get; }
 
             public void SetValue(object target, object value)
             {
