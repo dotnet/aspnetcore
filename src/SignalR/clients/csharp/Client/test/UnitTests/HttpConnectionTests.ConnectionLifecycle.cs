@@ -427,6 +427,36 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
             }
 
+            [Fact]
+            public async Task CancellationTokenFromStartPassedToTransport()
+            {
+                using (StartVerifiableLog())
+                {
+                    var cts = new CancellationTokenSource();
+
+                    var httpHandler = new TestHttpMessageHandler();
+                    await WithConnectionAsync(
+                        CreateConnection(httpHandler,
+                        transport: new TestTransport(onTransportStart: () => {
+                            // Cancel the token when the transport is starting  which will fail the startTask.
+                            cts.Cancel();
+                            return Task.CompletedTask;
+                        })),
+                        async (connection) =>
+                        {
+                            var startTask = connection.StartAsync(cts.Token);
+
+                            // We aggregate failures that happen when we start the transport. The operation cancelled exception will
+                            // be an inner exception.
+                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await startTask).OrTimeout();
+                            Assert.Equal(3, ex.InnerExceptions.Count);
+                            var innerEx = ex.InnerExceptions[2];
+                            var innerInnerEx = innerEx.InnerException;
+                            Assert.IsType<OperationCanceledException>(innerInnerEx);
+                        });
+                }
+            }
+
             private static async Task AssertDisposedAsync(HttpConnection connection)
             {
                 var exception =
