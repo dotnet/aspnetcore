@@ -4,11 +4,9 @@
 namespace Microsoft.AspNetCore.Components.Web
 {
     // Shared interop constants
-    internal static class BrowserUriHelperInterop
+    internal static class BrowserNavigationManagerInterop
     {
-        private static readonly string Prefix = "Blazor._internal.uriHelper.";
-
-        public static readonly string ListenForNavigationEvents = Prefix + "listenForNavigationEvents";
+        private static readonly string Prefix = "Blazor._internal.navigationManager.";
 
         public static readonly string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 

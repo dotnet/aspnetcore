@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public string StartCircuit(string baseUri, string uri)
         {
             if (CircuitHost != null)
             {
@@ -125,8 +125,8 @@ namespace Microsoft.AspNetCore.Components.Server
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 Context.GetHttpContext(),
                 circuitClient,
-                uriAbsolute,
-                baseUriAbsolute,
+                baseUri,
+                uri,
                 Context.User);
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;
@@ -224,6 +224,18 @@ namespace Microsoft.AspNetCore.Components.Server
             CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
+        public void OnLocationChanged(string uri, bool intercepted)
+        {
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.OnLocationChangedAsync(uri, intercepted);
+        }
+
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var circuitHost = (CircuitHost)sender;
@@ -275,10 +287,10 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
 
             private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {

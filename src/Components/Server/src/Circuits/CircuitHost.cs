@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHost : IAsyncDisposable
     {
-        private static readonly AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
         private readonly SemaphoreSlim HandlerLock = new SemaphoreSlim(1);
         private readonly IServiceScope _scope;
         private readonly CircuitHandler[] _circuitHandlers;
@@ -25,23 +24,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _initialized;
 
         /// <summary>
-        /// Gets the current <see cref="Circuit"/>, if any.
-        /// </summary>
-        public static CircuitHost Current => _current.Value;
-
-        /// <summary>
         /// Sets the current <see cref="Circuits.Circuit"/>.
         /// </summary>
         /// <param name="circuitHost">The <see cref="Circuits.Circuit"/>.</param>
         /// <remarks>
-        /// Calling <see cref="SetCurrentCircuitHost(CircuitHost)"/> will store the circuit
-        /// and other related values such as the <see cref="IJSRuntime"/> and <see cref="Renderer"/>
+        /// Calling <see cref="SetCurrentCircuitHost(CircuitHost)"/> will store related values such as the
+        /// <see cref="IJSRuntime"/> and <see cref="Renderer"/>
         /// in the local execution context. Application code should not need to call this method,
         /// it is primarily used by the Server-Side Components infrastructure.
         /// </remarks>
         public static void SetCurrentCircuitHost(CircuitHost circuitHost)
         {
-            _current.Value = circuitHost ?? throw new ArgumentNullException(nameof(circuitHost));
+            if (circuitHost is null)
+            {
+                throw new ArgumentNullException(nameof(circuitHost));
+            }
 
             JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
             RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
@@ -232,6 +229,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             catch (Exception ex)
             {
+                // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
+                // however, we still want this to get logged if we do. 
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        public async Task OnLocationChangedAsync(string uri, bool intercepted)
+        {
+            try
+            {
+                AssertInitialized();
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    Log.LocationChange(_logger, CircuitId, uri);
+                    var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
+                    navigationManager.NotifyLocationChanged(uri, intercepted);
+                    Log.LocationChangeSucceeded(_logger, CircuitId, uri);
+                });
+            }
+            catch (Exception ex)
+            {
+                // It's up to the NavigationManager implementation to validate the URI.
+                //
+                // Note that it's also possible that setting the URI could cause a failure in code that listens
+                // to NavigationManager.LocationChanged.
+                //
+                // In either case, a well-behaved client will not send invalid URIs, and we don't really
+                // want to continue processing with the circuit if setting the URI failed inside application
+                // code. The safest thing to do is consider it a critical failure since URI is global state,
+                // and a failure means that an update to global state was partially applied.
+                Log.LocationChangeFailed(_logger, CircuitId, uri, ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -384,6 +413,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventDescriptor;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, Exception> _dispatchEventThroughJSInterop;
+            private static readonly Action<ILogger, string, string, Exception> _locationChange;
+            private static readonly Action<ILogger, string, string, Exception> _locationChangeSucceeded;
+            private static readonly Action<ILogger, string, string, Exception> _locationChangeFailed;
 
             private static class EventIds
             {
@@ -401,6 +433,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId EndInvokeJSFailed = new EventId(111, "EndInvokeJSFailed");
                 public static readonly EventId EndInvokeJSSucceeded = new EventId(112, "EndInvokeJSSucceeded");
                 public static readonly EventId DispatchEventThroughJSInterop = new EventId(113, "DispatchEventThroughJSInterop");
+                public static readonly EventId LocationChange = new EventId(114, "LocationChange");
+                public static readonly EventId LocationChangeSucceded = new EventId(115, "LocationChangeSucceeded");
+                public static readonly EventId LocationChangeFailed = new EventId(116, "LocationChangeFailed");
             }
 
             static Log()
@@ -474,6 +509,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     LogLevel.Debug,
                     EventIds.DispatchEventThroughJSInterop,
                     "There was an intent to dispatch a browser event through JS interop.");
+
+                _locationChange = LoggerMessage.Define<string, string>(
+                    LogLevel.Debug,
+                    EventIds.LocationChange,
+                    "Location changing to {URI} in {CircuitId}.");
+
+                _locationChangeSucceeded = LoggerMessage.Define<string, string>(
+                    LogLevel.Debug,
+                    EventIds.LocationChangeSucceded,
+                    "Location change to {URI} in {CircuitId} succeded.");
+
+                _locationChangeFailed = LoggerMessage.Define<string, string>(
+                    LogLevel.Debug,
+                    EventIds.LocationChangeFailed,
+                    "Location change to {URI} in {CircuitId} failed.");
             }
 
             public static void UnhandledExceptionInvokingCircuitHandler(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
@@ -521,8 +571,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
             }
 
-            public static void DispatchEventTroughJSInterop(ILogger logger) =>
-                _dispatchEventThroughJSInterop(logger, null);
+            public static void DispatchEventTroughJSInterop(ILogger logger) => _dispatchEventThroughJSInterop(logger, null);
+
+            public static void LocationChange(ILogger logger, string circuitId, string uri) => _locationChange(logger, circuitId, uri, null);
+
+            public static void LocationChangeSucceeded(ILogger logger, string circuitId, string uri) => _locationChangeSucceeded(logger, circuitId, uri, null);
+
+            public static void LocationChangeFailed(ILogger logger, string circuitId, string uri, Exception exception) => _locationChangeFailed(logger, circuitId, uri, exception);
         }
     }
 }

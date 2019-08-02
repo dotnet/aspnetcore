@@ -4,12 +4,10 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Services.Test
+namespace Microsoft.AspNetCore.Components
 {
-    public class WebAssemblyUriHelperTest
+    public class NavigationManagerTest
     {
-        private WebAssemblyUriHelper _uriHelper = new WebAssemblyUriHelper();
-
         [Theory]
         [InlineData("scheme://host/", "scheme://host/")]
         [InlineData("scheme://host:123/", "scheme://host:123/")]
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path/")]
         public void ComputesCorrectBaseUri(string baseUri, string expectedResult)
         {
-            var actualResult = WebAssemblyUriHelper.ToBaseUri(baseUri);
+            var actualResult = NavigationManager.NormalizeBaseUri(baseUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -32,9 +30,11 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/", "scheme://host/path#hash", "#hash")]
         [InlineData("scheme://host/path/", "scheme://host/path/#hash", "#hash")]
         [InlineData("scheme://host/path/", "scheme://host/path/more#hash", "more#hash")]
-        public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
+        public void ComputesCorrectValidBaseRelativePaths(string baseUri, string uri, string expectedResult)
         {
-            var actualResult = _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+            var navigationManager = new TestNavigationManager(baseUri);
+
+            var actualResult = navigationManager.ToBaseRelativePath(uri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -42,16 +42,49 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/", "otherscheme://host/")]
         [InlineData("scheme://host/", "scheme://otherhost/")]
         [InlineData("scheme://host/path/", "scheme://host/")]
-        public void ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
+        public void Uri_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
         {
+            var navigationManager = new TestNavigationManager(baseUri);
+
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+                navigationManager.ToBaseRelativePath(absoluteUri);
             });
 
             Assert.Equal(
                 $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
                 ex.Message);
+        }
+
+        [Theory]
+        [InlineData("scheme://host/", "otherscheme://host/")]
+        [InlineData("scheme://host/", "scheme://otherhost/")]
+        [InlineData("scheme://host/path/", "scheme://host/")]
+        public void ToBaseRelativePath_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
+        {
+            var navigationManager = new TestNavigationManager(baseUri);
+
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                navigationManager.ToBaseRelativePath(absoluteUri);
+            });
+
+            Assert.Equal(
+                $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
+                ex.Message);
+        }
+
+        private class TestNavigationManager : NavigationManager
+        {
+            public TestNavigationManager(string baseUri = null, string uri = null)
+            {
+                Initialize(baseUri ?? "http://example.com/", uri ?? "http://example.com/welcome-page");
+            }
+
+            protected override void NavigateToCore(string uri, bool forceLoad)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }
