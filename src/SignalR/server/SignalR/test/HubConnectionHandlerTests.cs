@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            var exceptionLog = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+            var exceptionLog = TestSink.Writes.Where(w => string.Equals(w.LoggerName, "Microsoft.AspNetCore.SignalR.HubConnectionHandler") &&
                 (w.Exception is InvalidDataException ide));
             Assert.Single(exceptionLog);
             Assert.Equal(exceptionLog.First().Exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            var exceptionLog = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+            var exceptionLog = TestSink.Writes.Where(w => string.Equals(w.LoggerName, "Microsoft.AspNetCore.SignalR.HubConnectionHandler") &&
                 (w.Exception is InvalidDataException ide));
             Assert.Single(exceptionLog);
             Assert.Equal(exceptionLog.First().Exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            var exceptionLog = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+            var exceptionLog = TestSink.Writes.Where(w => string.Equals(w.LoggerName, "Microsoft.AspNetCore.SignalR.HubConnectionHandler") &&
                 (w.Exception is InvalidDataException ide));
             Assert.Single(exceptionLog);
             Assert.Equal(exceptionLog.First().Exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
