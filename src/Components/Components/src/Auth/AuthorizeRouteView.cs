@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components
             // Cache the rendering delegates so that we only construct new closure instances
             // when they are actually used (e.g., we never prepare a RenderFragment bound to
             // the NotAuthorized content except when you are displaying that particular state)
-            var renderBaseRouteViewDelegate = (RenderFragment)base.Render;
+            RenderFragment renderBaseRouteViewDelegate = builder => base.Render(builder);
             _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
             _renderNotAuthorizedDelegate = authenticationState => builder => RenderNotAuthorizedInDefaultLayout(builder, authenticationState);
             _renderAuthorizingDelegate = RenderAuthorizingInDefaultLayout;
