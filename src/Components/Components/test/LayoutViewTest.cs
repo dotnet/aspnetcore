@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Components.Test
         public void GivenNoParameters_RendersNothing()
         {
             // Arrange/Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.Empty));
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.Empty));
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             var frames = _renderer.GetCurrentRenderTreeFrames(_layoutViewComponentId).AsEnumerable();
 
             // Assert
@@ -39,13 +40,14 @@ namespace Microsoft.AspNetCore.Components.Test
         public void GivenContentButNoLayout_RendersContent()
         {
             // Arrange/Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.ChildContent), (RenderFragment)(builder => {
                     builder.AddContent(123, "Hello");
                     builder.AddContent(456, "Goodbye");
                 })}
             })));
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             var frames = _renderer.GetCurrentRenderTreeFrames(_layoutViewComponentId).AsEnumerable();
 
             // Assert
@@ -59,12 +61,13 @@ namespace Microsoft.AspNetCore.Components.Test
         public void GivenLayoutButNoContent_RendersLayoutWithEmptyBody()
         {
             // Arrange/Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(RootLayout) }
             })));
 
             // Assert
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             var batch = _renderer.Batches.Single();
 
             var layoutViewFrames = _renderer.GetCurrentRenderTreeFrames(_layoutViewComponentId).AsEnumerable();
@@ -84,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RendersContentInsideLayout()
         {
             // Arrange/Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(RootLayout) },
                 { nameof(LayoutView.ChildContent), (RenderFragment)(builder => {
@@ -94,6 +97,7 @@ namespace Microsoft.AspNetCore.Components.Test
             })));
 
             // Assert
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             var batch = _renderer.Batches.Single();
 
             var layoutViewFrames = _renderer.GetCurrentRenderTreeFrames(_layoutViewComponentId).AsEnumerable();
@@ -115,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void RendersContentInsideNestedLayout()
         {
             // Arrange/Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(NestedLayout) },
                 { nameof(LayoutView.ChildContent), (RenderFragment)(builder => {
@@ -125,6 +129,7 @@ namespace Microsoft.AspNetCore.Components.Test
             })));
 
             // Assert
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             var batch = _renderer.Batches.Single();
 
             var layoutViewFrames = _renderer.GetCurrentRenderTreeFrames(_layoutViewComponentId).AsEnumerable();
@@ -155,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeContentWithSameLayout()
         {
             // Arrange
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(NestedLayout) },
                 { nameof(LayoutView.ChildContent), (RenderFragment)(builder => {
@@ -164,6 +169,7 @@ namespace Microsoft.AspNetCore.Components.Test
             })));
 
             // Act
+            Assert.True(setParametersTask.IsCompletedSuccessfully);
             _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(NestedLayout) },
@@ -198,21 +204,23 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeLayout()
         {
             // Arrange
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask1 = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(NestedLayout) },
                 { nameof(LayoutView.ChildContent), (RenderFragment)(builder => {
                     builder.AddContent(0, "Some content");
                 })}
             })));
+            Assert.True(setParametersTask1.IsCompletedSuccessfully);
 
             // Act
-            _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
+            var setParametersTask2 = _renderer.Dispatcher.InvokeAsync(() => _layoutViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(LayoutView.Layout), typeof(OtherNestedLayout) },
             })));
 
             // Assert
+            Assert.True(setParametersTask2.IsCompletedSuccessfully);
             Assert.Equal(2, _renderer.Batches.Count);
             var batch = _renderer.Batches[1];
             Assert.Equal(1, batch.DisposedComponentIDs.Count); // Disposes NestedLayout
