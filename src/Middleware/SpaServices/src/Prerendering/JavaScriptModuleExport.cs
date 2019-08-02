@@ -5,6 +5,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// <summary>
     /// Describes how to find the JavaScript code that performs prerendering.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class JavaScriptModuleExport
     {
         /// <summary>

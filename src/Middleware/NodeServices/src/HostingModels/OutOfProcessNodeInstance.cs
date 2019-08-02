@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// protocol, or any other RPC-type mechanism).
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance" />
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
         /// <summary>

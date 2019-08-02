@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods useful for configuring routing in a single-page application (SPA).
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static class SpaRouteExtensions
     {
         private const string ClientRouteTokenName = "clientRoute";

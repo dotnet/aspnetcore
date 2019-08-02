@@ -10,12 +10,14 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// <summary>
     /// Performs server-side prerendering by invoking code in Node.js.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static class Prerenderer
     {
         private static readonly object CreateNodeScriptLock = new object();
 
         private static StringAsTempFile NodeScript;
 
+        [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         internal static Task<RenderToStringResult> RenderToString(
             string applicationBasePath,
             INodeServices nodeServices,
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// <param name="timeoutMilliseconds">The maximum duration to wait for prerendering to complete.</param>
         /// <param name="requestPathBase">The PathBase for the currently-executing HTTP request.</param>
         /// <returns></returns>
+        [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static Task<RenderToStringResult> RenderToString(
             string applicationBasePath,
             INodeServices nodeServices,
@@ -88,7 +91,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
         private static string GetNodeScriptFilename(CancellationToken applicationStoppingToken)
         {
-            lock(CreateNodeScriptLock)
+            lock (CreateNodeScriptLock)
             {
                 if (NodeScript == null)
                 {

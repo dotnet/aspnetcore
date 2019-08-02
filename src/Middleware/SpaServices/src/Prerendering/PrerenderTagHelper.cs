@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// A tag helper for prerendering JavaScript applications on the server.
     /// </summary>
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class PrerenderTagHelper : TagHelper
     {
         private const string PrerenderModuleAttributeName = "asp-prerender-module";

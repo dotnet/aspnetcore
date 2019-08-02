@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.SpaServices
 {
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     internal class SpaRouteConstraint : IRouteConstraint
     {
         private readonly string _clientRouteTokenName;

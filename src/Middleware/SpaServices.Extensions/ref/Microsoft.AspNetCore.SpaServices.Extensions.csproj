@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SpaServices.Extensions.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.SpaServices"  />
     <Reference Include="Microsoft.AspNetCore.StaticFiles"  />
     <Reference Include="Microsoft.AspNetCore.WebSockets"  />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical"  />

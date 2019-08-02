@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -7,6 +8,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// JavaScript-based Single Page Applications. This is an alternative
     /// to using the 'asp-prerender-module' tag helper.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public interface ISpaPrerenderer
     {
         /// <summary>

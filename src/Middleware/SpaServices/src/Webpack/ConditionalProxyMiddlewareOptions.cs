@@ -2,6 +2,7 @@ using System;
 
 namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     internal class ConditionalProxyMiddlewareOptions
     {
         public ConditionalProxyMiddlewareOptions(string scheme, string host, string port, TimeSpan requestTimeout)

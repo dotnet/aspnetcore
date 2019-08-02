@@ -1,13 +1,18 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.IO;
 
 namespace NodeServicesExamples
 {
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class Startup
     {
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -17,7 +22,6 @@ namespace NodeServicesExamples
 
             // Enable Node Services
             services.AddNodeServices();
-            services.AddSpaPrerenderer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

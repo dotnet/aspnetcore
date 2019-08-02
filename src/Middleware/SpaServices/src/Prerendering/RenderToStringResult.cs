@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// <summary>
     /// Describes the prerendering result returned by JavaScript code.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class RenderToStringResult
     {
         /// <summary>

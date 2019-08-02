@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods that can be used to enable Webpack dev middleware support.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static class WebpackDevMiddleware
     {
         private const string DefaultConfigFile = "webpack.config.js";
@@ -36,6 +37,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="appBuilder">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="options">Options for configuring the Webpack compiler instance.</param>
+        [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void UseWebpackDevMiddleware(
             this IApplicationBuilder appBuilder,
             WebpackDevMiddlewareOptions options = null)
