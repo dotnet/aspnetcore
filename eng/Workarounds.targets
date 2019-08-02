@@ -48,11 +48,4 @@
       <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
     </KnownFrameworkReference>
   </ItemGroup>
-
-  <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
-  <Target Name="_WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="NETStandard.Library" />
-    </ItemGroup>
-  </Target>
 </Project>
