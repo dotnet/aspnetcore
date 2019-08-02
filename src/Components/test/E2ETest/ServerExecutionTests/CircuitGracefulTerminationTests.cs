@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BasicTestApp;
-using Castle.DynamicProxy.Contributors;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
@@ -16,7 +14,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class CircuitGracefulTerminationTests : BasicTestAppTestBase, IDisposable
     {
