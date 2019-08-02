@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Components
                 // own CascadingAuthenticationState
                 component => Assert.IsType<CascadingAuthenticationState>(component),
                 component => Assert.IsType<CascadingValue<Task<AuthenticationState>>>(component),
-                component => Assert.True(component is AuthorizeViewCore),
+                component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
                 component => Assert.IsType<LayoutView>(component),
                 component => Assert.IsType<TestPageWithNoAuthorization>(component));
         }
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Components
 
                 // This is the hierarchy inside the AuthorizeRouteView. It doesn't contain a
                 // further CascadingAuthenticationState
-                component => Assert.True(component is AuthorizeViewCore),
+                component => Assert.IsAssignableFrom<AuthorizeViewCore>(component),
                 component => Assert.IsType<LayoutView>(component),
                 component => Assert.IsType<TestPageWithNoAuthorization>(component));
         }
