@@ -45,10 +45,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                 LoggerMessage.Define<long>(LogLevel.Trace, new EventId(11, "SendPayload"), "Sending payload: {Size} bytes.");
 
             private static readonly Action<ILogger, Exception> _errorWritingFrame =
-                LoggerMessage.Define(LogLevel.Error, new EventId(12, "ErrorWritingFrame"), "Error writing frame.");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(12, "ErrorWritingFrame"), "Error writing frame.");
 
-            private static readonly Action<ILogger, Exception> _sendFailed =
-                LoggerMessage.Define(LogLevel.Error, new EventId(13, "SendFailed"), "Socket failed to send.");
+            // 13, SendFailed - removed
 
             private static readonly Action<ILogger, Exception> _closedPrematurely =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(14, "ClosedPrematurely"), "Socket connection closed prematurely.");
@@ -114,11 +113,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             public static void ErrorWritingFrame(ILogger logger, Exception ex)
             {
                 _errorWritingFrame(logger, ex);
-            }
-
-            public static void SendFailed(ILogger logger, Exception ex)
-            {
-                _sendFailed(logger, ex);
             }
 
             public static void ClosedPrematurely(ILogger logger, Exception ex)
