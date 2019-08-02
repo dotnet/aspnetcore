@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
         protected virtual void Render(RenderTreeBuilder builder)
         {
-            var pageLayoutType = RouteData.PageComponentType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
+            var pageLayoutType = RouteData.PageType.GetCustomAttribute<LayoutAttribute>()?.LayoutType
                 ?? DefaultLayout;
 
             builder.OpenComponent<LayoutView>(0);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components
 
         private void RenderPageWithParameters(RenderTreeBuilder builder)
         {
-            builder.OpenComponent(0, RouteData.PageComponentType);
+            builder.OpenComponent(0, RouteData.PageType);
 
             foreach (var kvp in RouteData.PageParameters)
             {

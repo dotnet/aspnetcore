@@ -15,18 +15,28 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Constructs an instance of <see cref="RouteData"/>.
         /// </summary>
-        /// <param name="pageComponentType">The type of the page component matching the route.</param>
+        /// <param name="pageType">The type of the page matching the route, which must implement <see cref="IComponent"/>.</param>
         /// <param name="pageParameters">The parameters for the page component matching the route.</param>
-        public RouteData(Type pageComponentType, IReadOnlyDictionary<string, object> pageParameters)
+        public RouteData(Type pageType, IReadOnlyDictionary<string, object> pageParameters)
         {
-            PageComponentType = pageComponentType ?? throw new ArgumentNullException(nameof(pageComponentType));
+            if (pageType == null)
+            {
+                throw new ArgumentNullException(nameof(pageType));
+            }
+
+            if (!typeof(IComponent).IsAssignableFrom(pageType))
+            {
+                throw new ArgumentException($"The value must implement {nameof(IComponent)}.", nameof(pageType));
+            }
+
+            PageType = pageType;
             PageParameters = pageParameters ?? throw new ArgumentNullException(nameof(pageParameters));
         }
 
         /// <summary>
-        /// Gets the type of the page component matching the route.
+        /// Gets the type of the page matching the route.
         /// </summary>
-        public Type PageComponentType { get; }
+        public Type PageType { get; }
 
         /// <summary>
         /// Gets the parameters for the page component matching the route.

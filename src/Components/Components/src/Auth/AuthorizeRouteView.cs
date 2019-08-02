@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Components
             public RouteData RouteData { get; set; }
 
             protected override IAuthorizeData[] GetAuthorizeData()
-                => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageComponentType);
+                => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageType);
         }
     }
 }
