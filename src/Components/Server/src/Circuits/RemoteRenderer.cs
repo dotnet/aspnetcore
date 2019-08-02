@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private long _nextRenderId = 1;
         private bool _disposing = false;
         private bool _queueIsFullNotified;
-        private ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
+        private readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -92,11 +92,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // If we got here it means we are at max capacity, so we don't want to actually process the queue,
                 // as we have a client that is not acknowledging render batches fast enough (something we consider needs
                 // to be fast).
-                // The result is somethign as follows:
+                // The result is something as follows:
                 // Lets imagine an extreme case where the server produces a new batch every milisecond.
                 // Lets say the client is able to ACK a batch every 100 miliseconds.
-                // When the app starts the client might see the sequence 0.000->0.{MAXUnacknowledgeRenderBatches} and then
-                // after 100 miliseconds it sees it jump to 0.1xx, then to 0.2xx where xx is something between {0..99} the
+                // When the app starts the client might see the sequence 0->(MaxUnacknowledgedRenderBatches-1) and then
+                // after 100 miliseconds it sees it jump to 1xx, then to 2xx where xx is something between {0..99} the
                 // reason for this is that the server slows down rendering new batches to as fast as the client can consume
                 // them.
                 // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 while (_unacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
                 {
                     lastBatchId = nextUnacknowledgedBatch.BatchId;
-                    // At this point the queue is no longer full, we have at least emptied one slot, so we allow a further
+                    // At this point the queue is definitely not full, we have at least emptied one slot, so we allow a further
                     // full queue log entry the next time it fills up.
                     _queueIsFullNotified = false;
                     _unacknowledgedRenderBatches.TryDequeue(out _);
