@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return new GenericIdentity("name", _protocol);
             }
 
-            public string GetOutgoingBlob(string incomingBlob)
+            public string GetOutgoingBlob(string incomingBlob, out BlobErrorType errorType, out Exception ex)
             {
                 if (IsDisposed)
                 {
@@ -484,6 +484,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     throw new InvalidOperationException("Authentication is already complete.");
                 }
+
+                errorType = BlobErrorType.None;
+                ex = null;
+
                 switch (incomingBlob)
                 {
                     case "ClientNtlmBlob1":
