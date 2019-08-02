@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 // We do some really minimal validation here to prevent obviously wrong data from getting in
                 // without duplicating too much logic.
                 Log.InvalidInputData(_logger);
-                NotifyClientError(Clients.Caller, $"The uris provided are invalid.");
+                _ = NotifyClientError(Clients.Caller, $"The uris provided are invalid.");
                 return null;
             }
 
@@ -314,10 +314,10 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
 
             private static readonly Action<ILogger, string, Exception> _invalidInputData =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
 
             private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CircuitInitializationFailed"), "Circuit initialization failed");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(9, "CircuitInitializationFailed"), "Circuit initialization failed");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {

@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Components
             }
             catch (Exception ex)
             {
-                throw new LocationChangeException("An exception occurred while dispatching an location changed event.", ex);
+                throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
             }
         }
 
