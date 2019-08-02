@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var state = new State();
-            var result = await helper.RenderStaticComponentAsync<OnAfterRenderComponent>(new
+            var state = new OnAfterRenderState();
+            var result = await helper.RenderComponentAsync<OnAfterRenderComponent>(new
             {
                 State = state
             });
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
             // Assert
             Assert.Equal("<p>Hello</p>", writer.ToString());
-            Assert.False(state.Value);
+            Assert.False(state.OnAfterRenderRan);
         }
 
         [Fact]
@@ -331,11 +331,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
         private class OnAfterRenderComponent : ComponentBase
         {
-            [Parameter] public State State { get; set; }
+            [Parameter] public OnAfterRenderState State { get; set; }
 
             protected override void OnAfterRender()
             {
-                State.Value = true;
+                State.OnAfterRenderRan = true;
             }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -344,9 +344,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             }
         }
 
-        private class State
+        private class OnAfterRenderState
         {
-            public bool Value { get; set; }
+            public bool OnAfterRenderRan { get; set; }
         }
 
         private class GreetingComponent : ComponentBase

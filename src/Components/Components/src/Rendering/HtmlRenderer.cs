@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"
         };
 
-        private static readonly Task CancelledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
+        private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
         private readonly Func<string, string> _htmlEncoder;
 
@@ -43,13 +43,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
-            // By default we return a cancelled task. This has the effect of making it so that the
+            // By default we return a canceled task. This has the effect of making it so that the
             // OnAfterRenderAsync callbacks on components don't run by default.
             // This way, by default prerendering gets the correct behavior and other renderers
-            // override the UpdateDisplayAsync method already, so those components can cancel
-            // either complete a task when the client acknowledges the render, or a cancelled task
+            // override the UpdateDisplayAsync method already, so those components can
+            // either complete a task when the client acknowledges the render, or return a canceled task
             // when the renderer gets disposed.
-            return CancelledRenderTask;
+
+            // We believe that returning a canceled task is the right behavior as we expect that any class
+            // that subclasses this class to provide an implementation for a given rendering scenario respects
+            // the contract that OnAfterRender should only be called when the display has successfully been updated
+            // and the application is interactive. (Element and component references are populated and JavaScript interop
+            // is available).
+            return CanceledRenderTask;
         }
 
         /// <summary>
