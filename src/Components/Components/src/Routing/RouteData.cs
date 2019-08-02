@@ -10,14 +10,14 @@ namespace Microsoft.AspNetCore.Components
     /// Describes information determined during routing that specifies
     /// the page to be displayed.
     /// </summary>
-    public sealed class ComponentRouteData
+    public sealed class RouteData
     {
         /// <summary>
-        /// Constructs an instance of <see cref="ComponentRouteData"/>.
+        /// Constructs an instance of <see cref="RouteData"/>.
         /// </summary>
         /// <param name="pageComponentType">The type of the page component matching the route.</param>
         /// <param name="pageParameters">The parameters for the page component matching the route.</param>
-        public ComponentRouteData(Type pageComponentType, IReadOnlyDictionary<string, object> pageParameters)
+        public RouteData(Type pageComponentType, IReadOnlyDictionary<string, object> pageParameters)
         {
             PageComponentType = pageComponentType ?? throw new ArgumentNullException(nameof(pageComponentType));
             PageParameters = pageParameters ?? throw new ArgumentNullException(nameof(pageParameters));

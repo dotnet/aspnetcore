@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components
         private class AuthorizeRouteViewCore : AuthorizeViewCore
         {
             [Parameter]
-            public ComponentRouteData RouteData { get; set; }
+            public RouteData RouteData { get; set; }
 
             protected override IAuthorizeData[] GetAuthorizeData()
                 => AttributeAuthorizeDataCache.GetAuthorizeDataForType(RouteData.PageComponentType);

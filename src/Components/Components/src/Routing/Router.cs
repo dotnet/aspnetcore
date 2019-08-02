@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets the content to display when a match is found for the requested route.
         /// </summary>
-        [Parameter] public RenderFragment<ComponentRouteData> Found { get; set; }
+        [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
                 Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
-                var routeData = new ComponentRouteData(
+                var routeData = new RouteData(
                     context.Handler,
                     context.Parameters ?? _emptyParametersDictionary);
                 _renderHandle.Render(Found(routeData));

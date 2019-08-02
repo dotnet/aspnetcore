@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 { nameof(ComponentWithLayout.Message), "Test message" }
             };
-            var routeData = new ComponentRouteData(typeof(ComponentWithLayout), routeParams);
+            var routeData = new RouteData(typeof(ComponentWithLayout), routeParams);
 
             // Act
             _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var routeParams = new Dictionary<string, object>();
-            var routeData = new ComponentRouteData(typeof(ComponentWithoutLayout), routeParams);
+            var routeData = new RouteData(typeof(ComponentWithoutLayout), routeParams);
 
             // Act
             _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var routeParams = new Dictionary<string, object>();
-            var routeData = new ComponentRouteData(typeof(ComponentWithoutLayout), routeParams);
+            var routeData = new RouteData(typeof(ComponentWithoutLayout), routeParams);
 
             // Act
             _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var routeParams = new Dictionary<string, object>();
-            var routeData = new ComponentRouteData(typeof(ComponentWithLayout), routeParams);
+            var routeData = new RouteData(typeof(ComponentWithLayout), routeParams);
 
             // Act
             _renderer.Dispatcher.InvokeAsync(() => _routeViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>

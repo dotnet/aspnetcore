@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components
         public void WhenAuthorized_RendersPageInsideLayout()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
             {
                 { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
             });
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components
         public void WhenNotAuthorized_RendersDefaultNotAuthorizedContentInsideLayout()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             _testAuthorizationService.NextResult = AuthorizationResult.Failed();
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components
         public void WhenNotAuthorized_RendersCustomNotAuthorizedContentInsideLayout()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             _testAuthorizationService.NextResult = AuthorizationResult.Failed();
             _authenticationStateProvider.CurrentAuthStateTask = Task.FromResult(new AuthenticationState(
                 new ClaimsPrincipal(new TestIdentity { Name = "Bert" })));
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Components
         public async Task WhenAuthorizing_RendersDefaultAuthorizingContentInsideLayout()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             var authStateTcs = new TaskCompletionSource<AuthenticationState>();
             _authenticationStateProvider.CurrentAuthStateTask = authStateTcs.Task;
             RenderFragment<AuthenticationState> customNotAuthorized =
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Components
         public void WhenAuthorizing_RendersCustomAuthorizingContentInsideLayout()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             var authStateTcs = new TaskCompletionSource<AuthenticationState>();
             _authenticationStateProvider.CurrentAuthStateTask = authStateTcs.Task;
             RenderFragment customAuthorizing =
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components
         public void WithoutCascadedAuthenticationState_WrapsOutputInCascadingAuthenticationState()
         {
             // Arrange/Act
-            var routeData = new ComponentRouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
             _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(AuthorizeRouteView.RouteData), routeData }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Components
         public void WithCascadedAuthenticationState_DoesNotWrapOutputInCascadingAuthenticationState()
         {
             // Arrange
-            var routeData = new ComponentRouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
             var rootComponent = new AuthorizeRouteViewWithExistingCascadedAuthenticationState(
                 _authenticationStateProvider.CurrentAuthStateTask,
                 routeData);
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange/Act 1: Start on some route
             // Not asserting about the initial output, as that is covered by other tests
-            var routeData = new ComponentRouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
+            var routeData = new RouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
             _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(AuthorizeRouteView.RouteData), routeData },
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Components
             }));
 
             // Act 2: Move to another route
-            var routeData2 = new ComponentRouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            var routeData2 = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             var render2Task = _renderer.Dispatcher.InvokeAsync(() => _authorizeRouteViewComponent.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { nameof(AuthorizeRouteView.RouteData), routeData2 },
@@ -328,11 +328,11 @@ namespace Microsoft.AspNetCore.Components
         class AuthorizeRouteViewWithExistingCascadedAuthenticationState : AutoRenderComponent
         {
             private readonly Task<AuthenticationState> _authenticationState;
-            private readonly ComponentRouteData _routeData;
+            private readonly RouteData _routeData;
 
             public AuthorizeRouteViewWithExistingCascadedAuthenticationState(
                 Task<AuthenticationState> authenticationState,
-                ComponentRouteData routeData)
+                RouteData routeData)
             {
                 _authenticationState = authenticationState;
                 _routeData = routeData;

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components
         /// displayed and the parameter values that will be supplied to the page.
         /// </summary>
         [Parameter]
-        public ComponentRouteData RouteData { get; set; }
+        public RouteData RouteData { get; set; }
 
         /// <summary>
         /// Gets or sets the type of a layout to be used if the page does not
