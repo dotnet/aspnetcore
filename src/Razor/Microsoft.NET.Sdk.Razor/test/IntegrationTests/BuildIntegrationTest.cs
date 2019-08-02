@@ -641,7 +641,38 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_CSharp8_NullableEnforcement_WarningsDuringBuild_BuildServer()
+        public async Task Build_ImplicitCSharp8_NullableEnforcement_WarningsDuringBuild_NoBuildServer()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:Nullable=enable",
+                suppressBuildServer: true);
+            var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+            Assert.BuildWarning(result, "CS8618");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable restore");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable disable");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_ExplicitCSharp73_NullableEnforcement_Disabled_NoNullableFeature_NoBuildServer()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:LangVersion=7.3",
+                suppressBuildServer: true);
+            var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+
+            Assert.BuildPassed(result, allowWarnings: false);
+            Assert.FileDoesNotContainLine(result, indexFilePath, "#nullable restore");
+            Assert.FileDoesNotContainLine(result, indexFilePath, "#nullable disable");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_ExplicitCSharp8_NullableEnforcement_WarningsDuringBuild_BuildServer()
         {
             var result = await DotnetMSBuild(
                 "Build",

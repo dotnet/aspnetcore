@@ -176,20 +176,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             });
 
             var success = true;
-            var csharpLanguageVersion = LanguageVersion.Default;
-            if (CSharpLanguageVersion.HasValue())
-            {
-                var rawLanguageVersion = CSharpLanguageVersion.Value();
-                if (!LanguageVersionFacts.TryParse(CSharpLanguageVersion.Value(), out var parsedLanguageVersion))
-                {
-                    success = false;
-                    Error.WriteLine($"Unknown C# language version {rawLanguageVersion}.");
-                }
-                else
-                {
-                    csharpLanguageVersion = parsedLanguageVersion;
-                }
-            }
 
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
@@ -206,7 +192,22 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     b.SetRootNamespace(RootNamespace.Value());
                 }
 
-                b.SetCSharpLanguageVersion(csharpLanguageVersion);
+                if (CSharpLanguageVersion.HasValue())
+                {
+                    // Only set the C# language version if one was specified, otherwise it defaults to whatever
+                    // value was set in the corresponding RazorConfiguration's extensions.
+
+                    var rawLanguageVersion = CSharpLanguageVersion.Value();
+                    if (LanguageVersionFacts.TryParse(rawLanguageVersion, out var csharpLanguageVersion))
+                    {
+                        b.SetCSharpLanguageVersion(csharpLanguageVersion);
+                    }
+                    else
+                    {
+                        success = false;
+                        Error.WriteLine($"Unknown C# language version {rawLanguageVersion}.");
+                    }
+                }
             });
 
             var results = GenerateCode(engine, sourceItems);

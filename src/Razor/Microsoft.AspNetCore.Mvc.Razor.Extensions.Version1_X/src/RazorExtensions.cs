@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
@@ -38,6 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             builder.Features.Add(new MvcViewDocumentClassifierPass());
 
             builder.Features.Add(new MvcImportProjectFeature());
+
+            // The default C# language version for what this Razor configuration supports.
+            builder.SetCSharpLanguageVersion(LanguageVersion.CSharp7_3);
         }
 
         public static void RegisterViewComponentTagHelpers(RazorProjectEngineBuilder builder)

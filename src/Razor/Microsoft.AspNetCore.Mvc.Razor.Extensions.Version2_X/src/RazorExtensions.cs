@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
@@ -44,6 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             builder.Features.Add(new InstrumentationPass());
 
             builder.Features.Add(new MvcImportProjectFeature());
+
+            // The default C# language version for what this Razor configuration supports.
+            builder.SetCSharpLanguageVersion(LanguageVersion.CSharp7_3);
         }
     }
 }
