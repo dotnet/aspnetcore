@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private readonly CircuitOptions _options;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ILogger _logger;
+        internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
         private bool _disposing = false;
         private bool _queueIsFullNotified;
-        private readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
 
         /// <summary>
         /// Notifies when a rendering exception occured.
