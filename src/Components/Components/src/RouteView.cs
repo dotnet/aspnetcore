@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components
         {
             builder.OpenComponent(0, RouteData.PageType);
 
-            foreach (var kvp in RouteData.PageParameters)
+            foreach (var kvp in RouteData.RouteValues)
             {
                 builder.AddAttribute(1, kvp.Key, kvp.Value);
             }

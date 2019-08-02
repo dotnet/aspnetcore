@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Components
         /// Constructs an instance of <see cref="RouteData"/>.
         /// </summary>
         /// <param name="pageType">The type of the page matching the route, which must implement <see cref="IComponent"/>.</param>
-        /// <param name="pageParameters">The parameters for the page component matching the route.</param>
-        public RouteData(Type pageType, IReadOnlyDictionary<string, object> pageParameters)
+        /// <param name="routeValues">The route parameter values extracted from the matched route.</param>
+        public RouteData(Type pageType, IReadOnlyDictionary<string, object> routeValues)
         {
             if (pageType == null)
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components
             }
 
             PageType = pageType;
-            PageParameters = pageParameters ?? throw new ArgumentNullException(nameof(pageParameters));
+            RouteValues = routeValues ?? throw new ArgumentNullException(nameof(routeValues));
         }
 
         /// <summary>
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Components
         public Type PageType { get; }
 
         /// <summary>
-        /// Gets the parameters for the page component matching the route.
+        /// Gets route parameter values extracted from the matched route.
         /// </summary>
-        public IReadOnlyDictionary<string, object> PageParameters { get; }
+        public IReadOnlyDictionary<string, object> RouteValues { get; }
     }
 }
