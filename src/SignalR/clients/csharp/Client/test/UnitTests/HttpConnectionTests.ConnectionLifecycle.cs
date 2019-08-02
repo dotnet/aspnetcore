@@ -433,8 +433,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 using (StartVerifiableLog())
                 {
                     var cts = new CancellationTokenSource();
-
                     var httpHandler = new TestHttpMessageHandler();
+
                     await WithConnectionAsync(
                         CreateConnection(httpHandler,
                         transport: new TestTransport(onTransportStart: () => {
@@ -444,11 +444,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         })),
                         async (connection) =>
                         {
-                            var startTask = connection.StartAsync(cts.Token);
-
                             // We aggregate failures that happen when we start the transport. The operation cancelled exception will
                             // be an inner exception.
-                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await startTask).OrTimeout();
+                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync(cts.Token)).OrTimeout();
                             Assert.Equal(3, ex.InnerExceptions.Count);
                             var innerEx = ex.InnerExceptions[2];
                             var innerInnerEx = innerEx.InnerException;
