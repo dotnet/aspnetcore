@@ -25,12 +25,6 @@
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so define this dummy target which is required for pack. -->
   <Import Condition="'$(DotNetBuildFromSource)' == 'true'" Project="WorkaroundsImported.targets" />
 
-  <!-- Workaround https://github.com/aspnet/websdk/pull/646. If merged, once we update to a websdk with this fix, we can move the setting below to Directory.Build.props. -->
-  <PropertyGroup>
-    <!-- Ignore warning about calling the Pack target on Web SDK projects. Our build scripts call /t:pack on everything in this repo. -->
-    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
-  </PropertyGroup>
-
   <!-- Workaround for https://github.com/dotnet/arcade/issues/204 -->
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
