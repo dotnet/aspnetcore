@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http;
 
-namespace Components.TestServer.Infrastructure
+namespace Components.TestServer
 {
     public class InterruptibleWebSocketOptions
     {

@@ -4,8 +4,11 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Components.TestServer.Infrastructure
+namespace Components.TestServer
 {
+    // A socket used in testing that wraps the underlying websocket and that has built-in hooks to allow
+    // tests to start generating exceptions at will to test scenarios where the websocket connection gets
+    // closed in a non-graceful way.
     public class InterruptibleWebSocket : WebSocket
     {
         private TaskCompletionSource<WebSocketReceiveResult> _disabledReceiveTask =
@@ -53,6 +56,11 @@ namespace Components.TestServer.Infrastructure
             Socket.Dispose();
         }
 
+        // Consumers will call ReceiveAsync to wait for data from the network to come through.
+        // We have setup this websocket so that we can trigger errors from outside. When we get
+        // notified that we need to create errors, we simply return an exception to the caller
+        // on the current call and successive calls so that the server believes the connection
+        // got disconnected abruptly.
         public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
         {
             if (_disabledReceiveTask.Task.IsCompleted)
@@ -61,9 +69,9 @@ namespace Components.TestServer.Infrastructure
             }
             else
             {
-                return await await Task.WhenAny(
+                return await Task.WhenAny(
                     _disabledReceiveTask.Task,
-                    Socket.ReceiveAsync(buffer, cancellationToken));
+                    Socket.ReceiveAsync(buffer, cancellationToken)).Unwrap();
             }
         }
 

@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
 
-        public string SessionIdentifier { get; } = Guid.NewGuid().ToString();
-
         public override async Task InitializeAsync()
         {
             await base.InitializeAsync();

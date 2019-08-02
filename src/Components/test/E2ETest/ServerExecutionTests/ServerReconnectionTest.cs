@@ -1,10 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
-
-        public List<(Extensions.Logging.LogLevel level, string eventIdName)> Messages { get; private set; }
 
         public string SessionIdentifier { get; set; } = Guid.NewGuid().ToString();
 
@@ -99,7 +97,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void Disconnect()
         {
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}')");
+            Browser.ExecuteScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}').then(r => window['WebSockets.{SessionIdentifier}'] = r.ok)");
+            Assert.True(Browser.HasJavaScriptValue($"window['WebSockets.{ SessionIdentifier}']", (r) => r != null));
         }
 
         private IWebElement WaitUntilReconnectionDialogExists()

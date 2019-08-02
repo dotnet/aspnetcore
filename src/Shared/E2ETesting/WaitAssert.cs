@@ -23,6 +23,35 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static void True(this IWebDriver driver, Func<bool> actual)
             => WaitAssertCore(driver, () => Assert.True(actual()));
 
+        public static void ExecuteScript(this IWebDriver driver, string script)
+        {
+            if (!(driver is IJavaScriptExecutor javaScript))
+            {
+                Assert.False(true, "The driver can't execute JavaScript.");
+                return;
+            }
+            else
+            {
+                javaScript.ExecuteScript(script);
+            }
+        }
+
+        public static T HasJavaScriptValue<T>(
+            this IWebDriver driver,
+            string script, Func<object,T> converter = null)
+        {
+            converter ??= (v) => (T)v;
+            if(!(driver is IJavaScriptExecutor javaScript))
+            {
+                Assert.False(true, "The driver can't execute JavaScript.");
+                return default;
+            }
+            else
+            {
+                return WaitAssertCore(driver, () => converter(javaScript.ExecuteScript(script)));
+            }
+        }
+
         public static void True(this IWebDriver driver, Func<bool> actual, TimeSpan timeout)
             => WaitAssertCore(driver, () => Assert.True(actual()), timeout);
 
@@ -46,22 +75,28 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
         {
+            _ = WaitAssertCore<object>(driver, () => assertion, timeout);
+        }
+
+        private static T WaitAssertCore<T>(IWebDriver driver, Func<T> assertion, TimeSpan timeout = default)
+        {
             if (timeout == default)
             {
                 timeout = DefaultTimeout;
             }
 
             Exception lastException = null;
+            T result = default;
             try
             {
                 new WebDriverWait(driver, timeout).Until(_ =>
                 {
                     try
                     {
-                        assertion();
+                        result = assertion();
                         return true;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         lastException = e;
                         return false;
@@ -80,6 +115,8 @@ namespace Microsoft.AspNetCore.E2ETesting
                     assertion();
                 }
             }
+
+            return result;
         }
     }
 }
