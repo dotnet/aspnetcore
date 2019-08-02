@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </returns>
         public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
         {
-            EnsureSynchronizationContext();
+            Dispatcher.AssertAccess();
 
             if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
             {
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
         internal void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
-            EnsureSynchronizationContext();
+            Dispatcher.AssertAccess();
 
             var componentState = GetOptionalComponentState(componentId);
             if (componentState == null)
@@ -372,21 +372,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             return eventHandlerId;
-        }
-
-        private void EnsureSynchronizationContext()
-        {
-            // Render operations are not thread-safe, so they need to be serialized by the dispatcher.
-            // Plus, any other logic that mutates state accessed during rendering also
-            // needs not to run concurrently with rendering so should be dispatched to
-            // the renderer's sync context.
-            if (!Dispatcher.CheckAccess())
-            {
-                throw new InvalidOperationException(
-                    "The current thread is not associated with the Dispatcher. " +
-                    "Use Invoke() or InvokeAsync() to switch execution to the Dispatcher when " +
-                    "triggering rendering or modifying any state accessed during rendering.");
-            }
         }
 
         private ComponentState GetRequiredComponentState(int componentId)
