@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
@@ -129,8 +128,9 @@ namespace Microsoft.AspNetCore.Components
 
             _isInitialized = true;
 
-            Uri = uri;
+            // Setting BaseUri before Uri so they get validated.
             BaseUri = baseUri;
+            Uri = uri;
         }
 
         /// <summary>
@@ -201,7 +201,14 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         protected void NotifyLocationChanged(bool isInterceptedLink)
         {
-            _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isInterceptedLink));
+            try
+            {
+                _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isInterceptedLink));
+            }
+            catch (Exception ex)
+            {
+                throw new LocationChangeException("An exception occurred while dispatching an location changed event.", ex);
+            }
         }
 
         private void AssertInitialized()
