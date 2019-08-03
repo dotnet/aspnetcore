@@ -22,6 +22,7 @@ namespace Components.TestServer
 
         public async Task Invoke(HttpContext context)
         {
+            var socketsFeature = context.Features.Get<IHttpWebSocketFeature>();
             if (context.Request.Path.Equals(Options.InterruptPath) && context.Request.Query.TryGetValue(Options.WebSocketIdParameterName,out var currentIdentifier))
             {
                 if (Registry.TryGetValue(currentIdentifier, out var webSocket))
@@ -39,7 +40,7 @@ namespace Components.TestServer
             if (context.Request.Path.Equals(Options.WebSocketPath, StringComparison.OrdinalIgnoreCase) &&
                 context.Request.Cookies.TryGetValue(Options.WebSocketIdParameterName, out var identifier))
             {
-                context.Features.Set<IHttpWebSocketFeature>(new InterruptibleWebSocketFeature(context, identifier, Registry));
+                context.Features.Set<IHttpWebSocketFeature>(new InterruptibleWebSocketFeature(socketsFeature, identifier, Registry));
             }
 
             await Next(context);

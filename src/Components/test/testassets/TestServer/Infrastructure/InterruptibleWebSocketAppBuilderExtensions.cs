@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Builder
             this IApplicationBuilder builder,
             InterruptibleWebSocketOptions options)
         {
+            builder.UseWebSockets();
             builder.UseMiddleware<InterruptibleSocketMiddleware>(options);
             return builder;
         }

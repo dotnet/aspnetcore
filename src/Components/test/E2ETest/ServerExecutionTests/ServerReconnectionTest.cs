@@ -49,12 +49,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Disconnect();
 
             // We should see the 'reconnecting' UI appear
-            var reconnectionDialog = WaitUntilReconnectionDialogExists();
-            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
+            Browser.True(
+                () => Browser.FindElement(By.Id("components-reconnect-modal"))?.GetCssValue("display") == "block",
+                TimeSpan.FromSeconds(10));
 
             // Then it should disappear
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
+            Browser.True(() => Browser.FindElement(By.Id("components-reconnect-modal"))?.GetCssValue("display") == "none",
+                TimeSpan.FromSeconds(10));
 
             counterButton = Browser.FindElement(By.Id("counter-click"));
             for (int i = 0; i < 10; i++)
@@ -78,12 +79,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Disconnect();
 
             // We should see the 'reconnecting' UI appear
-            var reconnectionDialog = WaitUntilReconnectionDialogExists();
-            Browser.True(() => reconnectionDialog.GetCssValue("display") == "block");
+            Browser.True(
+                () => Browser.FindElement(By.Id("components-reconnect-modal"))?.GetCssValue("display") == "block",
+                TimeSpan.FromSeconds(10));
 
             // Then it should disappear
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
+            Browser.True(() => Browser.FindElement(By.Id("components-reconnect-modal"))?.GetCssValue("display") == "none",
+                TimeSpan.FromSeconds(10));
 
             // We should receive a render that occurred while disconnected
             var currentValue = element.Text;
@@ -99,14 +101,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var javascript = (IJavaScriptExecutor)Browser;
             Browser.ExecuteAsyncScript($"fetch('/WebSockets/Interrupt?WebSockets.Identifier={SessionIdentifier}').then(r => window['WebSockets.{SessionIdentifier}'] = r.ok)");
             Browser.HasJavaScriptValue(true, $"window['WebSockets.{SessionIdentifier}']", (r) => r != null);
-        }
-
-        private IWebElement WaitUntilReconnectionDialogExists()
-        {
-            IWebElement reconnectionDialog = null;
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
-                .Until(driver => (reconnectionDialog = driver.FindElement(By.Id("components-reconnect-modal"))) != null);
-            return reconnectionDialog;
         }
     }
 }
