@@ -61,7 +61,7 @@ while (($# > 0)); do
   esac
 done
 
-tool_name="cmake"
+tool_name="cmake-test"
 tool_os=$(GetCurrentOS)
 tool_folder=$(echo $tool_os | awk '{print tolower($0)}')
 tool_arch="x86_64"

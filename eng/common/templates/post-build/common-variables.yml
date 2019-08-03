@@ -1,21 +1,47 @@
 variables:
+  - group: Publish-Build-Assets
+
   # .NET Core 3 Dev
-  PublicDevRelease_30_Channel_Id: 3
+  - name: PublicDevRelease_30_Channel_Id
+    value: 3
+
+  # .NET Core 5 Dev
+  - name: NetCore_5_Dev_Channel_Id
+    value: 131
 
   # .NET Tools - Validation
-  PublicValidationRelease_30_Channel_Id: 9
+  - name: PublicValidationRelease_30_Channel_Id
+    value: 9
+
+  # .NET Tools - Latest
+  - name: NetCore_Tools_Latest_Channel_Id
+    value: 2
 
   # .NET Core 3.0 Internal Servicing
-  InternalServicing_30_Channel_Id: 184
+  - name: InternalServicing_30_Channel_Id
+    value: 184
 
   # .NET Core 3.0 Release
-  PublicRelease_30_Channel_Id: 19
+  - name: PublicRelease_30_Channel_Id
+    value: 19
 
   # Whether the build is internal or not
-  IsInternalBuild: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
+  - name: IsInternalBuild
+    value: ${{ and(ne(variables['System.TeamProject'], 'public'), contains(variables['Build.SourceBranch'], 'internal')) }}
 
   # Storage account name for proxy-backed feeds
-  ProxyBackedFeedsAccountName: dotnetfeed
+  - name: ProxyBackedFeedsAccountName
+    value: dotnetfeed
 
-  SourceLinkCLIVersion: 3.0.0
-  SymbolToolVersion: 1.0.1
+  # Default Maestro++ API Endpoint and API Version
+  - name: MaestroApiEndPoint
+    value: "https://maestro-prod.westus2.cloudapp.azure.com"
+  - name: MaestroApiAccessToken
+    value: $(MaestroAccessToken)
+  - name: MaestroApiVersion
+    value: "2019-01-16"
+
+  - name: SourceLinkCLIVersion
+    value: 3.0.0
+  - name: SymbolToolVersion
+    value: 1.0.1
