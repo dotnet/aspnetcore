@@ -76,38 +76,38 @@ namespace Ignitor
             return NextBatchReceived.Completion.Task;
         }
 
-        public Task PrepareForNextJSInterop()
+        public Task PrepareForNextJSInterop(TimeSpan? timeout)
         {
             if (NextJSInteropReceived?.Completion != null)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextJSInteropReceived = new CancellableOperation(DefaultLatencyTimeout);
+            NextJSInteropReceived = new CancellableOperation(timeout);
 
             return NextJSInteropReceived.Completion.Task;
         }
 
-        public Task PrepareForNextDotNetInterop()
+        public Task PrepareForNextDotNetInterop(TimeSpan? timeout)
         {
             if (NextDotNetInteropCompletionReceived?.Completion != null)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextDotNetInteropCompletionReceived = new CancellableOperation(DefaultLatencyTimeout);
+            NextDotNetInteropCompletionReceived = new CancellableOperation(timeout);
 
             return NextDotNetInteropCompletionReceived.Completion.Task;
         }
 
-        public Task PrepareForNextCircuitError()
+        public Task PrepareForNextCircuitError(TimeSpan? timeout)
         {
             if (NextErrorReceived?.Completion != null)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextErrorReceived = new CancellableOperation(DefaultLatencyTimeout);
+            NextErrorReceived = new CancellableOperation(timeout);
 
             return NextErrorReceived.Completion.Task;
         }
@@ -139,23 +139,23 @@ namespace Ignitor
             await task;
         }
 
-        public async Task ExpectJSInterop(Func<Task> action)
+        public async Task ExpectJSInterop(Func<Task> action, TimeSpan? timeout = null)
         {
-            var task = WaitForJSInterop();
+            var task = WaitForJSInterop(timeout);
             await action();
             await task;
         }
 
-        public async Task ExpectDotNetInterop(Func<Task> action)
+        public async Task ExpectDotNetInterop(Func<Task> action, TimeSpan? timeout = null)
         {
-            var task = WaitForDotNetInterop();
+            var task = WaitForDotNetInterop(timeout);
             await action();
             await task;
         }
 
-        public async Task ExpectCircuitError(Func<Task> action)
+        public async Task ExpectCircuitError(Func<Task> action, TimeSpan? timeout = null)
         {
-            var task = WaitForCircuitError();
+            var task = WaitForCircuitError(timeout);
             await action();
             await task;
         }
@@ -175,42 +175,42 @@ namespace Ignitor
             return Task.CompletedTask;
         }
 
-        private async Task WaitForJSInterop()
+        private async Task WaitForJSInterop(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
-                if (DefaultLatencyTimeout == null)
+                if (DefaultLatencyTimeout == null && timeout == null)
                 {
                     throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
                 }
 
-                await PrepareForNextJSInterop();
+                await PrepareForNextJSInterop(timeout ?? DefaultLatencyTimeout);
             }
         }
 
-        private async Task WaitForDotNetInterop()
+        private async Task WaitForDotNetInterop(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
-                if (DefaultLatencyTimeout == null)
+                if (DefaultLatencyTimeout == null && timeout == null)
                 {
                     throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
                 }
 
-                await PrepareForNextDotNetInterop();
+                await PrepareForNextDotNetInterop(timeout ?? DefaultLatencyTimeout);
             }
         }
 
-        private async Task WaitForCircuitError()
+        private async Task WaitForCircuitError(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
-                if (DefaultLatencyTimeout == null)
+                if (DefaultLatencyTimeout == null && timeout == null)
                 {
                     throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
                 }
 
-                await PrepareForNextCircuitError();
+                await PrepareForNextCircuitError(timeout ?? DefaultLatencyTimeout);
             }
         }
 
@@ -246,7 +246,7 @@ namespace Ignitor
             else
             {
                 await ExpectRenderBatch(
-                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, new Uri(uri.GetLeftPart(UriPartial.Authority))),
+                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri),
                     TimeSpan.FromSeconds(10));
                 return CircuitId != null;
             }
