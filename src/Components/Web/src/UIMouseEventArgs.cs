@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Supplies information about a mouse event that is being raised.
     /// </summary>
-    public class UIMouseEventArgs : UIEventArgs
+    public class UIMouseEventArgs : EventArgs
     {
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
@@ -73,5 +75,10 @@ namespace Microsoft.AspNetCore.Components
         /// <c>true</c> if the meta key was down when the event was fired. <c>false</c> otherwise.
         /// </summary>
         public bool MetaKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the event.
+        /// </summary>
+        public string Type { get; set; }
     }
 }

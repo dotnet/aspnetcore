@@ -48,6 +48,9 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// For unit testing only.
         /// </summary>
+        // We store the circuit host in Context.Items which is tied to the lifetime of the underlying
+        // SignalR connection. There's no need to clean this up, it's a non-owning reference and it
+        // will go away when the connection does.
         internal CircuitHost CircuitHost
         {
             get => (CircuitHost)Context.Items[CircuitKey];
@@ -65,19 +68,57 @@ namespace Microsoft.AspNetCore.Components.Server
                 return Task.CompletedTask;
             }
 
-            CircuitHost = null;
-            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            if (exception != null)
+            {
+                return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            }
+            else
+            {
+                // The client will gracefully disconnect when using websockets by correctly closing the TCP connection.
+                // This happens when the user closes a tab, navigates away from the page or reloads the page.
+                // In these situations we know the user is done with the circuit, so we can get rid of it at that point.
+                // This is important to be able to more efficiently manage resources, specially memory.
+                return TerminateCircuitGracefully(circuitHost);
+            }
+        }
+
+        private async Task TerminateCircuitGracefully(CircuitHost circuitHost)
+        {
+            try
+            {
+                Log.CircuitTerminatedGracefully(_logger, circuitHost.CircuitId);
+                _circuitRegistry.PermanentDisconnect(circuitHost);
+                await circuitHost.DisposeAsync();
+            }
+            catch (Exception e)
+            {
+                Log.UnhandledExceptionInCircuit(_logger, circuitHost.CircuitId, e);
+            }
+
+            await _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public string StartCircuit(string baseUri, string uri)
         {
             if (CircuitHost != null)
             {
                 Log.CircuitAlreadyInitialized(_logger, CircuitHost.CircuitId);
                 NotifyClientError(Clients.Caller, $"The circuit host '{CircuitHost.CircuitId}' has already been initialized.");
+                return null;
+            }
+
+            if (baseUri == null ||
+                uri == null ||
+                !Uri.IsWellFormedUriString(baseUri, UriKind.Absolute) ||
+                !Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+            {
+                // We do some really minimal validation here to prevent obviously wrong data from getting in
+                // without duplicating too much logic.
+                Log.InvalidInputData(_logger);
+                _ = NotifyClientError(Clients.Caller, $"The uris provided are invalid.");
                 return null;
             }
 
@@ -93,26 +134,35 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            var circuitHost = _circuitFactory.CreateCircuitHost(
-                Context.GetHttpContext(),
-                circuitClient,
-                uriAbsolute,
-                baseUriAbsolute,
-                Context.User);
+            try
+            {
+                var circuitHost = _circuitFactory.CreateCircuitHost(
+                    Context.GetHttpContext(),
+                    circuitClient,
+                    baseUri,
+                    uri,
+                    Context.User);
 
-            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+                circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
-            // Fire-and-forget the initialization process, because we can't block the
-            // SignalR message loop (we'd get a deadlock if any of the initialization
-            // logic relied on receiving a subsequent message from SignalR), and it will
-            // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
+                // Fire-and-forget the initialization process, because we can't block the
+                // SignalR message loop (we'd get a deadlock if any of the initialization
+                // logic relied on receiving a subsequent message from SignalR), and it will
+                // take care of its own errors anyway.
+                _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
 
-            _circuitRegistry.Register(circuitHost);
-
-            CircuitHost = circuitHost;
-
-            return circuitHost.CircuitId;
+                // It's safe to *publish* the circuit now because nothing will be able
+                // to run inside it until after InitializeAsync completes.
+                _circuitRegistry.Register(circuitHost);
+                CircuitHost = circuitHost;
+                return circuitHost.CircuitId;
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitInitializationFailed(_logger, ex);
+                NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+                return null;
+            }
         }
 
         /// <summary>
@@ -124,8 +174,8 @@ namespace Microsoft.AspNetCore.Components.Server
             if (circuitHost != null)
             {
                 CircuitHost = circuitHost;
+                CircuitHost.UnhandledException += CircuitHost_UnhandledException;
 
-                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
                 circuitHost.SetCircuitUser(Context.User);
                 circuitHost.SendPendingBatches();
                 return true;
@@ -195,6 +245,18 @@ namespace Microsoft.AspNetCore.Components.Server
             CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
+        public void OnLocationChanged(string uri, bool intercepted)
+        {
+            if (CircuitHost == null)
+            {
+                Log.CircuitHostNotInitialized(_logger);
+                NotifyClientError(Clients.Caller, "Circuit not initialized.");
+                return;
+            }
+
+            _ = CircuitHost.OnLocationChangedAsync(uri, intercepted);
+        }
+
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var circuitHost = (CircuitHost)sender;
@@ -246,8 +308,16 @@ namespace Microsoft.AspNetCore.Components.Server
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization.");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
 
+            private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
+
+            private static readonly Action<ILogger, string, Exception> _invalidInputData =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
+
+            private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(9, "CircuitInitializationFailed"), "Circuit initialization failed");
 
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName)
             {
@@ -272,6 +342,12 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
 
             public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
+
+            public static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
+
+            public static void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "") => _invalidInputData(logger, callSite, null);
+
+            public static void CircuitInitializationFailed(ILogger logger, Exception exception) => _circuitInitializationFailed(logger, exception);
         }
     }
 }

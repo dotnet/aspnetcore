@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.SignalR
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{HubMethod}' on hub.");
 
             private static readonly Action<ILogger, Exception> _errorProcessingRequest =
-                LoggerMessage.Define(LogLevel.Error, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");
 
             private static readonly Action<ILogger, Exception> _abortFailed =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "AbortFailed"), "Abort callback failed.");

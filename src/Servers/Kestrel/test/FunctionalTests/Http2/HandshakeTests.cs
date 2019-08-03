@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 });
             }));
 
-            Assert.Equal("HTTP/2 over TLS is not supported on OSX due to missing ALPN support.", ex.Message);
+            Assert.Equal("HTTP/2 over TLS is not supported on macOS due to missing ALPN support.", ex.Message);
         }
 
 

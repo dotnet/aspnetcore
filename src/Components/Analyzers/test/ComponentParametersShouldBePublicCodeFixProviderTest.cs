@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty1' should be public.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 8, 40)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 {
                     Id = DiagnosticDescriptors.ComponentParameterSettersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty1' should have a public setter.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 8, 39)
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 {
                     Id = DiagnosticDescriptors.ComponentParameterSettersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty2' should have a public setter.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 9, 39)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 {
                     Id = DiagnosticDescriptors.ComponentParameterSettersShouldBePublic.Id,
                     Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty3' should have a public setter.",
-                    Severity = DiagnosticSeverity.Warning,
+                    Severity = DiagnosticSeverity.Error,
                     Locations = new[]
                     {
                         new DiagnosticResultLocation("Test0.cs", 10, 39)

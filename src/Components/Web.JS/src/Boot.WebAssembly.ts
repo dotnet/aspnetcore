@@ -27,6 +27,16 @@ async function boot(options?: any): Promise<void> {
     renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress));
   };
 
+  // Configure navigation via JS Interop
+  window['Blazor']._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
+    await DotNet.invokeMethodAsync(
+      'Microsoft.AspNetCore.Blazor',
+      'NotifyLocationChanged',
+      uri,
+      intercepted
+    );
+  });
+
   // Fetch the boot JSON file
   const bootConfig = await fetchBootConfigAsync();
   const embeddedResourcesPromise = loadEmbeddedResourcesAsync(bootConfig);

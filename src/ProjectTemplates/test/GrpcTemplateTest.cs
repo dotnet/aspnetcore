@@ -44,7 +44,7 @@ namespace Templates.Test
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     Assert.True(serverProcess.Process.HasExited, "built");
-                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on OSX due to missing ALPN support.",
+                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built service", Project, serverProcess.Process));
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
@@ -68,7 +68,7 @@ namespace Templates.Test
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
                     Assert.True(aspNetProcess.Process.HasExited, "published");
-                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on OSX due to missing ALPN support.",
+                    Assert.Contains("System.NotSupportedException: HTTP/2 over TLS is not supported on macOS due to missing ALPN support.",
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run published service", Project, aspNetProcess.Process));
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))

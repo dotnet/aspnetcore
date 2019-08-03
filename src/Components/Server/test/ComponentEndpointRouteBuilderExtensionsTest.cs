@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
                 .UseRouting()
                 .UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub(dispatchOptions => called = true);
+                endpoints.MapBlazorHub<MyComponent>("app", dispatchOptions => called = true);
             }).Build();
 
             // Assert
@@ -67,6 +67,19 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             var serviceProvder = services.BuildServiceProvider();
 
             return new ApplicationBuilder(serviceProvder);
+        }
+
+        private class MyComponent : IComponent
+        {
+            public void Attach(RenderHandle renderHandle)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public Task SetParametersAsync(ParameterView parameters)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

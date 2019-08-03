@@ -34,12 +34,28 @@ namespace Microsoft.AspNetCore.Components.Forms
             => GetOrCreateMessagesListForField(fieldIdentifier).Add(message);
 
         /// <summary>
+        /// Adds a validation message for the specified field.
+        /// </summary>
+        /// <param name="accessor">Identifies the field for which to add the message.</param>
+        /// <param name="message">The validation message.</param>
+        public void Add(Expression<Func<object>> accessor, string message)
+            => Add(FieldIdentifier.Create(accessor), message);
+
+        /// <summary>
         /// Adds the messages from the specified collection for the specified field.
         /// </summary>
         /// <param name="fieldIdentifier">The identifier for the field.</param>
         /// <param name="messages">The validation messages to be added.</param>
-        public void AddRange(in FieldIdentifier fieldIdentifier, IEnumerable<string> messages)
+        public void Add(in FieldIdentifier fieldIdentifier, IEnumerable<string> messages)
             => GetOrCreateMessagesListForField(fieldIdentifier).AddRange(messages);
+
+        /// <summary>
+        /// Adds the messages from the specified collection for the specified field.
+        /// </summary>
+        /// <param name="accessor">Identifies the field for which to add the messages.</param>
+        /// <param name="messages">The validation messages to be added.</param>
+        public void Add(Expression<Func<object>> accessor, IEnumerable<string> messages)
+            => Add(FieldIdentifier.Create(accessor), messages);
 
         /// <summary>
         /// Gets the validation messages within this <see cref="ValidationMessageStore"/> for the specified field.
@@ -73,6 +89,13 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             _messages.Clear();
         }
+
+        /// <summary>
+        /// Removes all messages within this <see cref="ValidationMessageStore"/> for the specified field.
+        /// </summary>
+        /// <param name="accessor">Identifies the field for which to remove the messages.</param>
+        public void Clear(Expression<Func<object>> accessor)
+            => Clear(FieldIdentifier.Create(accessor));
 
         /// <summary>
         /// Removes all messages within this <see cref="ValidationMessageStore"/> for the specified field.

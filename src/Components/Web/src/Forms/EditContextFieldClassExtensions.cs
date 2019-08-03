@@ -14,23 +14,23 @@ namespace Microsoft.AspNetCore.Components.Forms
     public static class EditContextFieldClassExtensions
     {
         /// <summary>
-        /// Gets a string that indicates the status of the specified field. This will include
+        /// Gets a string that indicates the status of the specified field as a CSS class. This will include
         /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
         /// </summary>
         /// <param name="editContext">The <see cref="EditContext"/>.</param>
         /// <param name="accessor">An identifier for the field.</param>
         /// <returns>A string that indicates the status of the field.</returns>
-        public static string FieldClass<TField>(this EditContext editContext, Expression<Func<TField>> accessor)
-            => FieldClass(editContext, FieldIdentifier.Create(accessor));
+        public static string FieldCssClass<TField>(this EditContext editContext, Expression<Func<TField>> accessor)
+            => FieldCssClass(editContext, FieldIdentifier.Create(accessor));
 
         /// <summary>
-        /// Gets a string that indicates the status of the specified field. This will include
+        /// Gets a string that indicates the status of the specified field as a CSS class. This will include
         /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
         /// </summary>
         /// <param name="editContext">The <see cref="EditContext"/>.</param>
         /// <param name="fieldIdentifier">An identifier for the field.</param>
         /// <returns>A string that indicates the status of the field.</returns>
-        public static string FieldClass(this EditContext editContext, in FieldIdentifier fieldIdentifier)
+        public static string FieldCssClass(this EditContext editContext, in FieldIdentifier fieldIdentifier)
         {
             var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
             if (editContext.IsModified(fieldIdentifier))

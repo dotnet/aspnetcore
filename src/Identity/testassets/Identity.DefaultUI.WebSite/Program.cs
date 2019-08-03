@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -17,13 +18,11 @@ namespace Identity.DefaultUI.WebSite
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static bool UseStartup { get; set; } = true;
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    if (UseStartup)
+                    if (!args.Contains("--use-startup=false"))
                     {
                         webBuilder.UseStartup<Startup>();
                     }

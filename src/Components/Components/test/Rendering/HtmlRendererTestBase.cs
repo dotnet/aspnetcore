@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 rtb.OpenElement(0, "p");
                 rtb.OpenElement(1, "input");
-                rtb.AddAttribute(2, "change", pc.GetValueOrDefault<Action<UIChangeEventArgs>>("update"));
+                rtb.AddAttribute(2, "change", pc.GetValueOrDefault<Action<ChangeEventArgs>>("update"));
                 rtb.AddAttribute(3, "value", pc.GetValueOrDefault<int>("value"));
                 rtb.CloseElement();
                 rtb.CloseElement();
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 .BuildServiceProvider();
 
             var htmlRenderer = GetHtmlRenderer(serviceProvider);
-            Action<UIChangeEventArgs> change = (UIChangeEventArgs changeArgs) => throw new InvalidOperationException();
+            Action<ChangeEventArgs> change = (ChangeEventArgs changeArgs) => throw new InvalidOperationException();
 
             // Act
             var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<ComponentWithParameters>(

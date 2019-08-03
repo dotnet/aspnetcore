@@ -164,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
                 {
                     _streamEnded = true;
+                    _stream.DecrementActiveClientStreamCount();
                     http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
                 }
                 else
@@ -378,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
+                        _stream.DecrementActiveClientStreamCount();
                         flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted && _streamEnded)
@@ -392,7 +394,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                        var endStream = readResult.IsCompleted;
+                        if (endStream)
+                        {
+                            _stream.DecrementActiveClientStreamCount();
+                        }
+                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream);
                     }
 
                     _pipeReader.AdvanceTo(readResult.Buffer.End);

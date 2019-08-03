@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Supplies information about a keyboard event that is being raised.
     /// </summary>
-    public class UIKeyboardEventArgs : UIEventArgs
+    public class UIKeyboardEventArgs : EventArgs
     {
         /// <summary>
         /// The key value of the key represented by the event. 
@@ -51,5 +53,10 @@ namespace Microsoft.AspNetCore.Components
         /// true if the meta key was down when the event was fired. false otherwise.
         /// </summary>
         public bool MetaKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the event.
+        /// </summary>
+        public string Type { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 @page "/prerendered-redirection"
-@inject IUriHelper UriHelper
+@inject NavigationManager NavigationManager
 
 @{
     throw new InvalidOperationException("The rendering logic should never be executed");
@@ -8,9 +8,9 @@
 @code {
     protected override Task OnInitializedAsync()
     {
-        var uri = UriHelper.GetAbsoluteUri();
+        var uri = NavigationManager.Uri;
         var destination = uri.Substring(uri.IndexOf("?destination=") + 13);
-        UriHelper.NavigateTo(destination);
+        NavigationManager.NavigateTo(destination);
         return Task.CompletedTask;
     }
 }

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "API",
+    "description": "RESTful HTTP サービスのサンプル コントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは ASP.NET Core MVC のビューとコントローラーでも使用できます。"
+  }
+}
