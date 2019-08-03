@@ -202,7 +202,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("_IntrospectContentItems");
 
             Assert.BuildPassed(result);
-            Assert.BuildOutputContainsLine(result, "Content: Properties\\launchSettings.json CopyToOutputDirectory=Never CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
+            var launchSettingsPath = Path.Combine("Properties", "launchSettings.json");
+            Assert.BuildOutputContainsLine(result, $"Content: {launchSettingsPath} CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
         }

@@ -31,8 +31,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Content Include="**\*.config" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
     <Content Include="**\*.json" ExcludeFromSingleFile="true" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
 
-    <!-- Set CopyToOutputDirectory & CopyToPublishDirectory to Never for items under AppDesignerFolder ("Properties", by default) to avoid copying launchSettings.json to the build or publish directory -->
-    <Content Update="$(AppDesignerFolder)\**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>
+    <!-- Set CopyToPublishDirectory to Never for items under AppDesignerFolder ("Properties", by default) to avoid publishing launchSettings.json -->
+    <Content Update="$(AppDesignerFolder)\**" CopyToPublishDirectory="Never" Condition="'$(AppDesignerFolder)' != ''"/>
 
     <!-- Remove Content items from other item types (in a way that CPS understands) -->
     <None Remove="wwwroot\**;**\*.json;**\*.config" />
