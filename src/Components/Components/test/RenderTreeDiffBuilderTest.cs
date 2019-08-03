@@ -361,6 +361,23 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RejectsClashingKeysEvenIfAllPairsMatch()
+        {
+            // This sort of scenario would happen if you accidentally used a constant value for @key
+
+            // Arrange
+            AddWithKey(oldTree, "key1", "attrib1a");
+            AddWithKey(oldTree, "key1", "attrib1b");
+
+            AddWithKey(newTree, "key1", "attrib1a");
+            AddWithKey(newTree, "key1", "attrib1b");
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
+            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+        }
+
+        [Fact]
         public void HandlesInsertionOfUnkeyedItemsAroundKey()
         {
             // The fact that the new sequence numbers are descending makes this

@@ -16,42 +16,6 @@ namespace Microsoft.AspNetCore.Builder
     public static class ComponentEndpointRouteBuilderExtensions
     {
         /// <summary>
-        /// Maps the Blazor <see cref="Hub" /> to the default path.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
-        public static ComponentEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints)
-        {
-            if (endpoints == null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            return endpoints.MapBlazorHub(configureOptions: _ => { });
-        }
-
-        /// <summary>
-        /// Maps the Blazor <see cref="Hub" /> to the default path.
-        /// </summary>
-        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <param name="configureOptions">A callback to configure dispatcher options.</param>
-        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
-        public static ComponentEndpointConventionBuilder MapBlazorHub(this IEndpointRouteBuilder endpoints, Action<HttpConnectionDispatcherOptions> configureOptions)
-        {
-            if (endpoints == null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath, configureOptions));
-        }
-
-        /// <summary>
         ///Maps the Blazor <see cref="Hub" /> to the default path and associates
         /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>

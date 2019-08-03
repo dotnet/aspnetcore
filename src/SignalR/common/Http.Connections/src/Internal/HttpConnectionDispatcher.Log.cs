@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(7, "TransportNotSupported"), "{TransportType} transport not supported by this connection handler.");
 
             private static readonly Action<ILogger, HttpTransportType, HttpTransportType, Exception> _cannotChangeTransport =
-                LoggerMessage.Define<HttpTransportType, HttpTransportType>(LogLevel.Error, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
+                LoggerMessage.Define<HttpTransportType, HttpTransportType>(LogLevel.Debug, new EventId(8, "CannotChangeTransport"), "Cannot change transports mid-connection; currently using {TransportType}, requesting {RequestedTransport}.");
 
             private static readonly Action<ILogger, Exception> _postNotallowedForWebsockets =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(9, "PostNotAllowedForWebSockets"), "POST requests are not allowed for websocket connections.");

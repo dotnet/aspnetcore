@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public abstract CircuitHost CreateCircuitHost(
             HttpContext httpContext,
             CircuitClientProxy client,
-            string uriAbsolute,
-            string baseUriAbsolute,
+            string baseUri,
+            string uri,
             ClaimsPrincipal user);
     }
 }

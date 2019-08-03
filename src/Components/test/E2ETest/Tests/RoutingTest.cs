@@ -369,9 +369,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void UsingUriHelperWithoutRouterWorks()
+        public void UsingNavigationManagerWithoutRouterWorks()
         {
-            var app = MountTestComponent<UriHelperComponent>();
+            var app = MountTestComponent<NavigationManagerComponent>();
             var initialUrl = Browser.Url;
 
             Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void UriHelperCanReadAbsoluteUriIncludingHash()
         {
-            var app = MountTestComponent<UriHelperComponent>();
+            var app = MountTestComponent<NavigationManagerComponent>();
             Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
 
             var uri = "/mytestpath?my=query&another#some/hash?tokens";

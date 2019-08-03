@@ -239,13 +239,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             await Client.ClickAsync("triggerjsinterop-malformed");
 
-            Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
+            var call = interopCalls.FirstOrDefault(call => call.identifier == "sendMalformedCallbackReturn");
+            Assert.NotEqual(default, call);
 
+            var id = call.id;
             await Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
-                4,
+                id,
                 true,
-                "[4, true, \"{\"]");
+                $"[{id}, true, \"{{\"]");
 
             var text = Assert.Single(
                 Client.FindElementById("errormessage-malformed").Children.OfType<TextNode>(),
@@ -264,16 +266,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
             var logEvents = new List<(LogLevel logLevel, string)>();
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
+
             // Act
             await Client.ClickAsync("triggerjsinterop-malformed");
 
-            Assert.Single(interopCalls, (4, "sendMalformedCallbackReturn", (string)null));
+            var call = interopCalls.FirstOrDefault(call => call.identifier == "sendMalformedCallbackReturn");
+            Assert.NotEqual(default, call);
 
+            var id = call.id;
             await Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
-                4,
+                id,
                 true,
-                "[4, true, }");
+                $"[{id}, true, }}");
 
             // A completely malformed payload like the one above never gets to the application.
             Assert.Single(
@@ -285,9 +290,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ClickAsync("triggerjsinterop-success");
             await Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
-                5,
+                id++,
                 true,
-                "[5, true, null]");
+                $"[{id}, true, null]");
 
             Assert.Single(
                 Client.FindElementById("errormessage-success").Children.OfType<TextNode>(),
@@ -298,9 +303,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Client.ClickAsync("triggerjsinterop-failure");
             await Client.HubConnection.InvokeAsync(
                 "EndInvokeJSFromDotNet",
-                6,
+                id++,
                 false,
-                "[6, false, \"There was an error invoking sendFailureCallbackReturn\"]");
+                $"[{id}, false, \"There was an error invoking sendFailureCallbackReturn\"]");
 
             Assert.Single(
                 Client.FindElementById("errormessage-failure").Children.OfType<TextNode>(),
@@ -534,7 +539,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(2, batches.Count);
         }
 
-        private (List<(int, string, string)>, List<string>, List<(int, int, byte[])>) ConfigureClient()
+        private (List<(int id, string identifier, string args)>, List<string>, List<(int, int, byte[])>) ConfigureClient()
         {
             var interopCalls = new List<(int, string, string)>();
             Client.JSInterop += (int arg1, string arg2, string arg3) => interopCalls.Add((arg1, arg2, arg3));

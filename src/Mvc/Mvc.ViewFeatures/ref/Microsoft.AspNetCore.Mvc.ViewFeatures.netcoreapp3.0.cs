@@ -322,6 +322,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         Rfc3339 = 0,
         CurrentCulture = 1,
     }
+    public static partial class HtmlHelperComponentExtensions
+    {
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+    }
     public static partial class HtmlHelperDisplayExtensions
     {
         public static Microsoft.AspNetCore.Html.IHtmlContent Display(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string expression) { throw null; }
@@ -464,12 +470,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName) { throw null; }
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData) { throw null; }
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName, object model) { throw null; }
-    }
-    public static partial class HtmlHelperRazorComponentExtensions
-    {
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderStaticComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderStaticComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
     public static partial class HtmlHelperSelectExtensions
     {

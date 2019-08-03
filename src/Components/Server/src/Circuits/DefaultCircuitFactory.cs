@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -38,10 +39,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public override CircuitHost CreateCircuitHost(
             HttpContext httpContext,
             CircuitClientProxy client,
-            string uriAbsolute,
-            string baseUriAbsolute,
+            string baseUri,
+            string uri,
             ClaimsPrincipal user)
         {
+            // We do as much intialization as possible eagerly in this method, which makes the error handling
+            // story much simpler. If we throw from here, it's handled inside the initial hub method.
             var components = ResolveComponentMetadata(httpContext, client);
 
             var scope = _scopeFactory.CreateScope();
@@ -51,20 +54,25 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
 
-            var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
+            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+            if (authenticationStateProvider != null)
+            {
+                var authenticationState = new AuthenticationState(httpContext.User); // TODO: Get this from the hub connection context instead
+                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            }
+
+            var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
             {
-                uriHelper.AttachJsRuntime(jsRuntime);
-                uriHelper.InitializeState(
-                    uriAbsolute,
-                    baseUriAbsolute);
+                navigationManager.AttachJsRuntime(jsRuntime);
+                navigationManager.Initialize(baseUri, uri);
 
                 navigationInterception.AttachJSRuntime(jsRuntime);
             }
             else
             {
-                uriHelper.InitializeState(uriAbsolute, baseUriAbsolute);
+                navigationManager.Initialize(baseUri, uri);
             }
 
             var rendererRegistry = new RendererRegistry();
@@ -100,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        internal static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
+        internal static List<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
         {
             if (!client.Connected)
             {

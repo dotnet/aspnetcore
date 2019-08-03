@@ -60,8 +60,66 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
                 "StartCircuit",
-                baseUri.GetLeftPart(UriPartial.Authority),
-                baseUri));
+                baseUri,
+                baseUri + "/home"));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Matches(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+        }
+
+        [Fact]
+        public async Task CannotStartCircuitWithNullData()
+        {
+            // Arrange
+            var expectedError = "The uris provided are invalid.";
+            var rootUri = _serverFixture.RootUri;
+            var uri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(uri, prerendered: false, connectAutomatically: false), "Couldn't connect to the app");
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync("StartCircuit", null, null));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Matches(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+        }
+
+        [Fact]
+        public async Task CannotStartCircuitWithInvalidUris()
+        {
+            // Arrange
+            var expectedError = "The uris provided are invalid.";
+            var rootUri = _serverFixture.RootUri;
+            var uri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(uri, prerendered: false, connectAutomatically: false), "Couldn't connect to the app");
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync("StartCircuit", uri.AbsoluteUri, "/foo"));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Matches(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+        }
+
+        // This is a hand-chosen example of something that will cause an exception in creating the circuit host.
+        // We want to test this case so that we know what happens when creating the circuit host blows up.
+        [Fact]
+        public async Task StartCircuitCausesInitializationError()
+        {
+            // Arrange
+            var expectedError = "The circuit failed to initialize.";
+            var rootUri = _serverFixture.RootUri;
+            var uri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(uri, prerendered: false, connectAutomatically: false), "Couldn't connect to the app");
+
+            // Act
+            //
+            // These are valid URIs by the BaseUri doesn't contain the Uri - so it fails to initialize.
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com"), TimeSpan.FromHours(1));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -92,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'BeginInvokeDotNetFromJS' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -116,7 +174,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'EndInvokeJSFromDotNet' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -139,7 +197,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'DispatchBrowserEvent' received before the circuit host initialization"));
         }
 
         [Fact]
@@ -162,7 +220,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization."));
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnRenderCompleted' received before the circuit host initialization"));
+        }
+
+        [Fact]
+        public async Task CannotInvokeOnLocationChangedBeforeInitialization()
+        {
+            // Arrange
+            var expectedError = "Circuit not initialized.";
+            var rootUri = _serverFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.Empty(Batches);
+
+            // Act
+            await Client.ExpectCircuitError(() => Client.HubConnection.SendAsync(
+                "OnLocationChanged",
+                baseUri.AbsoluteUri,
+                false));
+
+            // Assert
+            var actualError = Assert.Single(Errors);
+            Assert.Equal(expectedError, actualError);
+            Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
+            Assert.Contains(Logs, l => (l.LogLevel, l.Message) == (LogLevel.Debug, "Call to 'OnLocationChanged' received before the circuit host initialization"));
         }
 
         public void Dispose()

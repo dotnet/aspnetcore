@@ -266,16 +266,6 @@ namespace Microsoft.AspNetCore.Components
     {
         public InjectAttribute() { }
     }
-    public partial interface IUriHelper
-    {
-        event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged;
-        string GetAbsoluteUri();
-        string GetBaseUri();
-        void NavigateTo(string uri);
-        void NavigateTo(string uri, bool forceLoad);
-        System.Uri ToAbsoluteUri(string href);
-        string ToBaseRelativePath(string baseUri, string locationAbsolute);
-    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public sealed partial class LayoutAttribute : System.Attribute
     {
@@ -287,6 +277,10 @@ namespace Microsoft.AspNetCore.Components
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public sealed partial class LocationChangeException : System.Exception
+    {
+        public LocationChangeException(string message, System.Exception innerException) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
@@ -301,6 +295,33 @@ namespace Microsoft.AspNetCore.Components
     {
         public NavigationException(string uri) { }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public abstract partial class NavigationManager
+    {
+        protected NavigationManager() { }
+        public string BaseUri { get { throw null; } protected set { } }
+        public string Uri { get { throw null; } protected set { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> LocationChanged { add { } remove { } }
+        protected virtual void EnsureInitialized() { }
+        protected void Initialize(string baseUri, string uri) { }
+        public void NavigateTo(string uri, bool forceLoad = false) { }
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        protected void NotifyLocationChanged(bool isInterceptedLink) { }
+        public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
+        public string ToBaseRelativePath(string uri) { throw null; }
+    }
+    public abstract partial class OwningComponentBase : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected bool IsDisposed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected System.IServiceProvider ScopedServices { get { throw null; } }
+        protected virtual void Dispose(bool disposing) { }
+        void System.IDisposable.Dispose() { }
+    }
+    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
+    {
+        protected OwningComponentBase() { }
+        protected TService Service { get { throw null; } }
     }
     public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
     {
@@ -369,23 +390,6 @@ namespace Microsoft.AspNetCore.Components
     {
         public RouteAttribute(string template) { }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.IUriHelper
-    {
-        protected UriHelperBase() { }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged { add { } remove { } }
-        protected virtual void EnsureInitialized() { }
-        public string GetAbsoluteUri() { throw null; }
-        public virtual string GetBaseUri() { throw null; }
-        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
-        public void NavigateTo(string uri) { }
-        public void NavigateTo(string uri, bool forceLoad) { }
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
-        protected void SetAbsoluteBaseUri(string baseUri) { }
-        protected void SetAbsoluteUri(string uri) { }
-        public System.Uri ToAbsoluteUri(string href) { throw null; }
-        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.CompilerServices
@@ -624,16 +628,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    public partial interface IHostEnvironmentNavigationManager
+    {
+        void Initialize(string baseUri, string uri);
+    }
     public partial interface INavigationInterception
     {
         System.Threading.Tasks.Task EnableNavigationInterceptionAsync();
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct LocationChangedEventArgs
+    public partial class LocationChangedEventArgs : System.EventArgs
     {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { throw null; }
+        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { }
         public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }

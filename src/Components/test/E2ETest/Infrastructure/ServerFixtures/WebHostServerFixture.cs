@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             // This can be null if creating the webhost throws, we don't want to throw here and hide
             // the original exception.
+            Host?.Dispose();
             Host?.StopAsync();
         }
 

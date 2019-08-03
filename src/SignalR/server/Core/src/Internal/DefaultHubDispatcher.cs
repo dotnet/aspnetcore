@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private Task ProcessInvocationBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)
         {
-            Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
+            Log.InvalidHubParameters(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
 
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
@@ -243,7 +243,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
                     if (clientStreamLength != serverStreamLength)
                     {
-                        throw new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                        var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                        Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
+                        await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                            ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                        return;
                     }
 
                     InitializeHub(hub, connection);

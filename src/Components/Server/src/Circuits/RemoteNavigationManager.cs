@@ -2,26 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Web.BrowserUriHelperInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
-    /// A Server-Side Components implementation of <see cref="IUriHelper"/>.
+    /// A Server-Side Blazor implementation of <see cref="NavigationManager"/>.
     /// </summary>
-    public class RemoteUriHelper : UriHelperBase
+    internal class RemoteNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
     {
-        private readonly ILogger<RemoteUriHelper> _logger;
+        private readonly ILogger<RemoteNavigationManager> _logger;
         private IJSRuntime _jsRuntime;
 
         /// <summary>
-        /// Creates a new <see cref="RemoteUriHelper"/> instance.
+        /// Creates a new <see cref="RemoteNavigationManager"/> instance.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
-        public RemoteUriHelper(ILogger<RemoteUriHelper> logger)
+        public RemoteNavigationManager(ILogger<RemoteNavigationManager> logger)
         {
             _logger = logger;
         }
@@ -32,21 +32,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public bool HasAttachedJSRuntime => _jsRuntime != null;
 
         /// <summary>
-        /// Initializes the <see cref="RemoteUriHelper"/>.
+        /// Initializes the <see cref="NavigationManager" />.
         /// </summary>
-        /// <param name="uriAbsolute">The absolute URI of the current page.</param>
-        /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
-        public override void InitializeState(string uriAbsolute, string baseUriAbsolute)
+        /// <param name="baseUri">The base URI.</param>
+        /// <param name="uri">The absolute URI.</param>
+        public new void Initialize(string baseUri, string uri)
         {
-            base.InitializeState(uriAbsolute, baseUriAbsolute);
-            TriggerOnLocationChanged(isinterceptedLink: false);
+            base.Initialize(baseUri, uri);
+            NotifyLocationChanged(isInterceptedLink: false);
         }
 
         /// <summary>
-        /// Initializes the <see cref="RemoteUriHelper"/>.
+        /// Initializes the <see cref="RemoteNavigationManager"/>.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
-        internal void AttachJsRuntime(IJSRuntime jsRuntime)
+        public void AttachJsRuntime(IJSRuntime jsRuntime)
         {
             if (_jsRuntime != null)
             {
@@ -54,31 +54,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             _jsRuntime = jsRuntime;
-
-            _jsRuntime.InvokeAsync<object>(
-                Interop.ListenForNavigationEvents,
-                typeof(RemoteUriHelper).Assembly.GetName().Name,
-                nameof(NotifyLocationChanged));
         }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
-        [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink)
+        public void NotifyLocationChanged(string uri, bool intercepted)
         {
-            var circuit = CircuitHost.Current;
-            if (circuit == null)
-            {
-                var message = $"{nameof(NotifyLocationChanged)} called without a circuit.";
-                throw new InvalidOperationException(message);
-            }
+            Log.ReceivedLocationChangedNotification(_logger, uri, intercepted);
 
-            var uriHelper = (RemoteUriHelper)circuit.Services.GetRequiredService<IUriHelper>();
-            Log.ReceivedLocationChangedNotification(uriHelper._logger, uriAbsolute, isInterceptedLink);
-
-            uriHelper.SetAbsoluteUri(uriAbsolute);
-            uriHelper.TriggerOnLocationChanged(isInterceptedLink);
+            Uri = uri;
+            NotifyLocationChanged(intercepted);
         }
 
         /// <inheritdoc />
