@@ -292,7 +292,17 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(path, configureOptions)).AddComponent(componentType, selector);
+            var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);
+
+            var disconnectEndpoint = endpoints.Map(
+                (path.EndsWith("/") ? path : path + "/") + "disconnect/",
+                endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
+                .WithDisplayName("Blazor disconnect");
+
+            return new ComponentEndpointConventionBuilder(
+                disconnectEndpoint,
+                hubEndpoint)
+                .AddComponent(componentType, selector);
         }
     }
 }

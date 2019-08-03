@@ -68,34 +68,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return Task.CompletedTask;
             }
 
-            if (exception != null)
-            {
-                return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
-            }
-            else
-            {
-                // The client will gracefully disconnect when using websockets by correctly closing the TCP connection.
-                // This happens when the user closes a tab, navigates away from the page or reloads the page.
-                // In these situations we know the user is done with the circuit, so we can get rid of it at that point.
-                // This is important to be able to more efficiently manage resources, specially memory.
-                return TerminateCircuitGracefully(circuitHost);
-            }
-        }
-
-        private async Task TerminateCircuitGracefully(CircuitHost circuitHost)
-        {
-            try
-            {
-                Log.CircuitTerminatedGracefully(_logger, circuitHost.CircuitId);
-                _circuitRegistry.PermanentDisconnect(circuitHost);
-                await circuitHost.DisposeAsync();
-            }
-            catch (Exception e)
-            {
-                Log.UnhandledExceptionInCircuit(_logger, circuitHost.CircuitId, e);
-            }
-
-            await _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>

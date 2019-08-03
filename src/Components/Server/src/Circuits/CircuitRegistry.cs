@@ -83,11 +83,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public void PermanentDisconnect(CircuitHost circuitHost)
         {
-            if (ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _))
-            {
-                Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
-                circuitHost.Client.SetDisconnected();
-            }
+            DisconnectedCircuits.Remove(circuitHost.CircuitId);
+            ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _);
+            Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
+            circuitHost.Client.SetDisconnected();
         }
 
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
@@ -294,6 +293,31 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             catch (Exception ex)
             {
                 Log.ExceptionDisposingTokenSource(_logger, ex);
+            }
+        }
+
+        internal ValueTask Terminate(string circuitId)
+        {
+            CircuitHost circuitHost;
+            DisconnectedCircuitEntry entry = default;
+            lock (CircuitRegistryLock)
+            {
+                if (ConnectedCircuits.TryGetValue(circuitId, out circuitHost) || DisconnectedCircuits.TryGetValue(circuitId, out entry))
+                {
+                    PermanentDisconnect(circuitHost ?? entry.CircuitHost);
+                }
+                else
+                {
+                    return default;
+                }
+            }
+            if (circuitHost != null)
+            {
+                return circuitHost.DisposeAsync();
+            }
+            else
+            {
+                return default;
             }
         }
 
