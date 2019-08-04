@@ -16,8 +16,9 @@
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <BaseOutputPath />
     
-    
     <OutputPath />
+
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
 
   </PropertyGroup>
 
@@ -29,6 +30,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
   <ItemGroup>
