@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -18,9 +19,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private readonly SemaphoreSlim HandlerLock = new SemaphoreSlim(1);
         private readonly IServiceScope _scope;
+        private readonly CircuitOptions _options;
         private readonly CircuitHandler[] _circuitHandlers;
         private readonly ILogger _logger;
         private bool _initialized;
+        private bool _disposed;
 
         /// <summary>
         /// Sets the current <see cref="Circuits.Circuit"/>.
@@ -42,11 +45,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
         }
 
+        // This event is fired when there's an unrecoverable exception coming from the circuit, and
+        // it need so be torn down. The registry listens to this even so that the circuit can
+        // be torn down even when a client is not connected.
+        //
+        // We don't expect the registry to do anything with the exception. We only provide it here
+        // for testability.
         public event UnhandledExceptionEventHandler UnhandledException;
 
         public CircuitHost(
             string circuitId,
             IServiceScope scope,
+            CircuitOptions options,
             CircuitClientProxy client,
             RemoteRenderer renderer,
             IReadOnlyList<ComponentDescriptor> descriptors,
@@ -54,22 +64,27 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitHandler[] circuitHandlers,
             ILogger logger)
         {
-            CircuitId = circuitId;
+            CircuitId = circuitId ?? throw new ArgumentNullException(nameof(circuitId));
+
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-            Client = client;
-            Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+            Client = client ?? throw new ArgumentNullException(nameof(client));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+            Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
-            _logger = logger;
+            _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             Services = scope.ServiceProvider;
 
             Circuit = new Circuit(this);
-            _circuitHandlers = circuitHandlers;
+            Handle = new CircuitHandle() { CircuitHost = this, };
 
             Renderer.UnhandledException += Renderer_UnhandledException;
             Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
         }
+
+        public CircuitHandle Handle { get; }
 
         public string CircuitId { get; }
 
@@ -85,88 +100,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IServiceProvider Services { get; }
 
-        public void SetCircuitUser(ClaimsPrincipal user)
+        // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public Task InitializeAsync(CancellationToken cancellationToken)
         {
-            var authenticationStateProvider = Services.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-            if (authenticationStateProvider != null)
+            Log.InitializationStarted(_logger);
+
+            return Renderer.Dispatcher.InvokeAsync(async () =>
             {
-                var authenticationState = new AuthenticationState(user);
-                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
-            }
-        }
-
-        internal void SendPendingBatches()
-        {
-            // Dispatch any buffered renders we accumulated during a disconnect.
-            // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
-            // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-            _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
-        }
-
-        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
-        {
-            try
-            {
-                AssertInitialized();
-
-                await Renderer.Dispatcher.InvokeAsync(() =>
+                if (_initialized)
                 {
-                    SetCurrentCircuitHost(this);
-                    if (!succeded)
-                    {
-                        // We can log the arguments here because it is simply the JS error with the call stack.
-                        Log.EndInvokeJSFailed(_logger, asyncCall, arguments);
-                    }
-                    else
-                    {
-                        Log.EndInvokeJSSucceeded(_logger, asyncCall);
-                    }
+                    throw new InvalidOperationException("The circuit host is already initialized.");
+                }
 
-                    DotNetDispatcher.EndInvoke(arguments);
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.EndInvokeDispatchException(_logger, ex);
-            }
-        }
-
-        public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
-        {
-            WebEventData webEventData;
-            try
-            {
-                AssertInitialized();
-                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
-            }
-            catch (Exception ex)
-            {
-                Log.DispatchEventFailedToParseEventData(_logger, ex);
-                return;
-            }
-
-            try
-            {
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    SetCurrentCircuitHost(this);
-                    return Renderer.DispatchEventAsync(
-                        webEventData.EventHandlerId,
-                        webEventData.EventFieldInfo,
-                        webEventData.EventArgs);
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
-
-        public async Task InitializeAsync(CancellationToken cancellationToken)
-        {
-            await Renderer.Dispatcher.InvokeAsync(async () =>
-            {
                 try
                 {
                     SetCurrentCircuitHost(this);
@@ -185,82 +131,105 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         var (componentType, domElementSelector) = Descriptors[i];
                         await Renderer.AddComponentAsync(componentType, domElementSelector);
                     }
+
+                    Log.InitializationSucceeded(_logger);
                 }
                 catch (Exception ex)
                 {
-                    // We have to handle all our own errors here, because the upstream caller
-                    // has to fire-and-forget this
-                    Renderer_UnhandledException(this, ex);
+                    // Report errors asynchronously. InitializeAsync is designed not to throw.
+                    Log.InitializationFailed(_logger, ex);
+                    UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 }
             });
         }
 
-        public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        // We handle errors in DisposeAsync because there's no real value in letting it propagate.
+        // We run user code here (CircuitHandlers) and it's reasonable to expect some might throw, however,
+        // there isn't anything better to do than log when one of these exceptions happens - because the
+        // client is already gone.
+        public async ValueTask DisposeAsync()
         {
-            try
-            {
-                AssertInitialized();
+            Log.DisposeStarted(_logger, CircuitId);
 
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    SetCurrentCircuitHost(this);
-                    Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-                });
-            }
-            catch (Exception ex)
+            await Renderer.Dispatcher.InvokeAsync(async () =>
             {
-                // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
-                // however, we still want this to get logged if we do.
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
+                if (_disposed)
+                {
+                    return;
+                }
+
+                // Make sure that no hub or connection can refer to this circuit anymore now that it's shutting down.
+                Handle.CircuitHost = null;
+                _disposed = true;
+
+                try
+                {
+                    await OnConnectionDownAsync(CancellationToken.None);
+                }
+                catch
+                {
+                    // Individual exceptions logged as part of OnConnectionDownAsync - nothing to do here
+                    // since we're already shutting down.
+                }
+
+                try
+                {
+                    await OnCircuitDownAsync(CancellationToken.None);
+                }
+                catch
+                {
+                    // Individual exceptions logged as part of OnCircuitDownAsync - nothing to do here
+                    // since we're already shutting down.
+                }
+
+                try
+                {
+                    Renderer.Dispose();
+                    _scope.Dispose();
+                    Log.DisposeSucceeded(_logger, CircuitId);
+                }
+                catch (Exception ex)
+                {
+                    Log.DisposeFailed(_logger, CircuitId, ex);
+                }
+            });
         }
 
-        public async Task OnLocationChangedAsync(string uri, bool intercepted)
-        {
-            try
-            {
-                AssertInitialized();
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    SetCurrentCircuitHost(this);
-                    Log.LocationChange(_logger, CircuitId, uri);
-                    var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                    navigationManager.NotifyLocationChanged(uri, intercepted);
-                    Log.LocationChangeSucceeded(_logger, CircuitId, uri);
-                });
-            }
-            catch (Exception ex)
-            {
-                // It's up to the NavigationManager implementation to validate the URI.
-                //
-                // Note that it's also possible that setting the URI could cause a failure in code that listens
-                // to NavigationManager.LocationChanged.
-                //
-                // In either case, a well-behaved client will not send invalid URIs, and we don't really
-                // want to continue processing with the circuit if setting the URI failed inside application
-                // code. The safest thing to do is consider it a critical failure since URI is global state,
-                // and a failure means that an update to global state was partially applied.
-                Log.LocationChangeFailed(_logger, CircuitId, uri, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
-
+        // Note: we log exceptions and re-throw while running handlers, because there may be multiple
+        // exceptions.
         private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
         {
             Log.CircuitOpened(_logger, Circuit.Id);
 
-            for (var i = 0; i < _circuitHandlers.Length; i++)
+            await HandlerLock.WaitAsync(cancellationToken);
+
+            try
             {
-                var circuitHandler = _circuitHandlers[i];
-                try
+                List<Exception> exceptions = null;
+
+                for (var i = 0; i < _circuitHandlers.Length; i++)
                 {
-                    await circuitHandler.OnCircuitOpenedAsync(Circuit, cancellationToken);
+                    var circuitHandler = _circuitHandlers[i];
+                    try
+                    {
+                        await circuitHandler.OnCircuitOpenedAsync(Circuit, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitOpenedAsync), ex);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(ex);
+                    }
                 }
-                catch (Exception ex)
+
+                if (exceptions != null)
                 {
-                    OnHandlerError(circuitHandler, nameof(CircuitHandler.OnCircuitOpenedAsync), ex);
+                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
                 }
+            }
+            finally
+            {
+                HandlerLock.Release();
             }
         }
 
@@ -268,9 +237,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.ConnectionUp(_logger, Circuit.Id, Client.ConnectionId);
 
+            await HandlerLock.WaitAsync(cancellationToken);
+
             try
             {
-                await HandlerLock.WaitAsync(cancellationToken);
+                List<Exception> exceptions = null;
 
                 for (var i = 0; i < _circuitHandlers.Length; i++)
                 {
@@ -281,8 +252,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     }
                     catch (Exception ex)
                     {
-                        OnHandlerError(circuitHandler, nameof(CircuitHandler.OnConnectionUpAsync), ex);
+                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionUpAsync), ex);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(ex);
                     }
+                }
+
+                if (exceptions != null)
+                {
+                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
                 }
             }
             finally
@@ -295,9 +273,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.ConnectionDown(_logger, Circuit.Id, Client.ConnectionId);
 
+            await HandlerLock.WaitAsync(cancellationToken);
+
             try
             {
-                await HandlerLock.WaitAsync(cancellationToken);
+                List<Exception> exceptions = null;
 
                 for (var i = 0; i < _circuitHandlers.Length; i++)
                 {
@@ -308,8 +288,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     }
                     catch (Exception ex)
                     {
-                        OnHandlerError(circuitHandler, nameof(CircuitHandler.OnConnectionDownAsync), ex);
+                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionDownAsync), ex);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(ex);
                     }
+                }
+
+                if (exceptions != null)
+                {
+                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
                 }
             }
             finally
@@ -318,46 +305,229 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        protected virtual void OnHandlerError(CircuitHandler circuitHandler, string handlerMethod, Exception ex)
-        {
-            Log.UnhandledExceptionInvokingCircuitHandler(_logger, circuitHandler, handlerMethod, ex);
-        }
-
-        private async Task OnCircuitDownAsync()
+        private async Task OnCircuitDownAsync(CancellationToken cancellationToken)
         {
             Log.CircuitClosed(_logger, Circuit.Id);
 
-            for (var i = 0; i < _circuitHandlers.Length; i++)
+            await HandlerLock.WaitAsync(cancellationToken);
+
+            try
             {
-                var circuitHandler = _circuitHandlers[i];
-                try
+                List<Exception> exceptions = null;
+
+                for (var i = 0; i < _circuitHandlers.Length; i++)
                 {
-                    await circuitHandler.OnCircuitClosedAsync(Circuit, default);
+                    var circuitHandler = _circuitHandlers[i];
+                    try
+                    {
+                        await circuitHandler.OnCircuitClosedAsync(Circuit, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitClosedAsync), ex);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(ex);
+                    }
                 }
-                catch (Exception ex)
+
+                if (exceptions != null)
                 {
-                    OnHandlerError(circuitHandler, nameof(CircuitHandler.OnCircuitClosedAsync), ex);
+                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
                 }
+            }
+            finally
+            {
+                HandlerLock.Release();
             }
         }
 
-        public async ValueTask DisposeAsync()
+        // BeginInvokeDotNetFromJS is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
-            Log.DisposingCircuit(_logger, CircuitId);
+            AssertInitialized();
+            AssertNotDisposed();
 
-            await Renderer.Dispatcher.InvokeAsync(async () =>
+            try
             {
-                try
+                await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    await OnConnectionDownAsync(CancellationToken.None);
-                    await OnCircuitDownAsync();
-                }
-                finally
+                    SetCurrentCircuitHost(this);
+                    Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
+                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+                });
+            }
+            catch (Exception ex)
+            {
+                // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
+                // however, we still want this to get logged if we do.
+                Log.BeginInvokeDotNetFailed(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId, ex);
+                if (Client.Connected)
                 {
-                    Renderer.Dispose();
-                    _scope.Dispose();
+                    await NotifyClientError(Client, "Interop call failed.");
                 }
-            });
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        // EndInvokeJSFromDotNet is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public async Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    if (!succeded)
+                    {
+                        // We can log the arguments here because it is simply the JS error with the call stack.
+                        Log.EndInvokeJSFailed(_logger, asyncCall, arguments);
+                    }
+                    else
+                    {
+                        Log.EndInvokeJSSucceeded(_logger, asyncCall);
+                    }
+
+                    DotNetDispatcher.EndInvoke(arguments);
+                });
+            }
+            catch (Exception ex)
+            {
+                // An error completing JS interop means that the user sent invalid data, a well-behaved
+                // client won't do this.
+                Log.EndInvokeDispatchException(_logger, ex);
+                if (Client.Connected)
+                {
+                    await NotifyClientError(Client, "Invalid interop arguments.");
+                }
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        // DispatchEvent is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            WebEventData webEventData;
+            try
+            {
+                AssertInitialized();
+                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
+            }
+            catch (Exception ex)
+            {
+                // Invalid event data is fatal. We expect a well-behaved client to send valid JSON.
+                Log.DispatchEventFailedToParseEventData(_logger, ex);
+                if (Client.Connected)
+                {
+                    await NotifyClientError(Client, "Invalid event data.");
+                }
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                return;
+            }
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    return Renderer.DispatchEventAsync(
+                        webEventData.EventHandlerId,
+                        webEventData.EventFieldInfo,
+                        webEventData.EventArgs);
+                });
+            }
+            catch (Exception ex)
+            {
+                // A failure in dispatching an event means that it was an attempt to use an invalid event id.
+                // A well-behaved client won't do this.
+                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
+                if (Client.Connected)
+                {
+                    await NotifyClientError(Client, "Failed to dispatch event.");
+                }
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        // OnLocationChangedAsync is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public async Task OnLocationChangedAsync(string uri, bool intercepted)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    Log.LocationChange(_logger, uri, CircuitId);
+                    var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
+                    navigationManager.NotifyLocationChanged(uri, intercepted);
+                    Log.LocationChangeSucceeded(_logger, uri, CircuitId);
+                });
+            }
+
+            // It's up to the NavigationManager implementation to validate the URI.
+            //
+            // Note that it's also possible that setting the URI could cause a failure in code that listens
+            // to NavigationManager.LocationChanged.
+            //
+            // In either case, a well-behaved client will not send invalid URIs, and we don't really
+            // want to continue processing with the circuit if setting the URI failed inside application
+            // code. The safest thing to do is consider it a critical failure since URI is global state,
+            // and a failure means that an update to global state was partially applied.
+            catch (LocationChangeException nex)
+            {
+                // LocationChangeException means that it failed in user-code. Treat this like an unhandled
+                // exception in user-code.
+                Log.LocationChangeFailedInCircuit(_logger, uri, CircuitId, nex);
+                await ReportUnhandledException(nex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(nex, isTerminating: false));
+            }
+            catch (Exception ex)
+            {
+                // Any other exception means that it failed validation, or inside the NavigationManager. Treat
+                // this like bad data.
+                Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
+                if (Client.Connected)
+                {
+                    await NotifyClientError(Client, $"Location change to {uri} failed.");
+                }
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            }
+        }
+
+        public void SetCircuitUser(ClaimsPrincipal user)
+        {
+            // This can be called before the circuit is initialized.
+            AssertNotDisposed();
+
+            var authenticationStateProvider = Services.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
+            if (authenticationStateProvider != null)
+            {
+                var authenticationState = new AuthenticationState(user);
+                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            }
+        }
+
+        public void SendPendingBatches()
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            // Dispatch any buffered renders we accumulated during a disconnect.
+            // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
+            // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+            _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
         private void AssertInitialized()
@@ -368,26 +538,86 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private void Renderer_UnhandledException(object sender, Exception e)
+        private void AssertNotDisposed()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(objectName: null);
+            }
+        }
+
+        // An unhandled exception from the renderer is always fatal because it came from user code.
+        // We want to notify the client if it's still connected, and then tear-down the circuit.
+        private async void Renderer_UnhandledException(object sender, Exception e)
+        {
+            await ReportUnhandledException(e);
             UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(e, isTerminating: false));
         }
 
-        private void SynchronizationContext_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        // An unhandled exception from the renderer is always fatal because it came from user code.
+        // We want to notify the client if it's still connected, and then tear-down the circuit.
+        private async void SynchronizationContext_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
+            await ReportUnhandledException((Exception)e.ExceptionObject);
             UnhandledException?.Invoke(this, e);
+        }
+
+        private async Task ReportUnhandledException(Exception exception)
+        {
+            Log.CircuitUnhandledException(_logger, CircuitId, exception);
+            if (!Client.Connected)
+            {
+                _logger.LogDebug("Client is disconnected YO.");
+                return;
+            }
+
+            try
+            {
+                if (_options.DetailedErrors)
+                {
+                    await NotifyClientError(Client, exception.ToString());
+                }
+                else
+                {
+                    var message =
+                        $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                        $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'";
+                    await NotifyClientError(Client, message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.CircuitUnhandledExceptionFailed(_logger, CircuitId, ex);
+            }
+        }
+
+        private async Task NotifyClientError(IClientProxy client, string error)
+        {
+            _logger.LogDebug("About to notify of an error");
+            await client.SendAsync("JS.Error", error);
+            _logger.LogDebug("Completed notify of an error");
         }
 
         private static class Log
         {
-            private static readonly Action<ILogger, Type, string, string, Exception> _unhandledExceptionInvokingCircuitHandler;
-            private static readonly Action<ILogger, string, Exception> _disposingCircuit;
+            private static readonly Action<ILogger, Exception> _intializationStarted;
+            private static readonly Action<ILogger, Exception> _intializationSucceded;
+            private static readonly Action<ILogger, Exception> _intializationFailed;
+            private static readonly Action<ILogger, string, Exception> _disposeStarted;
+            private static readonly Action<ILogger, string, Exception> _disposeSucceded;
+            private static readonly Action<ILogger, string, Exception> _disposeFailed;
             private static readonly Action<ILogger, string, Exception> _onCircuitOpened;
             private static readonly Action<ILogger, string, string, Exception> _onConnectionUp;
             private static readonly Action<ILogger, string, string, Exception> _onConnectionDown;
             private static readonly Action<ILogger, string, Exception> _onCircuitClosed;
+            private static readonly Action<ILogger, Type, string, string, Exception> _circuitHandlerFailed;
+            private static readonly Action<ILogger, string, Exception> _circuitUnhandledException;
+            private static readonly Action<ILogger, string, Exception> _circuitUnhandledExceptionFailed;
+
             private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStatic;
             private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstance;
+            private static readonly Action<ILogger, string, string, string, Exception> _beginInvokeDotNetStaticFailed;
+            private static readonly Action<ILogger, string, long, string, Exception> _beginInvokeDotNetInstanceFailed;
             private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
             private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
@@ -396,39 +626,71 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, string, string, Exception> _locationChange;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeSucceeded;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeFailed;
+            private static readonly Action<ILogger, string, string, Exception> _locationChangeFailedInCircuit;
 
             private static class EventIds
             {
-                public static readonly EventId ExceptionInvokingCircuitHandlerMethod = new EventId(100, "ExceptionInvokingCircuitHandlerMethod");
-                public static readonly EventId DisposingCircuit = new EventId(101, "DisposingCircuitHost");
-                public static readonly EventId OnCircuitOpened = new EventId(102, "OnCircuitOpened");
-                public static readonly EventId OnConnectionUp = new EventId(103, "OnConnectionUp");
-                public static readonly EventId OnConnectionDown = new EventId(104, "OnConnectionDown");
-                public static readonly EventId OnCircuitClosed = new EventId(105, "OnCircuitClosed");
-                public static readonly EventId InvalidBrowserEventFormat = new EventId(106, "InvalidBrowserEventFormat");
-                public static readonly EventId DispatchEventFailedToParseEventData = new EventId(107, "DispatchEventFailedToParseEventData");
-                public static readonly EventId DispatchEventFailedToDispatchEvent = new EventId(108, "DispatchEventFailedToDispatchEvent");
-                public static readonly EventId BeginInvokeDotNet = new EventId(109, "BeginInvokeDotNet");
-                public static readonly EventId EndInvokeDispatchException = new EventId(110, "EndInvokeDispatchException");
-                public static readonly EventId EndInvokeJSFailed = new EventId(111, "EndInvokeJSFailed");
-                public static readonly EventId EndInvokeJSSucceeded = new EventId(112, "EndInvokeJSSucceeded");
-                public static readonly EventId DispatchEventThroughJSInterop = new EventId(113, "DispatchEventThroughJSInterop");
-                public static readonly EventId LocationChange = new EventId(114, "LocationChange");
-                public static readonly EventId LocationChangeSucceded = new EventId(115, "LocationChangeSucceeded");
-                public static readonly EventId LocationChangeFailed = new EventId(116, "LocationChangeFailed");
+                // 100s used for lifecycle stuff
+                public static readonly EventId InitializationStarted = new EventId(100, "InitializationStarted");
+                public static readonly EventId InitializationSucceeded = new EventId(101, "InitializationSucceeded");
+                public static readonly EventId InitializationFailed = new EventId(102, "InitializationFailed");
+                public static readonly EventId DisposeStarted = new EventId(103, "DisposeStarted");
+                public static readonly EventId DisposeSucceeded = new EventId(104, "DisposeSucceeded");
+                public static readonly EventId DisposeFailed = new EventId(105, "DisposeFailed");
+                public static readonly EventId OnCircuitOpened = new EventId(106, "OnCircuitOpened");
+                public static readonly EventId OnConnectionUp = new EventId(107, "OnConnectionUp");
+                public static readonly EventId OnConnectionDown = new EventId(108, "OnConnectionDown");
+                public static readonly EventId OnCircuitClosed = new EventId(109, "OnCircuitClosed");
+                public static readonly EventId CircuitHandlerFailed = new EventId(110, "CircuitHandlerFailed");
+                public static readonly EventId CircuitUnhandledException = new EventId(111, "CircuitUnhandledException");
+                public static readonly EventId CircuitUnhandledExceptionFailed = new EventId(112, "CircuitUnhandledExceptionFailed");
+
+                // 200s used for interactive stuff
+                public static readonly EventId DispatchEventFailedToParseEventData = new EventId(200, "DispatchEventFailedToParseEventData");
+                public static readonly EventId DispatchEventFailedToDispatchEvent = new EventId(201, "DispatchEventFailedToDispatchEvent");
+                public static readonly EventId BeginInvokeDotNet = new EventId(202, "BeginInvokeDotNet");
+                public static readonly EventId BeginInvokeDotNetFailed = new EventId(203, "BeginInvokeDotNetFailed");
+                public static readonly EventId EndInvokeDispatchException = new EventId(204, "EndInvokeDispatchException");
+                public static readonly EventId EndInvokeJSFailed = new EventId(205, "EndInvokeJSFailed");
+                public static readonly EventId EndInvokeJSSucceeded = new EventId(206, "EndInvokeJSSucceeded");
+                public static readonly EventId DispatchEventThroughJSInterop = new EventId(207, "DispatchEventThroughJSInterop");
+                public static readonly EventId LocationChange = new EventId(208, "LocationChange");
+                public static readonly EventId LocationChangeSucceded = new EventId(209, "LocationChangeSucceeded");
+                public static readonly EventId LocationChangeFailed = new EventId(210, "LocationChangeFailed");
+                public static readonly EventId LocationChangeFailedInCircuit = new EventId(211, "LocationChangeFailedInCircuit");
             }
 
             static Log()
             {
-                _unhandledExceptionInvokingCircuitHandler = LoggerMessage.Define<Type, string, string>(
-                    LogLevel.Error,
-                    EventIds.ExceptionInvokingCircuitHandlerMethod,
-                    "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}");
-
-                _disposingCircuit = LoggerMessage.Define<string>(
+                _intializationStarted = LoggerMessage.Define(
                     LogLevel.Debug,
-                    EventIds.DisposingCircuit,
-                    "Disposing circuit with identifier {CircuitId}");
+                    EventIds.InitializationFailed,
+                    "Circuit initialization started");
+
+                _intializationSucceded = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.InitializationFailed,
+                    "Circuit initialization succeeded");
+
+                _intializationFailed = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.InitializationFailed,
+                    "Circuit initialization failed");
+
+                _disposeStarted = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.DisposeStarted,
+                    "Disposing circuit {CircuitId} started");
+
+                _disposeSucceded = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.DisposeSucceeded,
+                    "Disposing circuit {CircuitId} succeded");
+
+                _disposeFailed = LoggerMessage.Define<string>(
+                    LogLevel.Debug,
+                    EventIds.DisposeFailed,
+                    "Disposing circuit {CircuitId} failed");
 
                 _onCircuitOpened = LoggerMessage.Define<string>(
                     LogLevel.Debug,
@@ -450,6 +712,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                    EventIds.OnCircuitClosed,
                    "Closing circuit with id {CircuitId}.");
 
+                _circuitHandlerFailed = LoggerMessage.Define<Type, string, string>(
+                    LogLevel.Error,
+                    EventIds.CircuitHandlerFailed,
+                    "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}");
+
+                 _circuitUnhandledException = LoggerMessage.Define<string>(
+                    LogLevel.Error,
+                    EventIds.CircuitUnhandledException,
+                    "Unhandled exception in circuit {CircuitId}");
+
+                 _circuitUnhandledExceptionFailed = LoggerMessage.Define<string>(
+                     LogLevel.Debug,
+                     EventIds.CircuitUnhandledExceptionFailed,
+                     "Failed to transmit exception to client in circuit {CircuitId}");
+
                 _beginInvokeDotNetStatic = LoggerMessage.Define<string, string, string>(
                     LogLevel.Debug,
                     EventIds.BeginInvokeDotNet,
@@ -459,6 +736,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     LogLevel.Debug,
                     EventIds.BeginInvokeDotNet,
                     "Invoking instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'");
+
+                _beginInvokeDotNetStaticFailed = LoggerMessage.Define<string, string, string>(
+                    LogLevel.Debug,
+                    EventIds.BeginInvokeDotNetFailed,
+                    "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'");
+
+                _beginInvokeDotNetInstanceFailed = LoggerMessage.Define<string, long, string>(
+                    LogLevel.Debug,
+                    EventIds.BeginInvokeDotNetFailed,
+                    "Failed to invoke instance method '{MethodIdentifier}' on instance '{DotNetObjectId}' with callback id '{CallId}'");
 
                 _endInvokeDispatchException = LoggerMessage.Define(
                     LogLevel.Debug,
@@ -488,22 +775,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _locationChange = LoggerMessage.Define<string, string>(
                     LogLevel.Debug,
                     EventIds.LocationChange,
-                    "Location changing to {URI} in {CircuitId}.");
+                    "Location changing to {URI} in circuit {CircuitId}.");
 
                 _locationChangeSucceeded = LoggerMessage.Define<string, string>(
                     LogLevel.Debug,
                     EventIds.LocationChangeSucceded,
-                    "Location change to {URI} in {CircuitId} succeded.");
+                    "Location change to {URI} in circuit {CircuitId} succeded.");
 
                 _locationChangeFailed = LoggerMessage.Define<string, string>(
                     LogLevel.Debug,
                     EventIds.LocationChangeFailed,
-                    "Location change to {URI} in {CircuitId} failed.");
+                    "Location change to {URI} in circuit {CircuitId} failed.");
+
+                _locationChangeFailedInCircuit = LoggerMessage.Define<string, string>(
+                    LogLevel.Error,
+                    EventIds.LocationChangeFailed,
+                    "Location change to {URI} in circuit {CircuitId} failed.");
             }
 
-            public static void UnhandledExceptionInvokingCircuitHandler(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
+            public static void InitializationStarted(ILogger logger) =>_intializationStarted(logger, null);
+            public static void InitializationSucceeded(ILogger logger) => _intializationSucceded(logger, null);
+            public static void InitializationFailed(ILogger logger, Exception exception) => _intializationFailed(logger, exception);
+            public static void DisposeStarted(ILogger logger, string circuitId) => _disposeStarted(logger, circuitId, null);
+            public static void DisposeSucceeded(ILogger logger, string circuitId) => _disposeSucceded(logger, circuitId, null);
+            public static void DisposeFailed(ILogger logger, string circuitId, Exception exception) => _disposeFailed(logger, circuitId, exception);
+            public static void CircuitOpened(ILogger logger, string circuitId) => _onCircuitOpened(logger, circuitId, null);
+            public static void ConnectionUp(ILogger logger, string circuitId, string connectionId) => _onConnectionUp(logger, circuitId, connectionId, null);
+            public static void ConnectionDown(ILogger logger, string circuitId, string connectionId) =>  _onConnectionDown(logger, circuitId, connectionId, null);
+            public static void CircuitClosed(ILogger logger, string circuitId) => _onCircuitClosed(logger, circuitId, null);
+
+            public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
             {
-                _unhandledExceptionInvokingCircuitHandler(
+                _circuitHandlerFailed(
                     logger,
                     handler.GetType(),
                     handlerMethod,
@@ -511,27 +814,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     exception);
             }
 
-            public static void DisposingCircuit(ILogger logger, string circuitId) => _disposingCircuit(logger, circuitId, null);
-
-            public static void CircuitOpened(ILogger logger, string circuitId) => _onCircuitOpened(logger, circuitId, null);
-
-            public static void ConnectionUp(ILogger logger, string circuitId, string connectionId) =>
-                _onConnectionUp(logger, circuitId, connectionId, null);
-
-            public static void ConnectionDown(ILogger logger, string circuitId, string connectionId) =>
-                _onConnectionDown(logger, circuitId, connectionId, null);
-
-            public static void CircuitClosed(ILogger logger, string circuitId) =>
-                _onCircuitClosed(logger, circuitId, null);
-
+            public static void CircuitUnhandledException(ILogger logger, string circuitId, Exception exception) => _circuitUnhandledException(logger, circuitId, exception);
+            public static void CircuitUnhandledExceptionFailed(ILogger logger, string circuitId, Exception exception) => _circuitUnhandledExceptionFailed(logger, circuitId, exception);
             public static void EndInvokeDispatchException(ILogger logger, Exception ex) => _endInvokeDispatchException(logger, ex);
-
             public static void EndInvokeJSFailed(ILogger logger, long asyncHandle, string arguments) => _endInvokeJSFailed(logger, asyncHandle, arguments, null);
-
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
-
             public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
-
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 
             public static void BeginInvokeDotNet(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId)
@@ -546,11 +834,22 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
             }
 
-            public static void LocationChange(ILogger logger, string circuitId, string uri) => _locationChange(logger, circuitId, uri, null);
+            public static void BeginInvokeDotNetFailed(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, Exception exception)
+            {
+                if (assemblyName != null)
+                {
+                    _beginInvokeDotNetStaticFailed(logger, methodIdentifier, assemblyName, callId, null);
+                }
+                else
+                {
+                    _beginInvokeDotNetInstanceFailed(logger, methodIdentifier, dotNetObjectId, callId, null);
+                }
+            }
 
-            public static void LocationChangeSucceeded(ILogger logger, string circuitId, string uri) => _locationChangeSucceeded(logger, circuitId, uri, null);
-
-            public static void LocationChangeFailed(ILogger logger, string circuitId, string uri, Exception exception) => _locationChangeFailed(logger, circuitId, uri, exception);
+            public static void LocationChange(ILogger logger, string uri, string circuitId) => _locationChange(logger, uri, circuitId, null);
+            public static void LocationChangeSucceeded(ILogger logger, string uri, string circuitId) => _locationChangeSucceeded(logger, uri, circuitId, null);
+            public static void LocationChangeFailed(ILogger logger, string uri, string circuitId, Exception exception) => _locationChangeFailed(logger, uri, circuitId, exception);
+            public static void LocationChangeFailedInCircuit(ILogger logger, string uri, string circuitId, Exception exception) => _locationChangeFailedInCircuit(logger, uri, circuitId, exception);
         }
     }
 }
