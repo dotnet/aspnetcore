@@ -445,8 +445,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             if (updateDisplayTask.IsCanceled)
             {
-                // The display update was cancelled (maybe due to a timeout on the components server-side case or due
-                // to the renderer being disposed)
+                // The display update was canceled.
+                // This can be due to a timeout on the components server-side case, or the renderer being disposed.
+
+                // The latter case is normal during prerendering, as the render never fully completes (the display never
+                // gets updated, no references get populated and JavaScript interop is not available) and we simply discard
+                // the renderer after producing the prerendered content.
                 return Task.CompletedTask;
             }
             if (updateDisplayTask.IsFaulted)

@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
         public void ReconnectUI()
         {
             Browser.FindElement(By.LinkText("Counter")).Click();
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 .Until(driver => reconnectionDialog.GetCssValue("display") == "none");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12788")]
         public void RendersContinueAfterReconnect()
         {
             Browser.FindElement(By.LinkText("Ticker")).Click();
@@ -184,11 +184,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 _ => element.Text != currentValue);
         }
 
+        // Since we've removed stateful prerendering, the name which is passed in
+        // during prerendering cannot be retained. The first interactive render
+        // will remove it.
         [Fact]
-        public void RendersContinueAfterPrerendering()
+        public void RendersDoNotPreserveState()
         {
             Browser.FindElement(By.LinkText("Greeter")).Click();
-            Browser.Equal("Hello Guest", () => Browser.FindElement(By.ClassName("greeting")).Text);
+            Browser.Equal("Hello", () => Browser.FindElement(By.ClassName("greeting")).Text);
         }
 
         [Fact]

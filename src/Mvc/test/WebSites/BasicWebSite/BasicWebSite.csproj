@@ -15,7 +15,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" />
     <Reference Include="Microsoft.AspNetCore.Localization.Routing" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />

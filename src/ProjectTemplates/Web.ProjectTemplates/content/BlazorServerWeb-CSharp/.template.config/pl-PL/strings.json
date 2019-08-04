@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Aplikacja serwera Blazor",
+    "description": "Szablon projektu służący do tworzenia aplikacji serwera Blazor działającej po stronie serwera wewnątrz aplikacji platformy ASP.NET Core i obsługującej interakcje z użytkownikami za pośrednictwem połączenia SignalR. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników."
+  }
+}

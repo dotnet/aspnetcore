@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Bootstrap3Tests
             var hasV3Part = false;
             var hasV4Part = false;
             var factory = Factory.WithWebHostBuilder(
-                whb => whb.UseStartup<Startup>().ConfigureServices(
+                whb => whb.ConfigureServices(
                     services => services.AddMvc().ConfigureApplicationPartManager(
                         apm => (hasV3Part, hasV4Part) = (HasPart(apm, "V3"), HasPart(apm, "V4")))));
 

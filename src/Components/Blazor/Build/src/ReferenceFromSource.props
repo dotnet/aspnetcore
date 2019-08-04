@@ -46,12 +46,11 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <UndefineProperties>TargetFramework</UndefineProperties>
     </ProjectReference>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <!-- Optimization. Do not require framework compatibility between these projects. -->
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <UndefineProperties>TargetFramework</UndefineProperties>
+    </ProjectReference>
   </ItemGroup>
-
-  <PropertyGroup>
-    <!-- When referencing from source, we need to disable VS's fast up-to-date check,
-         because otherwise changing the underlying Blazor library code isn't enough
-         to make it rebuild the affected library apps. -->
-    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
-  </PropertyGroup>
 </Project>

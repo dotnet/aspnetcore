@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Angular",
+    "description": "ASP.NET Core アプリケーションを Angular で作成するためのプロジェクト テンプレートです。"
+  }
+}

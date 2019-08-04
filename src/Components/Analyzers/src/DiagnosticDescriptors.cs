@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),
             new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Format), Resources.ResourceManager, typeof(Resources)),
             "Encapsulation",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Error,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(Resources.ComponentParameterSettersShouldBePublic_Description), Resources.ResourceManager, typeof(Resources)));
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             new LocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Title), Resources.ResourceManager, typeof(Resources)),
             new LocalizableResourceString(nameof(Resources.ComponentParameterShouldBePublic_Format), Resources.ResourceManager, typeof(Resources)),
             "Encapsulation",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Error,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(Resources.ComponentParametersShouldBePublic_Description), Resources.ResourceManager, typeof(Resources)));
 

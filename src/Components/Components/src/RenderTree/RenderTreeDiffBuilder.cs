@@ -99,6 +99,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     if (oldKey != null || newKey != null)
                     {
                         #region "Get diff action by matching on key"
+                        // Regardless of whether these two keys match, since you are using keys, we want to validate at this point that there are no clashes
+                        // so ensure we've built the dictionary that will be used for lookups if any don't match
+                        keyedItemInfos ??= BuildKeyToInfoLookup(diffContext, origOldStartIndex, oldEndIndexExcl, origNewStartIndex, newEndIndexExcl);
+
                         if (Equals(oldKey, newKey))
                         {
                             // Keys match
@@ -108,11 +112,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         else
                         {
                             // Keys don't match
-                            if (keyedItemInfos == null)
-                            {
-                                keyedItemInfos = BuildKeyToInfoLookup(diffContext, origOldStartIndex, oldEndIndexExcl, origNewStartIndex, newEndIndexExcl);
-                            }
-
                             var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1);
                             var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1);
                             var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0;
