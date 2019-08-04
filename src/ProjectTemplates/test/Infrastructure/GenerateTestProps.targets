@@ -6,6 +6,7 @@
     Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
       <PropsProperties>
+        RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
         MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
         MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
         MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);

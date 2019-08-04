@@ -15,6 +15,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <NoSemVer20>true</NoSemVer20>
+
+    <!-- Grab packages LB.csproj should have just built. -->
+    <RestoreAdditionalProjectSources>$(ArtifactsNonShippingPackagesDir)/RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,13 +36,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
   </ItemGroup>
-
-  <Target Name="_AddNuGetConfig" BeforeTargets="Restore">
-    <GenerateFileFromTemplate
-        TemplateFile="$(MSBuildThisFileDirectory)NuGet.config.in"
-        Properties="ArtifactsNonShippingPackagesDir=$(ArtifactsNonShippingPackagesDir)"
-        OutputPath="$(MSBuildThisFileDirectory)NuGet.config" />
-  </Target>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
     <ItemGroup>

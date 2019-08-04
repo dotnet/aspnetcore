@@ -8,14 +8,6 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
-  <!--
-    Workaround for error when running build.cmd from subfolders. It appears RepoRoot is not set correctly.
-    C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets(523,5): error : File 'C:\src\aspnet\AspNetCore\src\..NuGet.config' does not exist.
-  -->
-  <PropertyGroup>
-    <RestoreConfigFile>$(RepoRoot)NuGet.config</RestoreConfigFile>
-  </PropertyGroup>
-
   <!-- Prevent pdb2pdb.exe from running because it is currently causing build failures in Blazor. -->
   <PropertyGroup>
     <PublishWindowsPdb>false</PublishWindowsPdb>

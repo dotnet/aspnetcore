@@ -147,10 +147,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
-
-            var repoRoot = GetMetadata("TestSettings:RepoRoot");
-            File.Copy(Path.Combine(repoRoot, "NuGet.config"), Path.Combine(WorkFolder, "NuGet.config"), overwrite: true);
-
         }
 
         private string GetMetadata(string key)

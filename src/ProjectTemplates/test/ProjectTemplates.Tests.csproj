@@ -126,11 +126,6 @@
       Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
-    <GenerateFileFromTemplate
-      TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\NuGet.config.in"
-      Properties="ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);ArtifactsNonShippingPackagesDir=$(ArtifactsNonShippingPackagesDir)"
-      OutputPath="$(TestTemplateCreationFolder)NuGet.config" />
-
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
     <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />
 

@@ -14,9 +14,10 @@
       <_BasePackagePath>content\additionaldeps\</_BasePackagePath>
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
       <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
-
-      <!-- Latest .NET Core SDK maintains _some_ support for $(RestoreSources). Support customers using that feature. -->
-      <_RsRestoreSources>$(RestoreSources)</_RsRestoreSources>
+      <_RsRestoreSources>
+        $(ArtifactsShippingPackagesDir);
+        $(ArtifactsNonShippingPackagesDir)
+      </_RsRestoreSources>
 
       <ManifestFileContents>
       <![CDATA[
@@ -65,7 +66,7 @@
               ComposeDir=$(_RuntimeStoreOutput)\%(HostingStartupRuntimeStoreTargets.Runtime);
               SkipOptimization=true;
               DisablePackageReferenceRestrictions=true;
-              RestoreSources=$(_RsRestoreSources)" />
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
     <!-- Generate deps -->
     <RemoveDir Directories="%(_HostingStartupPackageReference.WorkingDirectory)" />
 
@@ -81,7 +82,7 @@
               MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
               UseAppHost=false;
               NoBuild=false;
-              RestoreSources=$(_RsRestoreSources)" />
+              RestoreAdditionalProjectSources=$(_RsRestoreSources)" />
 
     <MSBuild Projects="%(_HostingStartupPackageReference.Project)"
              Targets="Publish"
