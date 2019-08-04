@@ -9,25 +9,25 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="3.0.0-preview9.19379.2">
+    <Dependency Name="Microsoft.AspNetCore.Blazor.Mono" Version="5.0.0-alpha1.19403.2">
       <Uri>https://github.com/aspnet/Blazor</Uri>
-      <Sha>cd9254a05cfa52defeacd31697d25b2a4ed17510</Sha>
+      <Sha>dd092c2236cf9375b50e19295dd2faf36e6221f6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview9.19402.1">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="5.0.0-alpha1.19381.2">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>f039aa935462163dead64ca2d6f9c6d27f4e290b</Sha>
+      <Sha>65994cb6ffd2d8da87db74e2b3e34cb5e350aff0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview9.19402.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="5.0.0-alpha1.19381.2">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>f039aa935462163dead64ca2d6f9c6d27f4e290b</Sha>
+      <Sha>65994cb6ffd2d8da87db74e2b3e34cb5e350aff0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview9.19402.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="5.0.0-alpha1.19381.2">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>f039aa935462163dead64ca2d6f9c6d27f4e290b</Sha>
+      <Sha>65994cb6ffd2d8da87db74e2b3e34cb5e350aff0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview9.19402.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-alpha1.19381.2">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>f039aa935462163dead64ca2d6f9c6d27f4e290b</Sha>
+      <Sha>65994cb6ffd2d8da87db74e2b3e34cb5e350aff0</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview9.19402.9">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
