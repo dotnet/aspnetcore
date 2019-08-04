@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -76,6 +74,28 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.NotNull(client);
+        }
+
+        [Fact] // Verifies that AddHttpClient does not override any existing registration
+        public void AddHttpClient_DoesNotRegisterDefaultClientIfAlreadyRegistered()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(_ => new HttpClient() { Timeout = TimeSpan.FromSeconds(42) });
+
+            // Act
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+            var clients = services.GetServices<HttpClient>();
+
+            // Assert
+            Assert.NotNull(clients);
+
+            var client = Assert.Single(clients);
+
+            Assert.NotNull(client);
+            Assert.Equal(TimeSpan.FromSeconds(42), client.Timeout);
         }
 
         [Fact]

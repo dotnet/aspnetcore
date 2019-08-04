@@ -52,8 +52,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // because we access it by reaching into the service collection.
             services.TryAddSingleton(new HttpClientMappingRegistry());
 
-            //Register default client as HttpClient
-            services.AddTransient(s =>
+            // Register default client as HttpClient
+            services.TryAddTransient(s =>
             {
                 return s.GetRequiredService<IHttpClientFactory>().CreateClient(string.Empty);
             });
