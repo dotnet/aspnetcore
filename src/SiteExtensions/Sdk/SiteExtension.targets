@@ -14,11 +14,10 @@
       <_BasePackagePath>content\additionaldeps\</_BasePackagePath>
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
       <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
-      <_RsRestoreSources>
-        $(RestoreSources);
-        $(ArtifactsShippingPackagesDir);
-        $(ArtifactsNonShippingPackagesDir)
-      </_RsRestoreSources>
+
+      <!-- Latest .NET Core SDK maintains _some_ support for $(RestoreSources). Support customers using that feature. -->
+      <_RsRestoreSources>$(RestoreSources)</_RsRestoreSources>
+
       <ManifestFileContents>
       <![CDATA[
 <Project Sdk="Microsoft.NET.Sdk">

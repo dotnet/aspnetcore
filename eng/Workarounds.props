@@ -16,17 +16,6 @@
     <RestoreConfigFile>$(RepoRoot)NuGet.config</RestoreConfigFile>
   </PropertyGroup>
 
-  <!--
-    Required to restore the RoslynTools.ModifyVsixManifest package.
-    This isn't auto-detected by Arcade like other feeds are.
-  -->
-  <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
-    </RestoreSources>
-  </PropertyGroup>
-
   <!-- Prevent pdb2pdb.exe from running because it is currently causing build failures in Blazor. -->
   <PropertyGroup>
     <PublishWindowsPdb>false</PublishWindowsPdb>

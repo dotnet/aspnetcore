@@ -31,4 +31,10 @@
     </ProjectReference>
   </ItemGroup>
 
+  <Target Name="_AddNuGetConfig" BeforeTargets="Restore">
+    <GenerateFileFromTemplate
+        TemplateFile="$(MSBuildThisFileDirectory)NuGet.config.in"
+        Properties="ArtifactsShippingPackagesDir=$(ArtifactsShippingPackagesDir);ArtifactsNonShippingPackagesDir=$(ArtifactsNonShippingPackagesDir)"
+        OutputPath="$(MSBuildThisFileDirectory)NuGet.config" />
+  </Target>
 </Project>

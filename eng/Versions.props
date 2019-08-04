@@ -250,25 +250,7 @@
   </PropertyGroup>
   <!-- Restore feeds -->
   <PropertyGroup Label="Restore feeds">
-    <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
-      $(RestoreSources);
-      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
-      https://dotnetfeed.blob.core.windows.net/aspnet-blazor/index.json;
-      https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json;
-      https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json;
-      https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json;
-      https://grpc.jfrog.io/grpc/api/nuget/v3/grpc-nuget-dev;
-    </RestoreSources>
-    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND $(MicrosoftNetCompilersToolsetPackageVersion.Contains('-')) ">
-      $(RestoreSources);
-      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
-    </RestoreSources>
-    <!-- TODO remove this once we move Microsoft.Internal.AspNetCore.H2Spec.All to a non-myget feed -->
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-    </RestoreSources>
-    <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
+    <!-- In an orchestrated build, this may be overridden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>
   </PropertyGroup>
 </Project>

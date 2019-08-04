@@ -146,14 +146,11 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Directory.CreateDirectory(WorkFolder);
 
             File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.props"), "<Project />");
+            File.WriteAllText(Path.Combine(WorkFolder, "Directory.Build.targets"), "<Project />");
 
-            var restoreSources = GetMetadata("TestSettings:RestoreSources");
+            var repoRoot = GetMetadata("TestSettings:RepoRoot");
+            File.Copy(Path.Combine(repoRoot, "NuGet.config"), Path.Combine(WorkFolder, "NuGet.config"), overwrite: true);
 
-            var dbTargets = new XDocument(
-                new XElement("Project",
-                    new XElement("PropertyGroup",
-                        new XElement("RestoreSources", restoreSources))));
-            dbTargets.Save(Path.Combine(WorkFolder, "Directory.Build.targets"));
         }
 
         private string GetMetadata(string key)
