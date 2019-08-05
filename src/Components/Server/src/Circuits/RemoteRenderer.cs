@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 return;
             }
 
-            base.ProcessRenderQueue();
+            base.ProcessPendingRender();
         }
 
         /// <inheritdoc />
@@ -233,12 +233,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // disposed.
         }
 
-        public void OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
+        public Task OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
         {
             if (_disposing)
             {
                 // Disposing so don't do work.
-                return;
+                return Task.CompletedTask;
             }
 
             // When clients send acks we know for sure they received and applied the batch.
@@ -267,6 +267,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             if (!_unacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
                 Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
+                return Task.CompletedTask;
             }
             else
             {
@@ -277,7 +278,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     lastBatchId = nextUnacknowledgedBatch.BatchId;
                     // At this point the queue is definitely not full, we have at least emptied one slot, so we allow a further
                     // full queue log entry the next time it fills up.
-                    _queueIsFullNotified = false;
                     _unacknowledgedRenderBatches.TryDequeue(out _);
                     ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
                 }
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 {
                     HandleException(
                         new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 // Normally we will not have pending renders, but it might happen that we reached the limit of
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Invoke ProcessBufferedRenderRequests so that we might produce any additional batch that is
                 // missing.
                 // Its also safe to use the discard as ProcessRenderQueue won't throw.
-                _ = Dispatcher.InvokeAsync(() => ProcessRenderQueue());
+                return Dispatcher.InvokeAsync(() => ProcessPendingRender());
             }
         }
 

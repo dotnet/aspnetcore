@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID of the component to render.</param>
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
-        protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
+        internal void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
             EnsureSynchronizationContext();
 
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             if (!_isBatchInProgress)
             {
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
         }
 

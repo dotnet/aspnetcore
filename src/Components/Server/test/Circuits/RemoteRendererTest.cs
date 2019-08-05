@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.JSInterop;
 using Moq;
@@ -53,6 +54,81 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         }
 
         [Fact]
+        public void NotAcknowledgingRenders_ProducesBatches_UpToTheLimit()
+        {
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var renderer = (RemoteRenderer)GetHtmlRenderer(serviceProvider);
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            for (int i = 0; i < 20; i++)
+            {
+                component.TriggerRender();
+
+            }
+
+            // Assert
+            Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+        }
+
+        [Fact]
+        public async Task NoNewBatchesAreCreated_WhenThereAreNoPendingRenderRequestsFromComponents()
+        {
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var renderer = (RemoteRenderer)GetHtmlRenderer(serviceProvider);
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            for (var i = 0; i < 10; i++)
+            {
+                component.TriggerRender();
+            }
+
+            await renderer.OnRenderCompleted(2, null);
+
+            // Assert
+            Assert.Equal(9, renderer._unacknowledgedRenderBatches.Count);
+        }
+
+
+        [Fact]
+        public async Task ProducesNewBatch_WhenABatchGetsAcknowledged()
+        {
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var renderer = (RemoteRenderer)GetHtmlRenderer(serviceProvider);
+            var i = 0;
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, $"Value {i}");
+            });
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            for (i = 0; i < 20; i++)
+            {
+                component.TriggerRender();
+            }
+            Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+
+            await renderer.OnRenderCompleted(2, null);
+
+            // Assert
+            Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
+        }
+
+        [Fact]
         public async Task ProcessBufferedRenderBatches_WritesRenders()
         {
             // Arrange
@@ -84,7 +160,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
-            renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompleted(2, null);
 
             @event.Reset();
             firstBatchTCS.SetResult(null);
@@ -102,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             foreach (var id in renderIds.ToArray())
             {
-                renderer.OnRenderCompleted(id, null);
+                _ = renderer.OnRenderCompleted(id, null);
             }
 
             secondBatchTCS.SetResult(null);
@@ -165,14 +241,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Receive the ack for the intial batch
-            renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompleted(2, null);
             // Receive the ack for the second batch
-            renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompleted(3, null);
 
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
             // Repeat the ack for the third batch
-            renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompleted(3, null);
 
             // Assert
             Assert.Empty(exceptions);
@@ -228,14 +304,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Receive the ack for the intial batch
-            renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompleted(2, null);
             // Receive the ack for the second batch
-            renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompleted(2, null);
 
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
             // Repeat the ack for the third batch
-            renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompleted(3, null);
 
             // Assert
             Assert.Empty(exceptions);
@@ -289,7 +365,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Pretend that we missed the ack for the initial batch
-            renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompleted(3, null);
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 
@@ -345,7 +421,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            renderer.OnRenderCompleted(4, null);
+            _ = renderer.OnRenderCompleted(4, null);
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 
