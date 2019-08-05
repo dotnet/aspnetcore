@@ -221,8 +221,19 @@ if [ "$build_deps" = false ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildProjectReferences=false"
 fi
 
-if [ "$build_nodejs" = false ] && [ "$build_managed" = true ]; then
-    __warn "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
+if [ "$build_managed" = true ] || (["$build_all" = true ] && [ "$build_managed" != false ]); then
+    if [ -z "$build_nodejs" ]; then
+        if [ -x "$(command -v node)" ]; then
+            __warn "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected on PATH."
+        else
+            __warn "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
+            build_nodejs=false
+        fi
+    fi
+
+    if [ "$build_nodejs" = false ]; then
+        __warn "Some managed projects depend on NodeJS projects. Building NodeJS is disabled so the managed projects will fallback to using the output from previous builds. The output may not be correct or up to date."
+    fi
 fi
 
 # Only set these MSBuild properties if they were explicitly set by build parameters.

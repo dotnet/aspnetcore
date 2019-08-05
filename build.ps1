@@ -191,8 +191,23 @@ elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -a
     $BuildManaged = $true
 }
 
-if ($BuildManaged -and ($NoBuildNodeJS)) {
-    Write-Warning "Some managed projects that depend on NodeJS projects will be skipped since building NodeJS is disabled."
+if ($BuildManaged -or ($All -and (-not $NoBuildManaged))) {
+    if ((-not $BuildNodeJS) -and (-not $NoBuildNodeJS)) {
+        $node = Get-Command node -ErrorAction Ignore -CommandType Application
+
+        if ($node) {
+            $nodeHome = Split-Path -Parent (Split-Path -Parent $node.Path)
+            Write-Host -f Magenta "Building of C# project is enabled and has dependencies on NodeJS projects. Building of NodeJS projects is enabled since node is detected in $nodeHome."
+        }
+        else {
+            Write-Host -f Magenta "Building of NodeJS projects is disabled since node is not detected on Path and no BuildNodeJs or NoBuildNodeJs setting is set explicitly."
+            $NoBuildNodeJS = $true
+        }
+    }
+
+    if ($NoBuildNodeJS){
+        Write-Warning "Some managed projects depend on NodeJS projects. Building NodeJS is disabled so the managed projects will fallback to using the output from previous builds. The output may not be correct or up to date."
+    }
 }
 
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
