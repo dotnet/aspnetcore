@@ -300,9 +300,9 @@ namespace Microsoft.AspNetCore.Builder
                 .WithDisplayName("Blazor disconnect");
 
             return new ComponentEndpointConventionBuilder(
-                disconnectEndpoint,
-                hubEndpoint)
-                .AddComponent(componentType, selector);
+                hubEndpoint,
+                disconnectEndpoint)
+                    .AddComponent(componentType, selector);
         }
     }
 }

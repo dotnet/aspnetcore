@@ -47,17 +47,19 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     return true;
   };
 
-  window.addEventListener('unload', sendDisconnect, false);
+  window.addEventListener(
+    'unload',
+    () => {
+      const data = new FormData();
+      data.set('circuitId', circuit.circuitId);
+      navigator.sendBeacon('_blazor/disconnect', data);
+    },
+    false
+  );
 
   window['Blazor'].reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
-
-  function sendDisconnect(_: Event): void {
-    const data = new FormData();
-    data.set('circuitId', circuit.circuitId);
-    navigator.sendBeacon(`${document.baseURI}_blazor/disconnect`, data);
-  }
 }
 
 async function initializeConnection(options: BlazorOptions, logger: Logger): Promise<signalR.HubConnection> {

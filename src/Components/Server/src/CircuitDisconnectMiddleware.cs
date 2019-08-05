@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
+    // We use a middlware so that we can use DI.
     internal class CircuitDisconnectMiddleware
     {
         private const string CircuitIdKey = "circuitId";
@@ -38,25 +39,47 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            var form = await context.Request.ReadFormAsync();
-            if(!form.TryGetValue(CircuitIdKey, out var circuitId) || !CircuitIdFactory.ValidateCircuitId(circuitId))
+            var (hasCircuitId, circuitId) = await TryGetCircuitIdAsync(context);
+            if (!hasCircuitId)
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
             await TerminateCircuitGracefully(circuitId);
 
             context.Response.StatusCode = StatusCodes.Status200OK;
-            return;
+        }
+
+        private async Task<(bool, string)> TryGetCircuitIdAsync(HttpContext context)
+        {
+            try
+            {
+                if (!string.Equals(context.Request.ContentType, "application/x-www-form-urlencoded"))
+                {
+                    return (false, null);
+                }
+
+                var form = await context.Request.ReadFormAsync();
+                if (!form.TryGetValue(CircuitIdKey, out var circuitId) || !CircuitIdFactory.ValidateCircuitId(circuitId))
+                {
+                    return (false, null);
+                }
+
+                return (true, circuitId);
+            }
+            catch
+            {
+                return (false, null);
+            }
         }
 
         private async Task TerminateCircuitGracefully(string circuitId)
         {
             try
             {
-                Log.CircuitTerminatedGracefully(Logger, circuitId);
                 await Registry.Terminate(circuitId);
+                Log.CircuitTerminatedGracefully(Logger, circuitId);
             }
             catch (Exception e)
             {

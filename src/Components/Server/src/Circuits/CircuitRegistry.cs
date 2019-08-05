@@ -81,14 +81,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public void PermanentDisconnect(CircuitHost circuitHost)
-        {
-            DisconnectedCircuits.Remove(circuitHost.CircuitId);
-            ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _);
-            Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
-            circuitHost.Client.SetDisconnected();
-        }
-
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
         {
             Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
@@ -296,7 +288,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        internal ValueTask Terminate(string circuitId)
+        public ValueTask Terminate(string circuitId)
         {
             CircuitHost circuitHost;
             DisconnectedCircuitEntry entry = default;
@@ -304,21 +296,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 if (ConnectedCircuits.TryGetValue(circuitId, out circuitHost) || DisconnectedCircuits.TryGetValue(circuitId, out entry))
                 {
-                    PermanentDisconnect(circuitHost ?? entry.CircuitHost);
+                    circuitHost ??= entry.CircuitHost;
+                    DisconnectedCircuits.Remove(circuitHost.CircuitId);
+                    ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _);
+                    Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
+                    circuitHost.Client.SetDisconnected();
                 }
                 else
                 {
                     return default;
                 }
             }
-            if (circuitHost != null)
-            {
-                return circuitHost.DisposeAsync();
-            }
-            else
-            {
-                return default;
-            }
+
+            return circuitHost?.DisposeAsync() ?? default;
         }
 
         private readonly struct DisconnectedCircuitEntry
