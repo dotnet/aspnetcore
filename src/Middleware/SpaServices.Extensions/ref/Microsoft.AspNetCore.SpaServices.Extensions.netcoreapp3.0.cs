@@ -7,10 +7,13 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static void UseSpa(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.SpaServices.ISpaBuilder> configuration) { }
     }
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public static partial class SpaPrerenderingExtensions
     {
+        [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
         public static void UseSpaPrerendering(this Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder, System.Action<Microsoft.AspNetCore.Builder.SpaPrerenderingOptions> configuration) { }
     }
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial class SpaPrerenderingOptions
     {
         public SpaPrerenderingOptions() { }
@@ -44,6 +47,7 @@ namespace Microsoft.AspNetCore.SpaServices
 }
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial class AngularCliBuilder : Microsoft.AspNetCore.SpaServices.Prerendering.ISpaPrerendererBuilder
     {
         public AngularCliBuilder(string npmScript) { }
@@ -57,6 +61,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
 }
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
+    [System.ObsoleteAttribute("Prerendering is no longer supported out of box")]
     public partial interface ISpaPrerendererBuilder
     {
         System.Threading.Tasks.Task Build(Microsoft.AspNetCore.SpaServices.ISpaBuilder spaBuilder);
