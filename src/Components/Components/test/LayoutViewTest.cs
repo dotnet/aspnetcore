@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -243,7 +244,7 @@ namespace Microsoft.AspNetCore.Components.Test
                                 batch.ReferenceFrames[edit.ReferenceFrameIndex],
                                 sequence: 0);
                         });
-                }, 
+                },
                 diff =>
                 {
                     // Inserts new OtherNestedLayout
