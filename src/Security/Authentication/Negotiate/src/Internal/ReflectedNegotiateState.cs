@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     internal class ReflectedNegotiateState : INegotiateState
     {
+        // https://www.gnu.org/software/gss/reference/gss.pdf
+        private const uint GSS_S_NO_CRED = 7 << 16;
+
         private static readonly ConstructorInfo _constructor;
         private static readonly MethodInfo _getOutgoingBlob;
         private static readonly MethodInfo _isCompleted;
@@ -20,13 +23,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private static readonly MethodInfo _getIdentity;
         private static readonly MethodInfo _closeContext;
         private static readonly FieldInfo _statusCode;
+        private static readonly FieldInfo _statusException;
         private static readonly MethodInfo _getException;
+        private static readonly FieldInfo _gssMinorStatus;
+        private static readonly Type _gssExceptionType;
 
         private readonly object _instance;
 
         static ReflectedNegotiateState()
         {
-            var ntAuthType = typeof(AuthenticationException).Assembly.GetType("System.Net.NTAuthentication");
+            var secAssembly = typeof(AuthenticationException).Assembly;
+            var ntAuthType = secAssembly.GetType("System.Net.NTAuthentication", throwOnError: true);
             _constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
             _getOutgoingBlob = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Count() == 3).Single();
@@ -37,10 +44,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _closeContext = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("CloseContext")).Single();
 
-            var securityStatusType = typeof(AuthenticationException).Assembly.GetType("System.Net.SecurityStatusPal");
+            var securityStatusType = secAssembly.GetType("System.Net.SecurityStatusPal", throwOnError: true);
             _statusCode = securityStatusType.GetField("ErrorCode");
+            _statusException = securityStatusType.GetField("Exception");
 
-            var negoStreamPalType = typeof(AuthenticationException).Assembly.GetType("System.Net.Security.NegotiateStreamPal");
+            var interopType = secAssembly.GetType("Interop", throwOnError: true);
+            var netNativeType = interopType.GetNestedType("NetSecurityNative", BindingFlags.NonPublic | BindingFlags.Static);
+            _gssExceptionType = netNativeType.GetNestedType("GssApiException", BindingFlags.NonPublic);
+            _gssMinorStatus = _gssExceptionType.GetField("_minorStatus", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var negoStreamPalType = secAssembly.GetType("System.Net.Security.NegotiateStreamPal", throwOnError: true);
             _getIdentity = negoStreamPalType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Where(info =>
                 info.Name.Equals("GetIdentity")).Single();
             _getException = negoStreamPalType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Where(info =>
@@ -86,7 +99,24 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var blob = (byte[])_getOutgoingBlob.Invoke(_instance, parameters);
 
                 var securityStatus = parameters[2];
+                error = (Exception)(_statusException.GetValue(securityStatus)
+                    ?? _getException.Invoke(null, new[] { securityStatus }));
                 var errorCode = (SecurityStatusPalErrorCode)_statusCode.GetValue(securityStatus);
+
+                // The linux implementation always uses InternalError;
+                if (errorCode == SecurityStatusPalErrorCode.InternalError && _gssExceptionType.IsInstanceOfType(error))
+                {
+                    var majorStatus = (uint)error.HResult;
+                    var minorStatus = (uint)_gssMinorStatus.GetValue(error);
+
+                    // Remap specific errors
+                    if (majorStatus == GSS_S_NO_CRED && minorStatus == 0)
+                    {
+                        errorCode = SecurityStatusPalErrorCode.UnknownCredentials;
+                    }
+
+                    error = new Exception($"An authentication exception occured (0x{majorStatus:X}/0x{minorStatus:X}).", error);
+                }
 
                 if (errorCode == SecurityStatusPalErrorCode.OK
                     || errorCode == SecurityStatusPalErrorCode.ContinueNeeded
@@ -107,7 +137,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     status = BlobErrorType.Other;
                 }
 
-                error = (Exception)_getException.Invoke(null, new[] { securityStatus });
                 return blob;
             }
             catch (TargetInvocationException tex)
