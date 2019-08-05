@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
-    /// Describes changes to a component's render tree between successive renders.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future major release.
     /// </summary>
+    //
+    // Describes changes to a component's render tree between successive renders.
     public readonly struct RenderTreeDiff
     {
         /// <summary>

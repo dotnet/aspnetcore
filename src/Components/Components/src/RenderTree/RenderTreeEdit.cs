@@ -6,8 +6,11 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
-    /// Represents a single edit operation on a component's render tree.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future major release.
     /// </summary>
+    //
+    // Represents a single edit operation on a component's render tree.
     [StructLayout(LayoutKind.Explicit)]
     public readonly struct RenderTreeEdit
     {

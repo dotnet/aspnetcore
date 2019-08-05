@@ -8,8 +8,11 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
-    /// Represents an entry in a tree of user interface (UI) items.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future major release.
     /// </summary>
+    //
+    // Represents an entry in a tree of user interface (UI) items.
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
     public readonly struct RenderTreeFrame
     {
