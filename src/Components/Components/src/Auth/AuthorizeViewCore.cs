@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Components
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
+            // We're using the same sequence number for each of the content items here
+            // so that we can update existing instances if they are the same shape
             if (currentAuthenticationState == null)
             {
                 builder.AddContent(0, Authorizing);
@@ -59,11 +61,11 @@ namespace Microsoft.AspNetCore.Components
             else if (isAuthorized)
             {
                 var authorized = Authorized ?? ChildContent;
-                builder.AddContent(1, authorized?.Invoke(currentAuthenticationState));
+                builder.AddContent(0, authorized?.Invoke(currentAuthenticationState));
             }
             else
             {
-                builder.AddContent(2, NotAuthorized?.Invoke(currentAuthenticationState));
+                builder.AddContent(0, NotAuthorized?.Invoke(currentAuthenticationState));
             }
         }
 
@@ -102,6 +104,12 @@ namespace Microsoft.AspNetCore.Components
         private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
         {
             var authorizeData = GetAuthorizeData();
+            if (authorizeData == null)
+            {
+                // No authorization applies, so no need to consult the authorization service
+                return true;
+            }
+
             EnsureNoAuthenticationSchemeSpecified(authorizeData);
 
             var policy = await AuthorizationPolicy.CombineAsync(

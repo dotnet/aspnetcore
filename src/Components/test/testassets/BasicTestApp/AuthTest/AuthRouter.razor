@@ -8,19 +8,21 @@
     and @page authorization rules.
 *@
 
-<CascadingAuthenticationState>
-    <Router AppAssembly=typeof(BasicTestApp.Program).Assembly>
-        <Authorizing>Authorizing...</Authorizing>
-        <NotAuthorized>
-            <div id="auth-failure">
-                Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
-            </div>
-        </NotAuthorized>
-    </Router>
-</CascadingAuthenticationState>
-
-<hr />
-<Links />
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(AuthRouterLayout)">
+            <Authorizing>Authorizing...</Authorizing>
+            <NotAuthorized>
+                <div id="auth-failure">
+                    Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
+                </div>
+            </NotAuthorized>
+        </AuthorizeRouteView>
+    </Found>
+    <NotFound>
+        <p>There's nothing here</p>
+    </NotFound>
+</Router>
 
 @code {
     protected override void OnInitialized()
