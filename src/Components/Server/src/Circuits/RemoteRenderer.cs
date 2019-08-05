@@ -293,7 +293,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // available buffered renders and new renders got queued.
                 // Invoke ProcessBufferedRenderRequests so that we might produce any additional batch that is
                 // missing.
-                // Its also safe to use the discard as ProcessRenderQueue won't throw.
+
+                // We return the task in here, but the caller doesn't await it.
                 return Dispatcher.InvokeAsync(() => ProcessPendingRender());
             }
         }

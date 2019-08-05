@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             private static readonly Action<ILogger, ulong, string, Exception> _handlingEvent =
                 LoggerMessage.Define<ulong, string>(LogLevel.Debug, new EventId(5, "HandlingEvent"), "Handling event {EventId} of type '{EventType}'");
 
-            private static readonly Action<ILogger, Exception> _noPendingComponentRenderRequests =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "NoPendingComponentRenderRequests"), "No pending component render requests.");
-
             public static void InitializingComponent(ILogger logger, ComponentState componentState, ComponentState parentComponentState)
             {
                 if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
@@ -62,11 +59,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             public static void HandlingEvent(ILogger<Renderer> logger, ulong eventHandlerId, EventArgs eventArgs)
             {
                 _handlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null", null);
-            }
-
-            public static void NoPendingComponentRenderRequests(ILogger<Renderer> logger)
-            {
-                _noPendingComponentRenderRequests(logger, null);
             }
         }
     }
