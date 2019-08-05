@@ -30,16 +30,17 @@ void HostFxrErrorRedirector::HostFxrErrorRedirectorCallback(const WCHAR* message
     m_writeFunction->Append(std::wstring(message) + L"\r\n");
 }
 
-void HostFxr::Load()
-{
-    HMODULE hModule;
-    THROW_LAST_ERROR_IF(!GetModuleHandleEx(0, L"hostfxr.dll", &hModule));
-    Load(hModule);
-}
-
 void HostFxr::Load(HMODULE moduleHandle)
 {
+    // A hostfxr may already be loaded here if we tried to start with an
+    // invalid configuration. Release hostfxr before loading it again.
+    if (m_hHostFxrDll != nullptr)
+    {
+        m_hHostFxrDll.release();
+    }
+
     m_hHostFxrDll = moduleHandle;
+
     try
     {
         m_hostfxr_get_native_search_directories_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(moduleHandle, "hostfxr_get_native_search_directories");
@@ -63,9 +64,13 @@ void HostFxr::Load(HMODULE moduleHandle)
 
 void HostFxr::Load(const std::wstring& location)
 {
+    // Make sure to always load hostfxr via an absolute path.
+    // If the process fails to start for whatever reason, a mismatched hostfxr
+    // may be already loaded in the process.
     try
     {
         HMODULE hModule;
+        LOG_INFOF(L"Loading hostfxr from location %s", location.c_str());
         THROW_LAST_ERROR_IF_NULL(hModule = LoadLibraryW(location.c_str()));
         Load(hModule);
     }
