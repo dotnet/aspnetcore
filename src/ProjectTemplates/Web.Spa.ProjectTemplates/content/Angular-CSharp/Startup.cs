@@ -88,7 +88,10 @@ namespace Company.WebApplication1
 
 #endif
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
+            if (env.IsProduction())
+            {
+                app.UseSpaStaticFiles();
+            }
 
             app.UseRouting();
 
