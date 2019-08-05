@@ -165,4 +165,13 @@
   <data name="ComponentParameterShouldNotBeSetOutsideOfTheirDeclaredComponent_Title" xml:space="preserve">
     <value>Component parameter should not be set outside of its component.</value>
   </data>
+  <data name="DoNotUseRenderTreeTypes_Description" xml:space="preserve">
+    <value>The types in 'Microsoft.AspNetCore.Components.RenderTree' are not recommended for use outside of the Blazor framework. These  type definitions will change in future major releases.</value>
+  </data>
+  <data name="DoNotUseRenderTreeTypes_Format" xml:space="preserve">
+    <value>The type or member {0} is is not recommended for use outside of the Blazor frameworks. Types defined in 'Microsoft.AspNetCore.Components.RenderTree' will change in future major releases.</value>
+  </data>
+  <data name="DoNotUseRenderTreeTypes_Title" xml:space="preserve">
+    <value>Do not use RenderTree types</value>
+  </data>
 </root>
