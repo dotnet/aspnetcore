@@ -91,6 +91,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return 43;
         }
 
+        public ValueTask ValueTaskMethod()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        public ValueTask<int> ValueTaskValueMethod()
+        {
+            return new ValueTask<int>(43);
+        }
+
         [HubMethodName("RenamedMethod")]
         public int ATestMethodThatIsRenamedByTheAttribute()
         {
