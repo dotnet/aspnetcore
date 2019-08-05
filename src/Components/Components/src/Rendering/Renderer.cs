@@ -403,6 +403,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         protected virtual void ProcessRenderQueue()
         {
+            EnsureSynchronizationContext();
+
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
@@ -410,7 +412,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 if (_batchBuilder.ComponentRenderQueue.Count == 0)
                 {
-                    Log.NoPendingComponentRenderRequests(_logger);
                     return;
                 }
 

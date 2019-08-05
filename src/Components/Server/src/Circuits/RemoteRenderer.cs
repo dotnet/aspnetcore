@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
@@ -30,7 +29,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
         private bool _disposing = false;
-        private bool _queueIsFullNotified;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -105,21 +103,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // We should never see UnacknowledgedRenderBatches.Count > _options.MaxBufferedUnacknowledgedRenderBatches
 
                 // But if we do, it's safer to simply disable the rendering in that case too instead of allowing batches to
-                // keep piling up.
-                if (!_queueIsFullNotified)
-                {
-                    // We skip logging after the first time we run into this situation to avoid filling the logs with
-                    // entries on high frequency render scenarios.
-                    // We try our best to log the queue is full at most once, although we don't guarantee it due to
-                    // concurrency.
-                    // When we complete a render we set this flag to false, so the next time the queue gets filled it
-                    // also shows up.
-                    _queueIsFullNotified = true;
-                    Log.FullUnacknowledgedRenderBatchesQueue(_logger);
-                }
+                Log.FullUnacknowledgedRenderBatchesQueue(_logger);
 
                 return;
             }
+
             base.ProcessRenderQueue();
         }
 
@@ -303,7 +291,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 // Normally we will not have pending renders, but it might happen that we reached the limit of
                 // available buffered renders and new renders got queued.
-                // Invke ProcessBufferedRenderRequests so that we might produce any additional batch that is
+                // Invoke ProcessBufferedRenderRequests so that we might produce any additional batch that is
                 // missing.
                 // Its also safe to use the discard as ProcessRenderQueue won't throw.
                 _ = Dispatcher.InvokeAsync(() => ProcessRenderQueue());
