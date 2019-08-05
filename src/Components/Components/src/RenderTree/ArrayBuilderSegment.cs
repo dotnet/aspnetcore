@@ -7,12 +7,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
-
     /// <summary>
     /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
-    /// of the Blazor framework. These types will change in a future major release.
+    /// of the Blazor framework. These types will change in future release.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the elements in the array</typeparam>
+    //
+    // Represents a range of elements within an instance of <see cref="ArrayBuilder{T}"/>.
     public readonly struct ArrayBuilderSegment<T> : IEnumerable<T>
     {
         // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
