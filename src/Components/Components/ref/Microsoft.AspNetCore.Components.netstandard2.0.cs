@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected abstract Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components
         public CascadingAuthenticationState() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnInitialized() { }
         void System.IDisposable.Dispose() { }
     }
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
         public ComponentBase() { }
-        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Components
             public bool MoveNext() { throw null; }
         }
     }
-    public delegate void RenderFragment(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder);
+    public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
     public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<T>(T value);
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderHandle
@@ -525,29 +525,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
         protected abstract System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch);
     }
-}
-namespace Microsoft.AspNetCore.Components.RenderTree
-{
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ArrayBuilderSegment<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public T[] Array { get { throw null; } }
-        public int Count { get { throw null; } }
-        public T this[int index] { get { throw null; } }
-        public int Offset { get { throw null; } }
-        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ArrayRange<T>
-    {
-        public readonly T[] Array;
-        public readonly int Count;
-        public ArrayRange(T[] array, int count) { throw null; }
-        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
-    }
     public sealed partial class RenderTreeBuilder : System.IDisposable
     {
         public RenderTreeBuilder() { }
@@ -579,6 +556,29 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void SetKey(object value) { }
         public void SetUpdatesAttributeName(string updatesAttributeName) { }
         void System.IDisposable.Dispose() { }
+    }
+}
+namespace Microsoft.AspNetCore.Components.RenderTree
+{
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ArrayBuilderSegment<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public T[] Array { get { throw null; } }
+        public int Count { get { throw null; } }
+        public T this[int index] { get { throw null; } }
+        public int Offset { get { throw null; } }
+        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ArrayRange<T>
+    {
+        public readonly T[] Array;
+        public readonly int Count;
+        public ArrayRange(T[] array, int count) { throw null; }
+        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
-        protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
+        protected virtual void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }

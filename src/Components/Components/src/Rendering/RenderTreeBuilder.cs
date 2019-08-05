@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Components.RenderTree
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     // IMPORTANT
     //
