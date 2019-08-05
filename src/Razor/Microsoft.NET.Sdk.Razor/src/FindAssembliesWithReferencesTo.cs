@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 referenceItems.Add(new AssemblyItem
                 {
                     AssemblyName = assemblyName,
-                    IsSystemReference = item.GetMetadata("IsSystemReference") == "true",
+                    IsFrameworkReference = item.GetMetadata("IsFrameworkReference") == "true",
                     Path = item.ItemSpec,
                 });
             }

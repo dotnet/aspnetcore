@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     {
         public string Path { get; set; }
 
-        public bool IsSystemReference { get; set; }
+        public bool IsFrameworkReference { get; set; }
 
         public string AssemblyName { get; set; }
     }
