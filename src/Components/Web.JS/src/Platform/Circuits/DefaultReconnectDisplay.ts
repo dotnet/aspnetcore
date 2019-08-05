@@ -1,5 +1,5 @@
 import { ReconnectDisplay } from './ReconnectDisplay';
-import { AutoReconnectCircuitHandler } from './AutoReconnectCircuitHandler';
+
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
 
@@ -9,9 +9,11 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   addedToDom: boolean = false;
 
-  constructor(private document: Document) {
+  reloadParagraph: HTMLParagraphElement;
+
+  constructor(dialogId: string, private document: Document) {
     this.modal = this.document.createElement('div');
-    this.modal.id = AutoReconnectCircuitHandler.DialogId;
+    this.modal.id = dialogId;
 
     const modalStyles = [
       'position: fixed',
@@ -29,11 +31,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     ];
 
     this.modal.style.cssText = modalStyles.join(';');
-    this.modal.innerHTML = '<h5 style="margin-top: 20px"></h5><button style="margin:5px auto 5px">Retry?</button>';
+    this.modal.innerHTML = '<h5 style="margin-top: 20px"></h5><button style="margin:5px auto 5px">Retry?</button><p>Alternatively, <a href>reload</a></p>';
     this.message = this.modal.querySelector('h5')!;
     this.button = this.modal.querySelector('button')!;
+    this.reloadParagraph = this.modal.querySelector('p')!;
 
     this.button.addEventListener('click', () => window['Blazor'].reconnect());
+    this.reloadParagraph.querySelector('a')!.addEventListener('click', () => location.reload());
   }
 
   show(): void {
@@ -43,6 +47,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     }
     this.modal.style.display = 'block';
     this.button.style.display = 'none';
+    this.reloadParagraph.style.display = 'none';
     this.message.textContent = 'Attempting to reconnect to the server...';
   }
 
@@ -52,6 +57,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   failed(): void {
     this.button.style.display = 'block';
+    this.reloadParagraph.style.display = 'block';
     this.message.textContent = 'Failed to reconnect to the server.';
   }
 }

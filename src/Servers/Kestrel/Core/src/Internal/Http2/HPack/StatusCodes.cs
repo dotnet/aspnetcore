@@ -82,141 +82,77 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public static byte[] ToStatusBytes(int statusCode)
         {
-            switch (statusCode)
+            return statusCode switch
             {
-                case Microsoft.AspNetCore.Http.StatusCodes.Status100Continue:
-                    return _bytesStatus100;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status101SwitchingProtocols:
-                    return _bytesStatus101;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status102Processing:
-                    return _bytesStatus102;
+                Microsoft.AspNetCore.Http.StatusCodes.Status100Continue => _bytesStatus100,
+                Microsoft.AspNetCore.Http.StatusCodes.Status101SwitchingProtocols => _bytesStatus101,
+                Microsoft.AspNetCore.Http.StatusCodes.Status102Processing => _bytesStatus102,
 
-                case Microsoft.AspNetCore.Http.StatusCodes.Status200OK:
-                    return _bytesStatus200;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status201Created:
-                    return _bytesStatus201;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status202Accepted:
-                    return _bytesStatus202;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status203NonAuthoritative:
-                    return _bytesStatus203;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status204NoContent:
-                    return _bytesStatus204;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status205ResetContent:
-                    return _bytesStatus205;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status206PartialContent:
-                    return _bytesStatus206;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status207MultiStatus:
-                    return _bytesStatus207;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status208AlreadyReported:
-                    return _bytesStatus208;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status226IMUsed:
-                    return _bytesStatus226;
+                Microsoft.AspNetCore.Http.StatusCodes.Status200OK => _bytesStatus200,
+                Microsoft.AspNetCore.Http.StatusCodes.Status201Created => _bytesStatus201,
+                Microsoft.AspNetCore.Http.StatusCodes.Status202Accepted => _bytesStatus202,
+                Microsoft.AspNetCore.Http.StatusCodes.Status203NonAuthoritative => _bytesStatus203,
+                Microsoft.AspNetCore.Http.StatusCodes.Status204NoContent => _bytesStatus204,
+                Microsoft.AspNetCore.Http.StatusCodes.Status205ResetContent => _bytesStatus205,
+                Microsoft.AspNetCore.Http.StatusCodes.Status206PartialContent => _bytesStatus206,
+                Microsoft.AspNetCore.Http.StatusCodes.Status207MultiStatus => _bytesStatus207,
+                Microsoft.AspNetCore.Http.StatusCodes.Status208AlreadyReported => _bytesStatus208,
+                Microsoft.AspNetCore.Http.StatusCodes.Status226IMUsed => _bytesStatus226,
 
-                case Microsoft.AspNetCore.Http.StatusCodes.Status300MultipleChoices:
-                    return _bytesStatus300;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status301MovedPermanently:
-                    return _bytesStatus301;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status302Found:
-                    return _bytesStatus302;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status303SeeOther:
-                    return _bytesStatus303;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status304NotModified:
-                    return _bytesStatus304;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status305UseProxy:
-                    return _bytesStatus305;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status306SwitchProxy:
-                    return _bytesStatus306;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status307TemporaryRedirect:
-                    return _bytesStatus307;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status308PermanentRedirect:
-                    return _bytesStatus308;
+                Microsoft.AspNetCore.Http.StatusCodes.Status300MultipleChoices => _bytesStatus300,
+                Microsoft.AspNetCore.Http.StatusCodes.Status301MovedPermanently => _bytesStatus301,
+                Microsoft.AspNetCore.Http.StatusCodes.Status302Found => _bytesStatus302,
+                Microsoft.AspNetCore.Http.StatusCodes.Status303SeeOther => _bytesStatus303,
+                Microsoft.AspNetCore.Http.StatusCodes.Status304NotModified => _bytesStatus304,
+                Microsoft.AspNetCore.Http.StatusCodes.Status305UseProxy => _bytesStatus305,
+                Microsoft.AspNetCore.Http.StatusCodes.Status306SwitchProxy => _bytesStatus306,
+                Microsoft.AspNetCore.Http.StatusCodes.Status307TemporaryRedirect => _bytesStatus307,
+                Microsoft.AspNetCore.Http.StatusCodes.Status308PermanentRedirect => _bytesStatus308,
 
-                case Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest:
-                    return _bytesStatus400;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status401Unauthorized:
-                    return _bytesStatus401;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status402PaymentRequired:
-                    return _bytesStatus402;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden:
-                    return _bytesStatus403;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status404NotFound:
-                    return _bytesStatus404;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status405MethodNotAllowed:
-                    return _bytesStatus405;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status406NotAcceptable:
-                    return _bytesStatus406;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status407ProxyAuthenticationRequired:
-                    return _bytesStatus407;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status408RequestTimeout:
-                    return _bytesStatus408;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status409Conflict:
-                    return _bytesStatus409;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status410Gone:
-                    return _bytesStatus410;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status411LengthRequired:
-                    return _bytesStatus411;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status412PreconditionFailed:
-                    return _bytesStatus412;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status413PayloadTooLarge:
-                    return _bytesStatus413;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status414UriTooLong:
-                    return _bytesStatus414;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status415UnsupportedMediaType:
-                    return _bytesStatus415;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status416RangeNotSatisfiable:
-                    return _bytesStatus416;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status417ExpectationFailed:
-                    return _bytesStatus417;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status418ImATeapot:
-                    return _bytesStatus418;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status419AuthenticationTimeout:
-                    return _bytesStatus419;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status421MisdirectedRequest:
-                    return _bytesStatus421;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status422UnprocessableEntity:
-                    return _bytesStatus422;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status423Locked:
-                    return _bytesStatus423;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status424FailedDependency:
-                    return _bytesStatus424;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status426UpgradeRequired:
-                    return _bytesStatus426;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status428PreconditionRequired:
-                    return _bytesStatus428;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status429TooManyRequests:
-                    return _bytesStatus429;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status431RequestHeaderFieldsTooLarge:
-                    return _bytesStatus431;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status451UnavailableForLegalReasons:
-                    return _bytesStatus451;
+                Microsoft.AspNetCore.Http.StatusCodes.Status400BadRequest => _bytesStatus400,
+                Microsoft.AspNetCore.Http.StatusCodes.Status401Unauthorized => _bytesStatus401,
+                Microsoft.AspNetCore.Http.StatusCodes.Status402PaymentRequired => _bytesStatus402,
+                Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden => _bytesStatus403,
+                Microsoft.AspNetCore.Http.StatusCodes.Status404NotFound => _bytesStatus404,
+                Microsoft.AspNetCore.Http.StatusCodes.Status405MethodNotAllowed => _bytesStatus405,
+                Microsoft.AspNetCore.Http.StatusCodes.Status406NotAcceptable => _bytesStatus406,
+                Microsoft.AspNetCore.Http.StatusCodes.Status407ProxyAuthenticationRequired => _bytesStatus407,
+                Microsoft.AspNetCore.Http.StatusCodes.Status408RequestTimeout => _bytesStatus408,
+                Microsoft.AspNetCore.Http.StatusCodes.Status409Conflict => _bytesStatus409,
+                Microsoft.AspNetCore.Http.StatusCodes.Status410Gone => _bytesStatus410,
+                Microsoft.AspNetCore.Http.StatusCodes.Status411LengthRequired => _bytesStatus411,
+                Microsoft.AspNetCore.Http.StatusCodes.Status412PreconditionFailed => _bytesStatus412,
+                Microsoft.AspNetCore.Http.StatusCodes.Status413PayloadTooLarge => _bytesStatus413,
+                Microsoft.AspNetCore.Http.StatusCodes.Status414UriTooLong => _bytesStatus414,
+                Microsoft.AspNetCore.Http.StatusCodes.Status415UnsupportedMediaType => _bytesStatus415,
+                Microsoft.AspNetCore.Http.StatusCodes.Status416RangeNotSatisfiable => _bytesStatus416,
+                Microsoft.AspNetCore.Http.StatusCodes.Status417ExpectationFailed => _bytesStatus417,
+                Microsoft.AspNetCore.Http.StatusCodes.Status418ImATeapot => _bytesStatus418,
+                Microsoft.AspNetCore.Http.StatusCodes.Status419AuthenticationTimeout => _bytesStatus419,
+                Microsoft.AspNetCore.Http.StatusCodes.Status421MisdirectedRequest => _bytesStatus421,
+                Microsoft.AspNetCore.Http.StatusCodes.Status422UnprocessableEntity => _bytesStatus422,
+                Microsoft.AspNetCore.Http.StatusCodes.Status423Locked => _bytesStatus423,
+                Microsoft.AspNetCore.Http.StatusCodes.Status424FailedDependency => _bytesStatus424,
+                Microsoft.AspNetCore.Http.StatusCodes.Status426UpgradeRequired => _bytesStatus426,
+                Microsoft.AspNetCore.Http.StatusCodes.Status428PreconditionRequired => _bytesStatus428,
+                Microsoft.AspNetCore.Http.StatusCodes.Status429TooManyRequests => _bytesStatus429,
+                Microsoft.AspNetCore.Http.StatusCodes.Status431RequestHeaderFieldsTooLarge => _bytesStatus431,
+                Microsoft.AspNetCore.Http.StatusCodes.Status451UnavailableForLegalReasons => _bytesStatus451,
 
-                case Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError:
-                    return _bytesStatus500;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented:
-                    return _bytesStatus501;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status502BadGateway:
-                    return _bytesStatus502;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status503ServiceUnavailable:
-                    return _bytesStatus503;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status504GatewayTimeout:
-                    return _bytesStatus504;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status505HttpVersionNotsupported:
-                    return _bytesStatus505;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status506VariantAlsoNegotiates:
-                    return _bytesStatus506;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status507InsufficientStorage:
-                    return _bytesStatus507;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status508LoopDetected:
-                    return _bytesStatus508;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended:
-                    return _bytesStatus510;
-                case Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired:
-                    return _bytesStatus511;
+                Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError => _bytesStatus500,
+                Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented => _bytesStatus501,
+                Microsoft.AspNetCore.Http.StatusCodes.Status502BadGateway => _bytesStatus502,
+                Microsoft.AspNetCore.Http.StatusCodes.Status503ServiceUnavailable => _bytesStatus503,
+                Microsoft.AspNetCore.Http.StatusCodes.Status504GatewayTimeout => _bytesStatus504,
+                Microsoft.AspNetCore.Http.StatusCodes.Status505HttpVersionNotsupported => _bytesStatus505,
+                Microsoft.AspNetCore.Http.StatusCodes.Status506VariantAlsoNegotiates => _bytesStatus506,
+                Microsoft.AspNetCore.Http.StatusCodes.Status507InsufficientStorage => _bytesStatus507,
+                Microsoft.AspNetCore.Http.StatusCodes.Status508LoopDetected => _bytesStatus508,
+                Microsoft.AspNetCore.Http.StatusCodes.Status510NotExtended => _bytesStatus510,
+                Microsoft.AspNetCore.Http.StatusCodes.Status511NetworkAuthenticationRequired => _bytesStatus511,
 
-                default:
-                    return Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture));
-
-            }
+                _ => CreateStatusBytes(statusCode)
+            };
         }
     }
 }

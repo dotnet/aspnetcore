@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return _flusher.FlushAsync(_minResponseDataRateFeature.MinDataRate, bytesWritten, this, cancellationToken);
             }
 
-            ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
+            static ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
             {
                 // Local function so in the common-path the stack space for BufferWriter isn't reserved and cleared when it isn't used.
 
@@ -722,8 +722,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_writeStreamSuffixCalled)
             {
-                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+                ThrowSuffixSent();
             }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowSuffixSent()
+        {
+            throw new InvalidOperationException("Writing is not allowed after writer was completed.");
         }
 
         /// <summary>

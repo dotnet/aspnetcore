@@ -6,20 +6,15 @@ namespace Microsoft.AspNetCore.Identity
     public static partial class IdentityBuilderUIExtensions
     {
         public static Microsoft.AspNetCore.Identity.IdentityBuilder AddDefaultUI(this Microsoft.AspNetCore.Identity.IdentityBuilder builder) { throw null; }
-        public static Microsoft.AspNetCore.Identity.IdentityBuilder AddDefaultUI(this Microsoft.AspNetCore.Identity.IdentityBuilder builder, Microsoft.AspNetCore.Identity.UI.UIFramework framework) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Identity.UI
 {
-    public partial class DefaultUIOptions
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, Inherited=false, AllowMultiple=false)]
+    public sealed partial class UIFrameworkAttribute : System.Attribute
     {
-        public DefaultUIOptions() { }
-        public Microsoft.AspNetCore.Identity.UI.UIFramework UIFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public enum UIFramework
-    {
-        Bootstrap3 = 0,
-        Bootstrap4 = 1,
+        public UIFrameworkAttribute(string uiFramework) { }
+        public string UIFramework { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Identity.UI.Services
@@ -314,7 +309,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostChangeEmailAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {
@@ -764,7 +759,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
         [Microsoft.AspNetCore.Mvc.TempDataAttribute]
         public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostChangeEmailAsync() { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostSendVerificationEmailAsync() { throw null; }
         public partial class InputModel
         {

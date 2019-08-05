@@ -95,11 +95,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        public Task WriteChunkAsync(ReadOnlySpan<byte> span, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -169,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (appCompleted && !_startedWritingDataFrames && (_stream.ResponseTrailers == null || _stream.ResponseTrailers.Count == 0))
                 {
                     _streamEnded = true;
+                    _stream.DecrementActiveClientStreamCount();
                     http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
                 }
                 else
@@ -383,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         }
 
                         _stream.ResponseTrailers.SetReadOnly();
+                        _stream.DecrementActiveClientStreamCount();
                         flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.ResponseTrailers);
                     }
                     else if (readResult.IsCompleted && _streamEnded)
@@ -397,7 +394,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else
                     {
-                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                        var endStream = readResult.IsCompleted;
+                        if (endStream)
+                        {
+                            _stream.DecrementActiveClientStreamCount();
+                        }
+                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream);
                     }
 
                     _pipeReader.AdvanceTo(readResult.Buffer.End);
@@ -437,8 +439,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_suffixSent)
             {
-                throw new InvalidOperationException("Writing is not allowed after writer was completed.");
+                ThrowSuffixSent();
             }
+        }
+
+        [StackTraceHidden]
+        private static void ThrowSuffixSent()
+        {
+            throw new InvalidOperationException("Writing is not allowed after writer was completed.");
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)

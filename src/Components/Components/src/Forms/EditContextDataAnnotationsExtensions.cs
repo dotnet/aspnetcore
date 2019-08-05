@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 Validator.TryValidateProperty(propertyValue, validationContext, results);
                 messages.Clear(fieldIdentifier);
-                messages.AddRange(fieldIdentifier, results.Select(result => result.ErrorMessage));
+                messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage));
 
                 // We have to notify even if there were no messages before and are still no messages now,
                 // because the "state" that changed might be the completion of some async validation task

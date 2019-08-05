@@ -4,19 +4,19 @@
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
 {
     public class QueueFullOverhead
     {
-        private const int _numRequests = 200;
+        private const int _numRequests = 2000;
         private int _requestCount = 0;
         private ManualResetEventSlim _mres = new ManualResetEventSlim();
 
-        private ConcurrencyLimiterMiddleware _middleware_FIFO;
-        private ConcurrencyLimiterMiddleware _middleware_LIFO;
+        private ConcurrencyLimiterMiddleware _middlewareQueue;
+        private ConcurrencyLimiterMiddleware _middlewareStack;
 
         [Params(8)]
         public int MaxConcurrentRequests;
@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _middleware_FIFO = TestUtils.CreateTestMiddleware_TailDrop(
+            _middlewareQueue = TestUtils.CreateTestMiddleware_QueuePolicy(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
                 next: IncrementAndCheck);
 
-            _middleware_LIFO = TestUtils.CreateTestMiddleware_StackPolicy(
+            _middlewareStack = TestUtils.CreateTestMiddleware_StackPolicy(
                 maxConcurrentRequests: MaxConcurrentRequests,
                 requestQueueLimit: _numRequests,
                 next: IncrementAndCheck);
@@ -64,26 +64,25 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void QueueingAll_FIFO()
+        public void QueueingAll_QueuePolicy()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                _ = _middleware_FIFO.Invoke(null);
+                _ = _middlewareStack.Invoke(null);
             }
 
             _mres.Wait();
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
-        public void QueueingAll_LIFO()
+        public void QueueingAll_StackPolicy()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                _ = _middleware_LIFO.Invoke(null);
+                _ = _middlewareQueue.Invoke(null);
             }
 
             _mres.Wait();
         }
-
     }
 }

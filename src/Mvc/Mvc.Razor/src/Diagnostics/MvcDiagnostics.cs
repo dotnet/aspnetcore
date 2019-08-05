@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeViewPage : EventData
+    public sealed class BeforeViewPageEventData : EventData
     {
         public const string EventName = EventNamespace + 
             "Razor." +
-            nameof(BeforeViewPage);
+            "BeforeViewPage";
 
-        public BeforeViewPage(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
+        public BeforeViewPageEventData(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
         {
             Page = page;
             ViewContext = viewContext;
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterViewPage : EventData
+    public sealed class AfterViewPageEventData : EventData
     {
         public const string EventName = EventNamespace +
             "Razor." +
-            nameof(AfterViewPage);
+            "AfterViewPage";
 
-        public AfterViewPage(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
+        public AfterViewPageEventData(IRazorPage page, ViewContext viewContext, ActionDescriptor actionDescriptor, HttpContext httpContext)
         {
             Page = page;
             ViewContext = viewContext;

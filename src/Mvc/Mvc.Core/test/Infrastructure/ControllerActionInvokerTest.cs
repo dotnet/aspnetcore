@@ -1484,23 +1484,26 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
+            var actionSignature = $"{typeof(IActionResult).FullName} {nameof(TestController.ActionMethod)}()";
             var controllerName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
             var actionName = $"{typeof(ControllerActionInvokerTest).FullName}+{nameof(TestController)}.{nameof(TestController.ActionMethod)} ({typeof(ControllerActionInvokerTest).Assembly.GetName().Name})";
             var actionResultName = $"{typeof(CommonResourceInvokerTest).FullName}+{nameof(TestResult)}";
-            Assert.Equal(13, messages.Count);
-            Assert.Contains($"Route matched with {{}}. Executing controller action with signature {typeof(IActionResult).FullName} {nameof(TestController.ActionMethod)}() on controller {controllerName}.", messages);
-            Assert.Contains("Execution plan of authorization filters (in the following order): None", messages);
-            Assert.Contains("Execution plan of resource filters (in the following order): None", messages);
-            Assert.Contains("Execution plan of action filters (in the following order): None", messages);
-            Assert.Contains("Execution plan of exception filters (in the following order): None", messages);
-            Assert.Contains("Execution plan of result filters (in the following order): None", messages);
-            Assert.Contains($"Executing controller factory for controller {controllerName}", messages);
-            Assert.Contains($"Executed controller factory for controller {controllerName}", messages);
-            Assert.Contains($"Executing action method {actionName} - Validation state: Valid", messages);
-            Assert.Contains(messages, m => m.Contains($"Executed action method {actionName}, returned result {actionResultName} in "));
-            Assert.Contains($"Before executing action result {actionResultName}.", messages);
-            Assert.Contains($"After executing action result {actionResultName}.", messages);
-            Assert.Contains(messages, m => m.Contains($"Executed action {actionName} in "));
+
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{}}. Executing controller action with signature {actionSignature} on controller {controllerName}.", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executed controller factory for controller {controllerName}", m),
+                m => Assert.Equal($"Executing action method {actionName} - Validation state: Valid", m),
+                m => Assert.StartsWith($"Executed action method {actionName}, returned result {actionResultName} in ", m),
+                m => Assert.Equal($"Before executing action result {actionResultName}.", m),
+                m => Assert.Equal($"After executing action result {actionResultName}.", m),
+                m => Assert.StartsWith($"Executed action {actionName} in ", m));
         }
 
         #endregion

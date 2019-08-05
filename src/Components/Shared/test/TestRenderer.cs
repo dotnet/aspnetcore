@@ -48,22 +48,22 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
-        public void RenderRootComponent(int componentId, ParameterCollection? parameters = default)
+        public void RenderRootComponent(int componentId, ParameterView? parameters = default)
         {
-            var task = Dispatcher.InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters ?? ParameterCollection.Empty));
+            var task = Dispatcher.InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters ?? ParameterView.Empty));
             UnwrapTask(task);
         }
 
         public new Task RenderRootComponentAsync(int componentId)
             => Dispatcher.InvokeAsync(() => base.RenderRootComponentAsync(componentId));
 
-        public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
+        public new Task RenderRootComponentAsync(int componentId, ParameterView parameters)
             => Dispatcher.InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public Task DispatchEventAsync(ulong eventHandlerId, UIEventArgs args)
+        public Task DispatchEventAsync(ulong eventHandlerId, EventArgs args)
             => Dispatcher.InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, null, args));
 
-        public new Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, UIEventArgs args)
+        public new Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs args)
             => Dispatcher.InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, eventFieldInfo, args));
 
         private static Task UnwrapTask(Task task)

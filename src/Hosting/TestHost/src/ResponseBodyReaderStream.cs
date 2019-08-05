@@ -87,7 +87,6 @@ namespace Microsoft.AspNetCore.TestHost
 
             if (result.Buffer.IsEmpty && result.IsCompleted)
             {
-                _pipe.Reader.Complete();
                 _readComplete();
                 _readerComplete = true;
                 return 0;
@@ -128,7 +127,6 @@ namespace Microsoft.AspNetCore.TestHost
             _aborted = true;
             _abortException = innerException;
             _pipe.Reader.CancelPendingRead();
-            _pipe.Reader.Complete();
         }
 
         private void CheckAborted()
@@ -145,6 +143,9 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 _abortRequest();
             }
+
+            _pipe.Reader.Complete();
+
             base.Dispose(disposing);
         }
     }

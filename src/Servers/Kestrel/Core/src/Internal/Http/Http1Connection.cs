@@ -287,13 +287,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // origin-form.
                 // The most common form of request-target.
                 // https://tools.ietf.org/html/rfc7230#section-5.3.1
-                OnOriginFormTarget(method, version, target, path, query, customMethod, pathEncoded);
+                OnOriginFormTarget(pathEncoded, target, path, query);
             }
             else if (ch == ByteAsterisk && target.Length == 1)
             {
                 OnAsteriskFormTarget(method);
             }
-            else if (target.GetKnownHttpScheme(out var scheme))
+            else if (target.GetKnownHttpScheme(out _))
             {
                 OnAbsoluteFormTarget(target, query);
             }
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         // Compare with Http2Stream.TryValidatePseudoHeaders
-        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        private void OnOriginFormTarget(bool pathEncoded, Span<byte> target, Span<byte> path, Span<byte> query)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 

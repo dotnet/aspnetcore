@@ -72,7 +72,7 @@
 
     <StringProperty Name="Link" Visible="false">
       <StringProperty.DataSource>
-        <DataSource SourceOfDefaultValue="AfterContext" />
+        <DataSource SourceOfDefaultValue="AfterContext" PersistenceStyle="Attribute" />
       </StringProperty.DataSource>
       <StringProperty.Metadata>
         <NameValuePair Name="DoNotCopyAcrossProjects" Value="true" />
@@ -85,6 +85,12 @@
       <StringProperty.DataSource>
         <DataSource ItemType="OpenApiReference" SourceOfDefaultValue="AfterContext"
                     PersistenceStyle="Attribute" />
+      </StringProperty.DataSource>
+    </StringProperty>
+
+    <StringProperty Name="CodeGenerator" Visible="false">
+      <StringProperty.DataSource>
+        <DataSource SourceOfDefaultValue="AfterContext" PersistenceStyle="Attribute" />
       </StringProperty.DataSource>
     </StringProperty>
 
@@ -157,6 +163,12 @@
     </StringProperty>
 
     <BoolProperty Name="Visible" Visible="false" Default="true" />
+
+    <StringProperty Name="CodeGenerator" Visible="false">
+      <StringProperty.DataSource>
+        <DataSource SourceOfDefaultValue="AfterContext" PersistenceStyle="Attribute" />
+      </StringProperty.DataSource>
+    </StringProperty>
 
     <StringProperty Name="Namespace" DisplayName="Namespace"
                     Category="CodeGen"

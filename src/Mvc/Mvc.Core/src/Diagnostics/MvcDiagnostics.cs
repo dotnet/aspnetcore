@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeAction : EventData
+    public sealed class BeforeActionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeAction);
-        public BeforeAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
+        public const string EventName = EventNamespace + "BeforeAction";
+        public BeforeActionEventData(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
             ActionDescriptor = actionDescriptor;
             HttpContext = httpContext;
@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterAction : EventData
+    public sealed class AfterActionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterAction);
+        public const string EventName = EventNamespace + "AfterAction";
 
-        public AfterAction(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
+        public AfterActionEventData(ActionDescriptor actionDescriptor, HttpContext httpContext, RouteData routeData)
         {
             ActionDescriptor = actionDescriptor;
             HttpContext = httpContext;
@@ -61,11 +61,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnAuthorization : EventData
+    public sealed class BeforeAuthorizationFilterOnAuthorizationEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnAuthorization);
+        public const string EventName = EventNamespace + "BeforeOnAuthorization";
 
-        public BeforeOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
+        public BeforeAuthorizationFilterOnAuthorizationEventData(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             AuthorizationContext = authorizationContext;
@@ -87,11 +87,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnAuthorization : EventData
+    public sealed class AfterAuthorizationFilterOnAuthorizationEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnAuthorization);
+        public const string EventName = EventNamespace + "AfterOnAuthorization";
 
-        public AfterOnAuthorization(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
+        public AfterAuthorizationFilterOnAuthorizationEventData(ActionDescriptor actionDescriptor, AuthorizationFilterContext authorizationContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             AuthorizationContext = authorizationContext;
@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecution : EventData
+    public sealed class BeforeResourceFilterOnResourceExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResourceExecution);
+        public const string EventName = EventNamespace + "BeforeOnResourceExecution";
 
-        public BeforeOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
+        public BeforeResourceFilterOnResourceExecutionEventData(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutingContext = resourceExecutingContext;
@@ -139,11 +139,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecution : EventData
+    public sealed class AfterResourceFilterOnResourceExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResourceExecution);
+        public const string EventName = EventNamespace + "AfterOnResourceExecution";
 
-        public AfterOnResourceExecution(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
+        public AfterResourceFilterOnResourceExecutionEventData(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutedContext = resourceExecutedContext;
@@ -165,11 +165,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecuting : EventData
+    public sealed class BeforeResourceFilterOnResourceExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResourceExecuting);
+        public const string EventName = EventNamespace + "BeforeOnResourceExecuting";
 
-        public BeforeOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
+        public BeforeResourceFilterOnResourceExecutingEventData(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutingContext = resourceExecutingContext;
@@ -191,11 +191,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecuting : EventData
+    public sealed class AfterResourceFilterOnResourceExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResourceExecuting);
+        public const string EventName = EventNamespace + "AfterOnResourceExecuting";
 
-        public AfterOnResourceExecuting(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
+        public AfterResourceFilterOnResourceExecutingEventData(ActionDescriptor actionDescriptor, ResourceExecutingContext resourceExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutingContext = resourceExecutingContext;
@@ -217,11 +217,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResourceExecuted : EventData
+    public sealed class BeforeResourceFilterOnResourceExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResourceExecuted);
+        public const string EventName = EventNamespace + "BeforeOnResourceExecuted";
 
-        public BeforeOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
+        public BeforeResourceFilterOnResourceExecutedEventData(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutedContext = resourceExecutedContext;
@@ -243,11 +243,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResourceExecuted : EventData
+    public sealed class AfterResourceFilterOnResourceExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResourceExecuted);
+        public const string EventName = EventNamespace + "AfterOnResourceExecuted";
 
-        public AfterOnResourceExecuted(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
+        public AfterResourceFilterOnResourceExecutedEventData(ActionDescriptor actionDescriptor, ResourceExecutedContext resourceExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResourceExecutedContext = resourceExecutedContext;
@@ -269,11 +269,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnException : EventData
+    public sealed class BeforeExceptionFilterOnException : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnException);
+        public const string EventName = EventNamespace + "BeforeOnException";
 
-        public BeforeOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
+        public BeforeExceptionFilterOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ExceptionContext = exceptionContext;
@@ -295,11 +295,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnException : EventData
+    public sealed class AfterExceptionFilterOnExceptionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnException);
+        public const string EventName = EventNamespace + "AfterOnException";
 
-        public AfterOnException(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
+        public AfterExceptionFilterOnExceptionEventData(ActionDescriptor actionDescriptor, ExceptionContext exceptionContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ExceptionContext = exceptionContext;
@@ -321,11 +321,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecution : EventData
+    public sealed class BeforeActionFilterOnActionExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnActionExecution);
+        public const string EventName = EventNamespace + "BeforeOnActionExecution";
 
-        public BeforeOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
+        public BeforeActionFilterOnActionExecutionEventData(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutingContext = actionExecutingContext;
@@ -347,11 +347,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecution : EventData
+    public sealed class AfterActionFilterOnActionExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnActionExecution);
+        public const string EventName = EventNamespace + "AfterOnActionExecution";
 
-        public AfterOnActionExecution(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
+        public AfterActionFilterOnActionExecutionEventData(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutedContext = actionExecutedContext;
@@ -373,11 +373,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecuting : EventData
+    public sealed class BeforeActionFilterOnActionExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnActionExecuting);
+        public const string EventName = EventNamespace + "BeforeOnActionExecuting";
 
-        public BeforeOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
+        public BeforeActionFilterOnActionExecutingEventData(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutingContext = actionExecutingContext;
@@ -399,11 +399,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecuting : EventData
+    public sealed class AfterActionFilterOnActionExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnActionExecuting);
+        public const string EventName = EventNamespace + "AfterOnActionExecuting";
 
-        public AfterOnActionExecuting(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
+        public AfterActionFilterOnActionExecutingEventData(ActionDescriptor actionDescriptor, ActionExecutingContext actionExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutingContext = actionExecutingContext;
@@ -425,11 +425,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnActionExecuted : EventData
+    public sealed class BeforeActionFilterOnActionExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnActionExecuted);
+        public const string EventName = EventNamespace + "BeforeOnActionExecuted";
 
-        public BeforeOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
+        public BeforeActionFilterOnActionExecutedEventData(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutedContext = actionExecutedContext;
@@ -451,11 +451,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnActionExecuted : EventData
+    public sealed class AfterActionFilterOnActionExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnActionExecuted);
+        public const string EventName = EventNamespace + "AfterOnActionExecuted";
 
-        public AfterOnActionExecuted(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
+        public AfterActionFilterOnActionExecutedEventData(ActionDescriptor actionDescriptor, ActionExecutedContext actionExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ActionExecutedContext = actionExecutedContext;
@@ -477,37 +477,37 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeActionMethod : EventData
+    public sealed class BeforeControllerActionMethodEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeActionMethod);
+        public const string EventName = EventNamespace + "BeforeControllerActionMethod";
 
-        public BeforeActionMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, object controller)
+        public BeforeControllerActionMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> actionArguments, object controller)
         {
             ActionContext = actionContext;
-            Arguments = arguments;
+            ActionArguments = actionArguments;
             Controller = controller;
         }
 
         public ActionContext ActionContext { get; }
-        public IReadOnlyDictionary<string, object> Arguments { get; }
+        public IReadOnlyDictionary<string, object> ActionArguments { get; }
         public object Controller { get; }
 
-        protected override int Count => 3;
+        protected sealed override int Count => 3;
 
-        protected override KeyValuePair<string, object> this[int index] => index switch
+        protected sealed override KeyValuePair<string, object> this[int index] => index switch
         {
             0 => new KeyValuePair<string, object>(nameof(ActionContext), ActionContext),
-            1 => new KeyValuePair<string, object>(nameof(Arguments), Arguments),
+            1 => new KeyValuePair<string, object>(nameof(ActionArguments), ActionArguments),
             2 => new KeyValuePair<string, object>(nameof(Controller), Controller),
             _ => throw new IndexOutOfRangeException(nameof(index))
         };
     }
 
-    public sealed class AfterActionMethod : EventData
+    public sealed class AfterControllerActionMethodEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterActionMethod);
+        public const string EventName = EventNamespace + "AfterControllerActionMethod";
 
-        public AfterActionMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, object controller, IActionResult result)
+        public AfterControllerActionMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, object controller, IActionResult result)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -532,11 +532,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecution : EventData
+    public sealed class BeforeResultFilterOnResultExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResultExecution);
+        public const string EventName = EventNamespace + "BeforeOnResultExecution";
 
-        public BeforeOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
+        public BeforeResultFilterOnResultExecutionEventData(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutingContext = resultExecutingContext;
@@ -558,11 +558,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecution : EventData
+    public sealed class AfterResultFilterOnResultExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResultExecution);
+        public const string EventName = EventNamespace + "AfterOnResultExecution";
 
-        public AfterOnResultExecution(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
+        public AfterResultFilterOnResultExecutionEventData(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutedContext = resultExecutedContext;
@@ -584,11 +584,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecuting : EventData
+    public sealed class BeforeResultFilterOnResultExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResultExecuting);
+        public const string EventName = EventNamespace + "BeforeOnResultExecuting";
 
-        public BeforeOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
+        public BeforeResultFilterOnResultExecutingEventData(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutingContext = resultExecutingContext;
@@ -610,11 +610,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecuting : EventData
+    public sealed class AfterResultFilterOnResultExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResultExecuting);
+        public const string EventName = EventNamespace + "AfterOnResultExecuting";
 
-        public AfterOnResultExecuting(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
+        public AfterResultFilterOnResultExecutingEventData(ActionDescriptor actionDescriptor, ResultExecutingContext resultExecutingContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutingContext = resultExecutingContext;
@@ -636,11 +636,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnResultExecuted : EventData
+    public sealed class BeforeResultFilterOnResultExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnResultExecuted);
+        public const string EventName = EventNamespace + "BeforeOnResultExecuted";
 
-        public BeforeOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
+        public BeforeResultFilterOnResultExecutedEventData(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutedContext = resultExecutedContext;
@@ -662,11 +662,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnResultExecuted : EventData
+    public sealed class AfterResultFilterOnResultExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnResultExecuted);
+        public const string EventName = EventNamespace + "AfterOnResultExecuted";
 
-        public AfterOnResultExecuted(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
+        public AfterResultFilterOnResultExecutedEventData(ActionDescriptor actionDescriptor, ResultExecutedContext resultExecutedContext, IFilterMetadata filter)
         {
             ActionDescriptor = actionDescriptor;
             ResultExecutedContext = resultExecutedContext;
@@ -688,11 +688,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeActionResult : EventData
+    public sealed class BeforeActionResultEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeActionResult);
+        public const string EventName = EventNamespace + "BeforeActionResult";
 
-        public BeforeActionResult(ActionContext actionContext, IActionResult result)
+        public BeforeActionResultEventData(ActionContext actionContext, IActionResult result)
         {
             ActionContext = actionContext;
             Result = result;
@@ -711,11 +711,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterActionResult : EventData
+    public sealed class AfterActionResultEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterActionResult);
+        public const string EventName = EventNamespace + "AfterActionResult";
 
-        public AfterActionResult(ActionContext actionContext, IActionResult result)
+        public AfterActionResultEventData(ActionContext actionContext, IActionResult result)
         {
             ActionContext = actionContext;
             Result = result;

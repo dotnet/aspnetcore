@@ -1,5 +1,5 @@
 @using Microsoft.AspNetCore.Components.Routing
-@inject IUriHelper UriHelper
+@inject NavigationManager NavigationManager
 
 @*
     This router is independent of any other router that may exist within the same project.
@@ -10,12 +10,12 @@
 
 <CascadingAuthenticationState>
     <Router AppAssembly=typeof(BasicTestApp.Program).Assembly>
-        <AuthorizingContent>Authorizing...</AuthorizingContent>
-        <NotAuthorizedContent>
+        <Authorizing>Authorizing...</Authorizing>
+        <NotAuthorized>
             <div id="auth-failure">
                 Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
             </div>
-        </NotAuthorizedContent>
+        </NotAuthorized>
     </Router>
 </CascadingAuthenticationState>
 
@@ -27,11 +27,11 @@
     {
         // Start at AuthHome, not at any other component in the same app that happens to
         // register itself for the route ""
-        var absoluteUriPath = new Uri(UriHelper.GetAbsoluteUri()).GetLeftPart(UriPartial.Path);
-        var relativeUri = UriHelper.ToBaseRelativePath(UriHelper.GetBaseUri(), absoluteUriPath);
+        var absoluteUriPath = new Uri(NavigationManager.Uri).GetLeftPart(UriPartial.Path);
+        var relativeUri = NavigationManager.ToBaseRelativePath(absoluteUriPath);
         if (relativeUri == string.Empty)
         {
-            UriHelper.NavigateTo("AuthHome");
+            NavigationManager.NavigateTo("AuthHome");
         }
     }
 }

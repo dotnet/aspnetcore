@@ -24,25 +24,25 @@ namespace Microsoft.AspNetCore.Components
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
         [Parameter]
-        public Type Page { get; private set; }
+        public Type Page { get; set; }
 
         /// <summary>
         /// Gets or sets the parameters to pass to the page.
         /// </summary>
         [Parameter]
-        public IDictionary<string, object> PageParameters { get; private set; }
+        public IDictionary<string, object> PageParameters { get; set; }
 
         /// <summary>
         /// The content that will be displayed if the user is not authorized.
         /// </summary>
         [Parameter]
-        public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
+        public RenderFragment<AuthenticationState> NotAuthorized { get; set; }
 
         /// <summary>
         /// The content that will be displayed while asynchronous authorization is in progress.
         /// </summary>
         [Parameter]
-        public RenderFragment AuthorizingContent { get; private set; }
+        public RenderFragment Authorizing { get; set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
             Render();
@@ -109,14 +109,14 @@ namespace Microsoft.AspNetCore.Components
             }
 
             // Some authorization data exists, so we do need to wrap the fragment
-            RenderFragment<AuthenticationState> authorizedContent = context => pageFragment;
+            RenderFragment<AuthenticationState> authorized = context => pageFragment;
             return builder =>
             {
                 builder.OpenComponent<AuthorizeViewWithSuppliedData>(0);
                 builder.AddAttribute(1, nameof(AuthorizeViewWithSuppliedData.AuthorizeDataParam), authorizeData);
-                builder.AddAttribute(2, nameof(AuthorizeViewWithSuppliedData.Authorized), authorizedContent);
-                builder.AddAttribute(3, nameof(AuthorizeViewWithSuppliedData.NotAuthorized), NotAuthorizedContent ?? DefaultNotAuthorizedContent);
-                builder.AddAttribute(4, nameof(AuthorizeViewWithSuppliedData.Authorizing), AuthorizingContent);
+                builder.AddAttribute(2, nameof(AuthorizeViewWithSuppliedData.Authorized), authorized);
+                builder.AddAttribute(3, nameof(AuthorizeViewWithSuppliedData.NotAuthorized), NotAuthorized ?? DefaultNotAuthorized);
+                builder.AddAttribute(4, nameof(AuthorizeViewWithSuppliedData.Authorizing), Authorizing);
                 builder.CloseComponent();
             };
         }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components
 
         // There has to be some default content. If we render blank by default, developers
         // will find it hard to guess why their UI isn't appearing.
-        private static RenderFragment DefaultNotAuthorizedContent(AuthenticationState authenticationState)
+        private static RenderFragment DefaultNotAuthorized(AuthenticationState authenticationState)
             => builder => builder.AddContent(0, "Not authorized");
     }
 }

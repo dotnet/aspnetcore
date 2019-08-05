@@ -84,6 +84,7 @@ stages:
             /p:AzureStorageAccountName=$(ProxyBackedFeedsAccountName)
             /p:AzureStorageAccountKey=$(dotnetfeed-storage-access-key-1)
             /p:AzureDevOpsFeedsBaseUrl=$(dotnetfeed-internal-private-feed-url)
+            /p:StaticInternalFeed=$(dotnetfeed-internal-nonstable-feed-url)
             /p:NugetPath=$(Agent.BuildDirectory)\Nuget\NuGet.exe
             /p:BARBuildId=$(BARBuildId) 
             /p:MaestroApiEndpoint='https://maestro-prod.westus2.cloudapp.azure.com'

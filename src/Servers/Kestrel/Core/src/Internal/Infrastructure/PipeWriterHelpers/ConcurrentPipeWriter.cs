@@ -46,9 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         private TaskCompletionSource<FlushResult> _currentFlushTcs;
         private bool _bufferedWritePending;
 
-        // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling Abort() or Complete()
-        // If an abort occurs while a flush is in progress, we clean up after the flush completes, and don't flush again.
+        // We're trusting the Http2FrameWriter and Http1OutputProducer to not call into the PipeWriter after calling Abort() or Complete().
+        // If an Abort() is called while a flush is in progress, we clean up after the next flush completes, and don't flush again.
         private bool _aborted;
+        // If an Complete() is called while a flush is in progress, we clean up after the flush loop completes, and call Complete() on the inner PipeWriter.
         private Exception _completeException;
 
         public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool, object sync)
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
                 return flushTask;
             }
 
-            // Use a TCS instead of something resettable so it can be awaited by multiple awaiters.
+            // Use a TCS instead of something custom so it can be awaited by multiple awaiters.
             _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var result = new ValueTask<FlushResult>(_currentFlushTcs.Task);
 
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                         if (flushResult.IsCanceled)
                         {
-                            // Complete anyone currently awaiting a flush since CancelPendingFlush() was called
+                            // Complete anyone currently awaiting a flush with the canceled FlushResult since CancelPendingFlush() was called.
                             _currentFlushTcs.SetResult(flushResult);
                             // Reset _currentFlushTcs, so we don't enter passthrough mode while we're still flushing.
                             _currentFlushTcs = new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -174,25 +175,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
         }
 
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-        {
-            _innerPipeWriter.OnReaderCompleted(callback, state);
-        }
-
         public override void CancelPendingFlush()
         {
-            // We propagate IsCanceled when we do multiple flushes in a loop. If FlushResult.IsCanceled is true with more data pending to flush,
-            // _currentFlushTcs with canceled flush task, but rekick the FlushAsync loop.
+            // FlushAsyncAwaited never ignores a canceled FlushResult.
             _innerPipeWriter.CancelPendingFlush();
         }
 
+        // To return all the segments without completing the inner pipe, call Abort().
         public override void Complete(Exception exception = null)
         {
-            // We store the complete exception or  s sentinel exception instance in a field  if a flush was ongoing.
-            // We call the inner Complete() method after the flush loop ended.
-
-            // To simply ensure everything gets returned after the PipeWriter is left in some unknown state (say GetMemory() was
-            // called but not Advance(), or there's a flush pending), but you don't want to complete the inner pipe, just call Abort().
+            // Store the exception or sentinel in a field so that if a flush is ongoing, we call the
+            // inner Complete() method with the correct exception or lack thereof once the flush loop ends.
             _completeException = exception ?? _successfullyCompletedSentinel;
 
             if (_currentFlushTcs == null)

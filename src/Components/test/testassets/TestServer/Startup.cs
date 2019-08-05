@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
 using BasicTestApp;
+using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +33,7 @@ namespace TestServer
                 .AddCircuitOptions(o =>
                 {
                     var detailedErrors = Configuration.GetValue<bool>("circuit-detailed-errors");
-                    o.JSInteropDetailedErrors = detailedErrors;
+                    o.DetailedErrors = detailedErrors;
                 });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
@@ -75,7 +77,12 @@ namespace TestServer
                     options.AddSupportedCultures("en-US", "fr-FR");
                     options.AddSupportedUICultures("en-US", "fr-FR");
 
-                    // Cookie culture provider is included by default.
+                    // Cookie culture provider is included by default, but we want it to be the only one.
+                    options.RequestCultureProviders.Clear();
+                    options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+
+                    // We want the default to be en-US so that the tests for bind can work consistently.
+                    options.SetDefaultCulture("en-US"); 
                 });
 
                 app.UseRouting();
@@ -96,7 +103,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub();
+                    endpoints.MapBlazorHub<TestRouter>(selector: "app");
                 });
             });
 

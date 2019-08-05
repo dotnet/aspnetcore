@@ -1,5 +1,7 @@
 <h3 id="bind-cases">Bind cases</h3>
 
+@* There are a mix of cases here using bind and bind-value for coverage *@
+
 <h2>Textbox</h2>
 <p>
     Initially blank:
@@ -32,7 +34,7 @@
 </p>
 <p>
     Nullable int:
-    <input id="textbox-nullable-int" @bind="textboxNullableIntValue" type="number" />
+    <input id="textbox-nullable-int" @bind-value="textboxNullableIntValue" type="number" />
     <span id="textbox-nullable-int-value">@textboxNullableIntValue</span>
     <input id="textbox-nullable-int-mirror" @bind="textboxNullableIntValue" readonly />
 </p>
@@ -50,7 +52,7 @@
 </p>
 <p>
     float:
-    <input id="textbox-float" @bind="textboxFloatValue" type="number" />
+    <input id="textbox-float" @bind-value="textboxFloatValue" type="number" />
     <span id="textbox-float-value">@textboxFloatValue</span>
     <input id="textbox-float-mirror" @bind="textboxFloatValue" readonly />
 </p>
@@ -74,7 +76,7 @@
 </p>
 <p>
     decimal:
-    <input id="textbox-decimal" @bind="textboxDecimalValue" type="number" />
+    <input id="textbox-decimal" @bind-value="textboxDecimalValue" type="number" />
     <span id="textbox-decimal-value">@textboxDecimalValue</span>
     <input id="textbox-decimal-mirror" @bind="textboxDecimalValue" readonly />
 </p>
@@ -119,7 +121,7 @@
 </p>
 <p>
     Nullable DateTime:
-    <input id="textbox-nullable-datetime" @bind="textboxNullableDateTimeValue" type="text" />
+    <input id="textbox-nullable-datetime" @bind-value="textboxNullableDateTimeValue" type="text" />
     <span id="textbox-nullable-datetime-value">@textboxNullableDateTimeValue</span>
     <input id="textbox-nullable-datetime-mirror" @bind="textboxNullableDateTimeValue" readonly />
 </p>
@@ -149,7 +151,7 @@
 </p>
 <p>
     DateTime (format):
-    <input id="textbox-datetime-format" @bind="textboxDateTimeFormatValue" type="text" @bind:format="MM-dd" />
+    <input id="textbox-datetime-format" @bind-value="textboxDateTimeFormatValue" type="text" @bind-value:format="MM-dd" />
     <span id="textbox-datetime-format-value">@textboxDateTimeFormatValue</span>
     <input id="textbox-datetime-format-mirror" @bind="textboxDateTimeFormatValue" readonly />
 </p>
@@ -161,7 +163,7 @@
 </p>
 <p>
     DateTime (format / invalid value):
-    <input id="textbox-datetime-format-invalid" @bind="textboxDateTimeFormatInvalidValue" type="text" @bind:format="MM-dd" />
+    <input id="textbox-datetime-format-invalid" @bind-value="textboxDateTimeFormatInvalidValue" type="text" @bind-value:format="MM-dd" />
     <span id="textbox-datetime-format-invalid-value">@textboxDateTimeFormatInvalidValue</span>
     <input id="textbox-datetime-format-invalid-mirror" @bind="textboxDateTimeFormatInvalidValue" readonly />
 </p>

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The id for the component.</param>
         /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
-        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrrentRenderTree.GetFrames();
+        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
 
         /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </remarks>
         protected Task RenderRootComponentAsync(int componentId)
         {
-            return RenderRootComponentAsync(componentId, ParameterCollection.Empty);
+            return RenderRootComponentAsync(componentId, ParameterView.Empty);
         }
 
         /// <summary>
@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// this more than once.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        /// <param name="initialParameters">The <see cref="ParameterView"/>with the initial parameters to use for rendering.</param>
         /// <remarks>
         /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
         /// start, but not wait for the entire render to complete.
         /// </remarks>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        protected async Task RenderRootComponentAsync(int componentId, ParameterView initialParameters)
         {
             if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
             {
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, UIEventArgs eventArgs)
+        public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
@@ -235,6 +235,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             catch (Exception e)
             {
                 HandleException(e);
+                return Task.CompletedTask;
             }
             finally
             {
@@ -444,8 +445,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             if (updateDisplayTask.IsCanceled)
             {
-                // The display update was cancelled (maybe due to a timeout on the components server-side case or due
-                // to the renderer being disposed)
+                // The display update was canceled.
+                // This can be due to a timeout on the components server-side case, or the renderer being disposed.
+
+                // The latter case is normal during prerendering, as the render never fully completes (the display never
+                // gets updated, no references get populated and JavaScript interop is not available) and we simply discard
+                // the renderer after producing the prerendered content.
                 return Task.CompletedTask;
             }
             if (updateDisplayTask.IsFaulted)
@@ -643,7 +648,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             if (componentState != null)
             {
                 RenderTreeUpdater.UpdateToMatchClientState(
-                    componentState.CurrrentRenderTree,
+                    componentState.CurrentRenderTree,
                     eventHandlerId,
                     fieldInfo.FieldValue);
             }

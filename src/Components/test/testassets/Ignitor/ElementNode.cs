@@ -63,16 +63,15 @@ namespace Ignitor
             _events[eventName] = descriptor;
         }
 
-        internal async Task SelectAsync(HubConnection connection, string value)
+        internal Task SelectAsync(HubConnection connection, string value)
         {
             if (!Events.TryGetValue("change", out var changeEventDescriptor))
             {
-                throw new InvalidOperationException("Element does not have a click event.");
+                throw new InvalidOperationException("Element does not have a change event.");
             }
 
-            var mouseEventArgs = new UIChangeEventArgs()
+            var args = new ChangeEventArgs()
             {
-                Type = changeEventDescriptor.EventName,
                 Value = value
             };
 
@@ -88,31 +87,10 @@ namespace Ignitor
                 }
             };
 
-            var serializedJson = JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            var argsObject = new object[] { browserDescriptor, serializedJson };
-            var callId = "0";
-            var assemblyName = "Microsoft.AspNetCore.Components.Web";
-            var methodIdentifier = "DispatchEvent";
-            var dotNetObjectId = 0;
-            var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs);
-
+            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(args));
         }
 
-        public class ElementEventDescriptor
-        {
-            public ElementEventDescriptor(string eventName, ulong eventId)
-            {
-                EventName = eventName ?? throw new ArgumentNullException(nameof(eventName));
-                EventId = eventId;
-            }
-
-            public string EventName { get; }
-
-            public ulong EventId { get; }
-        }
-
-        public async Task ClickAsync(HubConnection connection)
+        public Task ClickAsync(HubConnection connection)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {
@@ -130,14 +108,27 @@ namespace Ignitor
                 EventHandlerId = clickEventDescriptor.EventId,
                 EventArgsType = "mouse",
             };
-            var serializedJson = JsonSerializer.Serialize(mouseEventArgs, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            var argsObject = new object[] { browserDescriptor, serializedJson };
-            var callId = "0";
-            var assemblyName = "Microsoft.AspNetCore.Components.Web";
-            var methodIdentifier = "DispatchEvent";
-            var dotNetObjectId = 0;
-            var clickArgs = JsonSerializer.Serialize(argsObject, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await connection.InvokeAsync("BeginInvokeDotNetFromJS", callId, assemblyName, methodIdentifier, dotNetObjectId, clickArgs);
+
+            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(mouseEventArgs));
+        }
+
+        private static string Serialize<T>(T payload) =>
+             JsonSerializer.Serialize(payload, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        private static Task DispatchEventCore(HubConnection connection, string descriptor, string eventArgs) =>
+            connection.InvokeAsync("DispatchBrowserEvent", descriptor, eventArgs);
+
+        public class ElementEventDescriptor
+        {
+            public ElementEventDescriptor(string eventName, ulong eventId)
+            {
+                EventName = eventName ?? throw new ArgumentNullException(nameof(eventName));
+                EventId = eventId;
+            }
+
+            public string EventName { get; }
+
+            public ulong EventId { get; }
         }
     }
 }

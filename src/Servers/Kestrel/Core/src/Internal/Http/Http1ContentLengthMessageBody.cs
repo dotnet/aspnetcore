@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _readCompleted;
         private bool _isReading;
         private int _userCanceled;
-        private long _totalExaminedInPreviousReadResult;
         private bool _finalAdvanceCalled;
 
         public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Http1Connection context)
@@ -85,6 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (Interlocked.Exchange(ref _userCanceled, 0) == 1)
                     {
                         // Ignore the readResult if it wasn't by the user.
+                        CreateReadResultFromConnectionReadResult();
+
                         break;
                     }
                     else
@@ -156,6 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             CreateReadResultFromConnectionReadResult();
 
             readResult = _readResult;
+            CountBytesRead(readResult.Buffer.Length);
 
             return true;
         }
@@ -174,11 +176,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void CreateReadResultFromConnectionReadResult()
         {
-            if (_readResult.Buffer.Length >= _inputLength + _totalExaminedInPreviousReadResult)
+            if (_readResult.Buffer.Length >= _inputLength + _examinedUnconsumedBytes)
             {
                 _readCompleted = true;
                 _readResult = new ReadResult(
-                    _readResult.Buffer.Slice(0, _inputLength + _totalExaminedInPreviousReadResult),
+                    _readResult.Buffer.Slice(0, _inputLength + _examinedUnconsumedBytes),
                     _readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1,
                     _readCompleted);
             }
@@ -217,18 +219,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            var consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
-            var examinedLength = consumedLength + _readResult.Buffer.Slice(consumed, examined).Length;
-
+            _inputLength -= OnAdvance(_readResult, consumed, examined);
             _context.Input.AdvanceTo(consumed, examined);
-
-            var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
-
-            OnDataRead(newlyExamined);
-            _totalExaminedInPreviousReadResult += newlyExamined;
-            _inputLength -= newlyExamined;
-
-            _totalExaminedInPreviousReadResult -= consumedLength;
         }
 
         protected override void OnReadStarting()
@@ -243,11 +235,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _context.ReportApplicationError(exception);
             _completed = true;
-        }
-
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            // TODO make this work with ContentLength.
         }
 
         public override void CancelPendingRead()

@@ -917,6 +917,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task Frame_MultipleStreams_CanBeCreatedIfClientCountIsLessThanActualMaxStreamCount()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1; 
+            var firstRequestBlock = new TaskCompletionSource<object>();
+            var firstRequestReceived = new TaskCompletionSource<object>();
+            var makeFirstRequestWait = false;
+            await InitializeConnectionAsync(async context =>
+            {
+                if (!makeFirstRequestWait)
+                {
+                    makeFirstRequestWait = true;
+                    firstRequestReceived.SetResult(null);
+                    await firstRequestBlock.Task.DefaultTimeout();
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await SendRstStreamAsync(1);
+
+            await firstRequestReceived.Task.DefaultTimeout();
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 3);
+
+            firstRequestBlock.SetResult(null);
+
+            await StopConnectionAsync(3, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+            var tcs = new TaskCompletionSource<object>();
+            await InitializeConnectionAsync(async context =>
+            {
+                await tcs.Task.DefaultTimeout();
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendRstStreamAsync(1);
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+            await SendRstStreamAsync(3);
+            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+
+            await WaitForStreamErrorAsync(
+                expectedStreamId: 5,
+                expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
+                expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
+
+            tcs.SetResult(null);
+
+            await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task DATA_Received_StreamClosedImplicitly_ConnectionError()
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
@@ -3731,7 +3791,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void IOExceptionDuringFrameProcessingLoggedAsInfo()
+        public void IOExceptionDuringFrameProcessingIsNotLoggedHigherThanDebug()
         {
             CreateConnection();
 
@@ -3740,9 +3800,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(TaskStatus.RanToCompletion, _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication)).Status);
 
-            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.LogLevel >= LogLevel.Information);
+            Assert.All(TestApplicationErrorLogger.Messages, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
 
-            Assert.Equal(LogLevel.Information, logMessage.LogLevel);
+            var logMessage = TestApplicationErrorLogger.Messages.Single(m => m.EventId == 20);
+
             Assert.Equal("Connection id \"(null)\" request processing ended abnormally.", logMessage.Message);
             Assert.Same(ioException, logMessage.Exception);
         }

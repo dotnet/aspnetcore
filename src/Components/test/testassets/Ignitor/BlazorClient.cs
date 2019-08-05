@@ -40,7 +40,11 @@ namespace Ignitor
 
         private CancellableOperation NextBatchReceived { get; set; }
 
+        private CancellableOperation NextErrorReceived { get; set; }
+
         private CancellableOperation NextJSInteropReceived { get; set; }
+
+        private CancellableOperation NextDotNetInteropCompletionReceived { get; set; }
 
         public bool ConfirmRenderBatch { get; set; } = true;
 
@@ -48,7 +52,9 @@ namespace Ignitor
 
         public event Action<int, int, byte[]> RenderBatchReceived;
 
-        public event Action<Error> OnCircuitError;
+        public event Action<string> DotNetInteropCompletion;
+
+        public event Action<string> OnCircuitError;
 
         public string CircuitId { get; set; }
 
@@ -70,16 +76,40 @@ namespace Ignitor
             return NextBatchReceived.Completion.Task;
         }
 
-        public Task PrepareForNextJSInterop()
+        public Task PrepareForNextJSInterop(TimeSpan? timeout)
         {
             if (NextJSInteropReceived?.Completion != null)
             {
                 throw new InvalidOperationException("Invalid state previous task not completed");
             }
 
-            NextJSInteropReceived = new CancellableOperation(DefaultLatencyTimeout);
+            NextJSInteropReceived = new CancellableOperation(timeout);
 
             return NextJSInteropReceived.Completion.Task;
+        }
+
+        public Task PrepareForNextDotNetInterop(TimeSpan? timeout)
+        {
+            if (NextDotNetInteropCompletionReceived?.Completion != null)
+            {
+                throw new InvalidOperationException("Invalid state previous task not completed");
+            }
+
+            NextDotNetInteropCompletionReceived = new CancellableOperation(timeout);
+
+            return NextDotNetInteropCompletionReceived.Completion.Task;
+        }
+
+        public Task PrepareForNextCircuitError(TimeSpan? timeout)
+        {
+            if (NextErrorReceived?.Completion != null)
+            {
+                throw new InvalidOperationException("Invalid state previous task not completed");
+            }
+
+            NextErrorReceived = new CancellableOperation(timeout);
+
+            return NextErrorReceived.Completion.Task;
         }
 
         public async Task ClickAsync(string elementId)
@@ -109,9 +139,23 @@ namespace Ignitor
             await task;
         }
 
-        public async Task ExpectJSInterop(Func<Task> action)
+        public async Task ExpectJSInterop(Func<Task> action, TimeSpan? timeout = null)
         {
-            var task = WaitForJSInterop();
+            var task = WaitForJSInterop(timeout);
+            await action();
+            await task;
+        }
+
+        public async Task ExpectDotNetInterop(Func<Task> action, TimeSpan? timeout = null)
+        {
+            var task = WaitForDotNetInterop(timeout);
+            await action();
+            await task;
+        }
+
+        public async Task ExpectCircuitError(Func<Task> action, TimeSpan? timeout = null)
+        {
+            var task = WaitForCircuitError(timeout);
             await action();
             await task;
         }
@@ -131,20 +175,46 @@ namespace Ignitor
             return Task.CompletedTask;
         }
 
-        private async Task WaitForJSInterop()
+        private async Task WaitForJSInterop(TimeSpan? timeout = null)
         {
             if (ImplicitWait)
             {
-                if (DefaultLatencyTimeout == null)
+                if (DefaultLatencyTimeout == null && timeout == null)
                 {
                     throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
                 }
 
-                await PrepareForNextJSInterop();
+                await PrepareForNextJSInterop(timeout ?? DefaultLatencyTimeout);
             }
         }
 
-        public async Task<bool> ConnectAsync(Uri uri, bool prerendered)
+        private async Task WaitForDotNetInterop(TimeSpan? timeout = null)
+        {
+            if (ImplicitWait)
+            {
+                if (DefaultLatencyTimeout == null && timeout == null)
+                {
+                    throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
+                }
+
+                await PrepareForNextDotNetInterop(timeout ?? DefaultLatencyTimeout);
+            }
+        }
+
+        private async Task WaitForCircuitError(TimeSpan? timeout = null)
+        {
+            if (ImplicitWait)
+            {
+                if (DefaultLatencyTimeout == null && timeout == null)
+                {
+                    throw new InvalidOperationException("Implicit wait without DefaultLatencyTimeout is not allowed.");
+                }
+
+                await PrepareForNextCircuitError(timeout ?? DefaultLatencyTimeout);
+            }
+        }
+
+        public async Task<bool> ConnectAsync(Uri uri, bool prerendered, bool connectAutomatically = true)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
@@ -155,9 +225,15 @@ namespace Ignitor
             await HubConnection.StartAsync(CancellationToken);
 
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
+            HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
             HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
-            HubConnection.On<Error>("JS.OnError", OnError);
+            HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
+
+            if (!connectAutomatically)
+            {
+                return true;
+            }
 
             // Now everything is registered so we can start the circuit.
             if (prerendered)
@@ -170,9 +246,23 @@ namespace Ignitor
             else
             {
                 await ExpectRenderBatch(
-                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", new Uri(uri.GetLeftPart(UriPartial.Authority)), uri),
+                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri),
                     TimeSpan.FromSeconds(10));
                 return CircuitId != null;
+            }
+        }
+
+        private void OnEndInvokeDotNet(string completion)
+        {
+            try
+            {
+                DotNetInteropCompletion?.Invoke(completion);
+
+                NextDotNetInteropCompletionReceived?.Completion?.TrySetResult(null);
+            }
+            catch (Exception e)
+            {
+                NextDotNetInteropCompletionReceived?.Completion?.TrySetException(e);
             }
         }
 
@@ -213,9 +303,18 @@ namespace Ignitor
             }
         }
 
-        private void OnError(Error error)
+        private void OnError(string error)
         {
-            OnCircuitError?.Invoke(error);
+            try
+            {
+                OnCircuitError?.Invoke(error);
+
+                NextErrorReceived?.Completion?.TrySetResult(null);
+            }
+            catch (Exception e)
+            {
+                NextErrorReceived?.Completion?.TrySetResult(e);
+            }
         }
 
         private Task OnClosedAsync(Exception ex)
@@ -248,7 +347,7 @@ namespace Ignitor
 
         public async Task InvokeDotNetMethod(object callId, string assemblyName, string methodIdentifier, object dotNetObjectId, string argsJson)
         {
-            await ExpectJSInterop(() => HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson));
+            await ExpectDotNetInterop(() => HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson));
         }
 
         private static async Task<string> GetPrerenderedCircuitIdAsync(Uri uri)

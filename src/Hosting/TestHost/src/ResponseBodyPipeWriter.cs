@@ -7,7 +7,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -82,9 +81,6 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         public override void CancelPendingFlush() => _pipe.Writer.CancelPendingFlush();
-
-        public override void OnReaderCompleted(Action<Exception, object> callback, object state)
-             => _pipe.Writer.OnReaderCompleted(callback, state);
 
         public override void Advance(int bytes)
         {

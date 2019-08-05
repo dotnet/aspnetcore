@@ -770,11 +770,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
             Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
 
-            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            // Clear textbox; value updates to the default
             target.Clear();
             target.SendKeys("\t");
             expected = default;
-            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal("01-01", () => target.GetAttribute("value"));
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
             Assert.Equal(expected, DateTime.Parse(mirrorValue.GetAttribute("value")));
 
@@ -829,10 +829,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
             Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
 
-            // Clear textbox; value updates to emtpy because that's what we do for `default` when there's a format
+            // Clear textbox; value updates to the default
             target.Clear();
             expected = default;
-            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal("01-01", () => target.GetAttribute("value"));
             Assert.Equal(expected, DateTimeOffset.Parse(boundValue.Text));
             Assert.Equal(expected, DateTimeOffset.Parse(mirrorValue.GetAttribute("value")));
 

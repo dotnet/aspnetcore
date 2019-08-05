@@ -1,23 +1,25 @@
 import { renderBatch } from '../../Rendering/Renderer';
 import { OutOfProcessRenderBatch } from '../../Rendering/RenderBatch/OutOfProcessRenderBatch';
-import { ILogger, LogLevel } from '../Logging/ILogger';
+import { Logger, LogLevel } from '../Logging/Logger';
 import { HubConnection } from '@aspnet/signalr';
 
-export default class RenderQueue {
+export class RenderQueue {
   private static renderQueues = new Map<number, RenderQueue>();
 
   private nextBatchId = 2;
 
+  private fatalError?: string;
+
   public browserRendererId: number;
 
-  public logger: ILogger;
+  public logger: Logger;
 
-  public constructor(browserRendererId: number, logger: ILogger) {
+  public constructor(browserRendererId: number, logger: Logger) {
     this.browserRendererId = browserRendererId;
     this.logger = logger;
   }
 
-  public static getOrCreateQueue(browserRendererId: number, logger: ILogger): RenderQueue {
+  public static getOrCreateQueue(browserRendererId: number, logger: Logger): RenderQueue {
     const queue = this.renderQueues.get(browserRendererId);
     if (queue) {
       return queue;
@@ -28,13 +30,23 @@ export default class RenderQueue {
     return newQueue;
   }
 
-  public processBatch(receivedBatchId: number, batchData: Uint8Array, connection: HubConnection): void {
+  public async processBatch(receivedBatchId: number, batchData: Uint8Array, connection: HubConnection): Promise<void> {
     if (receivedBatchId < this.nextBatchId) {
+      // SignalR delivers messages in order, but it does not guarantee that the message gets delivered.
+      // For that reason, if the server re-sends a batch (for example during a reconnection because it didn't get an ack)
+      // we simply acknowledge it to get back in sync with the server.
+      await this.completeBatch(connection, receivedBatchId);
       this.logger.log(LogLevel.Debug, `Batch ${receivedBatchId} already processed. Waiting for batch ${this.nextBatchId}.`);
       return;
     }
 
     if (receivedBatchId > this.nextBatchId) {
+      if (this.fatalError) {
+        this.logger.log(LogLevel.Debug, `Received a new batch ${receivedBatchId} but errored out on a previous batch ${this.nextBatchId - 1}`);
+        await connection.send('OnRenderCompleted', this.nextBatchId - 1, this.fatalError.toString());
+        return;
+      }
+
       this.logger.log(LogLevel.Debug, `Waiting for batch ${this.nextBatchId}. Batch ${receivedBatchId} not processed.`);
       return;
     }
@@ -43,8 +55,9 @@ export default class RenderQueue {
       this.nextBatchId++;
       this.logger.log(LogLevel.Debug, `Applying batch ${receivedBatchId}.`);
       renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
-      this.completeBatch(connection, receivedBatchId);
+      await this.completeBatch(connection, receivedBatchId);
     } catch (error) {
+      this.fatalError = error.toString();
       this.logger.log(LogLevel.Error, `There was an error applying batch ${receivedBatchId}.`);
 
       // If there's a rendering exception, notify server *and* throw on client

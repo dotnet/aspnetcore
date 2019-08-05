@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             return BytesTransferred;
 
-            void ThrowSocketException(SocketError e)
+            static void ThrowSocketException(SocketError e)
             {
                 throw new SocketException((int)e);
             }

@@ -128,41 +128,8 @@ namespace Microsoft.AspNetCore.Http
 
         private static Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
         {
-            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (sendFile == null)
-            {
-                return SendFileAsyncCore(response.Body, fileName, offset, count, cancellationToken);
-            }
-
+            var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(fileName, offset, count, cancellationToken);
-        }
-
-        // Not safe for overlapped writes.
-        private static async Task SendFileAsyncCore(Stream outputStream, string fileName, long offset, long? count, CancellationToken cancel = default)
-        {
-            cancel.ThrowIfCancellationRequested();
-
-            var fileInfo = new FileInfo(fileName);
-            CheckRange(offset, count, fileInfo.Length);
-
-            int bufferSize = 1024 * 16;
-            var fileStream = new FileStream(
-                fileName,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.ReadWrite,
-                bufferSize: bufferSize,
-                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
-
-            using (fileStream)
-            {
-                if (offset > 0)
-                {
-                    fileStream.Seek(offset, SeekOrigin.Begin);
-                }
-
-                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count, cancel);
-            }
         }
 
         private static void CheckRange(long offset, long? count, long fileLength)

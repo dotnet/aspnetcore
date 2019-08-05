@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +18,7 @@ namespace ComponentsApp.Server
             services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
             services.AddServerSideBlazor(options =>
             {
-                options.JSInteropDetailedErrors = true;
+                options.DetailedErrors = true;
             });
 
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
@@ -40,8 +39,8 @@ namespace ComponentsApp.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/Index");
+                endpoints.MapBlazorHub<ComponentsApp.App.App>("app");
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }

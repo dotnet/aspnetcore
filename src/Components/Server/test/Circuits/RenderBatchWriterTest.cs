@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 RenderTreeEdit.UpdateMarkup(108, 109),
                 RenderTreeEdit.RemoveAttribute(110, "Some removed attribute"), // To test deduplication
             };
-            var editsBuilder = new ArrayBuilder<RenderTreeEdit>();
+            var editsBuilder = new RenderTree.ArrayBuilder<RenderTreeEdit>();
             editsBuilder.Append(edits, 0, edits.Length);
             var editsSegment = editsBuilder.ToSegment(1, edits.Length); // Skip first to show offset is respected
             var bytes = Serialize(new RenderBatch(
@@ -373,7 +374,7 @@ namespace Microsoft.AspNetCore.Components.Server
             public void Attach(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
                 => throw new NotImplementedException();
         }
 

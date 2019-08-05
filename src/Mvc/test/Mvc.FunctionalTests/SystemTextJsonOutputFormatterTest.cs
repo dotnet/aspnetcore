@@ -4,7 +4,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -27,13 +26,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal("\"Hello Mr. \\ud83e\\udd8a\"", await response.Content.ReadAsStringAsync());
+            Assert.Equal("\"Hello Mr. \\uD83E\\uDD8A\"", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/11522")]
+        [Fact]
         public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
         [Fact]

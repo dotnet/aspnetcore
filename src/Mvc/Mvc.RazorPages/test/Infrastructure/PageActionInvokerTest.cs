@@ -1391,15 +1391,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         #region Logs
 
-        [Fact]
-        public async Task InvokeAction_LogsPageFactory()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task InvokeAction_ForPage_Logs(bool hasPageModel)
         {
             // Arrange
             var testSink = new TestSink();
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
             var logger = loggerFactory.CreateLogger("test");
 
-            var actionDescriptor = CreateDescriptorForSimplePage();
+            var actionDescriptor = hasPageModel 
+                ? CreateDescriptorForPageModelPage() 
+                : CreateDescriptorForSimplePage();
+            actionDescriptor.ViewEnginePath = "/Pages/Foo";
+            actionDescriptor.RouteValues.Add("page", "foo");
             var invoker = CreateInvoker(null, actionDescriptor, logger: logger);
 
             // Act
@@ -1408,29 +1414,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Assert
             var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
             var pageName = $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)} ({typeof(PageActionInvokerTest).Assembly.GetName().Name})";
-            Assert.Contains($"Executing page factory for page {pageName}", messages);
-            Assert.Contains($"Executed page factory for page {pageName}", messages);
-        }
+            var pagePath = actionDescriptor.ViewEnginePath;
+            var methodFullName = hasPageModel
+                ? $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPageModel)}.{nameof(TestPageModel.OnGetHandler1)}"
+                : $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)}.{nameof(TestPage.OnGetHandler1)}";
+            var methodName = nameof(TestPage.OnGetHandler1);
+            var resultName = typeof(PageResult).FullName;
+            var factoryType = hasPageModel ? "page model" : "page";
 
-        [Fact]
-        public async Task InvokeAction_LogsPageModelFactory()
-        {
-            // Arrange
-            var testSink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
-            var logger = loggerFactory.CreateLogger("test");
-
-            var actionDescriptor = CreateDescriptorForPageModelPage();
-            var invoker = CreateInvoker(null, actionDescriptor, logger: logger);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            var messages = testSink.Writes.Select(write => write.State.ToString()).ToList();
-            var pageName = $"{typeof(PageActionInvokerTest).FullName}+{nameof(TestPage)} ({typeof(PageActionInvokerTest).Assembly.GetName().Name})";
-            Assert.Contains($"Executing page model factory for page {pageName}", messages);
-            Assert.Contains($"Executed page model factory for page {pageName}", messages);
+            Assert.Collection(
+                messages,
+                m => Assert.Equal($"Route matched with {{page = \"foo\"}}. Executing page {pagePath}", m),
+                m => Assert.Equal("Execution plan of authorization filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of resource filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of action filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of exception filters (in the following order): None", m),
+                m => Assert.Equal("Execution plan of result filters (in the following order): None", m),
+                m => Assert.Equal($"Executing {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executed {factoryType} factory for page {pageName}", m),
+                m => Assert.Equal($"Executing handler method {methodFullName} - ModelState is Valid", m),
+                m => Assert.Equal($"Executed handler method {methodName}, returned result {resultName}.", m),
+                m => Assert.Equal($"Before executing action result {resultName}.", m),
+                m => Assert.Equal($"After executing action result {resultName}.", m),
+                m => Assert.StartsWith($"Executed page {pagePath} in ", m));
         }
 
         #endregion

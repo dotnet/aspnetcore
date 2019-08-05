@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -17,13 +16,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.
     /// </summary>
-    public class RenderTreeBuilder : IDisposable
+    public sealed class RenderTreeBuilder : IDisposable
     {
         private readonly static object BoxedTrue = true;
         private readonly static object BoxedFalse = false;
         private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
-        private readonly Renderer _renderer;
         private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>();
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
@@ -33,16 +31,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// The reserved parameter name used for supplying child content.
         /// </summary>
-        public const string ChildContent = nameof(ChildContent);
-
-        /// <summary>
-        /// Constructs an instance of <see cref="RenderTreeBuilder"/>.
-        /// </summary>
-        /// <param name="renderer">The associated <see cref="Renderer"/>.</param>
-        public RenderTreeBuilder(Renderer renderer)
-        {
-            _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-        }
+        private const string ChildContent = nameof(ChildContent);
 
         /// <summary>
         /// Appends a frame representing an element, i.e., a container for other frames.
@@ -204,40 +193,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 TrackAttributeName(name);
             }
-        }
-
-        /// <summary>
-        /// <para>
-        /// Appends a frame representing an <see cref="Action"/>-valued attribute.
-        /// </para>
-        /// <para>
-        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
-        /// current element is not a component, the frame will be omitted.
-        /// </para>
-        /// </summary>
-        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, Action value)
-        {
-            AddAttribute(sequence, name, (MulticastDelegate)value);
-        }
-
-        /// <summary>
-        /// <para>
-        /// Appends a frame representing a <see cref="Func{Task}"/>-valued attribute.
-        /// </para>
-        /// <para>
-        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
-        /// current element is not a component, the frame will be omitted.
-        /// </para>
-        /// </summary>
-        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="name">The name of the attribute.</param>
-        /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, Func<Task> value)
-        {
-            AddAttribute(sequence, name, (MulticastDelegate)value);
         }
 
         /// <summary>
@@ -587,7 +542,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="elementReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
-        public void AddElementReferenceCapture(int sequence, Action<ElementRef> elementReferenceCaptureAction)
+        public void AddElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
         {
             if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
             {
@@ -619,17 +574,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             Append(RenderTreeFrame.ComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue));
         }
 
-        // Internal for tests
-        // Not public because there's no current use case for user code defining regions arbitrarily.
-        // Currently the sole use case for regions is when appending a RenderFragment.
-        internal void OpenRegion(int sequence)
+        /// <summary>
+        /// Appends a frame representing a region of frames.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        public void OpenRegion(int sequence)
         {
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));
         }
 
-        // See above for why this is not public
-        internal void CloseRegion()
+        /// <summary>
+        /// Marks a previously appended region frame as closed. Calls to this method
+        /// must be balanced with calls to <see cref="OpenRegion(int)"/>.
+        /// </summary>
+        public void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];

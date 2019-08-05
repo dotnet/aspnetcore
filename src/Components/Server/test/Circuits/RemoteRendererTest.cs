@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             component.TriggerRender();
 
             // Assert
-            Assert.Equal(2, renderer.PendingRenderBatches.Count);
+            Assert.Equal(2, renderer.UnacknowledgedRenderBatches.Count);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         }
 
         [Fact]
-        public async Task OnRenderCompletedAsync_ThrowsWhenNoBatchesAreQueued()
+        public async Task OnRenderCompletedAsync_DoesNotThrowWhenReceivedDuplicateAcks()
         {
             // Arrange
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             offlineClient.Transfer(onlineClient.Object, "new-connection");
@@ -163,19 +163,22 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            // Pretend that we missed the ack for the initial batch
+            // Receive the ack for the intial batch
             renderer.OnRenderCompleted(2, null);
+            // Receive the ack for the second batch
             renderer.OnRenderCompleted(3, null);
+
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
+            // Repeat the ack for the third batch
             renderer.OnRenderCompleted(3, null);
 
             // Assert
-            var exception = Assert.Single(exceptions);
+            Assert.Empty(exceptions);
         }
 
         [Fact]
-        public async Task ThrowsIfWeReceiveAnOutOfSequenceClientAcknowledge()
+        public async Task OnRenderCompletedAsync_DoesNotThrowWhenThereAreNoPendingBatchesToAck()
         {
             // Arrange
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
@@ -199,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             // This produces the initial batch (id = 2)
             var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
-            ParameterCollection.FromDictionary(new Dictionary<string, object>
+            ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [nameof(AutoParameterTestComponent.Content)] = initialContent,
                 [nameof(AutoParameterTestComponent.Trigger)] = trigger
@@ -212,11 +215,72 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
             // This produces an additional batch (id = 3)
             trigger.TriggerRender();
-            var originallyQueuedBatches = renderer.PendingRenderBatches.Count;
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
 
             // Act
             offlineClient.Transfer(onlineClient.Object, "new-connection");
             var task = renderer.ProcessBufferedRenderBatches();
+            var exceptions = new List<Exception>();
+            renderer.UnhandledException += (sender, e) =>
+            {
+                exceptions.Add(e);
+            };
+
+            // Receive the ack for the intial batch
+            renderer.OnRenderCompleted(2, null);
+            // Receive the ack for the second batch
+            renderer.OnRenderCompleted(2, null);
+
+            firstBatchTCS.SetResult(null);
+            secondBatchTCS.SetResult(null);
+            // Repeat the ack for the third batch
+            renderer.OnRenderCompleted(3, null);
+
+            // Assert
+            Assert.Empty(exceptions);
+        }
+
+        [Fact]
+        public async Task ConsumesAllPendingBatchesWhenReceivingAHigherSequenceBatchId()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var firstBatchTCS = new TaskCompletionSource<object>();
+            var secondBatchTCS = new TaskCompletionSource<object>();
+            var renderIds = new List<long>();
+
+            var onlineClient = new Mock<IClientProxy>();
+            onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
+                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
+
+            var renderer = GetRemoteRenderer(serviceProvider, new CircuitClientProxy(onlineClient.Object, "online-client"));
+            RenderFragment initialContent = (builder) =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            };
+            var trigger = new Trigger();
+
+            // This produces the initial batch (id = 2)
+            var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                [nameof(AutoParameterTestComponent.Trigger)] = trigger
+            }));
+            trigger.Component.Content = (builder) =>
+            {
+                builder.OpenElement(0, "offline element");
+                builder.AddContent(1, "offline text");
+                builder.CloseElement();
+            };
+            // This produces an additional batch (id = 3)
+            trigger.TriggerRender();
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
+
+            // Act
             var exceptions = new List<Exception>();
             renderer.UnhandledException += (sender, e) =>
             {
@@ -229,7 +293,66 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             secondBatchTCS.SetResult(null);
 
             // Assert
+            Assert.Empty(exceptions);
+            Assert.Empty(renderer.UnacknowledgedRenderBatches);
+        }
+
+        [Fact]
+        public async Task ThrowsIfWeReceivedAnAcknowledgeForANeverProducedBatch()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var firstBatchTCS = new TaskCompletionSource<object>();
+            var secondBatchTCS = new TaskCompletionSource<object>();
+            var renderIds = new List<long>();
+
+            var onlineClient = new Mock<IClientProxy>();
+            onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
+                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
+
+            var renderer = GetRemoteRenderer(serviceProvider, new CircuitClientProxy(onlineClient.Object, "online-client"));
+            RenderFragment initialContent = (builder) =>
+            {
+                builder.OpenElement(0, "my element");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            };
+            var trigger = new Trigger();
+
+            // This produces the initial batch (id = 2)
+            var result = await renderer.RenderComponentAsync<AutoParameterTestComponent>(
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(AutoParameterTestComponent.Content)] = initialContent,
+                [nameof(AutoParameterTestComponent.Trigger)] = trigger
+            }));
+            trigger.Component.Content = (builder) =>
+            {
+                builder.OpenElement(0, "offline element");
+                builder.AddContent(1, "offline text");
+                builder.CloseElement();
+            };
+            // This produces an additional batch (id = 3)
+            trigger.TriggerRender();
+            var originallyQueuedBatches = renderer.UnacknowledgedRenderBatches.Count;
+
+            // Act
+            var exceptions = new List<Exception>();
+            renderer.UnhandledException += (sender, e) =>
+            {
+                exceptions.Add(e);
+            };
+
+            renderer.OnRenderCompleted(4, null);
+            firstBatchTCS.SetResult(null);
+            secondBatchTCS.SetResult(null);
+
+            // Assert
             var exception = Assert.Single(exceptions);
+            Assert.Equal(
+                "Received an acknowledgement for batch with id '4' when the last batch produced was '3'.",
+                exception.Message);
         }
 
         [Fact]
@@ -243,13 +366,13 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 new CircuitClientProxy());
 
             // Act
-            var first = await renderer.RenderComponentAsync<TestComponent>(ParameterCollection.Empty);
-            var second = await renderer.RenderComponentAsync<TestComponent>(ParameterCollection.Empty);
+            var first = await renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
+            var second = await renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty);
 
             // Assert
             Assert.Equal(0, first.ComponentId);
             Assert.Equal(1, second.ComponentId);
-            Assert.Equal(2, renderer.PendingRenderBatches.Count);
+            Assert.Equal(2, renderer.UnacknowledgedRenderBatches.Count);
         }
 
         private RemoteRenderer GetRemoteRenderer(IServiceProvider serviceProvider, CircuitClientProxy circuitClientProxy)
@@ -304,7 +427,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 return Task.CompletedTask;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 TriggerRender();
                 return Task.CompletedTask;
@@ -330,7 +453,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 _renderHandle = renderHandle;
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 Content = parameters.GetValueOrDefault<RenderFragment>(nameof(Content));
                 Trigger ??= parameters.GetValueOrDefault<Trigger>(nameof(Trigger));

@@ -144,11 +144,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     _reader.Complete(exception);
                 }
 
-                public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-                {
-                    _reader.OnWriterCompleted(callback, state);
-                }
-
                 public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
                 {
                     var task = _reader.ReadAsync(cancellationToken);

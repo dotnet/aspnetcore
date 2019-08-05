@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
             LoggerMessage.Define(LogLevel.Error, new EventId(9, "ConnectionFailed"), "Connection to Redis failed.");
 
         private static readonly Action<ILogger, Exception> _failedWritingMessage =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(10, "FailedWritingMessage"), "Failed writing message.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(10, "FailedWritingMessage"), "Failed writing message.");
 
         private static readonly Action<ILogger, Exception> _internalMessageFailed =
             LoggerMessage.Define(LogLevel.Warning, new EventId(11, "InternalMessageFailed"), "Error processing message for internal server message.");

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -143,7 +143,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public override void CancelPendingFlush() { }
             public override void Complete(Exception exception = null)  { }
             public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default) => default;
-            public override void OnReaderCompleted(Action<Exception, object> callback, object state) { }
         }
 
         public enum BenchmarkTypes

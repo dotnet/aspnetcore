@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
   </ItemGroup>
 
   <ItemGroup>

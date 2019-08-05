@@ -4,17 +4,16 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
-    public sealed class BeforeHandlerMethod : EventData
+    public sealed class BeforeHandlerMethodEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeHandlerMethod);
+        public const string EventName = EventNamespace + "BeforeHandlerMethod";
 
-        public BeforeHandlerMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
+        public BeforeHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -39,11 +38,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterHandlerMethod : EventData
+    public sealed class AfterHandlerMethodEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterHandlerMethod);
+        public const string EventName = EventNamespace + "AfterHandlerMethod";
 
-        public AfterHandlerMethod(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
+        public AfterHandlerMethodEventData(ActionContext actionContext, IReadOnlyDictionary<string, object> arguments, HandlerMethodDescriptor handlerMethodDescriptor, object instance, IActionResult result)
         {
             ActionContext = actionContext;
             Arguments = arguments;
@@ -71,11 +70,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecution : EventData
+    public sealed class BeforePageFilterOnPageHandlerExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecution);
+        public const string EventName = EventNamespace + "BeforeOnPageHandlerExecution";
 
-        public BeforeOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
+        public BeforePageFilterOnPageHandlerExecutionEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutionContext, IAsyncPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutionContext = handlerExecutionContext;
@@ -97,11 +96,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecution : EventData
+    public sealed class AfterPageFilterOnPageHandlerExecutionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecution);
+        public const string EventName = EventNamespace + "AfterOnPageHandlerExecution";
 
-        public AfterOnPageHandlerExecution(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
+        public AfterPageFilterOnPageHandlerExecutionEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IAsyncPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutedContext = handlerExecutedContext;
@@ -123,11 +122,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecuting : EventData
+    public sealed class BeforePageFilterOnPageHandlerExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecuting);
+        public const string EventName = EventNamespace + "BeforeOnPageHandlerExecuting";
 
-        public BeforeOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
+        public BeforePageFilterOnPageHandlerExecutingEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutingContext = handlerExecutingContext;
@@ -149,11 +148,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecuting : EventData
+    public sealed class AfterPageFilterOnPageHandlerExecutingEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecuting);
+        public const string EventName = EventNamespace + "AfterOnPageHandlerExecuting";
 
-        public AfterOnPageHandlerExecuting(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
+        public AfterPageFilterOnPageHandlerExecutingEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutingContext handlerExecutingContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutingContext = handlerExecutingContext;
@@ -175,11 +174,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerExecuted : EventData
+    public sealed class BeforePageFilterOnPageHandlerExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerExecuted);
+        public const string EventName = EventNamespace + "BeforeOnPageHandlerExecuted";
 
-        public BeforeOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
+        public BeforePageFilterOnPageHandlerExecutedEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutedContext = handlerExecutedContext;
@@ -201,11 +200,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerExecuted : EventData
+    public sealed class AfterPageFilterOnPageHandlerExecutedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnPageHandlerExecuted);
+        public const string EventName = EventNamespace + "AfterOnPageHandlerExecuted";
 
-        public AfterOnPageHandlerExecuted(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
+        public AfterPageFilterOnPageHandlerExecutedEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerExecutedContext handlerExecutedContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerExecutedContext = handlerExecutedContext;
@@ -227,11 +226,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerSelection : EventData
+    public sealed class BeforePageFilterOnPageHandlerSelectionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerSelection);
+        public const string EventName = EventNamespace + "BeforeOnPageHandlerSelection";
 
-        public BeforeOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
+        public BeforePageFilterOnPageHandlerSelectionEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerSelectedContext = handlerSelectedContext;
@@ -253,11 +252,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerSelection : EventData
+    public sealed class AfterPageFilterOnPageHandlerSelectionEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnPageHandlerSelection);
+        public const string EventName = EventNamespace + "AfterOnPageHandlerSelection";
 
-        public AfterOnPageHandlerSelection(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
+        public AfterPageFilterOnPageHandlerSelectionEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IAsyncPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerSelectedContext = handlerSelectedContext;
@@ -279,11 +278,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class BeforeOnPageHandlerSelected : EventData
+    public sealed class BeforePageFilterOnPageHandlerSelectedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(BeforeOnPageHandlerSelected);
+        public const string EventName = EventNamespace + "BeforeOnPageHandlerSelected";
 
-        public BeforeOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
+        public BeforePageFilterOnPageHandlerSelectedEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerSelectedContext = handlerSelectedContext;
@@ -305,11 +304,11 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         };
     }
 
-    public sealed class AfterOnPageHandlerSelected : EventData
+    public sealed class AfterPageFilterOnPageHandlerSelectedEventData : EventData
     {
-        public const string EventName = EventNamespace + nameof(AfterOnPageHandlerSelected);
+        public const string EventName = EventNamespace + "AfterOnPageHandlerSelected";
 
-        public AfterOnPageHandlerSelected(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
+        public AfterPageFilterOnPageHandlerSelectedEventData(CompiledPageActionDescriptor actionDescriptor, PageHandlerSelectedContext handlerSelectedContext, IPageFilter filter)
         {
             ActionDescriptor = actionDescriptor;
             HandlerSelectedContext = handlerSelectedContext;

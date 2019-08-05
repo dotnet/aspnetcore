@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Components.Routing
 {
     /// <summary>
-    /// <see cref="EventArgs" /> for <see cref="IUriHelper.OnLocationChanged" />.
+    /// <see cref="EventArgs" /> for <see cref="NavigationManager.LocationChanged" />.
     /// </summary>
-    public readonly struct LocationChangedEventArgs
+    public class LocationChangedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of <see cref="LocationChangedEventArgs" />.

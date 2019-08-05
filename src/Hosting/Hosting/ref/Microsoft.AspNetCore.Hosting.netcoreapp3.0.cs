@@ -85,6 +85,15 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         public static void UseStaticWebAssets(Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment, Microsoft.Extensions.Configuration.IConfiguration configuration) { }
     }
 }
+namespace Microsoft.AspNetCore.Http
+{
+    public partial class DefaultHttpContextFactory : Microsoft.AspNetCore.Http.IHttpContextFactory
+    {
+        public DefaultHttpContextFactory(System.IServiceProvider serviceProvider) { }
+        public Microsoft.AspNetCore.Http.HttpContext Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { throw null; }
+        public void Dispose(Microsoft.AspNetCore.Http.HttpContext httpContext) { }
+    }
+}
 namespace Microsoft.Extensions.Hosting
 {
     public static partial class GenericHostWebHostBuilderExtensions

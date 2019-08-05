@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             message = null;
 
             var start = consumed;
-            var end = examined;
 
             while (buffer.Length > 0)
             {
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 // data: bar\r\n
                 else if (line[line.Length - _sseLineEnding.Length] != ByteCR)
                 {
-                    throw new FormatException("Unexpected '\n' in message. A '\n' character can only be used as part of the newline sequence '\r\n'");
+                    throw new FormatException("Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'");
                 }
                 else
                 {

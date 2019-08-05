@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Mode _mode = Mode.Prefix;
         private volatile bool _canceled;
         private Task _pumpTask;
-        private Pipe _requestBodyPipe;
+        private readonly Pipe _requestBodyPipe;
         private ReadResult _readResult;
 
         public Http1ChunkedEncodingMessageBody(bool keepAlive, Http1Connection context)
@@ -44,9 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            OnAdvance(_readResult, consumed, examined);
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
-            OnDataRead(dataLength);
         }
 
         public override bool TryRead(out ReadResult readResult)
@@ -63,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
 
             readResult = _readResult;
+            CountBytesRead(readResult.Buffer.Length);
 
             if (_readResult.IsCompleted)
             {
@@ -107,11 +107,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _completed = true;
             _context.ReportApplicationError(exception);
-        }
-
-        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            _requestBodyPipe.Reader.OnWriterCompleted(callback, state);
         }
 
         public override void CancelPendingRead()

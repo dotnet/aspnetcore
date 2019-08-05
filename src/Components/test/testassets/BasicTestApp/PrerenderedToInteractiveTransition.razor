@@ -2,18 +2,23 @@
 @using Microsoft.AspNetCore.Components
 @inject IComponentContext ComponentContext
 
-<h1>Hello</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized><h1>Hello, @context.User.Identity.Name!</h1></Authorized>
+        <NotAuthorized><h1>Hello, anonymous!</h1></NotAuthorized>
+    </AuthorizeView>
 
-<p>
-    Current state:
-    <strong id="connected-state">@(ComponentContext.IsConnected ? "connected" : "not connected")</strong>
-</p>
+    <p>
+        Current state:
+        <strong id="connected-state">@(ComponentContext.IsConnected ? "connected" : "not connected")</strong>
+    </p>
 
-<p>
-    Clicks:
-    <strong id="count">@count</strong>
-    <button id="increment-count" @onclick="@(() => count++)">Click me</button>
-</p>
+    <p>
+        Clicks:
+        <strong id="count">@count</strong>
+        <button id="increment-count" @onclick="@(() => count++)">Click me</button>
+    </p>
+</CascadingAuthenticationState>
 
 @code {
     int count;

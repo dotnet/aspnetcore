@@ -41,10 +41,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     var outputBufferedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
+#pragma warning disable 0618 // TODO: Repalce OnWriterCompleted
                     transportConnection.Output.OnWriterCompleted((ex, state) =>
                     {
                         ((TaskCompletionSource<object>)state).SetResult(null);
-                    }, outputBufferedTcs);
+                    },
+                    outputBufferedTcs);
+#pragma warning restore
 
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -74,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Assert.NotNull(transportConnection.AbortReason);
                     Assert.Equal(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, transportConnection.AbortReason.Message);
 
-                    Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel == LogLevel.Information);
+                    Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel <= LogLevel.Debug);
                 }
             }
         }

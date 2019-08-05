@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Razor 클래스 라이브러리",
+    "description": "Razor 클래스 라이브러리를 만들기 위한 프로젝트 템플릿입니다."
+  }
+}

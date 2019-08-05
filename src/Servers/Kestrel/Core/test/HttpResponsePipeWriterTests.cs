@@ -11,14 +11,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class HttpResponsePipeWriterTests
     {
         [Fact]
-        public void OnReaderCompletedThrowsNotSupported()
-        {
-            var pipeWriter = CreateHttpResponsePipeWriter();
-            pipeWriter.StartAcceptingWrites();
-            Assert.Throws<NotSupportedException>(() => pipeWriter.OnReaderCompleted((a, b) => { }, null));
-        }
-
-        [Fact]
         public void AdvanceAfterStopAcceptingWritesThrowsObjectDisposedException()
         {
             var pipeWriter = CreateHttpResponsePipeWriter();
