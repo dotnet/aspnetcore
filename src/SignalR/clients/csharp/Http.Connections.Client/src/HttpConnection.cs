@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 return;
             }
 
-            await _connectionLock.WaitAsync(cancellationToken);
+            await _connectionLock.WaitAsync();
             try
             {
                 CheckDisposed();
