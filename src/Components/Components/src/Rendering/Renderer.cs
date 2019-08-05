@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 // Since the task has yielded - process any queued rendering work before we return control
                 // to the caller.
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
 
             // Task completed synchronously or is still running. We already processed all of the rendering
@@ -399,12 +399,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 : null;
 
         /// <summary>
-        /// Processses pending renders requests from components.
+        /// Processses pending renders requests from components if there are any.
         /// </summary>
-        protected virtual void ProcessRenderQueue()
+        protected virtual void ProcessPendingRender()
+        {
+            ProcessRenderQueue();
+        }
+
+        private void ProcessRenderQueue()
         {
             EnsureSynchronizationContext();
-
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 

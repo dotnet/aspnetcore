@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             return RenderRootComponentAsync(componentId);
         }
 
-        protected override void ProcessRenderQueue()
+        protected override void ProcessPendingRender()
         {
             if (_unacknowledgedRenderBatches.Count >= _options.MaxBufferedUnacknowledgedRenderBatches)
             {
