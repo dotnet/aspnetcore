@@ -35,6 +35,19 @@ namespace Microsoft.AspNetCore.Components.Server
         public System.TimeSpan JSInteropDefaultCallTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int MaxBufferedUnacknowledgedRenderBatches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public abstract partial class RevalidatingServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider, System.IDisposable
+    {
+        public RevalidatingServerAuthenticationStateProvider(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan revalidationInterval) { }
+        protected virtual void Dispose(bool disposing) { }
+        void System.IDisposable.Dispose() { }
+        protected abstract System.Threading.Tasks.Task<bool> ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.AuthenticationState authenticationState);
+    }
+    public partial class ServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.AuthenticationStateProvider, Microsoft.AspNetCore.Components.IHostEnvironmentAuthenticationStateProvider
+    {
+        public ServerAuthenticationStateProvider() { }
+        public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync() { throw null; }
+        public void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> authenticationStateTask) { }
+    }
 }
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
