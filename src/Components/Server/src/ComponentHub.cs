@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             Log.ReceivedConfirmationForBatch(_logger, renderId);
-            CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+            _ = CircuitHost.Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 
         public void OnLocationChanged(string uri, bool intercepted)

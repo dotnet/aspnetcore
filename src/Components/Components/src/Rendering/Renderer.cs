@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 // Since the task has yielded - process any queued rendering work before we return control
                 // to the caller.
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
 
             // Task completed synchronously or is still running. We already processed all of the rendering
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID of the component to render.</param>
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
-        protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
+        internal void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
             EnsureSynchronizationContext();
 
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             if (!_isBatchInProgress)
             {
-                ProcessRenderQueue();
+                ProcessPendingRender();
             }
         }
 
@@ -398,13 +398,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? componentState
                 : null;
 
+        /// <summary>
+        /// Processses pending renders requests from components if there are any.
+        /// </summary>
+        protected virtual void ProcessPendingRender()
+        {
+            ProcessRenderQueue();
+        }
+
         private void ProcessRenderQueue()
         {
+            EnsureSynchronizationContext();
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
             try
             {
+                if (_batchBuilder.ComponentRenderQueue.Count == 0)
+                {
+                    return;
+                }
+
                 // Process render queue until empty
                 while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
@@ -423,6 +437,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // Ensure we catch errors while running the render functions of the components.
                 HandleException(e);
+                return;
             }
             finally
             {
