@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             var jsonContract = contractResolver.ResolveContract(target.GetType());
 
+            if (target is JObject)
+            {
+                return new JObjectAdapter();
+            }
             if (target is IList)
             {
                 return new ListAdapter();
