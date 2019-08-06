@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
             Assert.FileExists(result, OutputPath, "appsettings.json");
             Assert.FileExists(result, OutputPath, "appsettings.Development.json");
-            Assert.FileDoesNotExist(result, OutputPath, Path.Combine("Properties", "launchSettings.json"));
 
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");

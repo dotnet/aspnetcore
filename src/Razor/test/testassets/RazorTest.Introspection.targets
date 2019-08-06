@@ -42,4 +42,8 @@
   <Target Name="_IntrospectUpToDateReloadFileTypes">
     <Message Text="UpToDateReloadFileTypes: $(UpToDateReloadFileTypes)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectContentItems">
+    <Message Text="Content: %(Content.Identity) CopyToOutputDirectory=%(Content.CopyToOutputDirectory) CopyToPublishDirectory=%(Content.CopyToPublishDirectory) ExcludeFromSingleFile=%(Content.ExcludeFromSingleFile)" Importance="High" />
+  </Target>
 </Project>
