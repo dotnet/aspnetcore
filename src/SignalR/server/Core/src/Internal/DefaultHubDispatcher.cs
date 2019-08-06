@@ -456,10 +456,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     await (Task)methodExecutor.Execute(hub, arguments);
                 }
-                else if (methodExecutor.MethodReturnType == typeof(ValueTask))
-                {
-                    await (ValueTask)methodExecutor.Execute(hub, arguments);
-                }
                 else
                 {
                     return await methodExecutor.ExecuteAsync(hub, arguments);
