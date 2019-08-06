@@ -26,7 +26,7 @@ class FetchData extends React.PureComponent<WeatherForecastProps> {
   public render() {
     return (
       <React.Fragment>
-        <h1>Weather forecast</h1>
+        <h1 id="tabelLabel">Weather forecast</h1>
         <p>This component demonstrates fetching data from the server and working with URL parameters.</p>
         {this.renderForecastsTable()}
         {this.renderPagination()}
@@ -41,7 +41,7 @@ class FetchData extends React.PureComponent<WeatherForecastProps> {
 
   private renderForecastsTable() {
     return (
-      <table className='table table-striped' aria-label="Weather forecast">
+      <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
           <tr>
             <th>Date</th>
