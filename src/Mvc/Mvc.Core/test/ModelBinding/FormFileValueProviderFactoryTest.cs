@@ -14,14 +14,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class FormFileValueProviderFactoryTest
     {
-        [Theory]
-        [InlineData("application/json")]
-        [InlineData("application/x-www-form-urlencoded")]
-        public async Task CreateValueProviderAsync_DoesNotAddValueProvider_IfContentTypeIsNotMultipart(string contentType)
+        [Fact]
+        public async Task CreateValueProviderAsync_DoesNotAddValueProvider_IfRequestDoesNotHaveFormContent()
         {
             // Arrange
             var factory = new FormFileValueProviderFactory();
-            var context = CreateContext(contentType);
+            var context = CreateContext("application/json");
 
             // Act
             await factory.CreateValueProviderAsync(context);
