@@ -3395,6 +3395,27 @@ namespace Microsoft.AspNetCore.Components.Test
             }
         }
 
+        [Fact]
+        public void CannotStartOverlappingBatches()
+        {
+            // Arrange
+            var renderer = new InvalidRecursiveRenderer();
+            var component = new CallbackOnRenderComponent(() =>
+            {
+                // The renderer disallows one batch to be started inside another, because that
+                // would violate all kinds of state tracking invariants. It's not something that
+                // would ever happen except if you subclass the renderer and do something unsupported
+                // that commences batches from inside each other.
+                renderer.ProcessPendingRender();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(
+                () => renderer.RenderRootComponent(componentId));
+            Assert.Contains("Cannot start a batch when one is already in progress.", ex.Message);
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -4108,6 +4129,25 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class DerivedEventArgs : EventArgs
         {
+        }
+
+        class CallbackOnRenderComponent : AutoRenderComponent
+        {
+            private readonly Action _callback;
+
+            public CallbackOnRenderComponent(Action callback)
+            {
+                _callback = callback;
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+                => _callback();
+        }
+
+        class InvalidRecursiveRenderer : TestRenderer
+        {
+            public new void ProcessPendingRender()
+                => base.ProcessPendingRender();
         }
     }
 }
