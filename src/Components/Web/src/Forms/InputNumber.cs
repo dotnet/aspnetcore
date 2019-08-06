@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
