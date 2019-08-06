@@ -2560,6 +2560,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         public EmptyModelMetadataProvider() : base (default(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ICompositeMetadataDetailsProvider)) { }
     }
+    public sealed partial class FormFileValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
+    {
+        public FormFileValueProvider(Microsoft.AspNetCore.Http.IFormFileCollection files) { }
+        public bool ContainsPrefix(string prefix) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult GetValue(string key) { throw null; }
+    }
+    public sealed partial class FormFileValueProviderFactory : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory
+    {
+        public FormFileValueProviderFactory() { }
+        public System.Threading.Tasks.Task CreateValueProviderAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderFactoryContext context) { throw null; }
+    }
     public partial class FormValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.BindingSourceValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IEnumerableValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
     {
         public FormValueProvider(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource, Microsoft.AspNetCore.Http.IFormCollection values, System.Globalization.CultureInfo culture) : base (default(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource)) { }
