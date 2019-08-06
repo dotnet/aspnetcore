@@ -521,6 +521,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 _tryParseResult = result;
             }
 
+            public override SyntaxNode VisitGenericBlock(GenericBlockSyntax node)
+            {
+                if (_tryParseResult.IsBoundNonStringAttribute && CanBeCollapsed(node))
+                {
+                    var tokens = node.GetTokens();
+                    var expression = SyntaxFactory.CSharpExpressionLiteral(tokens);
+                    var rewrittenExpression = (CSharpExpressionLiteralSyntax)VisitCSharpExpressionLiteral(expression);
+                    var newChildren = SyntaxListBuilder<RazorSyntaxNode>.Create();
+                    newChildren.Add(rewrittenExpression);
+
+                    return node.Update(newChildren);
+                }
+
+                return base.VisitGenericBlock(node);
+            }
+
             public override SyntaxNode VisitCSharpTransition(CSharpTransitionSyntax node)
             {
                 if (!_tryParseResult.IsBoundNonStringAttribute)
@@ -767,6 +783,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tokens = new SyntaxList<SyntaxToken>(node.LiteralTokens);
                 var value = SyntaxFactory.CSharpEphemeralTextLiteral(tokens);
                 return value.WithSpanContext(node.GetSpanContext());
+            }
+
+            // Being collapsed represents that a block contains several identical looking markup literal attribute values. This can be the case
+            // when a user has written something like: @onclick="() => SomeMethod()"
+            // In that case there would be 3 children:
+            //   - ()
+            //   -  =>
+            //   -  SomeMethod()
+            // There are 3 children because the Razor parser separates attribute values based on whitespace.
+            private static bool CanBeCollapsed(GenericBlockSyntax node)
+            {
+                if (node.Children.Count <= 1)
+                {
+                    // The node is either already collapsed or has no children.
+                    return false;
+                }
+
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    if (node.Children[i].Kind != SyntaxKind.MarkupLiteralAttributeValue)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             private SyntaxNode ConfigureNonStringAttribute(SyntaxNode node)

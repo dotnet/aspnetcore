@@ -224,6 +224,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return ((SyntaxToken)GetFirstTerminal());
         }
 
+        internal SyntaxList<SyntaxToken> GetTokens()
+        {
+            var tokens = SyntaxListBuilder<SyntaxToken>.Create();
+
+            AddTokens(this, tokens);
+
+            return tokens;
+
+            static void AddTokens(SyntaxNode current, SyntaxListBuilder<SyntaxToken> tokens)
+            {
+                if (current.SlotCount == 0 && current is SyntaxToken token)
+                {
+                    // Token
+                    tokens.Add(token);
+                    return;
+                }
+
+                for (var i = 0; i < current.SlotCount; i++)
+                {
+                    var child = current.GetNodeSlot(i);
+
+                    if (child != null)
+                    {
+                        AddTokens(child, tokens);
+                    }
+                }
+            }
+        }
+
         internal SyntaxToken GetLastToken()
         {
             return ((SyntaxToken)GetLastTerminal());

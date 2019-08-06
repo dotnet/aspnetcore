@@ -2353,6 +2353,39 @@ namespace Test
         #region Event Handlers
 
         [Fact]
+        public void Component_WithImplicitLambdaEventHandler()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent @onclick=""() => Increment()""/>
+
+@code {
+    private int counter;
+    private void Increment() {
+        counter++;
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void ChildComponent_WithLambdaEventHandler()
         {
             // Arrange

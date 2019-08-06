@@ -424,6 +424,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         [Fact]
+        public void UnderstandsMultipartNonStringTagHelperAttributes()
+        {
+            EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"(() => 123)()\" />");
+        }
+
+        [Fact]
         public void CreatesMarkupCodeSpansForNonStringTagHelperAttributes1()
         {
             EvaluateData(CodeTagHelperAttributes_Descriptors, "<person age=\"12\" />");
