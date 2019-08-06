@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             var htmlString = Assert.IsType<HtmlString>(result);
-            Assert.Equal(expectedOutput, htmlString.ToString());
+            Assert.Equal(expectedOutput, htmlString.ToString(), ignoreLineEndingDifferences: true);
         }
     }
 }
