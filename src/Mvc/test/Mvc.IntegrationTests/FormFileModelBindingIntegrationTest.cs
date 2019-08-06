@@ -249,6 +249,160 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 });
         }
 
+        private class Fleet
+        {
+            public int? Id { get; set; }
+
+            public FleetGarage Garage { get; set; }
+        }
+
+        public class FleetGarage
+        {
+            public string Name { get; set; }
+
+            public FleetVehicle[] Vehicles { get; set; }
+        }
+
+        public class FleetVehicle
+        {
+            public string Name { get; set; }
+
+            public IFormFile Spec { get; set; }
+
+            public FleetVehicle BackupVehicle { get; set; }
+        }
+
+        [Fact]
+        public async Task BindProperty_OnFormFileInNestedSubClass_AtSecondLevel_RecursiveModel()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "fleet",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(Fleet)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create("fleet.Garage.Name", "WestEnd");
+                    UpdateRequest(request, data, "fleet.Garage.Vehicles[0].Spec");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var fleet = Assert.IsType<Fleet>(modelBindingResult.Model);
+            Assert.Null(fleet.Id);
+
+            Assert.NotNull(fleet.Garage);
+            Assert.NotNull(fleet.Garage.Vehicles);
+
+            var vehicle = Assert.Single(fleet.Garage.Vehicles);
+            var file = Assert.IsAssignableFrom<IFormFile>(vehicle.Spec);
+
+            using var reader = new StreamReader(file.OpenReadStream());
+            Assert.Equal(data, reader.ReadToEnd());
+            Assert.Null(vehicle.Name);
+            Assert.Null(vehicle.BackupVehicle);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    var (key, value) = kvp;
+                    Assert.Equal("fleet.Garage.Name", kvp.Key);
+                    Assert.Equal("WestEnd", value.RawValue);
+                    Assert.Empty(value.Errors);
+                    Assert.Equal(ModelValidationState.Valid, value.ValidationState);
+                },
+                kvp =>
+                {
+                    var (key, value) = kvp;
+                    Assert.Equal("fleet.Garage.Vehicles[0].Spec", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, value.ValidationState);
+                });
+        }
+
+        [Fact]
+        public async Task BindProperty_OnFormFileInNestedSubClass_AtThirdLevel_RecursiveModel()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "fleet",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(Fleet)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create("fleet.Garage.Name", "WestEnd");
+                    UpdateRequest(request, data, "fleet.Garage.Vehicles[0].BackupVehicle.Spec");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var fleet = Assert.IsType<Fleet>(modelBindingResult.Model);
+            Assert.Null(fleet.Id);
+
+            Assert.NotNull(fleet.Garage);
+            Assert.NotNull(fleet.Garage.Vehicles);
+
+            var vehicle = Assert.Single(fleet.Garage.Vehicles);
+            Assert.Null(vehicle.Spec);
+            Assert.NotNull(vehicle.BackupVehicle);
+            var file = Assert.IsAssignableFrom<IFormFile>(vehicle.BackupVehicle.Spec);
+
+            using var reader = new StreamReader(file.OpenReadStream());
+            Assert.Equal(data, reader.ReadToEnd());
+            Assert.Null(vehicle.Name);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    var (key, value) = kvp;
+                    Assert.Equal("fleet.Garage.Name", kvp.Key);
+                    Assert.Equal("WestEnd", value.RawValue);
+                    Assert.Empty(value.Errors);
+                    Assert.Equal(ModelValidationState.Valid, value.ValidationState);
+                },
+                kvp =>
+                {
+                    var (key, value) = kvp;
+                    Assert.Equal("fleet.Garage.Vehicles[0].BackupVehicle.Spec", kvp.Key);
+                    Assert.Equal(ModelValidationState.Valid, value.ValidationState);
+                });
+        }
+
         [Fact]
         public async Task BindProperty_OnFormFileInNestedSubClass_AtSecondLevel_WhenSiblingPropertiesAreNotSpecified()
         {
@@ -878,6 +1032,190 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("Accord", entry.RawValue);
 
             Assert.Single(modelState, e => e.Key == "p.Specs");
+        }
+
+        public class MultiDimensionalFormFileContainer
+        {
+            public IFormFile[][] FormFiles { get; set; }
+        }
+
+        [Fact]
+        public async Task BindModelAsync_MultiDimensionalFormFile_Works()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "p",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(MultiDimensionalFormFileContainer)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    UpdateRequest(request, data + 1, "FormFiles[0]");
+                    AddFormFile(request, data + 2, "FormFiles[1]");
+                    AddFormFile(request, data + 3, "FormFiles[1]");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var container = Assert.IsType<MultiDimensionalFormFileContainer>(modelBindingResult.Model);
+            Assert.NotNull(container.FormFiles);
+            Assert.Collection(
+                container.FormFiles,
+                item =>
+                {
+                    Assert.Collection(
+                        item,
+                        file => Assert.Equal(data + 1, ReadFormFile(file)));
+                },
+                item =>
+                {
+                    Assert.Collection(
+                        item,
+                        file => Assert.Equal(data + 2, ReadFormFile(file)),
+                        file => Assert.Equal(data + 3, ReadFormFile(file)));
+                });
+        }
+
+        public class MultiDimensionalFormFileContainerLevel2
+        {
+            public MultiDimensionalFormFileContainerLevel1 Level1 { get; set; }
+        }
+
+        public class MultiDimensionalFormFileContainerLevel1
+        {
+            public MultiDimensionalFormFileContainer Container { get; set; }
+        }
+
+        [Fact]
+        public async Task BindModelAsync_DeeplyNestedMultiDimensionalFormFile_Works()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "p",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(MultiDimensionalFormFileContainerLevel2)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    UpdateRequest(request, data + 1, "p.Level1.Container.FormFiles[0]");
+                    AddFormFile(request, data + 2, "p.Level1.Container.FormFiles[1]");
+                    AddFormFile(request, data + 3, "p.Level1.Container.FormFiles[1]");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var level2 = Assert.IsType<MultiDimensionalFormFileContainerLevel2>(modelBindingResult.Model);
+            Assert.NotNull(level2.Level1);
+            var container = level2.Level1.Container;
+            Assert.NotNull(container);
+            Assert.NotNull(container.FormFiles);
+            Assert.Collection(
+                container.FormFiles,
+                item =>
+                {
+                    Assert.Collection(
+                        item,
+                        file => Assert.Equal(data + 1, ReadFormFile(file)));
+                },
+                item =>
+                {
+                    Assert.Collection(
+                        item,
+                        file => Assert.Equal(data + 2, ReadFormFile(file)),
+                        file => Assert.Equal(data + 3, ReadFormFile(file)));
+                });
+        }
+
+        public class DictionaryContainer
+        {
+            public Dictionary<string, IFormFile> Dictionary { get; set; }
+        }
+
+        [Fact]
+        public async Task BindModelAsync_DictionaryOfFormFiles()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "p",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(DictionaryContainer)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    request.QueryString = QueryString.Create(new Dictionary<string, string>
+                    {
+                        { "p.Dictionary[0].Key", "key0" },
+                        { "p.Dictionary[1].Key", "key1" },
+                        { "p.Dictionary[4000].Key", "key1" },
+                    });
+                    UpdateRequest(request, data + 1, "p.Dictionary[0].Value");
+                    AddFormFile(request, data + 2, "p.Dictionary[1].Value");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var container = Assert.IsType<DictionaryContainer>(modelBindingResult.Model);
+            Assert.NotNull(container.Dictionary);
+            Assert.Collection(
+                container.Dictionary.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("key0", kvp.Key);
+                    Assert.Equal(data + 1, ReadFormFile(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal("key1", kvp.Key);
+                    Assert.Equal(data + 2, ReadFormFile(kvp.Value));
+                });
+        }
+
+        private static string ReadFormFile(IFormFile file)
+        {
+            using var reader = new StreamReader(file.OpenReadStream());
+            return reader.ReadToEnd();
         }
 
         private void UpdateRequest(HttpRequest request, string data, string name)
