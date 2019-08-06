@@ -409,6 +409,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private void ProcessRenderQueue()
         {
             EnsureSynchronizationContext();
+
+            if (_isBatchInProgress)
+            {
+                throw new InvalidOperationException("Cannot start a batch when one is already in progress.");
+            }
+
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
