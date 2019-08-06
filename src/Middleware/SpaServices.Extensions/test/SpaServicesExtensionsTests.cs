@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Tests
             if(serviceProvider == null)
             {
                 serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict).Object;
-                
             }
 
             var applicationbuilderMock = new Mock<IApplicationBuilder>();

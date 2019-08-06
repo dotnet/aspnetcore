@@ -1,11 +1,12 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.NodeServices;
 
 namespace NodeServicesExamples.Controllers
 {
-    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class HomeController : Controller
     {
         public IActionResult Index(int pageIndex)
@@ -18,7 +19,9 @@ namespace NodeServicesExamples.Controllers
             return View();
         }
 
+#pragma warning disable 0618
         public async Task<IActionResult> Chart([FromServices] INodeServices nodeServices)
+#pragma warning restore 0618
         {
             var options = new { width = 400, height = 200, showArea = true, showPoint = true, fullWidth = true };
             var data = new
