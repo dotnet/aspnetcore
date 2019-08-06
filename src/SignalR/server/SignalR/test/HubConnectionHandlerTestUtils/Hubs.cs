@@ -1050,4 +1050,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public bool TokenStateInDisconnected { get; set; }
     }
+
+    public class CallerServiceHub : Hub
+    {
+        private readonly CallerService _service;
+
+        public CallerServiceHub(CallerService service)
+        {
+            _service = service;
+        }
+
+        public override Task OnConnectedAsync()
+        {
+            _service.SetCaller(Clients.Caller);
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
+            tcs?.TrySetResult(true);
+            return base.OnConnectedAsync();
+        }
+    }
+
+    public class CallerService
+    {
+        public IClientProxy Caller { get; private set; }
+
+        public void SetCaller(IClientProxy caller)
+        {
+            Caller = caller;
+        }
+    }
 }
