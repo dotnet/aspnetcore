@@ -17,7 +17,7 @@
     <NoSemVer20>true</NoSemVer20>
 
     <!-- Grab packages LB.csproj should have just built. -->
-    <RestoreAdditionalProjectSources>$(ArtifactsNonShippingPackagesDir)/RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
