@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             try
             {
-                if (!string.Equals(context.Request.ContentType, "application/x-www-form-urlencoded"))
+                if (!context.Request.HasFormContentType)
                 {
                     return (false, null);
                 }
