@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
