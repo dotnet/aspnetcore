@@ -12,9 +12,9 @@ using Microsoft.Extensions.Logging;
 
 namespace NodeServicesExamples
 {
-    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class Startup
     {
+#pragma warning disable 0618
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -30,11 +30,14 @@ namespace NodeServicesExamples
             app.UseDeveloperExceptionPage();
 
             // Dynamically transpile any .js files under the '/js/' directory
-            app.Use(next => async context => {
+            app.Use(next => async context =>
+            {
                 var requestPath = context.Request.Path.Value;
-                if (requestPath.StartsWith("/js/") && requestPath.EndsWith(".js")) {
+                if (requestPath.StartsWith("/js/") && requestPath.EndsWith(".js"))
+                {
                     var fileInfo = env.WebRootFileProvider.GetFileInfo(requestPath);
-                    if (fileInfo.Exists) {
+                    if (fileInfo.Exists)
+                    {
                         var transpiled = await nodeServices.InvokeAsync<string>("./Node/transpilation.js", fileInfo.PhysicalPath, requestPath);
                         await context.Response.WriteAsync(transpiled);
                         return;
@@ -53,6 +56,7 @@ namespace NodeServicesExamples
                 endpoints.MapDefaultControllerRoute();
             });
         }
+#pragma warning restore 0618
 
         public static void Main(string[] args)
         {
