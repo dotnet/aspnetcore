@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class DotNetDispatcherTest
     {
@@ -240,6 +239,72 @@ namespace Microsoft.JSInterop.Tests
         });
 
         [Fact]
+        public Task EndInvoke_WithSuccessValue() => WithJSRuntime(jsRuntime =>
+        {
+            // Arrange
+            var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant");
+            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, JsonSerializerOptionsProvider.Options);
+
+            // Act
+            DotNetDispatcher.EndInvoke(argsJson);
+
+            // Assert
+            Assert.True(task.IsCompletedSuccessfully);
+            var result = task.Result;
+            Assert.Equal(testDTO.StringVal, result.StringVal);
+            Assert.Equal(testDTO.IntVal, result.IntVal);
+        });
+
+        [Fact]
+        public Task EndInvoke_WithErrorString() => WithJSRuntime(async jsRuntime =>
+        {
+            // Arrange
+            var expected = "Some error";
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant");
+            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, false, expected }, JsonSerializerOptionsProvider.Options);
+
+            // Act
+            DotNetDispatcher.EndInvoke(argsJson);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<JSException>(() => task);
+            Assert.Equal(expected, ex.Message);
+        });
+
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12357")]
+        public Task EndInvoke_AfterCancel() => WithJSRuntime(jsRuntime =>
+        {
+            // Arrange
+            var testDTO = new TestDTO { StringVal = "Hello", IntVal = 4 };
+            var cts = new CancellationTokenSource();
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant", cts.Token);
+            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, JsonSerializerOptionsProvider.Options);
+
+            // Act
+            cts.Cancel();
+            DotNetDispatcher.EndInvoke(argsJson);
+
+            // Assert
+            Assert.True(task.IsCanceled);
+        });
+
+        [Fact]
+        public Task EndInvoke_WithNullError() => WithJSRuntime(async jsRuntime =>
+        {
+            // Arrange
+            var task = jsRuntime.InvokeAsync<TestDTO>("unimportant");
+            var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, false, null }, JsonSerializerOptionsProvider.Options);
+
+            // Act
+            DotNetDispatcher.EndInvoke(argsJson);
+
+            // Assert
+            var ex = await Assert.ThrowsAsync<JSException>(() => task);
+            Assert.Empty(ex.Message);
+        });
+
+        [Fact]
         public Task CanInvokeInstanceMethodWithParams() => WithJSRuntime(jsRuntime =>
         {
             // Arrange: Track some instance plus another object we'll pass as a param
@@ -261,10 +326,14 @@ namespace Microsoft.JSInterop.Tests
         });
 
         [Fact]
-        public void CannotInvokeWithIncorrectNumberOfParams()
+        public Task CannotInvokeWithFewerNumberOfParameters() => WithJSRuntime(jsRuntime =>
         {
             // Arrange
-            var argsJson = JsonSerializer.Serialize(new object[] { 1, 2, 3, 4 }, JsonSerializerOptionsProvider.Options);
+            var argsJson = JsonSerializer.Serialize(new object[]
+            {
+                new TestDTO { StringVal = "Another string", IntVal = 456 },
+                new[] { 100, 200 },
+            }, JsonSerializerOptionsProvider.Options);
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(() =>
@@ -272,8 +341,30 @@ namespace Microsoft.JSInterop.Tests
                 DotNetDispatcher.Invoke(thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
             });
 
-            Assert.Equal("In call to 'InvocableStaticWithParams', expected 3 parameters but received 4.", ex.Message);
-        }
+            Assert.Equal("The call to 'InvocableStaticWithParams' expects '3' parameters, but received '2'.", ex.Message);
+        });
+
+        [Fact]
+        public Task CannotInvokeWithMoreParameters() => WithJSRuntime(jsRuntime =>
+        {
+            // Arrange
+            var objectRef = DotNetObjectRef.Create(new TestDTO { IntVal = 4 });
+            var argsJson = JsonSerializer.Serialize(new object[]
+            {
+                new TestDTO { StringVal = "Another string", IntVal = 456 },
+                new[] { 100, 200 },
+                objectRef,
+                7,
+            }, JsonSerializerOptionsProvider.Options);
+
+            // Act/Assert
+            var ex = Assert.Throws<JsonException>(() =>
+            {
+                DotNetDispatcher.Invoke(thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
+            });
+
+            Assert.Equal("Unexpected JSON token Number. Ensure that the call to `InvocableStaticWithParams' is supplied with exactly '3' parameters.", ex.Message);
+        });
 
         [Fact]
         public Task CanInvokeAsyncMethod() => WithJSRuntime(async jsRuntime =>
@@ -301,7 +392,7 @@ namespace Microsoft.JSInterop.Tests
             // Assert: Correct completion information
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
             Assert.True(jsRuntime.LastCompletionStatus);
-            var result = Assert.IsType<object []>(jsRuntime.LastCompletionResult);
+            var result = Assert.IsType<object[]>(jsRuntime.LastCompletionResult);
             var resultDto1 = Assert.IsType<TestDTO>(result[0]);
 
             Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
@@ -389,6 +480,150 @@ namespace Microsoft.JSInterop.Tests
             var result = Assert.IsType<ExceptionDispatchInfo>(jsRuntime.LastCompletionResult);
             Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectRef instance was already disposed.", result.SourceException.ToString());
         });
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("<xml>")]
+        public void ParseArguments_ThrowsIfJsonIsInvalid(string arguments)
+        {
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(string) }));
+        }
+
+        [Theory]
+        [InlineData("{\"key\":\"value\"}")]
+        [InlineData("\"Test\"")]
+        public void ParseArguments_ThrowsIfTheArgsJsonIsNotArray(string arguments)
+        {
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(string) }));
+        }
+
+        [Theory]
+        [InlineData("[\"hello\"")]
+        [InlineData("[\"hello\",")]
+        public void ParseArguments_ThrowsIfTheArgsJsonIsInvalidArray(string arguments)
+        {
+            // Act & Assert
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(string) }));
+        }
+
+        [Fact]
+        public void ParseArguments_Works()
+        {
+            // Arrange
+            var arguments = "[\"Hello\", 2]";
+
+            // Act
+            var result = DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(string), typeof(int), });
+
+            // Assert
+            Assert.Equal(new object[] { "Hello", 2 }, result);
+        }
+
+        [Fact]
+        public void ParseArguments_SingleArgument()
+        {
+            // Arrange
+            var arguments = "[{\"IntVal\": 7}]";
+
+            // Act
+            var result = DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(TestDTO), });
+
+            // Assert
+            var value = Assert.IsType<TestDTO>(Assert.Single(result));
+            Assert.Equal(7, value.IntVal);
+            Assert.Null(value.StringVal);
+        }
+
+        [Fact]
+        public void ParseArguments_NullArgument()
+        {
+            // Arrange
+            var arguments = "[4, null]";
+
+            // Act
+            var result = DotNetDispatcher.ParseArguments("SomeMethod", arguments, new[] { typeof(int), typeof(TestDTO), });
+
+            // Assert
+            Assert.Collection(
+                result,
+                v => Assert.Equal(4, v),
+                v => Assert.Null(v));
+        }
+
+        [Fact]
+        public void ParseArguments_Throws_WithIncorrectDotNetObjectRefUsage()
+        {
+            // Arrange
+            var method = "SomeMethod";
+            var arguments = "[4, {\"__dotNetObject\": 7}]";
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => DotNetDispatcher.ParseArguments(method, arguments, new[] { typeof(int), typeof(TestDTO), }));
+
+            // Assert
+            Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 2 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_ThrowsIfJsonIsEmptyString()
+        {
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseEndInvokeArguments(new TestJSRuntime(), ""));
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_ThrowsIfJsonIsNotArray()
+        {
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseEndInvokeArguments(new TestJSRuntime(), "{\"key\": \"value\"}"));
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_ThrowsIfJsonArrayIsInComplete()
+        {
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseEndInvokeArguments(new TestJSRuntime(), "[7, false"));
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_ThrowsIfJsonArrayHasMoreThan3Arguments()
+        {
+            Assert.ThrowsAny<JsonException>(() => DotNetDispatcher.ParseEndInvokeArguments(new TestJSRuntime(), "[7, false, \"Hello\", 5]"));
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_Works()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"intVal\": 7}}]");
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(7, task.Result.IntVal);
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_WithArrayValue()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<int[]>("somemethod");
+
+            DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(new[] { 1, 2, 3 }, task.Result);
+        }
+
+        [Fact]
+        public void ParseEndInvokeArguments_WithNullValue()
+        {
+            var jsRuntime = new TestJSRuntime();
+            var task = jsRuntime.InvokeAsync<TestDTO>("somemethod");
+
+            DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Null(task.Result);
+        }
 
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
         {

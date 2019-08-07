@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class JSRuntimeBaseTest
     {
@@ -54,18 +54,19 @@ namespace Microsoft.JSInterop.Tests
         }
 
         [Fact]
-        public async Task InvokeAsync_CompletesSuccessfullyBeforeTimeout()
+        public void InvokeAsync_CompletesSuccessfullyBeforeTimeout()
         {
             // Arrange
             var runtime = new TestJSRuntime();
             runtime.DefaultTimeout = TimeSpan.FromSeconds(10);
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes("null"));
 
             // Act
             var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
-            runtime.EndInvokeJS(2, succeeded: true, null);
 
-            // Assert
-            await task;
+            runtime.EndInvokeJS(2, succeeded: true, ref reader);
+
+            Assert.True(task.IsCompletedSuccessfully);
         }
 
         [Fact]
@@ -113,16 +114,60 @@ namespace Microsoft.JSInterop.Tests
             var task = runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
             Assert.False(unrelatedTask.IsCompleted);
             Assert.False(task.IsCompleted);
-            using var jsonDocument = JsonDocument.Parse("\"my result\"");
+            var bytes = Encoding.UTF8.GetBytes("\"my result\"");
+            var reader = new Utf8JsonReader(bytes);
 
             // Act/Assert: Task can be completed
-            runtime.OnEndInvoke(
+            runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
                 /* succeeded: */ true,
-                new JSAsyncCallResult(jsonDocument, jsonDocument.RootElement));
+                ref reader);
             Assert.False(unrelatedTask.IsCompleted);
             Assert.True(task.IsCompleted);
             Assert.Equal("my result", task.Result);
+        }
+
+        [Fact]
+        public void CanCompleteAsyncCallsWithComplexType()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var task = runtime.InvokeAsync<TestPoco>("test identifier", Array.Empty<object>());
+            var bytes = Encoding.UTF8.GetBytes("{\"id\":10, \"name\": \"Test\"}");
+            var reader = new Utf8JsonReader(bytes);
+
+            // Act/Assert: Task can be completed
+            runtime.EndInvokeJS(
+                runtime.BeginInvokeCalls[0].AsyncHandle,
+                /* succeeded: */ true,
+                ref reader);
+            Assert.True(task.IsCompleted);
+            var poco = task.Result;
+            Assert.Equal(10, poco.Id);
+            Assert.Equal("Test", poco.Name);
+        }
+
+        [Fact]
+        public void CanCompleteAsyncCallsWithComplexTypeUsingPropertyCasing()
+        {
+            // Arrange
+            var runtime = new TestJSRuntime();
+
+            var task = runtime.InvokeAsync<TestPoco>("test identifier", Array.Empty<object>());
+            var bytes = Encoding.UTF8.GetBytes("{\"Id\":10, \"Name\": \"Test\"}");
+            var reader = new Utf8JsonReader(bytes);
+            reader.Read();
+
+            // Act/Assert: Task can be completed
+            runtime.EndInvokeJS(
+                runtime.BeginInvokeCalls[0].AsyncHandle,
+                /* succeeded: */ true,
+                ref reader);
+            Assert.True(task.IsCompleted);
+            var poco = task.Result;
+            Assert.Equal(10, poco.Id);
+            Assert.Equal("Test", poco.Name);
         }
 
         [Fact]
@@ -136,13 +181,15 @@ namespace Microsoft.JSInterop.Tests
             var task = runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
             Assert.False(unrelatedTask.IsCompleted);
             Assert.False(task.IsCompleted);
-            using var jsonDocument = JsonDocument.Parse("\"This is a test exception\"");
+            var bytes = Encoding.UTF8.GetBytes("\"This is a test exception\"");
+            var reader = new Utf8JsonReader(bytes);
+            reader.Read();
 
             // Act/Assert: Task can be failed
-            runtime.OnEndInvoke(
+            runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
                 /* succeeded: */ false,
-                new JSAsyncCallResult(jsonDocument, jsonDocument.RootElement));
+                ref reader);
             Assert.False(unrelatedTask.IsCompleted);
             Assert.True(task.IsCompleted);
 
@@ -152,7 +199,7 @@ namespace Microsoft.JSInterop.Tests
         }
 
         [Fact]
-        public async Task CanCompleteAsyncCallsWithErrorsDuringDeserialization()
+        public Task CanCompleteAsyncCallsWithErrorsDuringDeserialization()
         {
             // Arrange
             var runtime = new TestJSRuntime();
@@ -162,24 +209,27 @@ namespace Microsoft.JSInterop.Tests
             var task = runtime.InvokeAsync<int>("test identifier", Array.Empty<object>());
             Assert.False(unrelatedTask.IsCompleted);
             Assert.False(task.IsCompleted);
-            using var jsonDocument = JsonDocument.Parse("\"Not a string\"");
+            var bytes = Encoding.UTF8.GetBytes("Not a string");
+            var reader = new Utf8JsonReader(bytes);
 
             // Act/Assert: Task can be failed
-            runtime.OnEndInvoke(
+            runtime.EndInvokeJS(
                 runtime.BeginInvokeCalls[1].AsyncHandle,
                 /* succeeded: */ true,
-                new JSAsyncCallResult(jsonDocument, jsonDocument.RootElement));
+                ref reader);
             Assert.False(unrelatedTask.IsCompleted);
 
-            var jsException = await Assert.ThrowsAsync<JSException>(() => task);
-            Assert.IsType<JsonException>(jsException.InnerException);
+            return AssertTask();
 
-            // Verify we've disposed the JsonDocument.
-            Assert.Throws<ObjectDisposedException>(() => jsonDocument.RootElement.ValueKind);
+            async Task AssertTask()
+            {
+                var jsException = await Assert.ThrowsAsync<JSException>(() => task);
+                Assert.IsAssignableFrom<JsonException>(jsException.InnerException);
+            }
         }
 
         [Fact]
-        public async Task CompletingSameAsyncCallMoreThanOnce_IgnoresSecondResultAsync()
+        public Task CompletingSameAsyncCallMoreThanOnce_IgnoresSecondResultAsync()
         {
             // Arrange
             var runtime = new TestJSRuntime();
@@ -187,11 +237,19 @@ namespace Microsoft.JSInterop.Tests
             // Act/Assert
             var task = runtime.InvokeAsync<string>("test identifier", Array.Empty<object>());
             var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
-            runtime.OnEndInvoke(asyncHandle, true, new JSAsyncCallResult(JsonDocument.Parse("{}"), JsonDocument.Parse("{\"Message\": \"Some data\"}").RootElement.GetProperty("Message")));
-            runtime.OnEndInvoke(asyncHandle, false, new JSAsyncCallResult(null, JsonDocument.Parse("{\"Message\": \"Exception\"}").RootElement.GetProperty("Message")));
+            var firstReader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"Some data\""));
+            var secondReader = new Utf8JsonReader(Encoding.UTF8.GetBytes("\"Exception\""));
 
-            var result = await task;
-            Assert.Equal("Some data", result);
+            runtime.EndInvokeJS(asyncHandle, true, ref firstReader);
+            runtime.EndInvokeJS(asyncHandle, false, ref secondReader);
+
+            return AssertTask();
+
+            async Task AssertTask()
+            {
+                var result = await task;
+                Assert.Equal("Some data", result);
+            }
         }
 
         [Fact]
@@ -263,6 +321,13 @@ namespace Microsoft.JSInterop.Tests
             public string Message { get; set; }
         }
 
+        private class TestPoco
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
         class TestJSRuntime : JSRuntimeBase
         {
             public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
@@ -316,9 +381,6 @@ namespace Microsoft.JSInterop.Tests
                     ArgsJson = argsJson,
                 });
             }
-
-            public void OnEndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult callResult)
-                => EndInvokeJS(asyncHandle, succeeded, callResult);
         }
     }
 }
