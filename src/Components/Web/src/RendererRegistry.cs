@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Web
     /// <summary>
     /// Framework infrastructure, not intended to be used by application code.
     /// </summary>
-    internal class RendererRegistry
+    public class RendererRegistry
     {
         private static AsyncLocal<RendererRegistry> _current;
         private static readonly RendererRegistry _globalRegistry;
@@ -62,10 +62,7 @@ namespace Microsoft.AspNetCore.Components.Web
             }
         }
 
-        /// <summary>
-        /// Framework infrastructure, not intended by used by application code.
-        /// </summary>
-        public Renderer Find(int rendererId)
+        internal Renderer Find(int rendererId)
         {
             lock (_renderers)
             {
