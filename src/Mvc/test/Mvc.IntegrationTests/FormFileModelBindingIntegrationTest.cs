@@ -519,7 +519,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(modelStateEntry.RawValue);
         }
 
-
         [Fact]
         public async Task BindCollectionProperty_NoData_IsNotBound()
         {
@@ -1088,6 +1087,41 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                         file => Assert.Equal(data + 2, ReadFormFile(file)),
                         file => Assert.Equal(data + 3, ReadFormFile(file)));
                 });
+        }
+
+        [Fact]
+        public async Task BindModelAsync_MultiDimensionalFormFile_WithArrayNotation()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "p",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(MultiDimensionalFormFileContainer)
+            };
+
+            var data = "Some Data Is Better Than No Data.";
+            var testContext = ModelBindingTestHelper.GetTestContext(
+                request =>
+                {
+                    UpdateRequest(request, data + 1, "FormFiles[0][0]");
+                    AddFormFile(request, data + 2, "FormFiles[1][0]");
+                    AddFormFile(request, data + 3, "FormFiles[1][0]");
+                });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+            var container = Assert.IsType<MultiDimensionalFormFileContainer>(modelBindingResult.Model);
+            Assert.NotNull(container.FormFiles);
+            Assert.Empty(container.FormFiles);
         }
 
         public class MultiDimensionalFormFileContainerLevel2
