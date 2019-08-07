@@ -72,16 +72,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         }
 
         [Fact]
-        public async Task OnAuthenticationFailed_Fires()
+        public async Task OnAuthenticationFailed_FromException_Fires()
         {
-            var eventInvoked = false;
+            var eventInvoked = 0;
             using var host = await CreateHostAsync(options =>
             {
                 options.Events = new NegotiateEvents()
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        eventInvoked = true;
+                        eventInvoked++;
                         Assert.IsType<InvalidOperationException>(context.Exception);
                         Assert.Equal("InvalidBlob", context.Exception.Message);
                         return Task.CompletedTask;
@@ -93,11 +93,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 SendAsync(server, "/404", new TestConnection(), "Negotiate InvalidBlob"));
             Assert.Equal("InvalidBlob", ex.Message);
-            Assert.True(eventInvoked);
+            Assert.Equal(1, eventInvoked);
         }
 
         [Fact]
-        public async Task OnAuthenticationFailed_Handled()
+        public async Task OnAuthenticationFailed_FromException_Handled()
         {
             using var host = await CreateHostAsync(options =>
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        context.Response.StatusCode = StatusCodes.Status418ImATeapot; ;
+                        context.Response.StatusCode = StatusCodes.Status418ImATeapot;
                         context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
                         context.HandleResponse();
                         return Task.CompletedTask;
@@ -117,6 +117,157 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate InvalidBlob");
             Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
             Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromOtherBlobError_Fires()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        Assert.IsType<Exception>(context.Exception);
+                        Assert.Equal("A test other error occured", context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                SendAsync(server, "/404", new TestConnection(), "Negotiate OtherError"));
+            Assert.Equal("A test other error occured", ex.Message);
+            Assert.Equal(1, eventInvoked);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromOtherBlobError_Handled()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate OtherError");
+            Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
+            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal(1, eventInvoked);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromCredentialError_Fires()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        Assert.IsType<Exception>(context.Exception);
+                        Assert.Equal("A test credential error occured", context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var response = await SendAsync(server, "/418", new TestConnection(), "Negotiate CredentialError");
+            Assert.Equal(StatusCodes.Status418ImATeapot, response.Response.StatusCode);
+            Assert.Equal(1, eventInvoked);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromCredentialError_Handled()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate CredentialError");
+            Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
+            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal(1, eventInvoked);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromClientError_Fires()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        Assert.IsType<Exception>(context.Exception);
+                        Assert.Equal("A test client error occured", context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var response = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientError");
+            Assert.Equal(StatusCodes.Status400BadRequest, response.Response.StatusCode);
+            Assert.Equal(1, eventInvoked);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_FromClientError_Handled()
+        {
+            var eventInvoked = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        eventInvoked++;
+                        context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                        context.Response.Headers[HeaderNames.WWWAuthenticate] = "Teapot";
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientError");
+            Assert.Equal(StatusCodes.Status418ImATeapot, result.Response.StatusCode);
+            Assert.Equal("Teapot", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+            Assert.Equal(1, eventInvoked);
         }
 
         [Fact]
@@ -279,6 +430,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Assert.False(string.IsNullOrEmpty(name), "name");
                 await context.Response.WriteAsync(name);
             });
+
+            builder.Map("/418", context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                return Task.CompletedTask;
+            });
         }
 
         private static Task<HttpContext> SendAsync(TestServer server, string path, TestConnection connection, string authorizationHeader = null)
@@ -396,8 +553,22 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         Assert.Equal("Kerberos", _protocol);
                         IsCompleted = true;
                         return "ServerKerberosBlob2";
+                    case "CredentialError":
+                        errorType = BlobErrorType.CredentialError;
+                        ex = new Exception("A test credential error occured");
+                        return null;
+                    case "ClientError":
+                        errorType = BlobErrorType.ClientError;
+                        ex = new Exception("A test client error occured");
+                        return null;
+                    case "OtherError":
+                        errorType = BlobErrorType.Other;
+                        ex = new Exception("A test other error occured");
+                        return null;
                     default:
-                        throw new InvalidOperationException(incomingBlob);
+                        errorType = BlobErrorType.Other;
+                        ex = new InvalidOperationException(incomingBlob);
+                        return null;
                 }
             }
         }
