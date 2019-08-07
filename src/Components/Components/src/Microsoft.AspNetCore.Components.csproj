@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
     <Description>Components feature for ASP.NET Core.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
@@ -17,6 +18,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
