@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Components
             provider.NextValidationResult = Task.FromResult(true);
             await provider.NextValidateAuthenticationStateAsyncCall;
             Assert.Collection(provider.RevalidationCallLog,
-                authState => Assert.Equal("test user", authState.User.Identity.Name));
+                call => Assert.Equal("test user", call.AuthenticationState.User.Identity.Name));
 
             // Act/Assert 1: Can become signed out
             // Doesn't revalidate unauthenticated states
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Components
             provider.SetAuthenticationState(CreateAuthenticationStateTask("different user"));
             await provider.NextValidateAuthenticationStateAsyncCall;
             Assert.Collection(provider.RevalidationCallLog.Skip(1),
-                authState => Assert.Equal("different user", authState.User.Identity.Name));
+                call => Assert.Equal("different user", call.AuthenticationState.User.Identity.Name));
         }
 
         [Fact]
@@ -142,6 +143,72 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.Empty(provider.RevalidationCallLog);
+        }
+
+        [Fact]
+        public async Task SuppliesCancellationTokenThatSignalsWhenRevalidationLoopIsBeingDiscarded()
+        {
+            // Arrange
+            var validationTcs = new TaskCompletionSource<bool>();
+            var authenticationStateChangedCount = 0;
+            using var provider = new TestRevalidatingServerAuthenticationStateProvider(
+                TimeSpan.FromMilliseconds(50));
+            provider.NextValidationResult = validationTcs.Task;
+            provider.SetAuthenticationState(CreateAuthenticationStateTask("test user"));
+            provider.AuthenticationStateChanged += _ => { authenticationStateChangedCount++; };
+
+            // Act/Assert 1: token isn't cancelled initially
+            await provider.NextValidateAuthenticationStateAsyncCall;
+            var firstRevalidationCall = provider.RevalidationCallLog.Single();
+            Assert.False(firstRevalidationCall.CancellationToken.IsCancellationRequested);
+            Assert.Equal(0, authenticationStateChangedCount);
+
+            // Have the task throw a TCE to show this doesn't get treated as a failure
+            firstRevalidationCall.CancellationToken.Register(() => validationTcs.TrySetCanceled(firstRevalidationCall.CancellationToken));
+
+            // Act/Assert 2: token is cancelled when the loop is superseded
+            provider.NextValidationResult = Task.FromResult(true);
+            provider.SetAuthenticationState(CreateAuthenticationStateTask("different user"));
+            Assert.True(firstRevalidationCall.CancellationToken.IsCancellationRequested);
+
+            // Since we asked for that operation to be cancelled, we don't treat it as a failure and
+            // don't force a logout
+            Assert.Equal(1, authenticationStateChangedCount);
+            Assert.Equal("different user", (await provider.GetAuthenticationStateAsync()).User.Identity.Name);
+
+            // Subsequent revalidation can complete successfully
+            await provider.NextValidateAuthenticationStateAsyncCall;
+            Assert.Collection(provider.RevalidationCallLog.Skip(1),
+                 call => Assert.Equal("different user", call.AuthenticationState.User.Identity.Name));
+        }
+
+        [Fact]
+        public async Task IfValidateAuthenticationStateAsyncReturnsUnrelatedCancelledTask_TreatAsFailure()
+        {
+            // Arrange
+            var validationTcs = new TaskCompletionSource<bool>();
+            var authenticationStateChangedCount = 0;
+            using var provider = new TestRevalidatingServerAuthenticationStateProvider(
+                TimeSpan.FromMilliseconds(50));
+            provider.NextValidationResult = validationTcs.Task;
+            provider.SetAuthenticationState(CreateAuthenticationStateTask("test user"));
+            provider.AuthenticationStateChanged += _ => { authenticationStateChangedCount++; };
+
+            // Be waiting for the first ValidateAuthenticationStateAsync to complete
+            await provider.NextValidateAuthenticationStateAsyncCall;
+            var firstRevalidationCall = provider.RevalidationCallLog.Single();
+            Assert.Equal(0, authenticationStateChangedCount);
+
+            // Act: ValidateAuthenticationStateAsync returns cancelled task, but the cancellation
+            // is unrelated to the CT we supplied
+            validationTcs.TrySetCanceled(new CancellationTokenSource().Token);
+
+            // Assert: Since we didn't ask for that operation to be cancelled, this is treated as
+            // a failure to validate, so we force a logout
+            Assert.Equal(1, authenticationStateChangedCount);
+            var newAuthState = await provider.GetAuthenticationStateAsync();
+            Assert.False(newAuthState.User.Identity.IsAuthenticated);
+            Assert.Null(newAuthState.User.Identity.Name);
         }
 
         static Task<AuthenticationState> CreateAuthenticationStateTask(string username)
@@ -170,14 +237,14 @@ namespace Microsoft.AspNetCore.Components
             public Task NextValidateAuthenticationStateAsyncCall
                 => _nextValidateAuthenticationStateAsyncCallSource.Task;
 
-            public List<AuthenticationState> RevalidationCallLog { get; }
-                = new List<AuthenticationState>();
+            public List<(AuthenticationState AuthenticationState, CancellationToken CancellationToken)> RevalidationCallLog { get; }
+                = new List<(AuthenticationState, CancellationToken)>();
 
             protected override TimeSpan RevalidationInterval => _revalidationInterval;
 
-            protected override Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState)
+            protected override Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken)
             {
-                RevalidationCallLog.Add(authenticationState);
+                RevalidationCallLog.Add((authenticationState, cancellationToken));
                 var result = NextValidationResult;
                 var prevCts = _nextValidateAuthenticationStateAsyncCallSource;
                 _nextValidateAuthenticationStateAsyncCallSource = new TaskCompletionSource<object>();
