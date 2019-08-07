@@ -58,13 +58,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
 
-            var authenticationStateProvider = scope.ServiceProvider.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
-            if (authenticationStateProvider != null)
-            {
-                var authenticationState = new AuthenticationState(httpContext.User); // TODO: Get this from the hub connection context instead
-                authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
-            }
-
             var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
             var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
