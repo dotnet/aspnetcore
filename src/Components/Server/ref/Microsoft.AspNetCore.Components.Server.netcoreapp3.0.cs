@@ -37,10 +37,11 @@ namespace Microsoft.AspNetCore.Components.Server
     }
     public abstract partial class RevalidatingServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider, System.IDisposable
     {
-        public RevalidatingServerAuthenticationStateProvider(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan revalidationInterval) { }
+        public RevalidatingServerAuthenticationStateProvider(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        protected abstract System.TimeSpan RevalidationInterval { get; }
         protected virtual void Dispose(bool disposing) { }
         void System.IDisposable.Dispose() { }
-        protected abstract System.Threading.Tasks.Task<bool> ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.AuthenticationState authenticationState);
+        protected abstract System.Threading.Tasks.Task<bool> ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.AuthenticationState authenticationState, System.Threading.CancellationToken cancellationToken);
     }
     public partial class ServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.AuthenticationStateProvider, Microsoft.AspNetCore.Components.IHostEnvironmentAuthenticationStateProvider
     {
