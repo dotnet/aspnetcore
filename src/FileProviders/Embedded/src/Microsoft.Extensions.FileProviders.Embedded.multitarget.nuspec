@@ -3,6 +3,9 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
+      <group targetFramework=".NETCoreApp3.0">
+        <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
+      </group>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
       </group>
@@ -10,9 +13,9 @@
   </metadata>
 
   <files>
-    <file src="$OutputBinary$" target="lib\$targetframework$\" />
-    <file src="$OutputSymbol$" target="lib\$targetframework$\" />
-    <file src="$OutputDocumentation$" target="lib\$targetframework$\" />
+    <file src="$OutputBinary$" target="lib\" />
+    <file src="$OutputSymbol$" target="lib\" />
+    <file src="$OutputDocumentation$" target="lib\" />
     <file src="build\**\*" target="build\" />
     <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
     <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.dll" />

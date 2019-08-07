@@ -6,7 +6,8 @@ Commonly Used Types:
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService
 Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     </Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
