@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void ProcessRenderQueue()
         {
-            EnsureSynchronizationContext();
+            Dispatcher.AssertAccess();
 
             if (_isBatchInProgress)
             {

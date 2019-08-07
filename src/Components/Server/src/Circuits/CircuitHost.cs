@@ -324,7 +324,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             AssertInitialized();
             AssertNotDisposed();
-            Renderer.Dispatcher.AssertAccess();
 
             try
             {
