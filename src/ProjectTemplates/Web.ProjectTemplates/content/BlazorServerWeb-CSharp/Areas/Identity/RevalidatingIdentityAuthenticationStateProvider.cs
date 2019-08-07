@@ -33,10 +33,22 @@ namespace BlazorServerWeb_CSharp.Areas.Identity
             AuthenticationState authenticationState, CancellationToken cancellationToken)
         {
             // Get the user manager from a new scope to ensure it fetches fresh data
-            using (var scope = _scopeFactory.CreateScope())
+            var scope = _scopeFactory.CreateScope();
+            try
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<TUser>>();
                 return await ValidateSecurityStampAsync(userManager, authenticationState.User);
+            }
+            finally
+            {
+                if (scope is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync();
+                }
+                else
+                {
+                    scope.Dispose();
+                }
             }
         }
 
