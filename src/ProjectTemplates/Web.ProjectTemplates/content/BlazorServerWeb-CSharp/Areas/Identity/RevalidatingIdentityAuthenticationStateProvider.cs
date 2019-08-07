@@ -24,7 +24,7 @@ namespace BlazorServerWeb_CSharp.Areas.Identity
             : base(loggerFactory, RevalidationInterval)
         {
             _scopeFactory = scopeFactory;
-            _options = optionsAccessor?.Value ?? new IdentityOptions();
+            _options = optionsAccessor.Value;
         }
 
         protected override async Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState)
