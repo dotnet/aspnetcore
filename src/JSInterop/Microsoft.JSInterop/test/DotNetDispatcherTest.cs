@@ -250,7 +250,7 @@ namespace Microsoft.JSInterop
             DotNetDispatcher.EndInvoke(argsJson);
 
             // Assert
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
             var result = task.Result;
             Assert.Equal(testDTO.StringVal, result.StringVal);
             Assert.Equal(testDTO.IntVal, result.IntVal);
@@ -597,7 +597,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"intVal\": 7}}]");
 
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
             Assert.Equal(7, task.Result.IntVal);
         }
 
@@ -609,7 +609,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
 
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
             Assert.Equal(new[] { 1, 2, 3 }, task.Result);
         }
 
@@ -621,7 +621,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
 
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
             Assert.Null(task.Result);
         }
 

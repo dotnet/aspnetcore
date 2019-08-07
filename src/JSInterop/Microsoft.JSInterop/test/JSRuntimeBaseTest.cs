@@ -66,7 +66,7 @@ namespace Microsoft.JSInterop
 
             runtime.EndInvokeJS(2, succeeded: true, ref reader);
 
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
         }
 
         [Fact]
