@@ -15,15 +15,6 @@ namespace Microsoft.AspNetCore.Components
     public class RevalidatingServerAuthenticationStateProviderTest
     {
         [Fact]
-        public void RejectsZeroRevalidationInterval()
-        {
-            var ex = Assert.Throws<ArgumentException>(
-                () => new TestRevalidatingServerAuthenticationStateProvider(TimeSpan.Zero));
-            Assert.Equal("revalidationInterval", ex.ParamName);
-            Assert.StartsWith("The interval must be a nonzero value", ex.Message);
-        }
-
-        [Fact]
         public void AcceptsAndReturnsAuthStateFromHost()
         {
             // Arrange
@@ -164,12 +155,14 @@ namespace Microsoft.AspNetCore.Components
 
         class TestRevalidatingServerAuthenticationStateProvider : RevalidatingServerAuthenticationStateProvider
         {
+            private readonly TimeSpan _revalidationInterval;
             private TaskCompletionSource<object> _nextValidateAuthenticationStateAsyncCallSource
                 = new TaskCompletionSource<object>();
 
             public TestRevalidatingServerAuthenticationStateProvider(TimeSpan revalidationInterval)
-                : base(NullLoggerFactory.Instance, revalidationInterval)
+                : base(NullLoggerFactory.Instance)
             {
+                _revalidationInterval = revalidationInterval;
             }
 
             public Task<bool> NextValidationResult { get; set; }
@@ -179,6 +172,8 @@ namespace Microsoft.AspNetCore.Components
 
             public List<AuthenticationState> RevalidationCallLog { get; }
                 = new List<AuthenticationState>();
+
+            protected override TimeSpan RevalidationInterval => _revalidationInterval;
 
             protected override Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState)
             {

@@ -17,30 +17,20 @@ namespace Microsoft.AspNetCore.Components.Server
         : ServerAuthenticationStateProvider, IDisposable
     {
         private readonly ILogger _logger;
-        private readonly TimeSpan _revalidationInterval;
         private CancellationTokenSource _loopCancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// Constructs an instance of <see cref="RevalidatingServerAuthenticationStateProvider"/>.
         /// </summary>
         /// <param name="loggerFactory">A logger factory.</param>
-        /// <param name="revalidationInterval">The interval between revalidation attempts.</param>
-        public RevalidatingServerAuthenticationStateProvider(
-            ILoggerFactory loggerFactory,
-            TimeSpan revalidationInterval)
+        public RevalidatingServerAuthenticationStateProvider(ILoggerFactory loggerFactory)
         {
             if (loggerFactory is null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            if (revalidationInterval == default)
-            {
-                throw new ArgumentException("The interval must be a nonzero value", nameof(revalidationInterval));
-            }
-
             _logger = loggerFactory.CreateLogger<RevalidatingServerAuthenticationStateProvider>();
-            _revalidationInterval = revalidationInterval;
 
             // Whenever we receive notification of a new authentication state, cancel any
             // existing revalidation loop and start a new one
@@ -51,6 +41,11 @@ namespace Microsoft.AspNetCore.Components.Server
                 _ = RevalidationLoop(authenticationStateTask, _loopCancellationTokenSource.Token);
             };
         }
+
+        /// <summary>
+        /// Gets the interval between revalidation attempts.
+        /// </summary>
+        protected abstract TimeSpan RevalidationInterval { get; }
 
         /// <summary>
         /// Determines whether the authentication state is still valid.
@@ -70,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Server
                     {
                         try
                         {
-                            await Task.Delay(_revalidationInterval, cancellationToken);
+                            await Task.Delay(RevalidationInterval, cancellationToken);
                         }
                         catch (TaskCanceledException)
                         {

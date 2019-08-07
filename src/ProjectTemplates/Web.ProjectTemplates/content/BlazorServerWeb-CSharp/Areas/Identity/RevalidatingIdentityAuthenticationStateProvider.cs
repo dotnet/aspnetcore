@@ -13,7 +13,6 @@ namespace BlazorServerWeb_CSharp.Areas.Identity
     public class RevalidatingIdentityAuthenticationStateProvider<TUser>
         : RevalidatingServerAuthenticationStateProvider where TUser : class
     {
-        private readonly static TimeSpan RevalidationInterval = TimeSpan.FromMinutes(30);
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IdentityOptions _options;
 
@@ -21,11 +20,13 @@ namespace BlazorServerWeb_CSharp.Areas.Identity
             ILoggerFactory loggerFactory,
             IServiceScopeFactory scopeFactory,
             IOptions<IdentityOptions> optionsAccessor)
-            : base(loggerFactory, RevalidationInterval)
+            : base(loggerFactory)
         {
             _scopeFactory = scopeFactory;
             _options = optionsAccessor.Value;
         }
+
+        protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
 
         protected override async Task<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState)
         {
