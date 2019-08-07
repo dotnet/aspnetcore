@@ -45,8 +45,10 @@ namespace Templates.Test.SpaTemplateTest
         {
             Project = await ProjectFactory.GetOrCreateProject(key, Output);
 
-            using var createResult = await Project.RunDotNetNewAsync(template, auth: usesAuth ? "Individual" : null, language: null, useLocalDb);
-            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            using (var createResult = await Project.RunDotNetNewAsync(template, auth: usesAuth ? "Individual" : null, language: null, useLocalDb))
+            {
+                Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+            }
 
             // We shouldn't have to do the NPM restore in tests because it should happen
             // automatically at build time, but by doing it up front we can avoid having
@@ -61,11 +63,15 @@ namespace Templates.Test.SpaTemplateTest
                 Assert.Contains(".db", projectFileContents);
             }
 
-            using var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
-            Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
+            using (var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath))
+            {
+                Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
+            }
 
-            using var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
-            Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
+            using (var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint"))
+            {
+                Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
+            }
 
             if (template == "react" || template == "reactredux")
             {
@@ -73,23 +79,29 @@ namespace Templates.Test.SpaTemplateTest
                 Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
             }
 
-            using var publishResult = await Project.RunDotNetPublishAsync();
-            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            using (var publishResult = await Project.RunDotNetPublishAsync())
+            {
+                Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+            }
 
             // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
             // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            using var buildResult = await Project.RunDotNetBuildAsync();
-            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            using (var buildResult = await Project.RunDotNetBuildAsync())
+            {
+                Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+            }
 
             // localdb is not installed on the CI machines, so skip it.
             var shouldVisitFetchData = !useLocalDb;
 
             if (usesAuth)
             {
-                using var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
-                Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
+                using (var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template))
+                {
+                    Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
+                }
                 Project.AssertEmptyMigration(template);
 
                 if (shouldVisitFetchData)
