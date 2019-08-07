@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Principal;
 
@@ -48,10 +49,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _statusCode = securityStatusType.GetField("ErrorCode");
             _statusException = securityStatusType.GetField("Exception");
 
-            var interopType = secAssembly.GetType("Interop", throwOnError: true);
-            var netNativeType = interopType.GetNestedType("NetSecurityNative", BindingFlags.NonPublic | BindingFlags.Static);
-            _gssExceptionType = netNativeType.GetNestedType("GssApiException", BindingFlags.NonPublic);
-            _gssMinorStatus = _gssExceptionType.GetField("_minorStatus", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var interopType = secAssembly.GetType("Interop", throwOnError: true);
+                var netNativeType = interopType.GetNestedType("NetSecurityNative", BindingFlags.NonPublic | BindingFlags.Static);
+                _gssExceptionType = netNativeType.GetNestedType("GssApiException", BindingFlags.NonPublic);
+                _gssMinorStatus = _gssExceptionType.GetField("_minorStatus", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
 
             var negoStreamPalType = secAssembly.GetType("System.Net.Security.NegotiateStreamPal", throwOnError: true);
             _getIdentity = negoStreamPalType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Where(info =>
@@ -99,12 +103,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var blob = (byte[])_getOutgoingBlob.Invoke(_instance, parameters);
 
                 var securityStatus = parameters[2];
+                // TODO: Update after corefx changes
                 error = (Exception)(_statusException.GetValue(securityStatus)
                     ?? _getException.Invoke(null, new[] { securityStatus }));
                 var errorCode = (SecurityStatusPalErrorCode)_statusCode.GetValue(securityStatus);
 
+                // TODO: Remove after corefx changes
                 // The linux implementation always uses InternalError;
-                if (errorCode == SecurityStatusPalErrorCode.InternalError && _gssExceptionType.IsInstanceOfType(error))
+                if (errorCode == SecurityStatusPalErrorCode.InternalError
+                    && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && _gssExceptionType.IsInstanceOfType(error))
                 {
                     var majorStatus = (uint)error.HResult;
                     var minorStatus = (uint)_gssMinorStatus.GetValue(error);
