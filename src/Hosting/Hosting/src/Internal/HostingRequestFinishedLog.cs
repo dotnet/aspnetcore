@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 _cachedToString = string.Format(
                     CultureInfo.InvariantCulture,
-                    "Request finished in {0}ms {1} {2}",
+                    "Request finished in {0:F2}ms {1} {2}",
                     _elapsed.TotalMilliseconds,
                     _httpContext.Response.StatusCode,
                     _httpContext.Response.ContentType);
