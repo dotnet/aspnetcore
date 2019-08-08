@@ -1,5 +1,5 @@
 <Project>
 
-  <Import project="..\buildMultiTargeting\Microsoft.AspnetCore.Identity.UI.targets" />
+  <Import Project="..\buildMultiTargeting\Microsoft.AspnetCore.Identity.UI.targets" />
 
 </Project>
