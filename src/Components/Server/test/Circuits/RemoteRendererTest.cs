@@ -465,7 +465,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             return new RemoteRenderer(
                 serviceProvider,
                 NullLoggerFactory.Instance,
-                new RendererRegistry(),
                 new CircuitOptions(),
                 jsRuntime.Object,
                 circuitClientProxy,

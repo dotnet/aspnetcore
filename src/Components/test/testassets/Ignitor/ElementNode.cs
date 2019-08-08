@@ -75,7 +75,7 @@ namespace Ignitor
                 Value = value
             };
 
-            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
+            var webEventDescriptor = new WebEventDescriptor()
             {
                 BrowserRendererId = 0,
                 EventHandlerId = changeEventDescriptor.EventId,
@@ -87,7 +87,7 @@ namespace Ignitor
                 }
             };
 
-            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(args));
+            return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(args));
         }
 
         public Task ClickAsync(HubConnection connection)
@@ -102,14 +102,14 @@ namespace Ignitor
                 Type = clickEventDescriptor.EventName,
                 Detail = 1
             };
-            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
+            var webEventDescriptor = new WebEventDescriptor
             {
                 BrowserRendererId = 0,
                 EventHandlerId = clickEventDescriptor.EventId,
                 EventArgsType = "mouse",
             };
 
-            return DispatchEventCore(connection, Serialize(browserDescriptor), Serialize(mouseEventArgs));
+            return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(mouseEventArgs));
         }
 
         private static string Serialize<T>(T payload) =>
