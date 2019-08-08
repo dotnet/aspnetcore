@@ -1269,7 +1269,6 @@ describe("HubConnection", () => {
         });
 
         it("does not terminate if messages are received", async () => {
-            for (let i = 0; i < 10; i++) {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
@@ -1298,7 +1297,6 @@ describe("HubConnection", () => {
                     await hubConnection.stop();
                 }
             });
-        }
         });
 
         it("terminates if no messages received within timeout interval", async () => {
