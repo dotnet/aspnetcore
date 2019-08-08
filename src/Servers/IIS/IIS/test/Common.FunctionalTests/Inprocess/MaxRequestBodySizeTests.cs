@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
@@ -75,9 +76,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [ConditionalFact]
         [RequiresNewHandler]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [Repeat(5)]
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            // Logs get tangled up due to ANCM debug logs and managed logs logging at the same time.
+            // Disable it for this test as we are trying to verify a log.
+            deploymentParameters.HandlerSettings["debugLevel"] = "";
             deploymentParameters.ServerConfigActionList.Add(
                 (config, _) => {
                     config
