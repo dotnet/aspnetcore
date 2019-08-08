@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
+        [RequiresNewHandler]
         [InlineData("/RequestPath/a/b/../c", "/a/c")]
         [InlineData("/RequestPath/a/b/./c", "/a/b/c")]
         public async Task Request_WithNavigation_Removed(string input, string expectedPath)
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
+        [RequiresNewHandler]
         [InlineData("/RequestPath/a/b/%2E%2E/c", "/a/c")]
         [InlineData("/RequestPath/a/b/%2E/c", "/a/b/c")]
         public async Task Request_WithEscapedNavigation_Removed(string input, string expectedPath)

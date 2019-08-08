@@ -49,6 +49,7 @@ namespace IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7 | WindowsVersions.Win8, "Test has invalid configuration on CI.")]
         [RequiresIIS(IISCapability.ApplicationInitialization)]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
