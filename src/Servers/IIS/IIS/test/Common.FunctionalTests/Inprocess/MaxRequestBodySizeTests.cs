@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [ConditionalFact]
         [RequiresNewHandler]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [Repeat(5)]
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
