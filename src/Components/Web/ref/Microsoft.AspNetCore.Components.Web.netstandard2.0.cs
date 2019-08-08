@@ -422,16 +422,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 }
 namespace Microsoft.AspNetCore.Components.Web
 {
-    public partial class WebEventData
-    {
-        public WebEventData(Microsoft.AspNetCore.Components.Web.WebEventDescriptor eventDescriptor, string eventArgsJson) { }
-        public WebEventData(string eventDescriptorJson, string eventArgsJson) { }
-        public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.EventArgs EventArgs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Components.Rendering.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public partial class WebEventDescriptor
+    public sealed partial class WebEventDescriptor
     {
         public WebEventDescriptor() { }
         public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
