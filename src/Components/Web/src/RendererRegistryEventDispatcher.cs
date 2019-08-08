@@ -5,7 +5,6 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web
 {
@@ -17,12 +16,13 @@ namespace Microsoft.AspNetCore.Components.Web
         /// <summary>
         /// For framework use only.
         /// </summary>
-        [JSInvokable(nameof(DispatchEvent))]
-        public static Task DispatchEvent(BrowserEventDescriptor eventDescriptor, string eventArgsJson)
+        public static Task DispatchEvent(Renderer renderer, BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
+            // TODO: Refactor this. It's weird currently. It would make more sense for .Web to expose
+            // a static method ParseEventDescriptorJson that returns both the BrowserEventDescriptor and
+            // its associated EventArgs, then the caller can call renderer.DispatchEventAsync directly.
             InterpretEventDescriptor(eventDescriptor);
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
-            var renderer = RendererRegistry.Current.Find(eventDescriptor.BrowserRendererId);
             return renderer.DispatchEventAsync(eventDescriptor.EventHandlerId, eventDescriptor.EventFieldInfo, eventArgs);
         }
 

@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
-            RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
         }
 
         public event UnhandledExceptionEventHandler UnhandledException;
@@ -50,7 +49,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string circuitId,
             IServiceScope scope,
             CircuitClientProxy client,
-            RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
             IReadOnlyList<ComponentDescriptor> descriptors,
             RemoteJSRuntime jsRuntime,
@@ -60,7 +58,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitId = circuitId;
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             Client = client;
-            RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
@@ -84,8 +81,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RemoteJSRuntime JSRuntime { get; }
 
         public RemoteRenderer Renderer { get; }
-
-        public RendererRegistry RendererRegistry { get; }
 
         public IReadOnlyList<ComponentDescriptor> Descriptors { get; }
 
@@ -152,7 +147,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
-                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgs);
+                    return RendererRegistryEventDispatcher.DispatchEvent(Renderer, eventDescriptor, eventArgs);
                 });
             }
             catch (Exception ex)
