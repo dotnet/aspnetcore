@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         [JSInvokable(nameof(DispatchEvent))]
         public static Task DispatchEvent(WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
-            var webEvent = new WebEventData(eventDescriptor, eventArgsJson);
+            var webEvent = WebEventData.Parse(eventDescriptor, eventArgsJson);
             var renderer = RendererRegistry.Find(eventDescriptor.BrowserRendererId);
             return renderer.DispatchEventAsync(
                 webEvent.EventHandlerId,

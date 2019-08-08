@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             try
             {
                 AssertInitialized();
-                webEventData = new WebEventData(eventDescriptorJson, eventArgsJson);
+                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {

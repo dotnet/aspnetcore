@@ -12,17 +12,28 @@ namespace Microsoft.AspNetCore.Components.Web
         // This class represents the second half of parsing incoming event data,
         // once the type of the eventArgs becomes known.
 
-        public WebEventData(string eventDescriptorJson, string eventArgsJson)
-            : this(Deserialize<WebEventDescriptor>(eventDescriptorJson), eventArgsJson)
+        public static WebEventData Parse(string eventDescriptorJson, string eventArgsJson)
         {
+            return Parse(
+                Deserialize<WebEventDescriptor>(eventDescriptorJson),
+                eventArgsJson);
         }
 
-        public WebEventData(WebEventDescriptor eventDescriptor, string eventArgsJson)
+        public static WebEventData Parse(WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
-            BrowserRendererId = eventDescriptor.BrowserRendererId;
-            EventHandlerId = eventDescriptor.EventHandlerId;
-            EventFieldInfo = InterpretEventFieldInfo(eventDescriptor.EventFieldInfo);
-            EventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
+            return new WebEventData(
+                eventDescriptor.BrowserRendererId,
+                eventDescriptor.EventHandlerId,
+                InterpretEventFieldInfo(eventDescriptor.EventFieldInfo),
+                ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson));
+        }
+
+        private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        {
+            BrowserRendererId = browserRendererId;
+            EventHandlerId = eventHandlerId;
+            EventFieldInfo = eventFieldInfo;
+            EventArgs = eventArgs;
         }
 
         public int BrowserRendererId { get; }
