@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
     internal class RemoteRenderer : HtmlRenderer
     {
-        private const int UnusedRendererId = 0; // Only WebAssembly maintains a registry of renderers by ID. It's not applicable to RemoteRenderer.
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
         private readonly IJSRuntime _jsRuntime;
@@ -69,7 +68,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var attachComponentTask = _jsRuntime.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",
-                UnusedRendererId,
                 domElementSelector,
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
@@ -213,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
                 var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
-                await _client.SendAsync("JS.RenderBatch", UnusedRendererId, pending.BatchId, segment);
+                await _client.SendAsync("JS.RenderBatch", pending.BatchId, segment);
             }
             catch (Exception e)
             {
