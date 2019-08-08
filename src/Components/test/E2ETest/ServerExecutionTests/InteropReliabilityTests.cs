@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12962")]
         public async Task LogsJSInteropCompletionsCallbacksAndContinuesWorkingInAllSituations()
         {
             // Arrange
