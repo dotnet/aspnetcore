@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
@@ -132,43 +131,35 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public async Task DispatchEvent(string eventDescriptorJson, string eventArgs)
+        public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
         {
-            RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
+            WebEventData webEventData;
             try
             {
                 AssertInitialized();
-                eventDescriptor = ParseEventDescriptor(eventDescriptorJson);
-                if (eventDescriptor == null)
-                {
-                    return;
-                }
-
-                await Renderer.Dispatcher.InvokeAsync(() =>
-                {
-                    SetCurrentCircuitHost(this);
-                    return RendererRegistryEventDispatcher.DispatchEvent(Renderer, eventDescriptor, eventArgs);
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.DispatchEventFailedToDispatchEvent(_logger, eventDescriptor != null ? eventDescriptor.EventHandlerId.ToString() : null, ex);
-                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
-
-        private RendererRegistryEventDispatcher.BrowserEventDescriptor ParseEventDescriptor(string eventDescriptorJson)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
-                    eventDescriptorJson,
-                    JsonSerializerOptionsProvider.Options);
+                webEventData = new WebEventData(eventDescriptorJson, eventArgsJson);
             }
             catch (Exception ex)
             {
                 Log.DispatchEventFailedToParseEventDescriptor(_logger, ex);
-                return null;
+                return;
+            }
+
+            try
+            {
+                await Renderer.Dispatcher.InvokeAsync(() =>
+                {
+                    SetCurrentCircuitHost(this);
+                    return Renderer.DispatchEventAsync(
+                        webEventData.EventHandlerId,
+                        webEventData.EventFieldInfo,
+                        webEventData.EventArgs);
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
 
