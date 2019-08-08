@@ -1269,22 +1269,27 @@ describe("HubConnection", () => {
         });
 
         it("does not terminate if messages are received", async () => {
+            for (let i = 0; i < 10; i++) {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    hubConnection.serverTimeoutInMilliseconds = 400;
+                    const timeoutInMilliseconds = 400;
+                    hubConnection.serverTimeoutInMilliseconds = timeoutInMilliseconds;
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
 
-                    for (let i = 0; i < 12; i++) {
-                        await pingAndWait(connection);
-                    }
+                    const pingInterval = setInterval(async () => {
+                        await connection.receive({ type: MessageType.Ping });
+                    }, 10);
+
+                    await delayUntil(timeoutInMilliseconds * 2);
 
                     await connection.stop();
+                    clearInterval(pingInterval);
 
                     const error = await p.promise;
 
@@ -1293,6 +1298,7 @@ describe("HubConnection", () => {
                     await hubConnection.stop();
                 }
             });
+        }
         });
 
         it("terminates if no messages received within timeout interval", async () => {
