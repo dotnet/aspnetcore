@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             catch (Exception ex)
             {
-                Log.DispatchEventFailedToParseEventDescriptor(_logger, ex);
+                Log.DispatchEventFailedToParseEventData(_logger, ex);
                 return;
             }
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
             private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
-            private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventDescriptor;
+            private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
             private static readonly Action<ILogger, string, string, Exception> _locationChange;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeSucceeded;
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId OnConnectionDown = new EventId(104, "OnConnectionDown");
                 public static readonly EventId OnCircuitClosed = new EventId(105, "OnCircuitClosed");
                 public static readonly EventId InvalidBrowserEventFormat = new EventId(106, "InvalidBrowserEventFormat");
-                public static readonly EventId DispatchEventFailedToParseEventDescriptor = new EventId(107, "DispatchEventFailedToParseEventDescriptor");
+                public static readonly EventId DispatchEventFailedToParseEventData = new EventId(107, "DispatchEventFailedToParseEventData");
                 public static readonly EventId DispatchEventFailedToDispatchEvent = new EventId(108, "DispatchEventFailedToDispatchEvent");
                 public static readonly EventId BeginInvokeDotNet = new EventId(109, "BeginInvokeDotNet");
                 public static readonly EventId EndInvokeDispatchException = new EventId(110, "EndInvokeDispatchException");
@@ -475,10 +475,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.EndInvokeJSSucceeded,
                     "The JS interop call with callback id '{AsyncCall}' succeeded.");
 
-                _dispatchEventFailedToParseEventDescriptor = LoggerMessage.Define(
+                _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
-                    EventIds.DispatchEventFailedToParseEventDescriptor,
-                    "Failed to parse the event descriptor data when trying to dispatch an event.");
+                    EventIds.DispatchEventFailedToParseEventData,
+                    "Failed to parse the event data when trying to dispatch an event.");
 
                 _dispatchEventFailedToDispatchEvent = LoggerMessage.Define<string>(
                     LogLevel.Debug,
@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
 
-            public static void DispatchEventFailedToParseEventDescriptor(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventDescriptor(logger, ex);
+            public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
 
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 

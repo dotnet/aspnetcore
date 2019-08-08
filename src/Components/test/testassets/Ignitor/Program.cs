@@ -38,7 +38,7 @@ namespace Ignitor
             var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Click the counter button 1000 times
-            client.RenderBatchReceived += (int browserRendererId, int batchId, byte[] data) =>
+            client.RenderBatchReceived += (int batchId, byte[] data) =>
             {
                 if (batchId < 1000)
                 {

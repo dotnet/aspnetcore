@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             _ = _serverFixture.RootUri;
 
             Client = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
-            Client.RenderBatchReceived += (rendererId, id, data) => Batches.Add(new Batch(rendererId, id, data));
+            Client.RenderBatchReceived += (id, data) => Batches.Add(new Batch(id, data));
 
             Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
             Sink.MessageLogged += LogMessages;
@@ -101,15 +101,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private class Batch
         {
-            public Batch(int rendererId, int id, byte[] data)
+            public Batch(int id, byte[] data)
             {
                 Id = id;
-                RendererId = rendererId;
                 Data = data;
             }
 
             public int Id { get; }
-            public int RendererId { get; }
             public byte[] Data { get; }
         }
 
