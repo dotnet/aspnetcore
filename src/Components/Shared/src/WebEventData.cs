@@ -7,25 +7,16 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Web
 {
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
-    public class WebEventData
+    internal class WebEventData
     {
         // This class represents the second half of parsing incoming event data,
         // once the type of the eventArgs becomes known.
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public WebEventData(string eventDescriptorJson, string eventArgsJson)
             : this(Deserialize<WebEventDescriptor>(eventDescriptorJson), eventArgsJson)
         {
         }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public WebEventData(WebEventDescriptor eventDescriptor, string eventArgsJson)
         {
             BrowserRendererId = eventDescriptor.BrowserRendererId;
@@ -34,24 +25,12 @@ namespace Microsoft.AspNetCore.Components.Web
             EventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
         }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public int BrowserRendererId { get; }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public ulong EventHandlerId { get; }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public EventFieldInfo EventFieldInfo { get; }
 
-        /// <summary>
-        /// For framework use only.
-        /// </summary>
         public EventArgs EventArgs { get; }
 
         private static EventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
