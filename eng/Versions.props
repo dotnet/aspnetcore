@@ -162,17 +162,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview9.19405.13</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview9.19405.13</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-<<<<<<< HEAD
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>5.0.0-alpha1.19407.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>5.0.0-alpha1.19407.1</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>5.0.0-alpha1.19407.1</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>5.0.0-alpha1.19407.1</MicrosoftNETSdkRazorPackageVersion>
-=======
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview9.19405.6</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview9.19405.6</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview9.19405.6</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview9.19405.6</MicrosoftNETSdkRazorPackageVersion>
->>>>>>> release/3.0
   </PropertyGroup>
   <!--
 
