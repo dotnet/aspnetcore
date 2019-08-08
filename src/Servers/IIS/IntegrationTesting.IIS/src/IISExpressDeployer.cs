@@ -313,14 +313,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
         }
 
-        private void ChangePort(string contentRoot, int port)
-        {
-            var serverConfig = File.ReadAllText(DeploymentParameters.ServerConfigLocation);
-            XDocument config = XDocument.Parse(serverConfig);
-            ConfigureModuleAndBinding(config.Root, contentRoot, port);
-            File.WriteAllText(DeploymentParameters.ServerConfigLocation, serverConfig);
-        }
-
         private void AddAspNetCoreElement(XElement config)
         {
             var aspNetCore = config
