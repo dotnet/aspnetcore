@@ -65,6 +65,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.7' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Hosting;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
