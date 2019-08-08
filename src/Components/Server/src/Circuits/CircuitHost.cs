@@ -200,11 +200,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             try
             {
                 AssertInitialized();
-                if (assemblyName == "Microsoft.AspNetCore.Components.Web" && methodIdentifier == "DispatchEvent")
-                {
-                    Log.DispatchEventTroughJSInterop(_logger);
-                    return;
-                }
 
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
@@ -398,7 +393,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
             private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventDescriptor;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
-            private static readonly Action<ILogger, Exception> _dispatchEventThroughJSInterop;
             private static readonly Action<ILogger, string, string, Exception> _locationChange;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeSucceeded;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeFailed;
@@ -491,11 +485,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.DispatchEventFailedToDispatchEvent,
                     "There was an error dispatching the event '{EventHandlerId}' to the application.");
 
-                _dispatchEventThroughJSInterop = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.DispatchEventThroughJSInterop,
-                    "There was an intent to dispatch a browser event through JS interop.");
-
                 _locationChange = LoggerMessage.Define<string, string>(
                     LogLevel.Debug,
                     EventIds.LocationChange,
@@ -556,8 +545,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     _beginInvokeDotNetInstance(logger, methodIdentifier, dotNetObjectId, callId, null);
                 }
             }
-
-            public static void DispatchEventTroughJSInterop(ILogger logger) => _dispatchEventThroughJSInterop(logger, null);
 
             public static void LocationChange(ILogger logger, string circuitId, string uri) => _locationChange(logger, circuitId, uri, null);
 
