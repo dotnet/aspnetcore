@@ -47,6 +47,16 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     return true;
   };
 
+  window.addEventListener(
+    'unload',
+    () => {
+      const data = new FormData();
+      data.set('circuitId', circuit.circuitId);
+      navigator.sendBeacon('_blazor/disconnect', data);
+    },
+    false
+  );
+
   window['Blazor'].reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');

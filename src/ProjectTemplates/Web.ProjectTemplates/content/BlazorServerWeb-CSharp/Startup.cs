@@ -127,7 +127,7 @@ namespace BlazorServerWeb_CSharp
             services.AddRazorPages();
             services.AddServerSideBlazor();
 #if (IndividualLocalAuth)
-            services.AddScoped<AuthenticationStateProvider, RevalidatingAuthenticationStateProvider<IdentityUser>>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 #endif
             services.AddSingleton<WeatherForecastService>();
         }

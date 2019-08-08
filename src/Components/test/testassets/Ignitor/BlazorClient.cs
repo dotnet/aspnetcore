@@ -112,14 +112,20 @@ namespace Ignitor
             return NextErrorReceived.Completion.Task;
         }
 
-        public async Task ClickAsync(string elementId)
+        public Task ClickAsync(string elementId, bool expectRenderBatch = true)
         {
             if (!Hive.TryFindElementById(elementId, out var elementNode))
             {
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
-
-            await ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            if (expectRenderBatch)
+            {
+                return ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            }
+            else
+            {
+                return elementNode.ClickAsync(HubConnection);
+            }
         }
 
         public async Task SelectAsync(string elementId, string value)
@@ -292,7 +298,7 @@ namespace Ignitor
 
                 if (ConfirmRenderBatch)
                 {
-                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
+                    _ = ConfirmBatch(batchId);
                 }
 
                 NextBatchReceived?.Completion?.TrySetResult(null);
@@ -301,6 +307,11 @@ namespace Ignitor
             {
                 NextBatchReceived?.Completion?.TrySetResult(e);
             }
+        }
+
+        public Task ConfirmBatch(int batchId, string error = null)
+        {
+            return HubConnection.InvokeAsync("OnRenderCompleted", batchId, error);
         }
 
         private void OnError(string error)

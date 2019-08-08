@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
                     NullLoggerFactory.Instance,
                     new RendererRegistry(),
+                    new CircuitOptions(),
                     jsRuntime,
                     clientProxy,
                     HtmlEncoder.Default,

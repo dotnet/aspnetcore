@@ -87,13 +87,16 @@ namespace Microsoft.AspNetCore.Mvc
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
-            options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(_jsonOptions.Value));
+
+            var jsonOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(_jsonOptions.Value);
+            options.OutputFormatters.Add(jsonOutputFormatter);
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new FormValueProviderFactory());
             options.ValueProviderFactories.Add(new RouteValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
+            options.ValueProviderFactories.Add(new FormFileValueProviderFactory());
 
             // Set up metadata providers
             ConfigureAdditionalModelMetadataDetailsProviders(options.ModelMetadataDetailsProviders);
