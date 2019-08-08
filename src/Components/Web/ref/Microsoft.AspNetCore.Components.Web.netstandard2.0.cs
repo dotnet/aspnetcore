@@ -422,17 +422,21 @@ namespace Microsoft.AspNetCore.Components.Routing
 }
 namespace Microsoft.AspNetCore.Components.Web
 {
-    public static partial class RendererRegistryEventDispatcher
+    public partial class WebEventData
     {
-        [Microsoft.JSInterop.JSInvokableAttribute("DispatchEvent")]
-        public static System.Threading.Tasks.Task DispatchEvent(Microsoft.AspNetCore.Components.Web.RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor, string eventArgsJson) { throw null; }
-        public partial class BrowserEventDescriptor
-        {
-            public BrowserEventDescriptor() { }
-            public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public string EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public Microsoft.AspNetCore.Components.Rendering.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        }
+        public WebEventData(Microsoft.AspNetCore.Components.Web.WebEventDescriptor eventDescriptor, string eventArgsJson) { }
+        public WebEventData(string eventDescriptorJson, string eventArgsJson) { }
+        public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.EventArgs EventArgs { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.Rendering.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public partial class WebEventDescriptor
+    {
+        public WebEventDescriptor() { }
+        public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Components.Rendering.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
