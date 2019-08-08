@@ -455,6 +455,62 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
             }
 
+            [Fact]
+            public async Task SSECanBeCanceled()
+            {
+
+                bool ExpectedErrors(WriteContext writeContext)
+                {
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                           writeContext.EventId.Name == "ErrorStartingTransport";
+                }
+
+                using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
+                {
+                    var httpHandler = new TestHttpMessageHandler();
+                    httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
+                    {
+                        // Simulating a cancellationToken cancelling this request.
+                        throw new OperationCanceledException("Cancel SSE Start.");
+                    });
+
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
+
+                    await WithConnectionAsync(
+                        CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse, transportType: HttpTransportType.ServerSentEvents),
+                        async (connection) =>
+                        {
+                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync()).OrTimeout();
+                        });
+                }
+            }
+
+            [Fact]
+            public async Task LongPollingTransportCanBeCanceled()
+            {
+                using (StartVerifiableLog())
+                {
+                    var cts = new CancellationTokenSource();
+
+                    var httpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+                    httpHandler.OnNegotiate((request, cancellationToken) =>
+                    {
+                        // Wait here for the test code to cancel the "outer" token
+                        cts.Cancel();
+                        return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+                    });
+
+                    var lp = new LongPollingTransport(new HttpClient(httpHandler));
+
+                    await WithConnectionAsync(
+                        CreateConnection(httpHandler, transport: lp, transportType: HttpTransportType.LongPolling),
+                        async (connection) =>
+                        {
+                            var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync(cts.Token).OrTimeout());
+                        });
+                }
+            }
+
             private static async Task AssertDisposedAsync(HttpConnection connection)
             {
                 var exception =
