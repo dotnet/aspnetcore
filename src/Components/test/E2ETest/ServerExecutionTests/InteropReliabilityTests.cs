@@ -19,6 +19,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [Flaky("https://github.com/aspnet/AspNetCore/issues/12940", FlakyOn.All)]
     public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>
     {
         private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(5);
