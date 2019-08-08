@@ -1322,11 +1322,6 @@ describe("HubConnection", () => {
     });
 });
 
-async function pingAndWait(connection: TestConnection): Promise<void> {
-    await connection.receive({ type: MessageType.Ping });
-    await delayUntil(50);
-}
-
 class TestProtocol implements IHubProtocol {
     public readonly name: string = "TestProtocol";
     public readonly version: number = 1;
