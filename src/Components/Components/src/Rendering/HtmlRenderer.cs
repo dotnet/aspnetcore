@@ -69,10 +69,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
 
-            var result = new List<string>();
-            var newPosition = RenderFrames(result, frames, 0, frames.Count);
+            var context = new HtmlRenderingContext();
+            var newPosition = RenderFrames(context, frames, 0, frames.Count);
             Debug.Assert(newPosition == frames.Count);
-            return new ComponentRenderedText(componentId, result);
+            return new ComponentRenderedText(componentId, context.Result);
         }
 
         /// <summary>
@@ -91,13 +91,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected override void HandleException(Exception exception)
             => ExceptionDispatchInfo.Capture(exception).Throw();
 
-        private int RenderFrames(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+        private int RenderFrames(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             var nextPosition = position;
             var endPosition = position + maxElements;
             while (position < endPosition)
             {
-                nextPosition = RenderCore(result, frames, position, maxElements);
+                nextPosition = RenderCore(context, frames, position);
                 if (position == nextPosition)
                 {
                     throw new InvalidOperationException("We didn't consume any input.");
@@ -109,28 +109,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         private int RenderCore(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
-            int position,
-            int length)
+            int position)
         {
             ref var frame = ref frames.Array[position];
             switch (frame.FrameType)
             {
                 case RenderTreeFrameType.Element:
-                    return RenderElement(result, frames, position);
+                    return RenderElement(context, frames, position);
                 case RenderTreeFrameType.Attribute:
-                    return RenderAttributes(result, frames, position, 1);
+                    return RenderAttributes(context, frames, position, 1);
                 case RenderTreeFrameType.Text:
-                    result.Add(_htmlEncoder(frame.TextContent));
+                    context.Result.Add(_htmlEncoder(frame.TextContent));
                     return ++position;
                 case RenderTreeFrameType.Markup:
-                    result.Add(frame.MarkupContent);
+                    context.Result.Add(frame.MarkupContent);
                     return ++position;
                 case RenderTreeFrameType.Component:
-                    return RenderChildComponent(result, frames, position);
+                    return RenderChildComponent(context, frames, position);
                 case RenderTreeFrameType.Region:
-                    return RenderFrames(result, frames, position + 1, frame.RegionSubtreeLength - 1);
+                    return RenderFrames(context, frames, position + 1, frame.RegionSubtreeLength - 1);
                 case RenderTreeFrameType.ElementReferenceCapture:
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     return ++position;
@@ -140,30 +139,31 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         private int RenderChildComponent(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
             int position)
         {
             ref var frame = ref frames.Array[position];
             var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
-            RenderFrames(result, childFrames, 0, childFrames.Count);
+            RenderFrames(context, childFrames, 0, childFrames.Count);
             return position + frame.ComponentSubtreeLength;
         }
 
         private int RenderElement(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
             int position)
         {
             ref var frame = ref frames.Array[position];
+            var result = context.Result;
             result.Add("<");
             result.Add(frame.ElementName);
-            var afterAttributes = RenderAttributes(result, frames, position + 1, frame.ElementSubtreeLength - 1);
+            var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1);
             var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
             if (remainingElements > 0)
             {
                 result.Add(">");
-                var afterElement = RenderChildren(result, frames, afterAttributes, remainingElements);
+                var afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
                 result.Add("</");
                 result.Add(frame.ElementName);
                 result.Add(">");
@@ -188,24 +188,26 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private int RenderChildren(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+        private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             if (maxElements == 0)
             {
                 return position;
             }
 
-            return RenderFrames(result, frames, position, maxElements);
+            return RenderFrames(context, frames, position, maxElements);
         }
 
         private int RenderAttributes(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             if (maxElements == 0)
             {
                 return position;
             }
+
+            var result = context.Result;
 
             for (var i = 0; i < maxElements; i++)
             {
@@ -246,6 +248,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
             await RenderRootComponentAsync(componentId, initialParameters);
 
             return (componentId, GetCurrentRenderTreeFrames(componentId));
+        }
+
+        private class HtmlRenderingContext
+        {
+            public List<string> Result { get; } = new List<string>();
         }
     }
 }
