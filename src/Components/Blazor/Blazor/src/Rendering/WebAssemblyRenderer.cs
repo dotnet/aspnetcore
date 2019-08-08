@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
-        
+
         /// <summary>
         /// Attaches a new root component to the renderer,
         /// causing it to be displayed in the specified DOM element.
