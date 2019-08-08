@@ -458,7 +458,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSECanBeCanceled()
             {
-
                 bool ExpectedErrors(WriteContext writeContext)
                 {
                     return writeContext.LoggerName == typeof(HttpConnection).FullName &&
@@ -470,7 +469,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var httpHandler = new TestHttpMessageHandler();
                     httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
                     {
-                        // Simulating a cancellationToken cancelling this request.
+                        // Simulating a cancellationToken canceling this request.
                         throw new OperationCanceledException("Cancel SSE Start.");
                     });
 
@@ -495,7 +494,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var httpHandler = new TestHttpMessageHandler(autoNegotiate: false);
                     httpHandler.OnNegotiate((request, cancellationToken) =>
                     {
-                        // Wait here for the test code to cancel the "outer" token
+                        // Cancel token so that the first request poll will throw
                         cts.Cancel();
                         return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
                     });
