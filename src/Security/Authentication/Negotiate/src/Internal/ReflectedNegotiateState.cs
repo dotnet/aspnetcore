@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     status = BlobErrorType.None;
                 }
-                else if (IsCredentailError(errorCode))
+                else if (IsCredentialError(errorCode))
                 {
                     status = BlobErrorType.CredentialError;
                 }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _closeContext.Invoke(_instance, Array.Empty<object>());
         }
 
-        private bool IsCredentailError(SecurityStatusPalErrorCode error)
+        private bool IsCredentialError(SecurityStatusPalErrorCode error)
         {
             return error == SecurityStatusPalErrorCode.LogonDenied ||
                 error == SecurityStatusPalErrorCode.UnknownCredentials ||
