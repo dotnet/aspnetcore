@@ -38,15 +38,17 @@
 
   <!-- Pack settings -->
   <PropertyGroup>
-    <NuspecFile>Microsoft.AspNetCore.Components.nuspec</NuspecFile>
+    <NuspecFile>Microsoft.AspNetCore.Components.multitarget.nuspec</NuspecFile>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">Microsoft.AspNetCore.Components.netcoreapp3.0.nuspec</NuspecFile>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_GetNuspecDependencyPackageVersions</GenerateNuspecDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <NuspecProperty Include="jsInteropPackageVersion=$(MicrosoftJSInteropPackageVersion)" />
-    <NuspecProperty Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
-    <NuspecProperty Include="outputPath=$(OutputPath)" />
-    <NuspecProperty Include="assemblyName=$(AssemblyName)" />
+    <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsPackageVersion=$(SystemComponentModelAnnotationsPackageVersion)" />
+    <NuspecProperty Include="OutputBinary=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).pdb" />
+    <NuspecProperty Include="OutputDocumentation=$(MSBuildProjectDirectory)\$(OutputPath)**\$(AssemblyName).xml" />
   </ItemGroup>
 
 </Project>
