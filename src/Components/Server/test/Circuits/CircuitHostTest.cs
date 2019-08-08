@@ -232,15 +232,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
-                new RendererRegistry(),
                 Mock.Of<IJSRuntime>(),
                 Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, rendererRegistry, new CircuitOptions(), jsRuntime, new CircuitClientProxy(client, "connection"), HtmlEncoder.Default, NullLogger.Instance)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, IJSRuntime jsRuntime, IClientProxy client)
+                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), jsRuntime, new CircuitClientProxy(client, "connection"), HtmlEncoder.Default, NullLogger.Instance)
             {
             }
 

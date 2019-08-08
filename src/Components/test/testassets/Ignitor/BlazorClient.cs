@@ -50,7 +50,7 @@ namespace Ignitor
 
         public event Action<int, string, string> JSInterop;
 
-        public event Action<int, int, byte[]> RenderBatchReceived;
+        public event Action<int, byte[]> RenderBatchReceived;
 
         public event Action<string> DotNetInteropCompletion;
 
@@ -232,7 +232,7 @@ namespace Ignitor
 
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
-            HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+            HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
@@ -286,11 +286,11 @@ namespace Ignitor
             }
         }
 
-        private void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+        private void OnRenderBatch(int batchId, byte[] batchData)
         {
             try
             {
-                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
+                RenderBatchReceived?.Invoke(batchId, batchData);
 
                 var batch = RenderBatchReader.Read(batchData);
 

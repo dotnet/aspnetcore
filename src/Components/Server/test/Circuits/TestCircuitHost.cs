@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RendererRegistry rendererRegistry, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
-            : base(circuitId, scope, client, rendererRegistry, renderer, descriptors, jsRuntime, circuitHandlers, logger)
+        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+            : base(circuitId, scope, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
         {
         }
 
@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
-            var renderRegistry = new RendererRegistry();
             var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
             if (remoteRenderer == null)
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 remoteRenderer = new RemoteRenderer(
                     serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
                     NullLoggerFactory.Instance,
-                    new RendererRegistry(),
                     new CircuitOptions(),
                     jsRuntime,
                     clientProxy,
@@ -58,7 +56,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 circuitId ?? Guid.NewGuid().ToString(),
                 serviceScope,
                 clientProxy,
-                renderRegistry,
                 remoteRenderer,
                 new List<ComponentDescriptor>(),
                 jsRuntime,

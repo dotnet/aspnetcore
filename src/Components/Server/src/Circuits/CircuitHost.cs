@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
@@ -41,7 +40,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
-            RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
         }
 
         public event UnhandledExceptionEventHandler UnhandledException;
@@ -50,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string circuitId,
             IServiceScope scope,
             CircuitClientProxy client,
-            RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
             IReadOnlyList<ComponentDescriptor> descriptors,
             RemoteJSRuntime jsRuntime,
@@ -60,7 +57,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitId = circuitId;
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             Client = client;
-            RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
@@ -84,8 +80,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RemoteJSRuntime JSRuntime { get; }
 
         public RemoteRenderer Renderer { get; }
-
-        public RendererRegistry RendererRegistry { get; }
 
         public IReadOnlyList<ComponentDescriptor> Descriptors { get; }
 
@@ -137,43 +131,35 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public async Task DispatchEvent(string eventDescriptorJson, string eventArgs)
+        public async Task DispatchEvent(string eventDescriptorJson, string eventArgsJson)
         {
-            RendererRegistryEventDispatcher.BrowserEventDescriptor eventDescriptor = null;
+            WebEventData webEventData;
             try
             {
                 AssertInitialized();
-                eventDescriptor = ParseEventDescriptor(eventDescriptorJson);
-                if (eventDescriptor == null)
-                {
-                    return;
-                }
+                webEventData = WebEventData.Parse(eventDescriptorJson, eventArgsJson);
+            }
+            catch (Exception ex)
+            {
+                Log.DispatchEventFailedToParseEventData(_logger, ex);
+                return;
+            }
 
+            try
+            {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     SetCurrentCircuitHost(this);
-                    return RendererRegistryEventDispatcher.DispatchEvent(eventDescriptor, eventArgs);
+                    return Renderer.DispatchEventAsync(
+                        webEventData.EventHandlerId,
+                        webEventData.EventFieldInfo,
+                        webEventData.EventArgs);
                 });
             }
             catch (Exception ex)
             {
-                Log.DispatchEventFailedToDispatchEvent(_logger, eventDescriptor != null ? eventDescriptor.EventHandlerId.ToString() : null, ex);
+                Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
-            }
-        }
-
-        private RendererRegistryEventDispatcher.BrowserEventDescriptor ParseEventDescriptor(string eventDescriptorJson)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<RendererRegistryEventDispatcher.BrowserEventDescriptor>(
-                    eventDescriptorJson,
-                    JsonSerializerOptionsProvider.Options);
-            }
-            catch (Exception ex)
-            {
-                Log.DispatchEventFailedToParseEventDescriptor(_logger, ex);
-                return null;
             }
         }
 
@@ -214,11 +200,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             try
             {
                 AssertInitialized();
-                if (assemblyName == "Microsoft.AspNetCore.Components.Web" && methodIdentifier == "DispatchEvent")
-                {
-                    Log.DispatchEventTroughJSInterop(_logger);
-                    return;
-                }
 
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
@@ -410,9 +391,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, Exception> _endInvokeDispatchException;
             private static readonly Action<ILogger, long, string, Exception> _endInvokeJSFailed;
             private static readonly Action<ILogger, long, Exception> _endInvokeJSSucceeded;
-            private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventDescriptor;
+            private static readonly Action<ILogger, Exception> _dispatchEventFailedToParseEventData;
             private static readonly Action<ILogger, string, Exception> _dispatchEventFailedToDispatchEvent;
-            private static readonly Action<ILogger, Exception> _dispatchEventThroughJSInterop;
             private static readonly Action<ILogger, string, string, Exception> _locationChange;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeSucceeded;
             private static readonly Action<ILogger, string, string, Exception> _locationChangeFailed;
@@ -426,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 public static readonly EventId OnConnectionDown = new EventId(104, "OnConnectionDown");
                 public static readonly EventId OnCircuitClosed = new EventId(105, "OnCircuitClosed");
                 public static readonly EventId InvalidBrowserEventFormat = new EventId(106, "InvalidBrowserEventFormat");
-                public static readonly EventId DispatchEventFailedToParseEventDescriptor = new EventId(107, "DispatchEventFailedToParseEventDescriptor");
+                public static readonly EventId DispatchEventFailedToParseEventData = new EventId(107, "DispatchEventFailedToParseEventData");
                 public static readonly EventId DispatchEventFailedToDispatchEvent = new EventId(108, "DispatchEventFailedToDispatchEvent");
                 public static readonly EventId BeginInvokeDotNet = new EventId(109, "BeginInvokeDotNet");
                 public static readonly EventId EndInvokeDispatchException = new EventId(110, "EndInvokeDispatchException");
@@ -495,20 +475,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     EventIds.EndInvokeJSSucceeded,
                     "The JS interop call with callback id '{AsyncCall}' succeeded.");
 
-                _dispatchEventFailedToParseEventDescriptor = LoggerMessage.Define(
+                _dispatchEventFailedToParseEventData = LoggerMessage.Define(
                     LogLevel.Debug,
-                    EventIds.DispatchEventFailedToParseEventDescriptor,
-                    "Failed to parse the event descriptor data when trying to dispatch an event.");
+                    EventIds.DispatchEventFailedToParseEventData,
+                    "Failed to parse the event data when trying to dispatch an event.");
 
                 _dispatchEventFailedToDispatchEvent = LoggerMessage.Define<string>(
                     LogLevel.Debug,
                     EventIds.DispatchEventFailedToDispatchEvent,
                     "There was an error dispatching the event '{EventHandlerId}' to the application.");
-
-                _dispatchEventThroughJSInterop = LoggerMessage.Define(
-                    LogLevel.Debug,
-                    EventIds.DispatchEventThroughJSInterop,
-                    "There was an intent to dispatch a browser event through JS interop.");
 
                 _locationChange = LoggerMessage.Define<string, string>(
                     LogLevel.Debug,
@@ -555,7 +530,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public static void EndInvokeJSSucceeded(ILogger logger, long asyncCall) => _endInvokeJSSucceeded(logger, asyncCall, null);
 
-            public static void DispatchEventFailedToParseEventDescriptor(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventDescriptor(logger, ex);
+            public static void DispatchEventFailedToParseEventData(ILogger logger, Exception ex) => _dispatchEventFailedToParseEventData(logger, ex);
 
             public static void DispatchEventFailedToDispatchEvent(ILogger logger, string eventHandlerId, Exception ex) => _dispatchEventFailedToDispatchEvent(logger, eventHandlerId ?? "", ex);
 
@@ -570,8 +545,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     _beginInvokeDotNetInstance(logger, methodIdentifier, dotNetObjectId, callId, null);
                 }
             }
-
-            public static void DispatchEventTroughJSInterop(ILogger logger) => _dispatchEventThroughJSInterop(logger, null);
 
             public static void LocationChange(ILogger logger, string circuitId, string uri) => _locationChange(logger, circuitId, uri, null);
 
