@@ -1,0 +1,5 @@
+<Project>
+
+  <Import project="..\build\Microsoft.AspnetCore.Identity.UI.targets" />
+
+</Project>
