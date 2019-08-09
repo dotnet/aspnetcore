@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -173,6 +174,9 @@ namespace Templates.Test.SpaTemplateTest
                     }
                 }
                 catch (OperationCanceledException)
+                {
+                }
+                catch (HttpRequestException ex) when (ex.Message.StartsWith("The SSL connection could not be established"))
                 {
                 }
                 await Task.Delay(TimeSpan.FromSeconds(5 * attempt));

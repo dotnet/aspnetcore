@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
@@ -332,15 +331,9 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
-            Assert.Collection(diff2.Edits,
-            edit =>
+            Assert.Collection(diff2.Edits, edit =>
             {
-                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
-                Assert.Equal(0, edit.SiblingIndex);
-            },
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 Assert.Equal(0, edit.SiblingIndex);
                 AssertFrame.Text(
                     batch2.ReferenceFrames[edit.ReferenceFrameIndex],
@@ -514,67 +507,12 @@ namespace Microsoft.AspNetCore.Components
             => Task.FromResult(new AuthenticationState(
                 new ClaimsPrincipal(new TestIdentity { Name = username })));
 
-        class TestIdentity : IIdentity
-        {
-            public string AuthenticationType => "Test";
-
-            public bool IsAuthenticated => true;
-
-            public string Name { get; set; }
-        }
-
         public TestRenderer CreateTestRenderer(IAuthorizationService authorizationService)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(authorizationService);
             serviceCollection.AddSingleton<IAuthorizationPolicyProvider>(new TestAuthorizationPolicyProvider());
             return new TestRenderer(serviceCollection.BuildServiceProvider());
-        }
-
-        private class TestAuthorizationService : IAuthorizationService
-        {
-            public AuthorizationResult NextResult { get; set; }
-                = AuthorizationResult.Failed();
-
-            public List<(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)> AuthorizeCalls { get; }
-                = new List<(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)>();
-
-            public Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)
-            {
-                AuthorizeCalls.Add((user, resource, requirements));
-
-                // The TestAuthorizationService doesn't actually apply any authorization requirements
-                // It just returns the specified NextResult, since we're not trying to test the logic
-                // in DefaultAuthorizationService or similar here. So it's up to tests to set a desired
-                // NextResult and assert that the expected criteria were passed by inspecting AuthorizeCalls.
-                return Task.FromResult(NextResult);
-            }
-
-            public Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
-                => throw new NotImplementedException();
-        }
-
-        private class TestAuthorizationPolicyProvider : IAuthorizationPolicyProvider
-        {
-            private readonly AuthorizationOptions options = new AuthorizationOptions();
-
-            public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
-                => Task.FromResult(options.DefaultPolicy);
-
-            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
-                => Task.FromResult(options.FallbackPolicy);
-
-            public Task<AuthorizationPolicy> GetPolicyAsync(string policyName) => Task.FromResult(
-                new AuthorizationPolicy(new[]
-                {
-                    new TestPolicyRequirement { PolicyName = policyName }
-                },
-                new[] { $"TestScheme:{policyName}" }));
-        }
-
-        public class TestPolicyRequirement : IAuthorizationRequirement
-        {
-            public string PolicyName { get; set; }
         }
 
         public class AuthorizeViewCoreWithScheme : AuthorizeViewCore

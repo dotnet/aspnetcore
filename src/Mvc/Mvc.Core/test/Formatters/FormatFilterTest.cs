@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Set up default output formatters.
                 MvcOptions.OutputFormatters.Add(new HttpNoContentOutputFormatter());
                 MvcOptions.OutputFormatters.Add(new StringOutputFormatter());
-                MvcOptions.OutputFormatters.Add(new SystemTextJsonOutputFormatter(new JsonOptions()));
+                MvcOptions.OutputFormatters.Add(SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions()));
 
                 // Set up default mapping for json extensions to content type
                 MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(

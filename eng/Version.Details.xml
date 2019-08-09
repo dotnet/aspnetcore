@@ -412,25 +412,37 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>a6c1d1ac235aba5bf17dd06228a62509192cda6a</Sha>
     </Dependency>
+<<<<<<< HEAD
     <Dependency Name="Internal.AspNetCore.Analyzers" Version="5.0.0-alpha1.19406.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>dbe3543601c1ab290fde1ae30ea8dd978d33d4d3</Sha>
+=======
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.0-preview9.19405.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>86469ee35cf718e0122f16f52b486303dcfbb1fe</Sha>
+>>>>>>> origin/master
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19369.2">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19404.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
+      <Sha>b1c2f33f0cef32d1df6e7f388017fd6761d3fcad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19369.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.19404.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
+      <Sha>b1c2f33f0cef32d1df6e7f388017fd6761d3fcad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19369.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19404.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>a190d4865fe3c86a168ec49c4fc61c90c96ae051</Sha>
+      <Sha>b1c2f33f0cef32d1df6e7f388017fd6761d3fcad</Sha>
     </Dependency>
+<<<<<<< HEAD
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="5.0.0-alpha1.19406.3" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>dbe3543601c1ab290fde1ae30ea8dd978d33d4d3</Sha>
+=======
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview9.19405.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>86469ee35cf718e0122f16f52b486303dcfbb1fe</Sha>
+>>>>>>> origin/master
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.3.0-beta3-19406-05" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>

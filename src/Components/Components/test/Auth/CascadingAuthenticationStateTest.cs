@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange: Service
             var services = new ServiceCollection();
-            var authStateProvider = new TestAuthStateProvider()
+            var authStateProvider = new TestAuthenticationStateProvider()
             {
                 CurrentAuthStateTask = Task.FromResult(CreateAuthenticationState("Bert"))
             };
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange: Service
             var services = new ServiceCollection();
             var authStateTaskCompletionSource = new TaskCompletionSource<AuthenticationState>();
-            var authStateProvider = new TestAuthStateProvider()
+            var authStateProvider = new TestAuthenticationStateProvider()
             {
                 CurrentAuthStateTask = authStateTaskCompletionSource.Task
             };
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange: Service
             var services = new ServiceCollection();
-            var authStateProvider = new TestAuthStateProvider()
+            var authStateProvider = new TestAuthenticationStateProvider()
             {
                 CurrentAuthStateTask = Task.FromResult(CreateAuthenticationState(null))
             };
@@ -187,21 +187,6 @@ namespace Microsoft.AspNetCore.Components
                     childBuilder.CloseComponent();
                 }));
                 builder.CloseComponent();
-            }
-        }
-
-        class TestAuthStateProvider : AuthenticationStateProvider
-        {
-            public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
-
-            public override Task<AuthenticationState> GetAuthenticationStateAsync()
-            {
-                return CurrentAuthStateTask;
-            }
-
-            internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
-            {
-                NotifyAuthenticationStateChanged(authState);
             }
         }
 

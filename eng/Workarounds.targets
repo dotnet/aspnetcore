@@ -29,12 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.BuildTasks" PrivateAssets="All" Version="$(InternalAspNetCoreBuildTasksPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
-  <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
-    </RestoreSources>
-  </PropertyGroup>
 
   <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
   <ItemGroup>

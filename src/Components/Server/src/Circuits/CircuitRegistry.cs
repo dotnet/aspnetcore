@@ -81,15 +81,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public void PermanentDisconnect(CircuitHost circuitHost)
-        {
-            if (ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _))
-            {
-                Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
-                circuitHost.Client.SetDisconnected();
-            }
-        }
-
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
         {
             Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
@@ -295,6 +286,29 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 Log.ExceptionDisposingTokenSource(_logger, ex);
             }
+        }
+
+        public ValueTask Terminate(string circuitId)
+        {
+            CircuitHost circuitHost;
+            DisconnectedCircuitEntry entry = default;
+            lock (CircuitRegistryLock)
+            {
+                if (ConnectedCircuits.TryGetValue(circuitId, out circuitHost) || DisconnectedCircuits.TryGetValue(circuitId, out entry))
+                {
+                    circuitHost ??= entry.CircuitHost;
+                    DisconnectedCircuits.Remove(circuitHost.CircuitId);
+                    ConnectedCircuits.TryRemove(circuitHost.CircuitId, out _);
+                    Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
+                    circuitHost.Client.SetDisconnected();
+                }
+                else
+                {
+                    return default;
+                }
+            }
+
+            return circuitHost?.DisposeAsync() ?? default;
         }
 
         private readonly struct DisconnectedCircuitEntry
