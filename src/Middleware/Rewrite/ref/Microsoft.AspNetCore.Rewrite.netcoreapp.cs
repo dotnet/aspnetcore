@@ -54,6 +54,12 @@ namespace Microsoft.AspNetCore.Rewrite
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttps(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttps(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, int? sslPort) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttpsPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToNonWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }
