@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -61,6 +62,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public ModelStateDictionary ModelState => PageContext?.ModelState;
 
+        /// <summary>
+        /// Gets or sets the <see cref="IModelMetadataProvider"/>.
+        /// </summary>
+        public IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                _metadataProvider ??= HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
+                return _metadataProvider;
+            }
+            set => _metadataProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         private IObjectModelValidator ObjectValidator
         {
             get
@@ -71,19 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 }
 
                 return _objectValidator;
-            }
-        }
-
-        private IModelMetadataProvider MetadataProvider
-        {
-            get
-            {
-                if (_metadataProvider == null)
-                {
-                    _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
-                }
-
-                return _metadataProvider;
             }
         }
 
@@ -1206,12 +1207,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         public virtual PartialViewResult Partial(string viewName, object model)
         {
-            ViewContext.ViewData.Model = model;
+            var viewData = new ViewDataDictionary(MetadataProvider, ViewContext.ViewData.ModelState)
+            {
+                Model = model,
+            };
 
             return new PartialViewResult
             {
                 ViewName = viewName,
-                ViewData = ViewContext.ViewData
+                ViewData = viewData
             };
         }
 

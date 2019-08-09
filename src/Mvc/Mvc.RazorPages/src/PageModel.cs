@@ -140,6 +140,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="IModelMetadataProvider"/>.
+        /// </summary>
+        public IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                _metadataProvider ??= HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
+                return _metadataProvider;
+            }
+            set => _metadataProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
         /// Gets the <see cref="ViewDataDictionary"/>.
         /// </summary>
         public ViewDataDictionary ViewData => PageContext?.ViewData;
@@ -154,19 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 }
 
                 return _objectValidator;
-            }
-        }
-
-        private IModelMetadataProvider MetadataProvider
-        {
-            get
-            {
-                if (_metadataProvider == null)
-                {
-                    _metadataProvider = HttpContext?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
-                }
-
-                return _metadataProvider;
             }
         }
 
@@ -1631,12 +1631,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         public virtual PartialViewResult Partial(string viewName, object model)
         {
-            ViewData.Model = model;
+            var viewData = new ViewDataDictionary(MetadataProvider, ViewData.ModelState)
+            {
+                Model = model,
+            };
 
             return new PartialViewResult
             {
                 ViewName = viewName,
-                ViewData = ViewData
+                ViewData = viewData
             };
         }
 
