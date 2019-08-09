@@ -84,20 +84,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var host = hostBuilder.Build())
                 {
-                    await host.StartAsync();
+                    await host.StartAsync().DefaultTimeout();
 
                     using (var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
                     {
-                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path));
+                        await socket.ConnectAsync(new UnixDomainSocketEndPoint(path)).DefaultTimeout();
 
                         var data = Encoding.ASCII.GetBytes("Hello World");
-                        await socket.SendAsync(data, SocketFlags.None);
+                        await socket.SendAsync(data, SocketFlags.None).DefaultTimeout();
 
                         var buffer = new byte[data.Length];
                         var read = 0;
                         while (read < data.Length)
                         {
-                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None);
+                            read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
                         }
 
                         Assert.Equal(data, buffer);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Wait for the server to complete the loop because of the FIN
                     await serverConnectionCompletedTcs.Task.DefaultTimeout();
 
-                    await host.StopAsync();
+                    await host.StopAsync().DefaultTimeout();
                 }
             }
             finally

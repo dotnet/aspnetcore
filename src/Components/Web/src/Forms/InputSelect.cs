@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// A dropdown selection component.
     /// </summary>
-    public class InputSelect<T> : InputBase<T>
+    public class InputSelect<TValue> : InputBase<TValue>
     {
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
@@ -30,17 +30,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
         {
-            if (typeof(T) == typeof(string))
+            if (typeof(TValue) == typeof(string))
             {
-                result = (T)(object)value;
+                result = (TValue)(object)value;
                 validationErrorMessage = null;
                 return true;
             }
-            else if (typeof(T).IsEnum)
+            else if (typeof(TValue).IsEnum)
             {
-                var success = BindConverter.TryConvertTo<T>(value, CultureInfo.CurrentCulture, out var parsedValue);
+                var success = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue);
                 if (success)
                 {
                     result = parsedValue;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 }
             }
 
-            throw new InvalidOperationException($"{GetType()} does not support the type '{typeof(T)}'.");
+            throw new InvalidOperationException($"{GetType()} does not support the type '{typeof(TValue)}'.");
         }
     }
 }

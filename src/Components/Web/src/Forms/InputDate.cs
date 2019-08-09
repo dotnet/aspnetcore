@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// An input component for editing date values.
     /// Supported types are <see cref="DateTime"/> and <see cref="DateTimeOffset"/>.
     /// </summary>
-    public class InputDate<T> : InputBase<T>
+    public class InputDate<TValue> : InputBase<TValue>
     {
         private const string DateFormat = "yyyy-MM-dd"; // Compatible with HTML date inputs
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override string FormatValueAsString(T value)
+        protected override string FormatValueAsString(TValue value)
         {
             switch (value)
             {
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
         {
             // Unwrap nullable types. We don't have to deal with receiving empty values for nullable
             // types here, because the underlying InputBase already covers that.
-            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
             bool success;
             if (targetType == typeof(DateTime))
@@ -79,12 +79,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        static bool TryParseDateTime(string value, out T result)
+        static bool TryParseDateTime(string value, out TValue result)
         {
             var success = BindConverter.TryConvertToDateTime(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
-                result = (T)(object)parsedValue;
+                result = (TValue)(object)parsedValue;
                 return true;
             }
             else
@@ -94,12 +94,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        static bool TryParseDateTimeOffset(string value, out T result)
+        static bool TryParseDateTimeOffset(string value, out TValue result)
         {
             var success = BindConverter.TryConvertToDateTimeOffset(value, CultureInfo.InvariantCulture, DateFormat, out var parsedValue);
             if (success)
             {
-                result = (T)(object)parsedValue;
+                result = (TValue)(object)parsedValue;
                 return true;
             }
             else

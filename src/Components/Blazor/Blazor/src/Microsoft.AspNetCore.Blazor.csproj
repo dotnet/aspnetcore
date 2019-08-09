@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -9,6 +9,12 @@
   <ItemGroup>
     <Reference Include="Mono.WebAssembly.Interop" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\..\Shared\src\WebEventData.cs" />
   </ItemGroup>
 
 </Project>

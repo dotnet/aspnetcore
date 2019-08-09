@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void CreateDefaultConfiguration()
         {
             Client = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
-            Client.RenderBatchReceived += (id, rendererId, data) => Batches.Add(new Batch(id, rendererId, data));
+            Client.RenderBatchReceived += (id, data) => Batches.Add(new Batch(id, data));
             Client.OnCircuitError += (error) => Errors.Add(error);
 
             _  = _serverFixture.RootUri; // this is needed for the side-effects of getting the URI.
@@ -267,15 +267,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private class Batch
         {
-            public Batch(int id, int rendererId, byte [] data)
+            public Batch(int id, byte [] data)
             {
                 Id = id;
-                RendererId = rendererId;
                 Data = data;
             }
 
             public int Id { get; }
-            public int RendererId { get; }
             public byte[] Data { get; }
         }
     }

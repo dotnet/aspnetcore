@@ -72,11 +72,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 navigationManager.Initialize(baseUri, uri);
             }
 
-            var rendererRegistry = new RendererRegistry();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 _loggerFactory,
-                rendererRegistry,
                 _options,
                 jsRuntime,
                 client,
@@ -91,7 +89,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _circuitIdFactory.CreateCircuitId(),
                 scope,
                 client,
-                rendererRegistry,
                 renderer,
                 components,
                 jsRuntime,
