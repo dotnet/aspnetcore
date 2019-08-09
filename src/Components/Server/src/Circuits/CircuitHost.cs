@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             catch (Exception ex)
             {
                 // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
-                // however, we still want this to get logged if we do. 
+                // however, we still want this to get logged if we do.
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }

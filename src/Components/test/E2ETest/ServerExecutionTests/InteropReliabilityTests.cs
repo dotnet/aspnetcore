@@ -10,6 +10,8 @@ using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -17,9 +19,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [Flaky("https://github.com/aspnet/AspNetCore/issues/12940", FlakyOn.All)]
     public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(5);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public InteropReliabilityTests(AspNetSiteServerFixture serverFixture)
@@ -256,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12962")]
         public async Task LogsJSInteropCompletionsCallbacksAndContinuesWorkingInAllSituations()
         {
             // Arrange
@@ -507,15 +510,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            await Client.ClickAsync("event-handler-throw-sync");
+            await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
 
             Assert.Contains(
                 logEvents,
                 e => LogLevel.Warning == e.logLevel &&
                     "UnhandledExceptionInCircuit" == e.eventIdName &&
                     "Handler threw an exception" == e.exception.Message);
-
-            await ValidateClientKeepsWorking(Client, batches);
         }
 
         private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>

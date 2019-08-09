@@ -9,8 +9,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
@@ -2187,7 +2190,6 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var contentController = new ContentController();
-            var expected = MediaTypeHeaderValue.Parse("text/plain; charset=utf-8");
 
             // Act
             var contentResult = (ContentResult)contentController.Content_WithNoEncoding();
@@ -2288,6 +2290,163 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.Equal(statusCode, result.StatusCode);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_Works()
+        {
+            // Arrange
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
+                new RouteData(),
+                new ControllerActionDescriptor()));
+
+            context.ModelState.AddModelError("key1", "error1");
+
+            var options = GetApiBehaviorOptions();
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+                ControllerContext = context,
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem();
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(400, problemDetails.Status);
+            Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.1", problemDetails.Type);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
+            Assert.Equal(new[] { "error1" }, problemDetails.Errors["key1"]);
+        }
+
+        [Fact]
+        public void ValidationProblemDetails_UsesSpecifiedTitle()
+        {
+            // Arrange
+            var detail = "My detail";
+            var title = "Custom title";
+            var type = "http://custom-link";
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.ValidationProblem(detail: detail, title: title, type: type);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+            Assert.Equal(title, problemDetails.Title);
+            Assert.Equal(type, problemDetails.Type);
+            Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ProblemDetails_Works()
+        {
+            // Arrange
+            var context = new ControllerContext(new ActionContext(
+                new DefaultHttpContext { TraceIdentifier = "some-trace" },
+                new RouteData(),
+                new ControllerActionDescriptor()));
+
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+                ControllerContext = context,
+            };
+
+            // Act
+            var actionResult = controller.Problem();
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, problemDetails.Status);
+            Assert.Equal("An error occured while processing your request.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+            Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
+        }
+
+        [Fact]
+        public void ProblemDetails_UsesPassedInValues()
+        {
+            // Arrange
+            var title = "The website is down.";
+            var detail = "Try again in a few minutes.";
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.Problem(detail, title: title);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(500, problemDetails.Status);
+            Assert.Equal(title, problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.6.1", problemDetails.Type);
+            Assert.Equal(detail, problemDetails.Detail);
+        }
+
+        [Fact]
+        public void ProblemDetails_UsesPassedInStatusCode()
+        {
+            // Arrange
+            var options = GetApiBehaviorOptions();
+
+            var controller = new TestableController
+            {
+                ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+            };
+
+            // Act
+            var actionResult = controller.Problem(statusCode: 422);
+
+            // Assert
+            var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+            var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+            Assert.Equal(422, problemDetails.Status);
+            Assert.Equal("Unprocessable entity.", problemDetails.Title);
+            Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
+        }
+
+        private static ApiBehaviorOptions GetApiBehaviorOptions()
+        {
+            return new ApiBehaviorOptions
+            {
+                ClientErrorMapping =
+                {
+                    [400] = new ClientErrorData
+                    {
+                        Title = "One or more validation errors occurred.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.5.1"
+                    },
+                    [422] = new ClientErrorData
+                    {
+                        Title = "Unprocessable entity.",
+                        Link = "https://tools.ietf.org/html/rfc4918#section-11.2"
+                    },
+                    [500] = new ClientErrorData
+                    {
+                        Title = "An error occured while processing your request.",
+                        Link = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+                    }
+                }
+            };
         }
 
         public static IEnumerable<object[]> RedirectTestData

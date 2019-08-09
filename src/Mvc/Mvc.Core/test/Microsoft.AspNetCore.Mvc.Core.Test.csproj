@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Mvc</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

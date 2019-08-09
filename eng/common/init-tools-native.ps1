@@ -98,12 +98,18 @@ try {
       }
 
       Write-Verbose "Installing $ToolName version $ToolVersion"
-      Write-Verbose "Executing '$InstallerPath $LocalInstallerArguments'"
+      Write-Verbose "Executing '$InstallerPath $($LocalInstallerArguments.Keys.ForEach({"-$_ '$($LocalInstallerArguments.$_)'"}) -join ' ')'"
       & $InstallerPath @LocalInstallerArguments
       if ($LASTEXITCODE -Ne "0") {
         $errMsg = "$ToolName installation failed"
         if ((Get-Variable 'DoNotAbortNativeToolsInstallationOnFailure' -ErrorAction 'SilentlyContinue') -and $DoNotAbortNativeToolsInstallationOnFailure) {
-            Write-Warning $errMsg
+            $showNativeToolsWarning = $true
+            if ((Get-Variable 'DoNotDisplayNativeToolsInstallationWarnings' -ErrorAction 'SilentlyContinue') -and $DoNotDisplayNativeToolsInstallationWarnings) {
+                $showNativeToolsWarning = $false
+            }
+            if ($showNativeToolsWarning) {
+                Write-Warning $errMsg
+            }
             $toolInstallationFailure = $true
         } else {
             Write-Error $errMsg
