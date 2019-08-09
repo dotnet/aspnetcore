@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Description>Authentication and authorization support for Blazor applications.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsShippingPackage>true</IsShippingPackage>
+    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+  </PropertyGroup>
+
+</Project>

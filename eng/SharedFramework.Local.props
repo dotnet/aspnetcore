@@ -22,6 +22,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
 

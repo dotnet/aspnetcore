@@ -4,6 +4,8 @@
     "projects": [
       "Analyzers\\src\\Microsoft.AspNetCore.Components.Analyzers.csproj",
       "Analyzers\\test\\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj",
+      "Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
+      "Authorization\\test\\Microsoft.AspNetCore.Components.Authorization.Tests.csproj",
       "Blazor\\Blazor\\src\\Microsoft.AspNetCore.Blazor.csproj",
       "Blazor\\Blazor\\test\\Microsoft.AspNetCore.Blazor.Tests.csproj",
       "Blazor\\Build\\src\\Microsoft.AspNetCore.Blazor.Build.csproj",
