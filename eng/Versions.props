@@ -38,11 +38,6 @@
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-  <PropertyGroup Label="Version workaround">
-    <!-- Updating our branding to 5.0 but we'll still target netcoreapp3.0 for now. -->
-    <TFMNetCoreMajorVersion>3</TFMNetCoreMajorVersion>
-    <TFMNetCoreMinorVersion>0</TFMNetCoreMinorVersion>
-  </PropertyGroup>
   <!--
 
     These versions should ONLY be updated by automation.
