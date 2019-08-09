@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,6 +7,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+  </ItemGroup>
 
 </Project>
