@@ -5,4 +5,8 @@
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+  </ItemGroup>
+
 </Project>
