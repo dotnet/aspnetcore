@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task CannotInvokeJSInvokableMethodsWithWrongNumberOfArguments()
         {
             // Arrange
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12962")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task LogsJSInteropCompletionsCallbacksAndContinuesWorkingInAllSituations()
         {
             // Arrange
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task DispatchingEventsWithInvalidEventHandlerId()
         {
             // Arrange

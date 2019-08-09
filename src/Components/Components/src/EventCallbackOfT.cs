@@ -9,23 +9,18 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// A bound event handler delegate.
     /// </summary>
-    public readonly struct EventCallback : IEventCallback
+    public readonly struct EventCallback<TValue> : IEventCallback
     {
         /// <summary>
-        /// Gets a reference to the <see cref="EventCallbackFactory"/>.
+        /// Gets an empty <see cref="EventCallback{TValue}"/>.
         /// </summary>
-        public static readonly EventCallbackFactory Factory = new EventCallbackFactory();
-
-        /// <summary>
-        /// Gets an empty <see cref="EventCallback"/>.
-        /// </summary>
-        public static readonly EventCallback Empty = new EventCallback(null, (Action)(() => { }));
+        public static readonly EventCallback<TValue> Empty = new EventCallback<TValue>(null, (Action)(() => { }));
 
         internal readonly MulticastDelegate Delegate;
         internal readonly IHandleEvent Receiver;
 
         /// <summary>
-        /// Creates the new <see cref="EventCallback"/>.
+        /// Creates the new <see cref="EventCallback{TValue}"/>.
         /// </summary>
         /// <param name="receiver">The event receiver.</param>
         /// <param name="delegate">The delegate to bind.</param>
@@ -51,19 +46,24 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="arg">The argument.</param>
         /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
-        public Task InvokeAsync(object arg)
+        public Task InvokeAsync(TValue arg)
         {
             if (Receiver == null)
             {
-                return EventCallbackWorkItem.InvokeAsync<object>(Delegate, arg);
+                return EventCallbackWorkItem.InvokeAsync<TValue>(Delegate, arg);
             }
 
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
         }
 
+        internal EventCallback AsUntyped()
+        {
+            return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
+        }
+
         object IEventCallback.UnpackForRenderTree()
         {
-            return RequiresExplicitReceiver ? (object)this : Delegate;
+            return RequiresExplicitReceiver ? (object)AsUntyped() : Delegate;
         }
     }
 }

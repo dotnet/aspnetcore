@@ -53,17 +53,17 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets the value of the parameter with the specified name.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="result">Receives the result, if any.</param>
         /// <returns>True if a matching parameter was found; false otherwise.</returns>
-        public bool TryGetValue<T>(string parameterName, out T result)
+        public bool TryGetValue<TValue>(string parameterName, out TValue result)
         {
             foreach (var entry in this)
             {
                 if (string.Equals(entry.Name, parameterName))
                 {
-                    result = (T)entry.Value;
+                    result = (TValue)entry.Value;
                     return true;
                 }
             }
@@ -76,22 +76,22 @@ namespace Microsoft.AspNetCore.Components
         /// Gets the value of the parameter with the specified name, or a default value
         /// if no such parameter exists in the collection.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
-        public T GetValueOrDefault<T>(string parameterName)
-            => GetValueOrDefault<T>(parameterName, default);
+        public TValue GetValueOrDefault<TValue>(string parameterName)
+            => GetValueOrDefault<TValue>(parameterName, default);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name, or a specified default value
         /// if no such parameter exists in the collection.
         /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="defaultValue">The default value to return if no such parameter exists in the collection.</param>
         /// <returns>The parameter value if found; otherwise <paramref name="defaultValue"/>.</returns>
-        public T GetValueOrDefault<T>(string parameterName, T defaultValue)
-            => TryGetValue<T>(parameterName, out T result) ? result : defaultValue;
+        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue)
+            => TryGetValue<TValue>(parameterName, out TValue result) ? result : defaultValue;
 
         /// <summary>
         /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
