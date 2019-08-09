@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Components
         void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
-        protected virtual void OnAfterRender() { }
-        protected virtual System.Threading.Tasks.Task OnAfterRenderAsync() { throw null; }
+        protected virtual void OnAfterRender(bool firstRender) { }
+        protected virtual System.Threading.Tasks.Task OnAfterRenderAsync(bool firstRender) { throw null; }
         protected virtual void OnInitialized() { }
         protected virtual System.Threading.Tasks.Task OnInitializedAsync() { throw null; }
         protected virtual void OnParametersSet() { }

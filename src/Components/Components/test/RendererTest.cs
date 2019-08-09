@@ -4244,7 +4244,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 renderFactory(this)(builder);
             }
 
-            protected override async Task OnAfterRenderAsync()
+            protected override async Task OnAfterRenderAsync(bool firstRender)
             {
                 if (TryGetEntry(EventType.OnAfterRenderAsyncSync, out var entrySync))
                 {
