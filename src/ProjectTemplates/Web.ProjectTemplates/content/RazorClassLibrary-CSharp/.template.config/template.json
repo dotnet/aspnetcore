@@ -4,8 +4,7 @@
   "classifications": [
     "Web",
     "Razor",
-    "Library",
-    "Razor Class Library"
+    "Library"
   ],
   "name": "Razor Class Library",
   "generatorVersions": "[1.0.0.0-*)",
