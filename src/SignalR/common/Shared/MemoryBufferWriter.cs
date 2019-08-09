@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP5_0
         public override void Write(ReadOnlySpan<byte> span)
         {
             if (_currentSegment != null && span.TryCopyTo(_currentSegment.AsSpan(_position)))

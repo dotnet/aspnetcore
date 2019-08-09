@@ -22,7 +22,7 @@ namespace ClientSample
 
         public SocketAwaitable ReceiveAsync(Memory<byte> buffer)
         {
-#if NETCOREAPP3_0
+#if NETCOREAPP5_0
             _eventArgs.SetBuffer(buffer);
 #else
             var segment = buffer.GetArray();

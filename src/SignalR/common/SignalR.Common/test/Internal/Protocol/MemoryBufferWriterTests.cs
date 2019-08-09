@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }
         }
 
-#if NETCOREAPP3_0
+#if NETCOREAPP5_0
         [Fact]
         public void WriteSpanWorksAtNonZeroOffset()
         {
