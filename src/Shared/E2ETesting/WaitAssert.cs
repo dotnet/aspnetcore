@@ -42,7 +42,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             => WaitAssertCore(driver, () => Assert.Single(actualValues()));
 
         public static void Exists(this IWebDriver driver, By finder)
-            => WaitAssertCore(driver, () => Assert.NotEmpty(driver.FindElements(finder)));
+            => Exists(driver, finder, default);
+
+        public static void Exists(this IWebDriver driver, By finder, TimeSpan timeout)
+            => WaitAssertCore(driver, () => Assert.NotEmpty(driver.FindElements(finder)), timeout);
 
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
         {
