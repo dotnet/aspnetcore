@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
         {
             [Parameter] public OnAfterRenderState State { get; set; }
 
-            protected override void OnAfterRender()
+            protected override void OnAfterRender(bool firstRender)
             {
                 State.OnAfterRenderRan = true;
             }
