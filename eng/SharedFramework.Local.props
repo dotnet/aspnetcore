@@ -24,6 +24,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
 
     <!-- These assemblies are only in the shared framework -->

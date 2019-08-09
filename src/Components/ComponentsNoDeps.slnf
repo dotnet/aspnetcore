@@ -21,6 +21,8 @@
       "Blazor\\testassets\\MonoSanityClient\\MonoSanityClient.csproj",
       "Blazor\\testassets\\MonoSanity\\MonoSanity.csproj",
       "Blazor\\testassets\\StandaloneApp\\StandaloneApp.csproj",
+      "Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
+      "Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
       "Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
       "Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",
