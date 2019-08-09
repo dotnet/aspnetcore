@@ -156,6 +156,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     // later.
                     _foundNonHtml = true;
                 }
+                else if (string.Equals("option", node.TagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Also, treat <option>...</option> as non-HTML - we don't want it to be coalesced so that we can support setting "selected" attribute on it.
+                    // We only care about option tags that are nested under a select tag.
+                    foreach (var ancestor in Ancestors)
+                    {
+                        if (ancestor is MarkupElementIntermediateNode element &&
+                            string.Equals("select", element.TagName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _foundNonHtml = true;
+                            break;
+                        }
+                    }
+                }
 
                 base.VisitDefault(node);
 

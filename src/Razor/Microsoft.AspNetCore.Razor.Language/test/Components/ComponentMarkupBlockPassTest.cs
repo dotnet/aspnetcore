@@ -306,6 +306,65 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
+        [Fact]
+        public void Execute_CannotRewriteHtml_SelectOption()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<html>
+  @if (some_bool)
+  {
+  <head cool=""beans"">
+    <select>
+        <option value='1'>One</option>
+        <option selected value='2'>Two</option>
+        <option value='3'>Three</option>
+    </select>
+  </head>
+  }
+</html>");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
+        }
+
+        [Fact]
+        public void Execute_CanRewriteHtml_OptionWithNoSelectAncestor()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<html>
+  @if (some_bool)
+  {
+  <head cool=""beans"">
+    <option value='1'>One</option>
+    <option selected value='2'>Two</option>
+  </head>
+  }
+</html>");
+
+            var expected = NormalizeContent(@"
+<head cool=""beans"">
+    <option value=""1"">One</option>
+    <option selected value=""2"">Two</option>
+  </head>
+");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
+            Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
+        }
+
         // The unclosed tag will have errors, so we won't rewrite it or its parent.
         [Fact]
         public void Execute_CannotRewriteHtml_Errors()
