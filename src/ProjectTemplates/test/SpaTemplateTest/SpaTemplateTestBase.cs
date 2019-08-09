@@ -91,7 +91,6 @@ namespace Templates.Test.SpaTemplateTest
             {
                 using var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
                 Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
-
                 Project.AssertEmptyMigration(template);
 
                 if (shouldVisitFetchData)
