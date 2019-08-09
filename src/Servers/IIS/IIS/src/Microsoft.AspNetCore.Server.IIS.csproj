@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
+    <NativeAssetsTargetFramework>netcoreapp5.0</NativeAssetsTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

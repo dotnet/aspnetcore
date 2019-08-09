@@ -23,6 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="build\netcoreapp3.0\*" Pack="true" PackagePath="build\netcoreapp3.0" />
+    <None Include="build\netcoreapp5.0\*" Pack="true" PackagePath="build\netcoreapp5.0" />
   </ItemGroup>
 </Project>

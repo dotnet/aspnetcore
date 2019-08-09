@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp5.0" />
     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
   </ItemGroup>
 
