@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components
         public CascadingParameterAttribute() { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class CascadingValue<T> : Microsoft.AspNetCore.Components.IComponent
+    public partial class CascadingValue<TValue> : Microsoft.AspNetCore.Components.IComponent
     {
         public CascadingValue() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
@@ -188,17 +188,17 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.EventCallback Create(object receiver, System.Func<object, System.Threading.Tasks.Task> callback) { throw null; }
         public Microsoft.AspNetCore.Components.EventCallback Create(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> CreateInferred<T>(object receiver, System.Action<T> callback, T value) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> CreateInferred<TValue>(object receiver, System.Action<TValue> callback, TValue value) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> CreateInferred<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> CreateInferred<TValue>(object receiver, System.Func<TValue, System.Threading.Tasks.Task> callback, TValue value) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, Microsoft.AspNetCore.Components.EventCallback callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, Microsoft.AspNetCore.Components.EventCallback callback) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Action callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Action<T> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, Microsoft.AspNetCore.Components.EventCallback<TValue> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Action callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Action<TValue> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Func<TValue, System.Threading.Tasks.Task> callback) { throw null; }
     }
     public static partial class EventCallbackFactoryBinderExtensions
     {
@@ -241,13 +241,13 @@ namespace Microsoft.AspNetCore.Components
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback<T>
+    public readonly partial struct EventCallback<TValue>
     {
         private readonly object _dummy;
-        public static readonly Microsoft.AspNetCore.Components.EventCallback<T> Empty;
+        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(T arg) { throw null; }
+        public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
     public partial interface IComponent
     {
@@ -365,11 +365,11 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
         public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
         public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
-        public T GetValueOrDefault<T>(string parameterName) { throw null; }
-        public T GetValueOrDefault<T>(string parameterName, T defaultValue) { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName) { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue) { throw null; }
         public void SetParameterProperties(object target) { }
         public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
-        public bool TryGetValue<T>(string parameterName, out T result) { throw null; }
+        public bool TryGetValue<TValue>(string parameterName, out TValue result) { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator
         {
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Components
         }
     }
     public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
-    public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<T>(T value);
+    public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<TValue>(TValue value);
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderHandle
     {
@@ -466,7 +466,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public FieldIdentifier(object model, string fieldName) { throw null; }
         public string FieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<T>(System.Linq.Expressions.Expression<System.Func<T>> accessor) { throw null; }
+        public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) { throw null; }
         public override bool Equals(object obj) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -556,13 +556,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
         public void AddAttribute(int sequence, string name, object value) { }
         public void AddAttribute(int sequence, string name, string value) { }
-        public void AddAttribute<T>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<T> value) { }
+        public void AddAttribute<TArgument>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) { }
         public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
         public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
         public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
         public void AddContent(int sequence, object textContent) { }
         public void AddContent(int sequence, string textContent) { }
-        public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
+        public void AddContent<TValue>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<TValue> fragment, TValue value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
         public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
