@@ -105,6 +105,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IISSample", "IISIntegration
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "AspNetCoreModuleV2\gtest\gtest.vcxproj", "{CAC1267B-8778-4257-AAC6-CAF481723B01}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{B7C28E0D-8EFC-4AEF-AF72-F483437A1A6B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "..\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{A54FF4C7-4B09-4E96-B002-3DA4BE111520}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "..\..\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj", "{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -375,6 +381,30 @@ Global
 		{CAC1267B-8778-4257-AAC6-CAF481723B01}.Release|x64.Build.0 = Release|x64
 		{CAC1267B-8778-4257-AAC6-CAF481723B01}.Release|x86.ActiveCfg = Release|Win32
 		{CAC1267B-8778-4257-AAC6-CAF481723B01}.Release|x86.Build.0 = Release|Win32
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|x64.Build.0 = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Debug|x86.Build.0 = Debug|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|x64.ActiveCfg = Release|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|x64.Build.0 = Release|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|x86.ActiveCfg = Release|Any CPU
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520}.Release|x86.Build.0 = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|x64.Build.0 = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|x64.ActiveCfg = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|x64.Build.0 = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -412,6 +442,8 @@ Global
 		{1EAC8125-1765-4E2D-8CBE-56DC98A1C8C1} = {06CA2C2B-83B0-4D83-905A-E0C74790009E}
 		{2C720685-FBE2-4450-9A01-CAA327D3485A} = {F10CFC80-ED34-4B58-9A29-0E915A2FFFF3}
 		{CAC1267B-8778-4257-AAC6-CAF481723B01} = {06CA2C2B-83B0-4D83-905A-E0C74790009E}
+		{A54FF4C7-4B09-4E96-B002-3DA4BE111520} = {B7C28E0D-8EFC-4AEF-AF72-F483437A1A6B}
+		{FF064761-7ECD-40EB-A374-7A6CD7CCC2CC} = {B7C28E0D-8EFC-4AEF-AF72-F483437A1A6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DB4F868D-E1AE-4FD7-9333-69FA15B268C5}

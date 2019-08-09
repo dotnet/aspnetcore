@@ -343,6 +343,8 @@ if ($tmpBinaryLog) {
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
 
+$env:DOTNET_ROOT = "$PSScriptRoot\.dotnet"
+
 $local:exit_code = $null
 try {
     # Import custom tools configuration, if present in the repo.
