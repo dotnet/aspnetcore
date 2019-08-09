@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 case RenderTreeFrameType.Element:
                     return RenderElement(context, frames, position);
                 case RenderTreeFrameType.Attribute:
-                    return RenderAttributes(context, frames, position, 1);
+                    throw new InvalidOperationException($"Attributes should only be encountered within {nameof(RenderElement)}");
                 case RenderTreeFrameType.Text:
                     context.Result.Add(_htmlEncoder(frame.TextContent));
                     return ++position;
@@ -158,12 +158,38 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var result = context.Result;
             result.Add("<");
             result.Add(frame.ElementName);
-            var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1);
+            var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
+
+            // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
+            // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
+            // a way of converting Blazor's select binding feature to regular static HTML.
+            if (context.ClosestSelectValueAsString != null
+                && string.Equals(frame.ElementName, "option", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(capturedValueAttribute, context.ClosestSelectValueAsString, StringComparison.Ordinal))
+            {
+                result.Add(" selected");
+            }
+
             var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
             if (remainingElements > 0)
             {
                 result.Add(">");
+
+                var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
+                if (isSelect)
+                {
+                    context.ClosestSelectValueAsString = capturedValueAttribute;
+                }
+
                 var afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+
+                if (isSelect)
+                {
+                    // There's no concept of nested <select> elements, so as soon as we're exiting one of them,
+                    // we can safely say there is no longer any value for this
+                    context.ClosestSelectValueAsString = null;
+                }
+
                 result.Add("</");
                 result.Add(frame.ElementName);
                 result.Add(">");
@@ -200,8 +226,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private int RenderAttributes(
             HtmlRenderingContext context,
-            ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+            ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string capturedValueAttribute)
         {
+            capturedValueAttribute = null;
+
             if (maxElements == 0)
             {
                 return position;
@@ -216,6 +244,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 if (frame.FrameType != RenderTreeFrameType.Attribute)
                 {
                     return candidateIndex;
+                }
+
+                if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
+                {
+                    capturedValueAttribute = frame.AttributeValue as string;
                 }
 
                 switch (frame.AttributeValue)
@@ -253,6 +286,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private class HtmlRenderingContext
         {
             public List<string> Result { get; } = new List<string>();
+
+            public string ClosestSelectValueAsString { get; set; }
         }
     }
 }

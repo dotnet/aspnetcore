@@ -99,7 +99,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Assert.Equal(expectedHtml, result);
         }
 
-
         [Fact]
         public void RenderComponentAsync_CanRenderWithAttributes()
         {
@@ -271,6 +270,91 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             // Assert
             Assert.Equal(expectedHtml, result);
+        }
+        
+        [Fact]
+        public void RenderComponentAsync_MarksSelectedOptionsAsSelected()
+        {
+            // Arrange
+            var expectedHtml = "<p>" +
+                @"<select unrelated-attribute-before=""a"" value=""b"" unrelated-attribute-after=""c"">" +
+                @"<option unrelated-attribute=""a"" value=""a"">Pick value a</option>" +
+                @"<option unrelated-attribute=""a"" value=""b"" selected>Pick value b</option>" +
+                @"<option unrelated-attribute=""a"" value=""c"">Pick value c</option>" +
+                "</select>" +
+                @"<option value=""b"">unrelated option</option>" +
+                "</p>";
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "p");
+                rtb.OpenElement(1, "select");
+                rtb.AddAttribute(2, "unrelated-attribute-before", "a");
+                rtb.AddAttribute(3, "value", "b");
+                rtb.AddAttribute(4, "unrelated-attribute-after", "c");
+
+                foreach (var optionValue in new[] { "a", "b", "c"})
+                {
+                    rtb.OpenElement(5, "option");
+                    rtb.AddAttribute(6, "unrelated-attribute", "a");
+                    rtb.AddAttribute(7, "value", optionValue);
+                    rtb.AddContent(8, $"Pick value {optionValue}");
+                    rtb.CloseElement(); // option
+                }
+
+                rtb.CloseElement(); // select
+
+                rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
+                rtb.AddAttribute(10, "value", "b");
+                rtb.AddContent(11, "unrelated option");
+                rtb.CloseElement(); // option
+
+                rtb.CloseElement(); // p
+            })).BuildServiceProvider();
+
+            var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+            // Assert
+            Assert.Equal(expectedHtml, string.Concat(result));
+        }
+
+        [Fact]
+        public void RenderComponentAsync_MarksSelectedOptionsAsSelected_WithOptGroups()
+        {
+            // Arrange
+            var expectedHtml =
+                @"<select value=""beta"">" +
+                @"<optgroup><option value=""alpha"">alpha</option></optgroup>" +
+                @"<optgroup><option value=""beta"" selected>beta</option></optgroup>" +
+                @"<optgroup><option value=""gamma"">gamma</option></optgroup>" +
+                "</select>";
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "select");
+                rtb.AddAttribute(1, "value", "beta");
+
+                foreach (var optionValue in new[] { "alpha", "beta", "gamma" })
+                {
+                    rtb.OpenElement(2, "optgroup");
+                    rtb.OpenElement(3, "option");
+                    rtb.AddAttribute(4, "value", optionValue);
+                    rtb.AddContent(5, optionValue);
+                    rtb.CloseElement(); // option
+                    rtb.CloseElement(); // optgroup
+                }
+
+                rtb.CloseElement(); // select
+            })).BuildServiceProvider();
+
+            var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+            // Assert
+            Assert.Equal(expectedHtml, string.Concat(result));
         }
 
         [Fact]
