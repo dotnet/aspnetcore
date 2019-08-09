@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -49,9 +50,13 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
             foreach (var property in Globals.Properties())
             {
-                stringBuilder.AppendFormat("window.{0} = {1};",
-                    property.Name,
-                    property.Value.ToString(Formatting.None));
+                var propertyNameJavaScriptString = JavaScriptEncoder.Default.Encode(property.Name);
+                var valueJson = property.Value.ToString(Formatting.None);
+                var valueJsonJavaScriptString = JavaScriptEncoder.Default.Encode(valueJson);
+
+                stringBuilder.AppendFormat("window[\"{0}\"] = JSON.parse(\"{1}\");",
+                    propertyNameJavaScriptString,
+                    valueJsonJavaScriptString);
             }
 
             return stringBuilder.ToString();
