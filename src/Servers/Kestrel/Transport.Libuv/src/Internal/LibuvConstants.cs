@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal static class LibuvConstants
     {
-        public const int ListenBacklog = 128;
+        public const int ListenBacklog = int.MaxValue;
 
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
