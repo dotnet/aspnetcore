@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer.netcoreapp5.0.cs" />
     <Reference Include="IdentityServer4.AspNetIdentity"  />
     <Reference Include="IdentityServer4.EntityFramework"  />
     <Reference Include="IdentityServer4.EntityFramework.Storage"  />

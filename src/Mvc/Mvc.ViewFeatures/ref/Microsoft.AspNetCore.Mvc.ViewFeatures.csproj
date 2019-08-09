@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Mvc.ViewFeatures.netcoreapp3.0.cs" />
+    <Compile Include="Microsoft.AspNetCore.Mvc.ViewFeatures.netcoreapp5.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core"  />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations"  />
     <Reference Include="Microsoft.AspNetCore.Antiforgery"  />
