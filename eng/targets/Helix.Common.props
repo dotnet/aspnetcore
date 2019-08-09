@@ -11,7 +11,7 @@
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
   </ItemGroup>
-    
+
     <!-- x64 queues -->
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'x64'">
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
@@ -27,11 +27,11 @@
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
   </ItemGroup>
-    
+
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true' AND '$(TargetArchitecture)' == 'arm64'">
     <!-- arm64 queues -->
-    <HelixAvailableTargetQueue Include="(Debian.9.Arm64.Open)Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-0a0ebdd-20190312215438" Platform="Linux" />
-    
+    <HelixAvailableTargetQueue Include="(Debian.9.Arm64.Open)Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-a12566d-20190807161036" Platform="Linux" />
+
     <!-- Need to resolve permission issues on this docker queue
     <HelixAvailableTargetQueue Include="(Alpine.38.Arm64)Ubuntu.1604.Arm64.Docker@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.8-helix-arm64v8-46e69dd-20190327215724" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Ubuntu-1804.Arm64.Open)Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-helix-arm64v8-6f28fa9-20190606004102" Platform="Linux" />
