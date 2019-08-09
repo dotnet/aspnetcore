@@ -21,12 +21,9 @@ Document -
                 DirectiveToken - (507:11,8 [70] ) - global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
                 DirectiveToken - (578:11,79 [23] ) - ModelExpressionProvider
                 DirectiveToken - (617:12,14 [96] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor
-                DirectiveToken - (93:2,6 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (102:3,7 [0] IncompleteDirectives.cshtml) - 
-                DirectiveToken - (113:5,7 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (123:6,8 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (133:7,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
-                DirectiveToken - (150:7,25 [0] IncompleteDirectives.cshtml) - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
             CSharpCode - 
@@ -37,7 +34,6 @@ Document -
                 HtmlContent - (85:1,0 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (85:1,0 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (87:2,0 [6] IncompleteDirectives.cshtml) - model
-                    DirectiveToken - (93:2,6 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (93:2,6 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (93:2,6 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (95:3,0 [7] IncompleteDirectives.cshtml) - model
@@ -45,7 +41,6 @@ Document -
                 HtmlContent - (102:3,7 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (102:3,7 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 MalformedDirective - (106:5,0 [7] IncompleteDirectives.cshtml) - inject
-                    DirectiveToken - (113:5,7 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (113:5,7 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (113:5,7 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (115:6,0 [8] IncompleteDirectives.cshtml) - inject
@@ -54,7 +49,6 @@ Document -
                     IntermediateToken - (123:6,8 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (125:7,0 [25] IncompleteDirectives.cshtml) - inject
                     DirectiveToken - (133:7,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
-                    DirectiveToken - (150:7,25 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (150:7,25 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (150:7,25 [2] IncompleteDirectives.cshtml) - Html - \n
             Inject - 

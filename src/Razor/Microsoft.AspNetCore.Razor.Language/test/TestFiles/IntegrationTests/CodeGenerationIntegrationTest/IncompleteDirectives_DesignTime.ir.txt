@@ -11,9 +11,7 @@ Document -
                 DirectiveToken - (212:10,16 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (231:11,17 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
-                DirectiveToken - (264:14,9 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (276:15,10 [0] IncompleteDirectives.cshtml) - 
-                DirectiveToken - (315:20,8 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (326:21,9 [0] IncompleteDirectives.cshtml) - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -61,7 +59,6 @@ Document -
                 HtmlContent - (251:12,18 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (251:12,18 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 MalformedDirective - (255:14,0 [9] IncompleteDirectives.cshtml) - inherits
-                    DirectiveToken - (264:14,9 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (264:14,9 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (266:15,0 [10] IncompleteDirectives.cshtml) - inherits
@@ -71,7 +68,6 @@ Document -
                 MalformedDirective - (280:17,0 [12] IncompleteDirectives.cshtml) - functions
                 MalformedDirective - (292:18,0 [15] IncompleteDirectives.cshtml) - functions
                 MalformedDirective - (307:20,0 [8] IncompleteDirectives.cshtml) - section
-                    DirectiveToken - (315:20,8 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
                 MalformedDirective - (317:21,0 [9] IncompleteDirectives.cshtml) - section

@@ -1314,32 +1314,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
 
                         var tokenDescriptor = descriptor.Tokens[i];
-                        AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-                        if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
-                            tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
-                            tokenDescriptor.Kind == DirectiveTokenKind.Type ||
-                            tokenDescriptor.Kind == DirectiveTokenKind.Attribute)
+                        if (At(SyntaxKind.Whitespace))
                         {
-                            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
-                            directiveBuilder.Add(OutputTokensAsStatementLiteral());
+                            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-                            if (EndOfFile || At(SyntaxKind.NewLine))
+                            if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.Type ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.Attribute)
                             {
-                                // Add a marker token to provide CSharp intellisense when we start typing the directive token.
-                                AcceptMarkerTokenIfNecessary();
-                                SpanContext.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
-                                SpanContext.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
+                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                                 directiveBuilder.Add(OutputTokensAsStatementLiteral());
+
+                                if (EndOfFile || At(SyntaxKind.NewLine))
+                                {
+                                    // Add a marker token to provide CSharp intellisense when we start typing the directive token.
+                                    // We want CSharp intellisense only if there is whitespace after the directive keyword.
+                                    AcceptMarkerTokenIfNecessary();
+                                    SpanContext.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
+                                    SpanContext.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
+                                    SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
+                                    directiveBuilder.Add(OutputTokensAsStatementLiteral());
+                                }
                             }
-                        }
-                        else
-                        {
-                            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
-                            directiveBuilder.Add(OutputAsMarkupEphemeralLiteral());
+                            else
+                            {
+                                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
+                                directiveBuilder.Add(OutputAsMarkupEphemeralLiteral());
+                            }
                         }
 
                         if (tokenDescriptor.Optional && (EndOfFile || At(SyntaxKind.NewLine)))

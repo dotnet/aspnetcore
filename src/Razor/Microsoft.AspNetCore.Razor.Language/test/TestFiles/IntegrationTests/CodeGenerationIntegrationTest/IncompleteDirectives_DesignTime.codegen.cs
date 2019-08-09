@@ -99,27 +99,7 @@ global::System.Object __typeHelper = ";
         ))();
         ((System.Action)(() => {
 #nullable restore
-#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
- 
-
-#line default
-#line hidden
-#nullable disable
-        }
-        ))();
-        ((System.Action)(() => {
-#nullable restore
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
- 
-
-#line default
-#line hidden
-#nullable disable
-        }
-        ))();
-        ((System.Action)(() => {
-#nullable restore
-#line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
