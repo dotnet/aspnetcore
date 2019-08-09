@@ -23,7 +23,7 @@
       <![CDATA[
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -35,8 +35,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'@(HostingStartupRuntimeStoreTargets->Count())' == '0'">
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x64" />
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x86" />
+      <HostingStartupRuntimeStoreTargets Include="netcoreapp5.0" Runtime="win-x64" />
+      <HostingStartupRuntimeStoreTargets Include="netcoreapp5.0" Runtime="win-x86" />
     </ItemGroup>
 
     <ItemGroup>

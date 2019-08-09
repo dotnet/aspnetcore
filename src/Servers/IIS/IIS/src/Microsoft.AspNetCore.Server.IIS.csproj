@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>

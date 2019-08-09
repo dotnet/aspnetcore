@@ -3,7 +3,7 @@
   <Import Project="..\..\build\assets.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <PackageId>$(MSBuildProjectName).$(TargetRuntimeIdentifier)</PackageId>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <IsPackable>$(PackNativeAssets)</IsPackable>

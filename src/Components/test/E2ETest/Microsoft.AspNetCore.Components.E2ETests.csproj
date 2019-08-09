@@ -4,7 +4,7 @@
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <TestGroupName>Components.E2ETests</TestGroupName>
 
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
