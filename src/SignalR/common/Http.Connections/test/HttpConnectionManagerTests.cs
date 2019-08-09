@@ -345,16 +345,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-                connection.Application.Output.OnReaderCompleted((error, state) =>
-                {
-                    tcs.TrySetResult(null);
-                },
-                null);
-
                 appLifetime.StopApplication();
 
-                // Connection should be disposed so this should complete immediately
-                await tcs.Task.OrTimeout();
+                var result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
             }
         }
 
@@ -371,16 +365,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-                connection.Application.Output.OnReaderCompleted((error, state) =>
-                {
-                    tcs.TrySetResult(null);
-                },
-                null);
-
                 appLifetime.StopApplication();
 
-                // Connection should be disposed so this should complete immediately
-                await tcs.Task.OrTimeout();
+                var result = await connection.Application.Output.FlushAsync();
+                Assert.True(result.IsCompleted);
             }
         }
 
