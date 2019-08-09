@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
@@ -7,7 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +16,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
-    <Reference Include="System.ComponentModel.Annotations" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">
