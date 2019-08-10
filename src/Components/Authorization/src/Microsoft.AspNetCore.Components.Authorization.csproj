@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Description>Authentication and authorization support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
