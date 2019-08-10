@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Components
     public delegate void RenderFragment(RenderTreeBuilder builder);
 
     /// <summary>
-    /// Represents a segment of UI content for an object of type <typeparamref name="T"/>, implemented as
+    /// Represents a segment of UI content for an object of type <typeparamref name="TValue"/>, implemented as
     /// a function that returns a <see cref="RenderFragment"/>.
     /// </summary>
-    /// <typeparam name="T">The type of object.</typeparam>
+    /// <typeparam name="TValue">The type of object.</typeparam>
     /// <param name="value">The value used to build the content.</param>
-    public delegate RenderFragment RenderFragment<T>(T value);
+    public delegate RenderFragment RenderFragment<TValue>(TValue value);
 }

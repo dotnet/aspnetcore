@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="fragment">Content to append.</param>
         /// <param name="value">The value used by <paramref name="fragment"/>.</param>
-        public void AddContent<T>(int sequence, RenderFragment<T> fragment, T value)
+        public void AddContent<TValue>(int sequence, RenderFragment<TValue> fragment, TValue value)
         {
             if (fragment != null)
             {
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// This method is provided for infrastructure purposes, and is used to support generated code
         /// that uses <see cref="EventCallbackFactory"/>.
         /// </remarks>
-        public void AddAttribute<T>(int sequence, string name, EventCallback<T> value)
+        public void AddAttribute<TArgument>(int sequence, string name, EventCallback<TArgument> value)
         {
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)

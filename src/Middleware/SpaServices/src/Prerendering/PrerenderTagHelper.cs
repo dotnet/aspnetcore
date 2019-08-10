@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +17,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// A tag helper for prerendering JavaScript applications on the server.
     /// </summary>
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public class PrerenderTagHelper : TagHelper
     {
         private const string PrerenderModuleAttributeName = "asp-prerender-module";

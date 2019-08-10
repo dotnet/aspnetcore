@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// An input component for editing numeric values.
     /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
-    public class InputNumber<T> : InputBase<T>
+    public class InputNumber<TValue> : InputBase<TValue>
     {
         private static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Unwrap Nullable<T>, because InputBase already deals with the Nullable aspect
             // of it for us. We will only get asked to parse the T for nonempty inputs.
-            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
             if (targetType == typeof(int) ||
                 targetType == typeof(float) ||
                 targetType == typeof(double) ||
@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
         {
-            if (BindConverter.TryConvertTo<T>(value, CultureInfo.InvariantCulture, out result))
+            if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.InvariantCulture, out result))
             {
                 validationErrorMessage = null;
                 return true;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected override string FormatValueAsString(T value)
+        protected override string FormatValueAsString(TValue value)
         {
             // Avoiding a cast to IFormattable to avoid boxing.
             switch (value)
