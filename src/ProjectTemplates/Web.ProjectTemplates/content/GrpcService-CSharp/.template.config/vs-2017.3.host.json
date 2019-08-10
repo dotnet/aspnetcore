@@ -14,6 +14,6 @@
   "icon": "vs-2017.3/gRPC.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784883",
   "uiFilters": [ "oneaspnet" ],
-  "supportsDocker": false,
+  "supportsDocker": true,
   "excludeLaunchSettings": false
 }
