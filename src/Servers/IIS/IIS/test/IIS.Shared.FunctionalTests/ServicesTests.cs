@@ -49,7 +49,6 @@ namespace IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7 | WindowsVersions.Win8, "Test has invalid configuration on CI.")]
         [RequiresIIS(IISCapability.ApplicationInitialization)]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
@@ -71,7 +70,7 @@ namespace IIS.FunctionalTests
 
                 var result = await DeployAsync(baseDeploymentParameters);
 
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 3000);
                 StopServer();
                 EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
             }
