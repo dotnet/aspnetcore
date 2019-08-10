@@ -9,12 +9,17 @@
         <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="System.ComponentModel.Annotations" version="$systemComponentModelAnnotationsPackageVersion$" exclude="Build,Analyzers" />
       </group>
+      <group targetFramework=".NETCoreApp3.0">
+        <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$componentAnalyzerPackageVersion$" />
+        <dependency id="Microsoft.AspNetCore.Authorization" version="$authorizationPackageVersion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.JSInterop" version="$jsInteropPackageVersion$" exclude="Build,Analyzers" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="$outputPath$$assemblyName$.dll" target="lib\netstandard2.0\$assemblyname$.dll" />
-    <file src="$outputPath$$assemblyName$.xml" target="lib\netstandard2.0\$assemblyname$.xml" />
-    <file src="$outputPath$$assemblyName$.pdb" target="lib\netstandard2.0\$assemblyname$.pdb" />
+    <file src="$OutputBinary$" target="lib\" />
+    <file src="$OutputDocumentation$" target="lib\" />
+    <file src="$OutputSymbol$" target="lib\" />
     <file src="..\..\THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
 </package>

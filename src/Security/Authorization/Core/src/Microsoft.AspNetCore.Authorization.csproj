@@ -5,7 +5,8 @@
 Commonly used types:
 Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute
 Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsShippingPackage>true</IsShippingPackage>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
