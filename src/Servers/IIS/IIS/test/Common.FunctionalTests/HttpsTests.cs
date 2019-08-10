@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
             var client = CreateNonValidatingClient(deploymentResult);
 
-            Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName.ToUpperInvariant(), await client.GetStringAsync($"/{appName}/ServerAddresses"));
+            Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName, await client.GetStringAsync($"/{appName}/ServerAddresses"), ignoreCase: true);
         }
 
         [ConditionalFact]
