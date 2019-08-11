@@ -73,7 +73,12 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
             catch (WebDriverTimeoutException)
             {
-                if (lastException != null)
+                var errors = driver.GetBrowserLogs(LogLevel.Severe);
+                if (errors.Count > 0)
+                {
+                    throw new BrowserAssertFailedException(errors, lastException);
+                }
+                else if (lastException != null)
                 {
                     ExceptionDispatchInfo.Capture(lastException).Throw();
                 }
