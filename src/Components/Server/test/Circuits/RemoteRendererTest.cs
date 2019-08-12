@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var initialClient = new Mock<IClientProxy>();
             initialClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
                 .Returns(firstBatchTCS.Task);
             var circuitClient = new CircuitClientProxy(initialClient.Object, "connection0");
             var renderer = GetRemoteRenderer(serviceProvider, circuitClient);
@@ -155,8 +155,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var client = new Mock<IClientProxy>();
             client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
-                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 3 ? secondBatchTCS.Task : thirdBatchTCS.Task);
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
+                .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[0] == 3 ? secondBatchTCS.Task : thirdBatchTCS.Task);
 
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
@@ -465,7 +465,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             return new RemoteRenderer(
                 serviceProvider,
                 NullLoggerFactory.Instance,
-                new RendererRegistry(),
                 new CircuitOptions(),
                 jsRuntime.Object,
                 circuitClientProxy,

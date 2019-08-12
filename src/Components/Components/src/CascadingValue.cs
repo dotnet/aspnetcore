@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// A component that provides a cascading value to all descendant components.
     /// </summary>
-    public class CascadingValue<T> : ICascadingValueComponent, IComponent
+    public class CascadingValue<TValue> : ICascadingValueComponent, IComponent
     {
         private RenderHandle _renderHandle;
         private HashSet<ComponentState> _subscribers; // Lazily instantiated
@@ -26,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// The value to be provided.
         /// </summary>
-        [Parameter] public T Value { get; set; }
+        [Parameter] public TValue Value { get; set; }
 
         /// <summary>
         /// Optionally gives a name to the provided value. Descendant components
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 if (parameter.Name.Equals(nameof(Value), StringComparison.OrdinalIgnoreCase))
                 {
-                    Value = (T)parameter.Value;
+                    Value = (TValue)parameter.Value;
                     hasSuppliedValue = true;
                 }
                 else if (parameter.Name.Equals(nameof(ChildContent), StringComparison.OrdinalIgnoreCase))
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Components
                     Name = (string)parameter.Value;
                     if (string.IsNullOrEmpty(Name))
                     {
-                        throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<T>)}' does not allow null or empty values.");
+                        throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<TValue>)}' does not allow null or empty values.");
                     }
                 }
                 else if (parameter.Name.Equals(nameof(IsFixed), StringComparison.OrdinalIgnoreCase))
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Components
                 }
                 else
                 {
-                    throw new ArgumentException($"The component '{nameof(CascadingValue<T>)}' does not accept a parameter with the name '{parameter.Name}'.");
+                    throw new ArgumentException($"The component '{nameof(CascadingValue<TValue>)}' does not accept a parameter with the name '{parameter.Name}'.");
                 }
             }
 
@@ -136,7 +135,7 @@ namespace Microsoft.AspNetCore.Components
 
         bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)
         {
-            if (!requestedType.IsAssignableFrom(typeof(T)))
+            if (!requestedType.IsAssignableFrom(typeof(TValue)))
             {
                 return false;
             }

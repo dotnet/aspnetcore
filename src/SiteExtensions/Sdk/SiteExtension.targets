@@ -15,6 +15,7 @@
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
       <_RuntimeStoreOutput>$(_DepsOutputDirectory)\rs\</_RuntimeStoreOutput>
       <_RsRestoreSources>
+        $(RestoreAdditionalProjectSources);
         $(ArtifactsShippingPackagesDir);
         $(ArtifactsNonShippingPackagesDir)
       </_RsRestoreSources>

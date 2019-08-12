@@ -210,7 +210,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
             hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
-            context->m_hostFxr.Load();
+            context->m_hostFxr.Load(hostFxrResolutionResult->GetHostFxrLocation());
         }
         else
         {

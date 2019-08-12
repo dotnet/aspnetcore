@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -7,6 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// JavaScript-based Single Page Applications. This is an alternative
     /// to using the 'asp-prerender-module' tag helper.
     /// </summary>
+    [Obsolete("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public interface ISpaPrerenderer
     {
         /// <summary>

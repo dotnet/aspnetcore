@@ -91,6 +91,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return 43;
         }
 
+        public ValueTask ValueTaskMethod()
+        {
+            return new ValueTask(Task.CompletedTask);
+        }
+
+        public ValueTask<int> ValueTaskValueMethod()
+        {
+            return new ValueTask<int>(43);
+        }
+
         [HubMethodName("RenamedMethod")]
         public int ATestMethodThatIsRenamedByTheAttribute()
         {
@@ -1049,5 +1059,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public bool TokenStateInConnected { get; set; }
 
         public bool TokenStateInDisconnected { get; set; }
+    }
+
+    public class CallerServiceHub : Hub
+    {
+        private readonly CallerService _service;
+
+        public CallerServiceHub(CallerService service)
+        {
+            _service = service;
+        }
+
+        public override Task OnConnectedAsync()
+        {
+            _service.SetCaller(Clients.Caller);
+            var tcs = (TaskCompletionSource<bool>)Context.Items["ConnectedTask"];
+            tcs?.TrySetResult(true);
+            return base.OnConnectedAsync();
+        }
+    }
+
+    public class CallerService
+    {
+        public IClientProxy Caller { get; private set; }
+
+        public void SetCaller(IClientProxy caller)
+        {
+            Caller = caller;
+        }
     }
 }

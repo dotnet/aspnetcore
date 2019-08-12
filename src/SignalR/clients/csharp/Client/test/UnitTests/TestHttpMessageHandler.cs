@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var firstPoll = true;
                 OnRequest(async (request, next, cancellationToken) =>
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (ResponseUtils.IsLongPollRequest(request) && firstPoll)
                     {
                         firstPoll = false;
@@ -156,6 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             OnRequest((request, next, cancellationToken) =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (request.Method.Equals(method) && string.Equals(request.RequestUri.PathAndQuery, pathAndQuery))
                 {
                     return handler(request, cancellationToken);

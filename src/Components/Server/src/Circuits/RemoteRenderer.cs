@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
         private readonly CircuitOptions _options;
-        private readonly RendererRegistry _rendererRegistry;
         private readonly ILogger _logger;
         internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
@@ -41,7 +40,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         public RemoteRenderer(
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
-            RendererRegistry rendererRegistry,
             CircuitOptions options,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
@@ -49,18 +47,13 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             ILogger logger)
             : base(serviceProvider, loggerFactory, encoder.Encode)
         {
-            _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
             _options = options;
-
-            Id = _rendererRegistry.Add(this);
             _logger = logger;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
-
-        public int Id { get; }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -75,7 +68,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var attachComponentTask = _jsRuntime.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",
-                Id,
                 domElementSelector,
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
@@ -133,7 +125,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         protected override void Dispose(bool disposing)
         {
             _disposing = true;
-            _rendererRegistry.TryRemove(Id);
             while (_unacknowledgedRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
@@ -220,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
                 var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
-                await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, segment);
+                await _client.SendAsync("JS.RenderBatch", pending.BatchId, segment);
             }
             catch (Exception e)
             {

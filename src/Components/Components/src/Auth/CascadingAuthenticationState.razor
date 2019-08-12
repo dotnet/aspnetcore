@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<CascadingValue T="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />
+<CascadingValue TValue="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />
 
 @code {
     private Task<AuthenticationState> _currentAuthenticationStateTask;
