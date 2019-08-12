@@ -38,10 +38,6 @@
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-  <PropertyGroup>
-    <TFMNetCoreMajorVersion>5</TFMNetCoreMajorVersion>
-    <TFMNetCoreMinorVersion>0</TFMNetCoreMinorVersion>
-  </PropertyGroup>
   <!--
 
     These versions should ONLY be updated by automation.
