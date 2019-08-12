@@ -395,6 +395,27 @@ namespace Microsoft.AspNetCore.Components.Forms
         void System.IDisposable.Dispose() { }
     }
 }
+namespace Microsoft.AspNetCore.Components.Rendering
+{
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ComponentRenderedText
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public partial class HtmlRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
+    {
+        public HtmlRenderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Func<string, string> htmlEncoder) : base (default(System.IServiceProvider), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
+        public override Microsoft.AspNetCore.Components.Dispatcher Dispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void HandleException(System.Exception exception) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Components.Routing
 {
     public partial class NavLink : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
