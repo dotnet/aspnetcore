@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 {
                     // This exception is due to a bad client input, so we mark it as such to prevent loging it as a warning and
                     // flooding the logs with warnings.
-                    throw new InvalidBatchIdAcknowledgementException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'.");
+                    throw new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'.");
                 }
 
                 // Normally we will not have pending renders, but it might happen that we reached the limit of
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
             else
             {
-                pendingRenderInfo.TrySetException(new RenderCompletionException(errorMessageOrNull));
+                pendingRenderInfo.TrySetException(new InvalidOperationException(errorMessageOrNull));
             }
         }
 

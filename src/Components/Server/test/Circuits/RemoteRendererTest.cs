@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            var exception = await Assert.ThrowsAsync<InvalidBatchIdAcknowledgementException>(() => renderer.OnRenderCompleted(4, null));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.OnRenderCompleted(4, null));
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 

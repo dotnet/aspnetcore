@@ -130,23 +130,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-        public async Task OnRenderCompleted(long renderId, string errorMessageOrNull)
-        {
-            AssertInitialized();
-            AssertNotDisposed();
-
-            try
-            {
-                await Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
-            }
-            catch (Exception e)
-            {
-                Log.OnRenderCompletedFailed(_logger, renderId, CircuitId, e);
-                await TryNotifyClientError(Client, GetClientErrorMessage(e, $"Failed to complete render batch '{renderId}'."));
-                UnhandledException(this, new UnhandledExceptionEventArgs(e, isTerminating: false));
-            }
-        }
-
         // We handle errors in DisposeAsync because there's no real value in letting it propagate.
         // We run user code here (CircuitHandlers) and it's reasonable to expect some might throw, however,
         // there isn't anything better to do than log when one of these exceptions happens - because the
@@ -345,6 +328,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
+        // Called by the client when it completes rendering a batch.
+        // OnRenderCompleted is used in a fire-and-forget context, so it's responsible for its own
+        // error handling.
+        public async Task OnRenderCompleted(long renderId, string errorMessageOrNull)
+        {
+            AssertInitialized();
+            AssertNotDisposed();
+
+            try
+            {
+                _ = Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+            }
+            catch (Exception e)
+            {
+                // Captures sync exceptions when invoking OnRenderCompleted.
+                // An exception might be throw synchronously when we receive an ack for a batch we never produced.
+                Log.OnRenderCompletedFailed(_logger, renderId, CircuitId, e);
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(e, $"Failed to complete render batch '{renderId}'."));
+                UnhandledException(this, new UnhandledExceptionEventArgs(e, isTerminating: false));
+            }
+        }
+
         // BeginInvokeDotNetFromJS is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
         public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -366,7 +371,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // We don't expect any of this code to actually throw, because DotNetDispatcher.BeginInvoke doesn't throw
                 // however, we still want this to get logged if we do.
                 Log.BeginInvokeDotNetFailed(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId, ex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(ex, "Interop call failed."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Interop call failed."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -401,7 +406,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // An error completing JS interop means that the user sent invalid data, a well-behaved
                 // client won't do this.
                 Log.EndInvokeDispatchException(_logger, ex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(ex, "Invalid interop arguments."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Invalid interop arguments."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -422,7 +427,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 // Invalid event data is fatal. We expect a well-behaved client to send valid JSON.
                 Log.DispatchEventFailedToParseEventData(_logger, ex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(ex, "Bad input data."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Bad input data."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
                 return;
             }
@@ -443,7 +448,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // A failure in dispatching an event means that it was an attempt to use an invalid event id.
                 // A well-behaved client won't do this.
                 Log.DispatchEventFailedToDispatchEvent(_logger, webEventData.EventHandlerId.ToString(), ex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, "Failed to dispatch event."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -481,7 +486,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // LocationChangeException means that it failed in user-code. Treat this like an unhandled
                 // exception in user-code.
                 Log.LocationChangeFailedInCircuit(_logger, uri, CircuitId, nex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(nex, "Location change failed."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(nex, "Location change failed."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(nex, isTerminating: false));
             }
             catch (Exception ex)
@@ -489,7 +494,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 // Any other exception means that it failed validation, or inside the NavigationManager. Treat
                 // this like bad data.
                 Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
-                await TryNotifyClientError(Client, GetClientErrorMessage(ex, $"Location change to '{uri}' failed."));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location change to '{uri}' failed."));
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
             }
         }
@@ -554,13 +559,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.CircuitUnhandledException(_logger, CircuitId, exception);
 
-            if (!Client.Connected)
-            {
-                Log.UnhandledExceptionClientDisconnected(_logger, CircuitId, exception);
-                return;
-            }
-
-            await TryNotifyClientError(Client, GetClientErrorMessage(exception));
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(exception), exception);
         }
 
         private string GetClientErrorMessage(Exception exception, string additionalInformation = null)
@@ -577,10 +576,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        private async Task TryNotifyClientError(IClientProxy client, string error)
+        // exception is only populated when either the renderer or the synchronization context signal exceptions.
+        // In other cases it is null and should never be sent to the client.
+        // error contains the information to send to the client.
+        private async Task TryNotifyClientErrorAsync(IClientProxy client, string error, Exception exception = null)
         {
             if (!Client.Connected)
             {
+                Log.UnhandledExceptionClientDisconnected(
+                    _logger,
+                    CircuitId,
+                    exception);
                 return;
             }
 
