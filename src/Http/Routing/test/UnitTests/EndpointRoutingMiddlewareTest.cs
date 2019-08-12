@@ -21,30 +21,7 @@ namespace Microsoft.AspNetCore.Routing
     public class EndpointRoutingMiddlewareTest
     {
         [Fact]
-        public async Task Invoke_OnException_ResetsEndpoint()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var middleware = CreateMiddleware(next: context => throw new Exception());
-
-            // Act
-            try
-            {
-                await middleware.Invoke(httpContext);
-            }
-            catch
-            {
-                // Do nothing, we expect the test to throw.
-            }
-
-            // Assert
-            var endpoint = httpContext.GetEndpoint();
-            Assert.Null(endpoint);
-        }
-
-        [Fact]
-        public async Task Invoke_OnCall_SetsEndpointFeatureAndResetsEndpoint()
+        public async Task Invoke_OnCall_SetsEndpointFeature()
         {
             // Arrange
             var httpContext = CreateHttpContext();
@@ -57,16 +34,14 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
             Assert.NotNull(endpointFeature);
-            Assert.Null(endpointFeature.Endpoint);
         }
 
         [Fact]
-        public async Task Invoke_SkipsRoutingAndMaintainsEndpoint_IfEndpointSet()
+        public async Task Invoke_SkipsRouting_IfEndpointSet()
         {
             // Arrange
             var httpContext = CreateHttpContext();
-            var expectedEndpoint = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp");
-            httpContext.SetEndpoint(expectedEndpoint);
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp"));
 
             var middleware = CreateMiddleware();
 
@@ -75,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             var endpoint = httpContext.GetEndpoint();
-            Assert.Same(expectedEndpoint, endpoint);
+            Assert.NotNull(endpoint);
             Assert.Equal("myapp", endpoint.DisplayName);
         }
 

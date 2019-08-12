@@ -51,8 +51,6 @@ namespace Microsoft.AspNetCore.Routing
             if (endpoint != null)
             {
                 Log.MatchSkipped(_logger, endpoint);
-
-                // Someone else set the endpoint, we'll let them handle the unsetting.
                 return _next(httpContext);
             }
 
@@ -89,7 +87,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private async Task SetRoutingAndContinue(HttpContext httpContext)
+        private Task SetRoutingAndContinue(HttpContext httpContext)
         {
             // If there was no mutation of the endpoint then log failure
             var endpoint = httpContext.GetEndpoint();
@@ -109,16 +107,7 @@ namespace Microsoft.AspNetCore.Routing
                 Log.MatchSuccess(_logger, endpoint);
             }
 
-            try
-            {
-                await _next(httpContext);
-            }
-            finally
-            {
-                // We unset the endpoint after calling through to the next middleware. This enables any future calls into
-                // endpoint routing don't no-op from there already being an endpoint set.
-                httpContext.SetEndpoint(endpoint: null);
-            }
+            return _next(httpContext);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things
