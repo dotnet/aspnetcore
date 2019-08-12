@@ -26,7 +26,6 @@
       "Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
       "Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
-      "blazor\\BlazorExtension\\src\\Microsoft.VisualStudio.BlazorExtension.csproj",
       "test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
       "test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
       "test\\testassets\\ComponentsApp.App\\ComponentsApp.App.csproj",
