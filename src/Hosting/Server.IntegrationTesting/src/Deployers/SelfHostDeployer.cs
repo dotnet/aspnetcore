@@ -77,12 +77,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
                             hostShutdownToken: hostExitToken);
                     }
-                    catch (Exception ex)
+                    catch (InvalidOperationException invalidOperationException)
                     {
-                        Logger.LogWarning($"Application failed to start, exception: {ex.Message}");
+                        Logger.LogWarning($"Failed to start application due to non fatal error. Exception: {invalidOperationException.Message}");
+                        continue;
                     }
                 }
-                throw new Exception($"Failed to start Self hosted application after {RetryCount} retries");
+
+                throw new Exception($"Failed to start Self hosted application after {RetryCount} retries.");
             }
         }
 
@@ -151,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
                 Uri actualUrl = null;
+                bool allowRetry = false;
                 var started = new TaskCompletionSource<object>();
 
                 HostProcess = new Process() { StartInfo = startInfo };
@@ -168,6 +171,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         {
                             actualUrl = new Uri(m.Groups["url"].Value);
                         }
+
+                        if (dataArgs.Data.Contains("HttpSysException: The process cannot access the file because it is being used by another process."))
+                        {
+                            allowRetry = true;
+                        }
                     }
                 };
                 var hostExitTokenSource = new CancellationTokenSource();
@@ -176,7 +184,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     Logger.LogInformation("host process ID {pid} shut down", HostProcess.Id);
 
                     // If TrySetResult was called above, this will just silently fail to set the new state, which is what we want
-                    started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                    if (allowRetry)
+                    {
+                        started.TrySetException(new InvalidOperationException("Failed to bind to port in HttpSys."));
+
+                    }
+                    else
+                    {
+                        started.TrySetException(new Exception($"Command exited unexpectedly with exit code: {HostProcess.ExitCode}"));
+                    }
 
                     TriggerHostShutdown(hostExitTokenSource);
                 };
