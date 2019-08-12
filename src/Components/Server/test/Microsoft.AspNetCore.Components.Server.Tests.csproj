@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Components\test\Rendering\HtmlRendererTestBase.cs" />
+    <Compile Include="..\..\Web\test\Rendering\HtmlRendererTestBase.cs" />
     <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />

@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The id for the component.</param>
         /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
-        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
+        protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
 
         /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
