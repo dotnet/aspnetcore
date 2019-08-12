@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
         private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
 
+        private const int RetryCount = 5;
         public Process HostProcess { get; private set; }
 
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
@@ -55,23 +56,33 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     DotnetPublish();
                 }
 
-                var hintUrl = TestUriHelper.BuildTestUri(
-                    DeploymentParameters.ServerType,
-                    DeploymentParameters.Scheme,
-                    DeploymentParameters.ApplicationBaseUriHint,
-                    DeploymentParameters.StatusMessagesEnabled);
-
                 // Launch the host process.
-                var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
+                for (var i = 0; i < RetryCount; i++)
+                {
+                    try
+                    {
+                        var hintUrl = TestUriHelper.BuildTestUri(
+                            DeploymentParameters.ServerType,
+                            DeploymentParameters.Scheme,
+                            DeploymentParameters.ApplicationBaseUriHint,
+                            DeploymentParameters.StatusMessagesEnabled);
+                        var (actualUrl, hostExitToken) = await StartSelfHostAsync(hintUrl);
 
-                Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
+                        Logger.LogInformation("Application ready at URL: {appUrl}", actualUrl);
 
-                return new DeploymentResult(
-                    LoggerFactory,
-                    DeploymentParameters,
-                    applicationBaseUri: actualUrl.ToString(),
-                    contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
-                    hostShutdownToken: hostExitToken);
+                        return new DeploymentResult(
+                            LoggerFactory,
+                            DeploymentParameters,
+                            applicationBaseUri: actualUrl.ToString(),
+                            contentRoot: DeploymentParameters.PublishApplicationBeforeDeployment ? DeploymentParameters.PublishedApplicationRootPath : DeploymentParameters.ApplicationPath,
+                            hostShutdownToken: hostExitToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"Application failed to start, exception: {ex.Message}");
+                    }
+                }
+                throw new Exception($"Failed to start Self hosted application after {RetryCount} retries");
             }
         }
 
