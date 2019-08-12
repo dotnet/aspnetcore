@@ -12,10 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
-    /// <summary>
-    /// A <see cref="Renderer"/> that produces HTML.
-    /// </summary>
-    public class HtmlRenderer : Renderer
+    internal class HtmlRenderer : Renderer
     {
         private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -26,12 +23,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private readonly Func<string, string> _htmlEncoder;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="HtmlRenderer"/>.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
         public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Func<string, string> htmlEncoder)
             : base(serviceProvider, loggerFactory)
         {
@@ -58,13 +49,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return CanceledRenderTask;
         }
 
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
-        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
         {
             var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
@@ -75,13 +59,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return new ComponentRenderedText(componentId, context.Result);
         }
 
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
         {
             return RenderComponentAsync(typeof(TComponent), initialParameters);

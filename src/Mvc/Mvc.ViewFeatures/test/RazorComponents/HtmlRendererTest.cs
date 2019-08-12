@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+namespace Microsoft.AspNetCore.Mvc.RazorComponents
 {
     public class HtmlRendererTest
     {
@@ -440,11 +441,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             // Act
             var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<ComponentWithParameters>(
-                new ParameterView(new[] {
-                    RenderTreeFrame.Element(0,string.Empty),
-                    RenderTreeFrame.Attribute(1,"update",change),
-                    RenderTreeFrame.Attribute(2,"value",5)
-                }, 0))));
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "update", change },
+                    { "value", 5 }
+                }))));
 
             // Assert
             Assert.Equal(expectedHtml, result);
