@@ -235,7 +235,7 @@
     click('others-groupmsg', function (event) {
         let groupName = getText('group-name');
         let message = getText('group-message-text');
-        invoke(connection, 'SendToOthersInGroup', groupName, data, name, message);
+        invoke(connection, 'SendToOthersInGroup', groupName, name, message);
     });
 
     click('send', function (event) {
