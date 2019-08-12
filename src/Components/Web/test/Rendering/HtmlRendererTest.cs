@@ -8,21 +8,19 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
-    public abstract class HtmlRendererTestBase
+    public class HtmlRendererTest
     {
         protected readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
-
-        protected abstract HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider);
 
         [Fact]
         public void RenderComponentAsync_CanRenderEmptyElement()
         {
             // Arrange
-
             var expectedHtml = new[] { "<", "p", ">", "</", "p", ">" };
             var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
             {
@@ -583,6 +581,31 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Assert.Equal(expectedHtml, result.Tokens);
         }
 
+        [Fact]
+        public async Task PrerendersMultipleComponentsSuccessfully()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "p");
+                rtb.AddMarkupContent(1, "<span>Hello world!</span>");
+                rtb.CloseElement();
+            })).BuildServiceProvider();
+            var renderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var first = await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty));
+            var second = await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty));
+
+            // Assert
+            Assert.Equal(0, first.ComponentId);
+            Assert.Equal(1, second.ComponentId);
+        }
+
+        private HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
+        {
+            return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, _encoder);
+        }
 
         private class NestedAsyncComponent : ComponentBase
         {

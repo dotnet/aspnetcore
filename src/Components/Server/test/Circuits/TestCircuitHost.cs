@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +39,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new CircuitOptions(),
                     jsRuntime,
                     clientProxy,
-                    HtmlEncoder.Default,
                     NullLogger.Instance);
             }
 
