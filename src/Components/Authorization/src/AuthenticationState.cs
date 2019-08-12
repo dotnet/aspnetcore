@@ -4,7 +4,7 @@
 using System;
 using System.Security.Claims;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     /// <summary>
     /// Provides information about the currently authenticated user, if any.

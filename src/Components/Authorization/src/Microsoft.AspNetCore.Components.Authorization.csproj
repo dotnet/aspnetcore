@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
@@ -7,7 +7,6 @@
     <Description>Authentication and authorization support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
-    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 

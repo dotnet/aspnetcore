@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Components.Authorization</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

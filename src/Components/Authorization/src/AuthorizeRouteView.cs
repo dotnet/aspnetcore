@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     /// <summary>
     /// Combines the behaviors of <see cref="AuthorizeView"/> and <see cref="RouteView"/>,

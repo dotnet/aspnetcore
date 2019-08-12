@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     internal static class AttributeAuthorizeDataCache
     {

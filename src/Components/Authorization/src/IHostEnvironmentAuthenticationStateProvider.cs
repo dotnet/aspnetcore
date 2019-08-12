@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     /// <summary>
     /// An interface implemented by <see cref="AuthenticationStateProvider"/> classes that can receive authentication
