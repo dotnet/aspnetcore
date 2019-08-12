@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseRouting_ServicesRegistered_Match_DoesNotSetFeature()
+        public async Task UseRouting_ServicesRegistered_Match_DoesNotSetsFeature()
         {
             // Arrange
             var endpoint = new RouteEndpoint(
@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             var feature = httpContext.Features.Get<IEndpointFeature>();
             Assert.NotNull(feature);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
         }
 
         [Fact]
