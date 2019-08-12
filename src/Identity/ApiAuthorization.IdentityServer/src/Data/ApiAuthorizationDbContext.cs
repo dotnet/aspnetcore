@@ -18,12 +18,17 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
     /// </summary>
     /// <typeparam name="TUser"></typeparam>
-    public class ApiAuthorizationDbContext<TUser> : IdentityDbContext<TUser>, IPersistedGrantDbContext where TUser : IdentityUser
+    /// <typeparam name="TRole"></typeparam>
+    /// <typeparam name="TKey">Key of the IdentityUser entity</typeparam>
+    public class ApiAuthorizationDbContext<TUser, TRole, TKey> : IdentityDbContext<TUser, TRole, TKey>, IPersistedGrantDbContext
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
     {
         private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser, TRole, TKey}"/>.
         /// </summary>
         /// <param name="options">The <see cref="DbContextOptions"/>.</param>
         /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
@@ -52,6 +57,26 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         {
             base.OnModelCreating(builder);
             builder.ConfigurePersistedGrantContext(_operationalStoreOptions.Value);
+        }
+    }
+
+    /// <summary>
+    /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
+    /// </summary>
+    /// <typeparam name="TUser"></typeparam>
+    public class ApiAuthorizationDbContext<TUser> : ApiAuthorizationDbContext<TUser, IdentityRole, string>
+        where TUser : IdentityUser
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        public ApiAuthorizationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : base(options, operationalStoreOptions)
+        {
         }
     }
 }
