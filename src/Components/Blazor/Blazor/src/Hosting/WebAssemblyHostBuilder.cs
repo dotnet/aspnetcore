@@ -106,6 +106,8 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             });
 
             // Needed for authorization
+            // However, since authorization isn't on by default, we could consider removing these and
+            // having a separate services.AddBlazorAuthorization() call that brings in the required services.
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
 

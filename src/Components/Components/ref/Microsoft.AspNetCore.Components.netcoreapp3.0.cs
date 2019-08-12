@@ -3,55 +3,6 @@
 
 namespace Microsoft.AspNetCore.Components
 {
-    public partial class AuthenticationState
-    {
-        public AuthenticationState(System.Security.Claims.ClaimsPrincipal user) { }
-        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task);
-    public abstract partial class AuthenticationStateProvider
-    {
-        protected AuthenticationStateProvider() { }
-        public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
-        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync();
-        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
-    }
-    public sealed partial class AuthorizeRouteView : Microsoft.AspNetCore.Components.RouteView
-    {
-        public AuthorizeRouteView() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-    }
-    public partial class AuthorizeView : Microsoft.AspNetCore.Components.AuthorizeViewCore
-    {
-        public AuthorizeView() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData() { throw null; }
-    }
-    public abstract partial class AuthorizeViewCore : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        protected AuthorizeViewCore() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-        protected abstract Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected override System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
-    }
     public static partial class BindConverter
     {
         public static bool FormatValue(bool value, System.Globalization.CultureInfo culture = null) { throw null; }
@@ -98,15 +49,6 @@ namespace Microsoft.AspNetCore.Components
         public static bool TryConvertToNullableLong(object obj, System.Globalization.CultureInfo culture, out long? value) { throw null; }
         public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
         public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
-    }
-    public partial class CascadingAuthenticationState : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
-    {
-        public CascadingAuthenticationState() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-        protected override void OnInitialized() { }
-        void System.IDisposable.Dispose() { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
@@ -266,10 +208,6 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
-    public partial interface IHostEnvironmentAuthenticationStateProvider
-    {
-        void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> authenticationStateTask);
-    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute
     {
@@ -421,78 +359,6 @@ namespace Microsoft.AspNetCore.Components.CompilerServices
         public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Action<T> callback, T value) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<T> CreateInferredEventCallback<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
         public static T TypeCheck<T>(T value) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Components.Forms
-{
-    public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        public DataAnnotationsValidator() { }
-        protected override void OnInitialized() { }
-    }
-    public sealed partial class EditContext
-    {
-        public EditContext(object model) { }
-        public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs> OnFieldChanged { add { } remove { } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs> OnValidationRequested { add { } remove { } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs> OnValidationStateChanged { add { } remove { } }
-        public Microsoft.AspNetCore.Components.Forms.FieldIdentifier Field(string fieldName) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> GetValidationMessages() { throw null; }
-        public System.Collections.Generic.IEnumerable<string> GetValidationMessages(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
-        public System.Collections.Generic.IEnumerable<string> GetValidationMessages(System.Linq.Expressions.Expression<System.Func<object>> accessor) { throw null; }
-        public bool IsModified() { throw null; }
-        public bool IsModified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
-        public bool IsModified(System.Linq.Expressions.Expression<System.Func<object>> accessor) { throw null; }
-        public void MarkAsUnmodified() { }
-        public void MarkAsUnmodified(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { }
-        public void NotifyFieldChanged(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { }
-        public void NotifyValidationStateChanged() { }
-        public bool Validate() { throw null; }
-    }
-    public static partial class EditContextDataAnnotationsExtensions
-    {
-        public static Microsoft.AspNetCore.Components.Forms.EditContext AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext editContext) { throw null; }
-    }
-    public sealed partial class FieldChangedEventArgs : System.EventArgs
-    {
-        public FieldChangedEventArgs(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { }
-        public Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct FieldIdentifier : System.IEquatable<Microsoft.AspNetCore.Components.Forms.FieldIdentifier>
-    {
-        private readonly object _dummy;
-        public FieldIdentifier(object model, string fieldName) { throw null; }
-        public string FieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
-        public bool Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) { throw null; }
-        public override bool Equals(object obj) { throw null; }
-        public override int GetHashCode() { throw null; }
-    }
-    public sealed partial class ValidationMessageStore
-    {
-        public ValidationMessageStore(Microsoft.AspNetCore.Components.Forms.EditContext editContext) { }
-        public System.Collections.Generic.IEnumerable<string> this[Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier] { get { throw null; } }
-        public System.Collections.Generic.IEnumerable<string> this[System.Linq.Expressions.Expression<System.Func<object>> accessor] { get { throw null; } }
-        public void Add(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Collections.Generic.IEnumerable<string> messages) { }
-        public void Add(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, string message) { }
-        public void Add(System.Linq.Expressions.Expression<System.Func<object>> accessor, System.Collections.Generic.IEnumerable<string> messages) { }
-        public void Add(System.Linq.Expressions.Expression<System.Func<object>> accessor, string message) { }
-        public void Clear() { }
-        public void Clear(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { }
-        public void Clear(System.Linq.Expressions.Expression<System.Func<object>> accessor) { }
-    }
-    public sealed partial class ValidationRequestedEventArgs : System.EventArgs
-    {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs Empty;
-        public ValidationRequestedEventArgs() { }
-    }
-    public sealed partial class ValidationStateChangedEventArgs : System.EventArgs
-    {
-        public static readonly new Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs Empty;
-        public ValidationStateChangedEventArgs() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Rendering

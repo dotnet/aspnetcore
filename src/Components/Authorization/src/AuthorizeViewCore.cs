@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     /// <summary>
     /// A base class for components that display differing content depending on the user's authorization status.

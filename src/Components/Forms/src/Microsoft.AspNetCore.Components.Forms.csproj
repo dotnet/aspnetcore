@@ -4,20 +4,17 @@
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <Description>Support for rendering ASP.NET Core components for browsers.</Description>
+    <Description>Forms and validation support for Blazor applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
-    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.AspNetCore.Components.Forms" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+    <Reference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
 </Project>

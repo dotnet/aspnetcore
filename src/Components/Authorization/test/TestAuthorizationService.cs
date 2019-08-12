@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Authorization
 {
     public class TestAuthorizationService : IAuthorizationService
     {
