@@ -1,1 +1,1 @@
-Get-WinEvent -ProviderName 'Application Error' | Format-List -Property Message,Id,ProviderName,TimeCreated
+Get-WinEvent -ProviderName 'Application Error' | Format-List -Property Message,Id,ProviderName,TimeCreated -MaxEvents 100
