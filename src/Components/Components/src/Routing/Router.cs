@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         [Inject] private INavigationInterception NavigationInterception { get; set; }
 
-        [Inject] private IComponentContext ComponentContext { get; set; }
-
         [Inject] private ILoggerFactory LoggerFactory { get; set; }
 
         /// <summary>
@@ -152,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         Task IHandleAfterRender.OnAfterRenderAsync()
         {
-            if (!_navigationInterceptionEnabled && ComponentContext.IsConnected)
+            if (!_navigationInterceptionEnabled)
             {
                 _navigationInterceptionEnabled = true;
                 return NavigationInterception.EnableNavigationInterceptionAsync();

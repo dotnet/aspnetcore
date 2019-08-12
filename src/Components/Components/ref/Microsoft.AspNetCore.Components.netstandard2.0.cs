@@ -196,10 +196,6 @@ namespace Microsoft.AspNetCore.Components
         void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters);
     }
-    public partial interface IComponentContext
-    {
-        bool IsConnected { get; }
-    }
     public partial interface IHandleAfterRender
     {
         System.Threading.Tasks.Task OnAfterRenderAsync();
