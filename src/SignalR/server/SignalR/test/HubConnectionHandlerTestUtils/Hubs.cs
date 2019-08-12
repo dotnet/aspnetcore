@@ -298,6 +298,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 output.Complete();
             }
         }
+
+        public async Task UploadDoesWorkOnComplete(ChannelReader<string> source)
+        {
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Context.Items[nameof(UploadDoesWorkOnComplete)] = tcs.Task;
+
+            try
+            {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out var item))
+                    {
+                    }
+                }
+            }
+            finally
+            {
+                tcs.SetResult(59);
+            }
+        }
     }
 
     public abstract class TestHub : Hub
