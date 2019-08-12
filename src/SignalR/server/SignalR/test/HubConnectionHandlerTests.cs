@@ -3729,8 +3729,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await connectionHandlerTask.OrTimeout();
 
                 // This task completes if the upload stream is completed, via closing the connection
-                var result = await ((Task<int>)client.Connection.Items[nameof(MethodHub.UploadDoesWorkOnComplete)]).OrTimeout();
-                Assert.Equal(59, result);
+                var task = (Task<int>)client.Connection.Items[nameof(MethodHub.UploadDoesWorkOnComplete)];
+
+                var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => task).OrTimeout();
+                Assert.Equal("The underlying connection was closed.", exception.Message);
             }
         }
 

@@ -585,7 +585,10 @@ namespace Microsoft.AspNetCore.SignalR
                 _ = InnerAbortConnection(connection);
 
                 // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
-                connection._streamTracker?.CompleteAll();
+                if (connection._streamTracker != null)
+                {
+                    connection._streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
+                }
             }
 
             static async Task InnerAbortConnection(HubConnectionContext connection)

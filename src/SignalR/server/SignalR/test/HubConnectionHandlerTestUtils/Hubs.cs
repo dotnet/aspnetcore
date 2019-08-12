@@ -313,9 +313,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
             finally
             {
-                tcs.SetResult(59);
+                tcs.TrySetResult(42);
             }
         }
     }
