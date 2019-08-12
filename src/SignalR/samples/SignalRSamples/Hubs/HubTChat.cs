@@ -9,53 +9,43 @@ namespace SignalRSamples.Hubs
 {
     public class HubTChat : Hub<IChatClient>
     {
-        public override async Task OnConnectedAsync()
+        public Task Send(string name, string message)
         {
-            await Clients.All.Send($"{Context.ConnectionId} joined");
+            return Clients.All.Send($"{name}: {message}");
         }
 
-        public override async Task OnDisconnectedAsync(Exception ex)
+        public Task SendToOthers(string name, string message)
         {
-            await Clients.Others.Send($"{Context.ConnectionId} left");
+            return Clients.Others.Send($"{name}: {message}");
         }
 
-        public Task Send(string message)
+        public Task SendToGroup(string groupName, string name, string message)
         {
-            return Clients.All.Send($"{Context.ConnectionId}: {message}");
+            return Clients.Group(groupName).Send($"{name}@{groupName}: {message}");
         }
 
-        public Task SendToOthers(string message)
+        public Task SendToOthersInGroup(string groupName, string name, string message)
         {
-            return Clients.Others.Send($"{Context.ConnectionId}: {message}");
+            return Clients.OthersInGroup(groupName).Send($"{name}@{groupName}: {message}");
         }
 
-        public Task SendToGroup(string groupName, string message)
-        {
-            return Clients.Group(groupName).Send($"{Context.ConnectionId}@{groupName}: {message}");
-        }
-
-        public Task SendToOthersInGroup(string groupName, string message)
-        {
-            return Clients.OthersInGroup(groupName).Send($"{Context.ConnectionId}@{groupName}: {message}");
-        }
-
-        public async Task JoinGroup(string groupName)
+        public async Task JoinGroup(string groupName, string name)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-            await Clients.Group(groupName).Send($"{Context.ConnectionId} joined {groupName}");
+            await Clients.Group(groupName).Send($"{name} joined {groupName}");
         }
 
-        public async Task LeaveGroup(string groupName)
+        public async Task LeaveGroup(string groupName, string name)
         {
-            await Clients.Group(groupName).Send($"{Context.ConnectionId} left {groupName}");
+            await Clients.Group(groupName).Send($"{name} left {groupName}");
 
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
 
-        public Task Echo(string message)
+        public Task Echo(string name, string message)
         {
-            return Clients.Caller.Send($"{Context.ConnectionId}: {message}");
+            return Clients.Caller.Send($"{name}: {message}");
         }
     }
 
