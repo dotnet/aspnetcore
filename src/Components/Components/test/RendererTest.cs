@@ -1772,7 +1772,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
 
             // Act/Assert
-            await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(0, new EventArgs());
             });
@@ -2196,7 +2196,7 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event, but can fire the new event
-            await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
@@ -2237,7 +2237,7 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
@@ -2288,7 +2288,7 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(eventHandlerId, args: null);
             });
@@ -2323,7 +2323,7 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
@@ -2879,11 +2879,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var awaitableTask = render1TCS.Task.ContinueWith(_ => Task.Delay(1000)).Unwrap();
             render1TCS.SetResult(null);
             await awaitableTask;
-            var ex = await Assert.ThrowsAsync<InvalidEventIdException>(() =>
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             });
-            Assert.Equal($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", ex.Message);
+            Assert.Contains($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", ex.Message);
             Assert.Equal(2, numEventsFired);
         }
 

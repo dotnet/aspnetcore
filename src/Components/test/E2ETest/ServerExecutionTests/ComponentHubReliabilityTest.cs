@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 return new Exception(error + Environment.NewLine + logs);
             };
 
-            _  = _serverFixture.RootUri; // this is needed for the side-effects of getting the URI.
+            _ = _serverFixture.RootUri; // this is needed for the side-effects of getting the URI.
             TestSink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
             TestSink.MessageLogged += LogMessages;
         }
@@ -189,13 +189,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
             Assert.Empty(Batches);
 
-
             // Act
             await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "DispatchBrowserEvent",
                 "",
                 ""));
-
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -219,7 +217,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Bad input data.";
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
@@ -249,7 +247,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Failed to dispatch event.";
 
             var eventDescriptor = Serialize(new WebEventDescriptor()
             {
@@ -283,8 +281,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
             Assert.Contains(Logs, l => (l.LogLevel, l.Message, l.Exception?.Message) ==
                 (LogLevel.Debug,
-                $"The circuit host '{Client.CircuitId}' received bad input that resulted in an exception.",
-                "There is no event handler associated with this event. EventId: '1990'."));
+                "There was an error dispatching the event '1990' to the application.",
+                "There is no event handler associated with this event. EventId: '1990'. (Parameter 'eventHandlerId')"));
         }
 
         [Fact]
@@ -292,7 +290,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var expectedError = $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
-                $"detailed exceptions in 'CircuitOptions.DetailedErrors'";
+                $"detailed exceptions in 'CircuitOptions.DetailedErrors'. Failed to complete render batch '1846'.";
 
             await GoToTestComponent(Batches);
             Assert.Equal(2, Batches.Count);
@@ -312,10 +310,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
             Assert.Contains(Logs, l => (l.LogLevel, l.Message, l.Exception?.Message) ==
                 (LogLevel.Debug,
-                $"The circuit host '{Client.CircuitId}' received bad input that resulted in an exception.",
+                $"Failed to complete render batch '1846' in circuit host '{Client.CircuitId}'.",
                 "Received an acknowledgement for batch with id '1846' when the last batch produced was '4'."));
         }
-
 
         [Fact]
         public async Task CannotInvokeOnRenderCompletedBeforeInitialization()
@@ -367,7 +364,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task OnLocationChanged_ReportsDebugForExceptionInValidation()
         {
             // Arrange
-            var expectedError = "Location change to http://example.com failed.";
+            var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
+                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "Location change to 'http://example.com' failed.";
+
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
             Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
             Assert.Contains(Logs, l =>
             {
-                return l.LogLevel == LogLevel.Debug && Regex.IsMatch(l.Message, "Location change to http://example.com in circuit .* failed.");
+                return (l.LogLevel, l.Message) == (LogLevel.Debug, $"Location change to 'http://example.com' in circuit '{Client.CircuitId}' failed.");
             });
         }
 
@@ -393,7 +393,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task OnLocationChanged_ReportsErrorForExceptionInUserCode()
         {
             // Arrange
-            var expectedError = "There was an unhandled exception .?";
+            var expectedError = "There was an unhandled exception on the current circuit, so this circuit will be terminated. " +
+                "For more details turn on detailed exceptions in 'CircuitOptions.DetailedErrors'. " +
+                "Location change failed.";
+
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
             Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
@@ -409,10 +412,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Assert
             var actualError = Assert.Single(Errors);
-            Assert.Matches(expectedError, actualError);
+            Assert.Equal(expectedError, actualError);
             Assert.Contains(Logs, l =>
             {
-                return l.LogLevel == LogLevel.Error && Regex.IsMatch(l.Message, "Unhandled exception in circuit .*");
+                return (l.LogLevel, l.Message) == (LogLevel.Error, $"Location change to '{new Uri(_serverFixture.RootUri,"/test")}' in circuit '{Client.CircuitId}' failed.");
             });
         }
 
@@ -516,7 +519,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private class Batch
         {
-            public Batch(int id, byte [] data)
+            public Batch(int id, byte[] data)
             {
                 Id = id;
                 Data = data;

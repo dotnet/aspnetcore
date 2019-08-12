@@ -565,7 +565,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains(
                 logEvents,
                 e => e.eventIdName == "DispatchEventFailedToDispatchEvent" && e.logLevel == LogLevel.Debug &&
-                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler with ID 1"));
+                     e.exception is ArgumentException ae && ae.Message.Contains("There is no event handler associated with this event. EventId: '1'."));
 
             // Taking any other action will fail because the circuit is disposed.
             await Client.ExpectCircuitErrorAndDisconnect(async () =>

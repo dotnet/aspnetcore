@@ -15,8 +15,7 @@
   <ItemGroup>
     <Compile Include="..\..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
-    <Compile Include="..\..\..\Shared\src\WebEventData.cs" />
-    <Compile Include="..\..\..\Shared\src\InvalidWebEventInputException.cs" />    
+    <Compile Include="..\..\..\Shared\src\WebEventData.cs" />    
   </ItemGroup>
 
 </Project>

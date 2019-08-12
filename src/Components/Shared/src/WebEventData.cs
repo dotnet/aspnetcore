@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Components.Web
             }
             catch (Exception e)
             {
-                throw new InvalidWebEventInputException("Error parsing the event descriptor", e);
+                throw new InvalidOperationException("Error parsing the event descriptor", e);
             }
 
             return Parse(
@@ -71,12 +71,12 @@ namespace Microsoft.AspNetCore.Components.Web
                     "touch" => Deserialize<UITouchEventArgs>(eventArgsJson),
                     "unknown" => EventArgs.Empty,
                     "wheel" => Deserialize<UIWheelEventArgs>(eventArgsJson),
-                    _ => throw new InvalidWebEventInputException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
+                    _ => throw new InvalidOperationException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
                 };
             }
             catch (Exception e)
             {
-                throw new InvalidWebEventInputException($"There was an error parsing the event arguments. EventId: '{eventHandlerId}'.", e);
+                throw new InvalidOperationException($"There was an error parsing the event arguments. EventId: '{eventHandlerId}'.", e);
             }
         }
 
