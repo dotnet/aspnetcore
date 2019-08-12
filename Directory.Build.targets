@@ -111,14 +111,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <FrameworkReference Update="Microsoft.NETCore.App">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
       <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
       <!-- Only update the default runtime version for preview builds. -->
       <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
       <!-- Only update the targeting pack version for preview builds. -->
       <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
-    </FrameworkReference>
+    </KnownFrameworkReference>
+
+    <FrameworkReference 
+      Update="Microsoft.NETCore.App"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'"
+      RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      />
 
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
