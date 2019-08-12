@@ -5,8 +5,9 @@ FROM mcr.microsoft.com/dotnet-buildtools/prereqs:rhel-7-rpmpkg-e1b4a89-201753110
 ARG USER
 ARG USER_ID
 ARG GROUP_ID
+ARG WORKDIR
 
-WORKDIR /code/build
+WORKDIR ${WORKDIR}
 
 RUN useradd -m ${USER} --uid ${USER_ID} -g root
 RUN echo '${USER} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

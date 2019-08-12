@@ -1,0 +1,11 @@
+<Project>
+  <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
+  <PropertyGroup Condition=" HasTrailingSlash('$(ArtifactsDir)') ">
+    <ArtifactsDir>$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+  </PropertyGroup>
+
+  <!-- Include our "loose" PDBs when publishing. -->
+  <ItemGroup>
+    <FilesToPublishToSymbolServer Include="$(SymbolsOutputPath)**\*.pdb" />
+  </ItemGroup>
+</Project>

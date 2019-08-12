@@ -21,6 +21,7 @@
     -->
     <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJARSHA2" />
     <FileExtensionSignInfo Include=".ps1;.psd1;.psm1;.psc1" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Include=".dll;.exe" CertificateName="Microsoft400" />
     <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
     <FileExtensionSignInfo Include=".zip" CertificateName="None" />
@@ -83,6 +84,13 @@
     <FileSignInfo Include="ancm.mof" CertificateName="None" />
     <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
     <FileSignInfo Include="apphost.exe" CertificateName="None" />
+
+    <SignValidationExclusionList Include="**/*.js" />
+    <SignValidationExclusionList Include="**/*.otf" />
+    <SignValidationExclusionList Include="**/*.ttf" />
+    <SignValidationExclusionList Include="**/ancm.mof" />
+    <SignValidationExclusionList Include="**/apphost.exe" />
+    <SignValidationExclusionList Include="**/wix*" />
 
     <!--
       These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
