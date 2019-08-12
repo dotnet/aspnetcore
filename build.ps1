@@ -344,6 +344,7 @@ if ($tmpBinaryLog) {
 $env:MSBUILDDEBUGPATH = $LogDir
 
 $env:DOTNET_ROOT = "$PSScriptRoot\.dotnet"
+${env:DOTNET_ROOT(x86)} = "$PSScriptRoot\.dotnet\x86"
 
 $local:exit_code = $null
 try {
