@@ -125,5 +125,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             OnUpdateDisplayComplete?.Invoke();
             return NextRenderResultTask;
         }
+
+        public new void ProcessPendingRender()
+            => base.ProcessPendingRender();
     }
 }
