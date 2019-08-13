@@ -2552,7 +2552,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 .ComponentId;
             var origEventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
-                .Where(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onclick")
+                .Where(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onmycustomevent")
                 .Single(f => f.AttributeEventHandlerId != 0)
                 .AttributeEventHandlerId;
 
@@ -3491,6 +3491,41 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void DisposingRenderer_RejectsAttemptsToStartMoreRenderBatches()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            renderer.Dispose();
+
+            // Act/Assert
+            var ex = Assert.Throws<ObjectDisposedException>(() => renderer.ProcessPendingRender());
+            Assert.Contains("Cannot process pending renders after the renderer has been disposed.", ex.Message);
+        }
+
+        [Fact]
+        public void WhenRendererIsDisposed_ComponentRenderRequestsAreSkipped()
+        {
+            // The important point of this is that user code in components may continue to call
+            // StateHasChanged (e.g., after an async task completion), and we don't want that to
+            // show up as an error. In general, components should skip rendering after disposal.
+            // This test shows that we don't add any new entries to the render queue after disposal.
+            // There's a different test showing that if the render queue entry was already added
+            // before a component got individually disposed, that render queue entry gets skipped.
+
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new DisposableComponent();
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            renderer.Dispose();
+            component.TriggerRender();
+
+            // Assert: no exception, no batch produced
+            Assert.Empty(renderer.Batches);
+        }
+
+        [Fact]
         public void DisposingRenderer_DisposesNestedComponents()
         {
             // Arrange
@@ -3936,7 +3971,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => _renderHandle.Render(builder =>
                 {
                     builder.OpenElement(0, "my button");
-                    builder.AddAttribute(1, "my click handler", new Action<EventArgs>(eventArgs => OnClick(eventArgs)));
+                    builder.AddAttribute(1, "onmycustomevent", EventCallback.Factory.Create(this, eventArgs => OnClick(eventArgs)));
                     builder.CloseElement();
                 });
         }
