@@ -3,8 +3,10 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <TargetFrameworks>netstandard2.0;netcoreapp5.0</TargetFrameworks>
+    <NuspecFile>$(MSBuildProjectName).multitarget.nuspec</NuspecFile>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp5.0</TargetFrameworks>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">$(MSBuildProjectName).netcoreapp5.0.nuspec</NuspecFile>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
@@ -23,21 +25,12 @@
     <SignedPackageFile Include="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
-    <PropertyGroup>
-      <_OutputBinary>@(BuiltProjectOutputGroupOutput)</_OutputBinary>
-      <_OutputSymbol>@(DebugSymbolsProjectOutputGroupOutput)</_OutputSymbol>
-      <_OutputDocumentation>@(DocumentationProjectOutputGroupOutput)</_OutputDocumentation>
-    </PropertyGroup>
-    <ItemGroup>
-      <NuspecProperty Include="targetframework=$(TargetFramework)"/>
-      <NuspecProperty Include="AssemblyName=$(AssemblyName)"/>
-      <NuspecProperty Include="OutputBinary=$(_OutputBinary)"/>
-      <NuspecProperty Include="OutputSymbol=$(_OutputSymbol)"/>
-      <NuspecProperty Include="OutputDocumentation=$(_OutputDocumentation)"/>
-      <!-- Include the assembly and symbols from the tasks project -->
-      <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
-      <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+
+    <NuspecProperty Include="OutputBinary=$(OutputPath)**\$(AssemblyName).dll" />
+    <NuspecProperty Include="OutputSymbol=$(OutputPath)**\$(AssemblyName).pdb" />
+    <NuspecProperty Include="OutputDocumentation=$(OutputPath)**\$(AssemblyName).xml" />
+    <NuspecProperty Include="TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll"/>
+    <NuspecProperty Include="TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb" Condition="'$(DebugType)'!='embedded'"/>
+  </ItemGroup>
 </Project>

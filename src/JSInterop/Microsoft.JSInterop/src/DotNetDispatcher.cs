@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -18,7 +19,6 @@ namespace Microsoft.JSInterop
     public static class DotNetDispatcher
     {
         internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
-        private static readonly Type[] EndInvokeParameterTypes = new Type[] { typeof(long), typeof(bool), typeof(JSAsyncCallResult) };
 
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
             = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
@@ -73,7 +73,6 @@ namespace Microsoft.JSInterop
             // If the developer wants to use a totally custom IJSRuntime, then their JS-side
             // code has to implement its own way of returning async results.
             var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
-
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
@@ -165,81 +164,64 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object[] ParseArguments(string methodIdentifier, string argsJson, Type[] parameterTypes)
+        internal static object[] ParseArguments(string methodIdentifier, string arguments, Type[] parameterTypes)
         {
             if (parameterTypes.Length == 0)
             {
                 return Array.Empty<object>();
             }
 
-            // There's no direct way to say we want to deserialize as an array with heterogenous
-            // entry types (e.g., [string, int, bool]), so we need to deserialize in two phases.
-            var jsonDocument = JsonDocument.Parse(argsJson);
-            var shouldDisposeJsonDocument = true;
-            try
+            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
+            var reader = new Utf8JsonReader(utf8JsonBytes);
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
             {
-                if (jsonDocument.RootElement.ValueKind != JsonValueKind.Array)
-                {
-                    throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.ValueKind}.");
-                }
-
-                var suppliedArgsLength = jsonDocument.RootElement.GetArrayLength();
-
-                if (suppliedArgsLength != parameterTypes.Length)
-                {
-                    throw new ArgumentException($"In call to '{methodIdentifier}', expected {parameterTypes.Length} parameters but received {suppliedArgsLength}.");
-                }
-
-                // Second, convert each supplied value to the type expected by the method
-                var suppliedArgs = new object[parameterTypes.Length];
-                var index = 0;
-                foreach (var item in jsonDocument.RootElement.EnumerateArray())
-                {
-                    var parameterType = parameterTypes[index];
-
-                    if (parameterType == typeof(JSAsyncCallResult))
-                    {
-                        // We will pass the JsonDocument instance to JAsyncCallResult and make JSRuntimeBase
-                        // responsible for disposing it.
-                        shouldDisposeJsonDocument = false;
-                        // For JS async call results, we have to defer the deserialization until
-                        // later when we know what type it's meant to be deserialized as
-                        suppliedArgs[index] = new JSAsyncCallResult(jsonDocument, item);
-                    }
-                    else if (IsIncorrectDotNetObjectRefUse(item, parameterType))
-                    {
-                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
-                    }
-                    else
-                    {
-                        suppliedArgs[index] = JsonSerializer.Deserialize(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
-                    }
-
-                    index++;
-                }
-
-                if (shouldDisposeJsonDocument)
-                {
-                    jsonDocument.Dispose();
-                }
-
-                return suppliedArgs;
-            }
-            catch
-            {
-                // Always dispose the JsonDocument in case of an error.
-                jsonDocument?.Dispose();
-                throw;
+                throw new JsonException("Invalid JSON");
             }
 
-            static bool IsIncorrectDotNetObjectRefUse(JsonElement item, Type parameterType)
+            var suppliedArgs = new object[parameterTypes.Length];
+
+            var index = 0;
+            while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            {
+                var parameterType = parameterTypes[index];
+                if (reader.TokenType == JsonTokenType.StartObject && IsIncorrectDotNetObjectRefUse(parameterType, reader))
+                {
+                    throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
+                }
+
+                suppliedArgs[index] = JsonSerializer.Deserialize(ref reader, parameterType, JsonSerializerOptionsProvider.Options);
+                index++;
+            }
+
+            if (index < parameterTypes.Length)
+            {
+                // If we parsed fewer parameters, we can always make a definitive claim about how many parameters were received.
+                throw new ArgumentException($"The call to '{methodIdentifier}' expects '{parameterTypes.Length}' parameters, but received '{index}'.");
+            }
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
+                // Either we received more parameters than we expected or the JSON is malformed.
+                throw new JsonException($"Unexpected JSON token {reader.TokenType}. Ensure that the call to `{methodIdentifier}' is supplied with exactly '{parameterTypes.Length}' parameters.");
+            }
+
+            return suppliedArgs;
+
+            // Note that the JsonReader instance is intentionally not passed by ref (or an in parameter) since we want a copy of the original reader.
+            static bool IsIncorrectDotNetObjectRefUse(Type parameterType, Utf8JsonReader jsonReader)
             {
                 // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
                 // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
                 // but we aren't assigning to DotNetObjectRef{T}.
-                return item.ValueKind == JsonValueKind.Object &&
-                    item.TryGetProperty(DotNetObjectRefKey.EncodedUtf8Bytes, out _) &&
-                     !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
+                if (jsonReader.Read() &&
+                    jsonReader.TokenType == JsonTokenType.PropertyName &&
+                    jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
+                {
+                    // The JSON payload has the shape we expect from a DotNetObjectRef instance.
+                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectRef<>);
+                }
+
+                return false;
             }
         }
 
@@ -248,9 +230,9 @@ namespace Microsoft.JSInterop
         /// associated <see cref="Task"/> as completed.
         /// </summary>
         /// <remarks>
-        /// All exceptions from <see cref="EndInvoke(long, bool, JSAsyncCallResult)"/> are caught
+        /// All exceptions from <see cref="EndInvoke"/> are caught
         /// are delivered via JS interop to the JavaScript side when it requests confirmation, as
-        /// the mechanism to call <see cref="EndInvoke(long, bool, JSAsyncCallResult)"/> relies on
+        /// the mechanism to call <see cref="EndInvoke"/> relies on
         /// using JS->.NET interop. This overload is meant for directly triggering completion callbacks
         /// for .NET -> JS operations without going through JS interop, so the callsite for this
         /// method is responsible for handling any possible exception generated from the arguments
@@ -263,16 +245,40 @@ namespace Microsoft.JSInterop
         /// </exception>
         public static void EndInvoke(string arguments)
         {
-            var parsedArgs = ParseArguments(
-                nameof(EndInvoke),
-                arguments,
-                EndInvokeParameterTypes);
-
-            EndInvoke((long)parsedArgs[0], (bool)parsedArgs[1], (JSAsyncCallResult)parsedArgs[2]);
+            var jsRuntimeBase = (JSRuntimeBase)JSRuntime.Current;
+            ParseEndInvokeArguments(jsRuntimeBase, arguments);
         }
 
-        private static void EndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult result)
-            => ((JSRuntimeBase)JSRuntime.Current).EndInvokeJS(asyncHandle, succeeded, result);
+        internal static void ParseEndInvokeArguments(JSRuntimeBase jsRuntimeBase, string arguments)
+        {
+            var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
+
+            // The payload that we're trying to parse is of the format
+            // [ taskId: long, success: boolean, value: string? | object ]
+            // where value is the .NET type T originally specified on InvokeAsync<T> or the error string if success is false.
+            // We parse the first two arguments and call in to JSRuntimeBase to deserialize the actual value.
+
+            var reader = new Utf8JsonReader(utf8JsonBytes);
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException("Invalid JSON");
+            }
+
+            reader.Read();
+            var taskId = reader.GetInt64();
+
+            reader.Read();
+            var success = reader.GetBoolean();
+
+            reader.Read();
+            jsRuntimeBase.EndInvokeJS(taskId, success, ref reader);
+
+            if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
+                throw new JsonException("Invalid JSON");
+            }
+        }
 
         /// <summary>
         /// Releases the reference to the specified .NET object. This allows the .NET runtime
@@ -362,7 +368,13 @@ namespace Microsoft.JSInterop
             // In some edge cases this might force developers to explicitly call something on the
             // target assembly (from .NET) before they can invoke its allowed methods from JS.
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            return loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey))
+
+            // Using LastOrDefault to workaround for https://github.com/dotnet/arcade/issues/2816.
+            // In most ordinary scenarios, we wouldn't have two instances of the same Assembly in the AppDomain
+            // so this doesn't change the outcome.
+            var assembly = loadedAssemblies.LastOrDefault(a => new AssemblyKey(a).Equals(assemblyKey));
+
+            return assembly
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
         }
 
@@ -396,6 +408,5 @@ namespace Microsoft.JSInterop
 
             public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(AssemblyName);
         }
-
     }
 }

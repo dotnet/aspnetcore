@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Configuration provider that uses files in a directory for Microsoft.Extensions.Configuration.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp5.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp5.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
