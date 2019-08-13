@@ -37,11 +37,14 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
             if (summary.PeakConnections > 0)
             {
                 if (_timeSinceFirstConnection.ElapsedTicks == 0)
+                {
                     _timeSinceFirstConnection.Start();
+                }
 
                 var elapsed = _timeSinceFirstConnection.Elapsed;
 
                 if (_lastSummary != null)
+                {
                     Console.WriteLine(@"[{0:hh\:mm\:ss}] Current: {1}, peak: {2}, connected: {3}, disconnected: {4}, rate: {5}/s",
                         elapsed,
                         summary.CurrentConnections,
@@ -50,6 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
                         summary.TotalDisconnected - _lastSummary.TotalDisconnected,
                         summary.CurrentConnections - _lastSummary.CurrentConnections
                         );
+                }
 
                 _lastSummary = summary;
             }
