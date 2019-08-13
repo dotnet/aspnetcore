@@ -15,6 +15,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Microsoft.Azure.SignalR" />
   </ItemGroup>
 
 </Project>
