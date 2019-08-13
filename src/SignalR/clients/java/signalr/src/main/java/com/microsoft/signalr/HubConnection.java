@@ -327,6 +327,7 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
+        localHeaders.put("User-Agent", "Microsoft/SignalR/3.1/OtherUserAgentThings");
         if (headers != null) {
             this.localHeaders.putAll(headers);
         }

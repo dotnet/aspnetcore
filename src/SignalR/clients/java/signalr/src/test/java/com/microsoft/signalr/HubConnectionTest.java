@@ -2186,6 +2186,54 @@ class HubConnectionTest {
     }
 
     @Test
+    public void userAgentHeaderIsSet() {
+        AtomicReference<String> header = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            header.set(req.getHeaders().get("User-Agent"));
+                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("Microsoft/SignalR/3.1/OtherUserAgentThings", header.get());
+    }
+
+    @Test
+    public void userAgentHeaderCanBeOverwritten() {
+        AtomicReference<String> header = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            header.set(req.getHeaders().get("User-Agent"));
+                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHeader("User-Agent", "Updated Value")
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("Updated Value", header.get());
+    }
+    @Test
     public void headersAreSetAndSentThroughBuilder() {
         AtomicReference<String> header = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
