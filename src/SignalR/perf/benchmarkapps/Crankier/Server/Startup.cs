@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
             {
                 o.EnableDetailedErrors = true;
             })
-            // TODO: Json vs NewtonsoftJson option
-            .AddMessagePackProtocol();
 
             services.AddSingleton<ConnectionCounter>();
 
@@ -36,12 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<EchoHub>("/echo", o =>
-                {
-                    // Remove backpressure for benchmarking
-                    o.TransportMaxBufferSize = 0;
-                    o.ApplicationMaxBufferSize = 0;
-                });
+                endpoints.MapHub<EchoHub>("/echo");
             });
         }
     }
