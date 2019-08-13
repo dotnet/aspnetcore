@@ -77,6 +77,7 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       Microsoft.AspNetCore.DataProtection.AzureStorage;
       Microsoft.AspNetCore.Hosting;
+      Microsoft.AspNetCore.SpaServices;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
