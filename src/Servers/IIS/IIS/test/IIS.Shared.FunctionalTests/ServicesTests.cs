@@ -70,7 +70,7 @@ namespace IIS.FunctionalTests
 
                 var result = await DeployAsync(baseDeploymentParameters);
 
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 3000);
                 StopServer();
                 EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
             }
