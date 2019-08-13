@@ -27,6 +27,7 @@
             <option value="hubT">Hub&lt;T&gt;</option>
         </select>
 
+        <input type="text" id="displayname" placeholder="Enter User Name" />
         <input type="button" id="connect" value="Connect" />
         <input type="button" id="disconnect" value="Disconnect" />
 
@@ -84,13 +85,6 @@
 <script src="lib/signalr/signalr-protocol-msgpack.js"></script>
 <script src="utils.js"></script>
 <script>
-    var name = prompt("Please enter your name", "D'Artagnan");
-    if (name === "") {
-        name = "Anonymous"
-    }
-
-    document.getElementById("displayname").innerHTML = name
-
     var isConnected = false;
     function invoke(connection, method) {
         if (!isConnected) {
@@ -146,6 +140,13 @@
     var connection;
 
     click('connect', function (event) {
+
+        name = document.getElementById("displayname").value
+        if (name === "") {
+            alert("Please enter a valid name");
+            return;
+        }
+
         let hubRoute = hubTypeDropdown.value || "default";
         let protocol = protocolDropdown.value === "msgpack" ?
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
@@ -156,6 +157,7 @@
             options.transport = signalR.HttpTransportType[transportDropdown.value];
         }
 
+        hubRoute = hubRoute + "?name=" + name;
         console.log('http://' + document.location.host + '/' + hubRoute);
 
         var connectionBuilder = new signalR.HubConnectionBuilder()

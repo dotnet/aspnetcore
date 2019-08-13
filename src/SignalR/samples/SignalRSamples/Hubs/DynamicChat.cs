@@ -9,6 +9,18 @@ namespace SignalRSamples.Hubs
 {
     public class DynamicChat : DynamicHub
     {
+        public override Task OnConnectedAsync()
+        {
+            var name = Context.GetHttpContext().Request.Query["name"];
+            return Clients.All.Send($"{name} joined the chat");
+        }
+
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
+            var name = Context.GetHttpContext().Request.Query["name"];
+            return Clients.All.Send($"{name} left the chat");
+        }
+
         public Task Send(string name, string message)
         {
             return Clients.All.Send($"{name}: {message}");
