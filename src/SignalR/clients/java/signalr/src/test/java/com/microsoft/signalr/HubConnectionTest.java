@@ -2196,7 +2196,6 @@ class HubConnectionTest {
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
                         });
 
-
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
                 .withTransportImplementation(transport)
@@ -2219,7 +2218,6 @@ class HubConnectionTest {
                             return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
                         });
-
 
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
