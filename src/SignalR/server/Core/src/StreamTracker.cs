@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR
             return true;
         }
 
-        public void CompleteAll(Exception ex = null)
+        public void CompleteAll(Exception ex)
         {
             foreach (var converter in _lookup)
             {
