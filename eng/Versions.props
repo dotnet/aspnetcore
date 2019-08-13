@@ -222,11 +222,11 @@
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.8.0</GoogleProtobufPackageVersion>
     <GrpcAspNetCorePackageVersion>0.1.22-pre3</GrpcAspNetCorePackageVersion>
-    <IdentityServer4AspNetIdentityPackageVersion>3.0.0-preview3.4</IdentityServer4AspNetIdentityPackageVersion>
-    <IdentityServer4EntityFrameworkPackageVersion>3.0.0-preview3.4</IdentityServer4EntityFrameworkPackageVersion>
-    <IdentityServer4PackageVersion>3.0.0-preview3.4</IdentityServer4PackageVersion>
-    <IdentityServer4StoragePackageVersion>3.0.0-preview3.4</IdentityServer4StoragePackageVersion>
-    <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0-preview3.4</IdentityServer4EntityFrameworkStoragePackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>3.0.0-preview7.33</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>3.0.0-preview7.33</IdentityServer4EntityFrameworkPackageVersion>
+    <IdentityServer4PackageVersion>3.0.0-preview7.33</IdentityServer4PackageVersion>
+    <IdentityServer4StoragePackageVersion>3.0.0-preview7.33</IdentityServer4StoragePackageVersion>
+    <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0-preview7.33</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
