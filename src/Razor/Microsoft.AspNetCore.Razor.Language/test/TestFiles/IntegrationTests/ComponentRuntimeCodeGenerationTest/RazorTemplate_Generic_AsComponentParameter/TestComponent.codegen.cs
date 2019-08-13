@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -20,9 +20,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            (builder2) => {
-                builder2.OpenElement(0, "div");
-                builder2.AddContent(1, 
+            (__builder2) => {
+                __builder2.OpenElement(0, "div");
+                __builder2.AddContent(1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                         person.Name
@@ -31,7 +31,7 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.CloseElement();
+                __builder2.CloseElement();
             }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -40,8 +40,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.OpenComponent<Test.MyComponent>(2);
-            builder.AddAttribute(3, "PersonTemplate", new Microsoft.AspNetCore.Components.RenderFragment<Test.Person>(
+            __builder.OpenComponent<Test.MyComponent>(2);
+            __builder.AddAttribute(3, "PersonTemplate", new Microsoft.AspNetCore.Components.RenderFragment<Test.Person>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                               template
@@ -50,7 +50,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

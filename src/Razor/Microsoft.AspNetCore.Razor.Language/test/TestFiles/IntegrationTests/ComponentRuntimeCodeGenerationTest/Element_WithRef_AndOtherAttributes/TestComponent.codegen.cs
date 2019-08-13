@@ -16,11 +16,11 @@ namespace Test
         #pragma warning restore 0169
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "text");
-            builder.AddAttribute(2, "data-slider-min", 
+            __builder.OpenElement(0, "input");
+            __builder.AddAttribute(1, "type", "text");
+            __builder.AddAttribute(2, "data-slider-min", 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                      Min
@@ -29,7 +29,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.AddElementReferenceCapture(3, (__value) => {
+            __builder.AddElementReferenceCapture(3, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                  _element = __value;
@@ -39,7 +39,7 @@ namespace Test
 #nullable disable
             }
             );
-            builder.CloseElement();
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

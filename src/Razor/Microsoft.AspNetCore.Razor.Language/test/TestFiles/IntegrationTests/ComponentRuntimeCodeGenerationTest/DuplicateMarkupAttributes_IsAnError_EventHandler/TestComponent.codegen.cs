@@ -11,13 +11,13 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "div");
-            builder.AddMarkupContent(1, "\r\n  ");
-            builder.OpenElement(2, "a");
-            builder.AddAttribute(3, "onclick", "test()");
-            builder.AddAttribute(4, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+            __builder.OpenElement(0, "div");
+            __builder.AddMarkupContent(1, "\r\n  ");
+            __builder.OpenElement(2, "a");
+            __builder.AddAttribute(3, "onclick", "test()");
+            __builder.AddAttribute(4, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                 () => {}
@@ -26,10 +26,10 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddContent(5, "Learn the ten cool tricks your compiler author will hate!");
-            builder.CloseElement();
-            builder.AddMarkupContent(6, "\r\n");
-            builder.CloseElement();
+            __builder.AddContent(5, "Learn the ten cool tricks your compiler author will hate!");
+            __builder.CloseElement();
+            __builder.AddMarkupContent(6, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
     }

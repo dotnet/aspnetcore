@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.OpenElement(0, "input");
+            __builder.AddAttribute(1, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                      CurrentDate
@@ -23,9 +23,9 @@ namespace Test
 #line hidden
 #nullable disable
             , format: "MM/dd"));
-            builder.AddAttribute(2, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: "MM/dd"));
-            builder.SetUpdatesAttributeName("value");
-            builder.CloseElement();
+            __builder.AddAttribute(2, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: "MM/dd"));
+            __builder.SetUpdatesAttributeName("value");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

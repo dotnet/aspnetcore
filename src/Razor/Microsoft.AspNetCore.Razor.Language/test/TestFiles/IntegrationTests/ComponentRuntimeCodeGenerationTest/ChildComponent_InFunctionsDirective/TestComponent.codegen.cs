@@ -18,11 +18,11 @@ using Microsoft.AspNetCore.Components.Rendering;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-   RenderChildComponent(builder); 
+   RenderChildComponent(__builder); 
 
 #line default
 #line hidden
@@ -32,16 +32,16 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
 
 #line default
 #line hidden
 #nullable disable
-        builder.AddContent(0, "        ");
-        builder.OpenComponent<Test.MyComponent>(1);
-        builder.CloseComponent();
-        builder.AddMarkupContent(2, "\r\n");
+        __builder.AddContent(0, "        ");
+        __builder.OpenComponent<Test.MyComponent>(1);
+        __builder.CloseComponent();
+        __builder.AddMarkupContent(2, "\r\n");
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
     }

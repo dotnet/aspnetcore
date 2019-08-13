@@ -1,23 +1,23 @@
-Source Location: (55:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
-| RenderChildComponent(builder); |
-Generated Location: (746:24,2 [32] )
-| RenderChildComponent(builder); |
+Source Location: (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderChildComponent(__builder); |
+Generated Location: (748:24,2 [34] )
+| RenderChildComponent(__builder); |
 
-Source Location: (99:4,7 [67] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (101:4,7 [69] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
 |
-Generated Location: (956:33,7 [67] )
+Generated Location: (960:33,7 [69] )
 |
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
 |
 
-Source Location: (191:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (195:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |    }
 |
-Generated Location: (1321:46,0 [7] )
+Generated Location: (1335:46,0 [7] )
 |    }
 |
 

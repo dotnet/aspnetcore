@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(__builder, 0, 1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                     18
@@ -47,12 +47,12 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<T>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, T __arg0, int __seq1, global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>> __arg1)
+        public static void CreateMyComponent_0<T>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, T __arg0, int __seq1, global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>> __arg1)
         {
-        builder.OpenComponent<global::Test.MyComponent<T>>(seq);
-        builder.AddAttribute(__seq0, "Value", __arg0);
-        builder.AddMultipleAttributes(__seq1, __arg1);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<T>>(seq);
+        __builder.AddAttribute(__seq0, "Value", __arg0);
+        __builder.AddMultipleAttributes(__seq1, __arg1);
+        __builder.CloseComponent();
         }
     }
 }

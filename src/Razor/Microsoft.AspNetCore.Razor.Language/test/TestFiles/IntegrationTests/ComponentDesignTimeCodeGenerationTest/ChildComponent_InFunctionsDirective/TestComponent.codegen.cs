@@ -25,11 +25,11 @@ using Microsoft.AspNetCore.Components.Rendering;
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-   RenderChildComponent(builder); 
+   RenderChildComponent(__builder); 
 
 #line default
 #line hidden
@@ -39,14 +39,14 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
         
 
 #line default
 #line hidden
 #nullable disable
-        builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
+        __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
         }
         ));
 #nullable restore

@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             //
             // Looks like:
             //
-            //  public static void CreateFoo_0<T1, T2>(RenderTreeBuilder builder, int seq, int __seq0, T1 __arg0, int __seq1, global::System.Collections.Generic.List<T2> __arg1, int __seq2, string __arg2)
+            //  public static void CreateFoo_0<T1, T2>(RenderTreeBuilder __builder, int seq, int __seq0, T1 __arg0, int __seq1, global::System.Collections.Generic.List<T2> __arg1, int __seq2, string __arg2)
             //  {
             //      builder.OpenComponent<Foo<T1, T2>>();
             //      builder.AddAttribute(__seq0, "Attr0", __arg0);
@@ -88,7 +88,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             writer.Write("(");
             writer.Write("global::");
             writer.Write(ComponentsApi.RenderTreeBuilder.FullTypeName);
-            writer.Write(" builder");
+            writer.Write(" ");
+            writer.Write(ComponentsApi.RenderTreeBuilder.BuilderParameter);
             writer.Write(", ");
             writer.Write("int seq");
 
@@ -118,8 +119,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             writer.WriteLine("{");
 
-            // builder.OpenComponent<TComponent>(42);
-            context.CodeWriter.Write("builder");
+            // _builder.OpenComponent<TComponent>(42);
+            context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.BuilderParameter);
             context.CodeWriter.Write(".");
             context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.OpenComponent);
             context.CodeWriter.Write("<");
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 if (child is ComponentAttributeIntermediateNode attribute)
                 {
-                    context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
+                    context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
                     context.CodeWriter.Write(parameters[index].seqName);
                     context.CodeWriter.Write(", ");
 
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
                 else if (child is SplatIntermediateNode)
                 {
-                    context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddMultipleAttributes);
+                    context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddMultipleAttributes);
                     context.CodeWriter.Write(parameters[index].seqName);
                     context.CodeWriter.Write(", ");
 
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             foreach (var childContent in node.Component.ChildContents)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
+                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.AddAttribute);
                 context.CodeWriter.Write(parameters[index].seqName);
                 context.CodeWriter.Write(", ");
 
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             foreach (var setKey in node.Component.SetKeys)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.SetKey);
+                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.SetKey);
                 context.CodeWriter.Write(parameters[index].parameterName);
                 context.CodeWriter.WriteEndMethodInvocation();
 
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             foreach (var capture in node.Component.Captures)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
+                context.CodeWriter.WriteStartInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
                 context.CodeWriter.Write(parameters[index].seqName);
                 context.CodeWriter.Write(", ");
 
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 index++;
             }
 
-            context.CodeWriter.WriteInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.CloseComponent);
+            context.CodeWriter.WriteInstanceMethodInvocation(ComponentsApi.RenderTreeBuilder.BuilderParameter, ComponentsApi.RenderTreeBuilder.CloseComponent);
 
             writer.WriteLine("}");
 

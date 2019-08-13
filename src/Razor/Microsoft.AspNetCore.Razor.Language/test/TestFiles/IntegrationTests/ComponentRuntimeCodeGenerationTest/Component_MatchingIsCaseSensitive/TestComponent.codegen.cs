@@ -11,14 +11,14 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.CloseComponent();
-            builder.AddMarkupContent(1, "\r\n<mycomponent></mycomponent>\r\n");
-            builder.OpenComponent<Test.MyComponent>(2);
-            builder.AddAttribute(3, "intproperty", "1");
-            builder.AddAttribute(4, "BoolProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.CloseComponent();
+            __builder.AddMarkupContent(1, "\r\n<mycomponent></mycomponent>\r\n");
+            __builder.OpenComponent<Test.MyComponent>(2);
+            __builder.AddAttribute(3, "intproperty", "1");
+            __builder.AddAttribute(4, "BoolProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                                            true
@@ -27,7 +27,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -20,8 +20,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            (builder2) => {
-                builder2.AddMarkupContent(0, "<div>Joey</div>");
+            (__builder2) => {
+                __builder2.AddMarkupContent(0, "<div>Joey</div>");
             }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -30,8 +30,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.OpenComponent<Test.MyComponent>(1);
-            builder.AddAttribute(2, "Person", 
+            __builder.OpenComponent<Test.MyComponent>(1);
+            __builder.AddAttribute(2, "Person", 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                       template
@@ -40,7 +40,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

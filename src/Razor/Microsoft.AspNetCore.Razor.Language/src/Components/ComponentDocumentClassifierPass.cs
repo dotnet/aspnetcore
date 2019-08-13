@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 method.Parameters.Clear();
                 method.Parameters.Add(new MethodParameter()
                 {
-                    ParameterName = "builder",
+                    ParameterName = ComponentsApi.RenderTreeBuilder.BuilderParameter,
                     TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
                 });
             }

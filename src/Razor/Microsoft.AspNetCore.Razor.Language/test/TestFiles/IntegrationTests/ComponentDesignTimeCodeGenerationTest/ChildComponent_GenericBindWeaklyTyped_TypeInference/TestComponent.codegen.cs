@@ -18,9 +18,9 @@ namespace Test
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(__builder, -1, -1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                       18
@@ -61,13 +61,13 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, System.Object __arg1, int __seq2, System.Object __arg2)
+        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem __arg0, int __seq1, System.Object __arg1, int __seq2, System.Object __arg2)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
-        builder.AddAttribute(__seq0, "Value", __arg0);
-        builder.AddAttribute(__seq1, "Item", __arg1);
-        builder.AddAttribute(__seq2, "ItemChanged", __arg2);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        __builder.AddAttribute(__seq0, "Value", __arg0);
+        __builder.AddAttribute(__seq1, "Item", __arg1);
+        __builder.AddAttribute(__seq2, "ItemChanged", __arg2);
+        __builder.CloseComponent();
         }
     }
 }

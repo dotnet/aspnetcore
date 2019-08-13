@@ -334,14 +334,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 //
                 // Writes something like:
                 //
-                // builder.OpenComponent<MyComponent>(0);
-                // builder.AddAttribute(1, "Foo", ...);
-                // builder.AddAttribute(2, "ChildContent", ...);
-                // builder.SetKey(someValue);
-                // builder.AddElementCapture(3, (__value) => _field = __value);
-                // builder.CloseComponent();
+                // _builder.OpenComponent<MyComponent>(0);
+                // _builder.AddAttribute(1, "Foo", ...);
+                // _builder.AddAttribute(2, "ChildContent", ...);
+                // _builder.SetKey(someValue);
+                // _builder.AddElementCapture(3, (__value) => _field = __value);
+                // _builder.CloseComponent();
 
-                // builder.OpenComponent<TComponent>(42);
+                // _builder.OpenComponent<TComponent>(42);
                 context.CodeWriter.Write(_scopeStack.BuilderVarName);
                 context.CodeWriter.Write(".");
                 context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.OpenComponent);
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     context.RenderNode(capture);
                 }
 
-                // builder.CloseComponent();
+                // _builder.CloseComponent();
                 context.CodeWriter.Write(_scopeStack.BuilderVarName);
                 context.CodeWriter.Write(".");
                 context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.CloseComponent);
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(node));
             }
 
-            // builder.AddAttribute(1, "Foo", 42);
+            // _builder.AddAttribute(1, "Foo", 42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
             context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.AddAttribute);
@@ -656,9 +656,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Writes something like:
             //
-            // builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
+            // _builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
             // OR
-            // builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
+            // _builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
             BeginWriteAttribute(context.CodeWriter, node.AttributeName);
             context.CodeWriter.Write($"({node.TypeName})(");
 
@@ -716,7 +716,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             // Looks like:
             //
-            // builder.SetKey(_keyValue);
+            // _builder.SetKey(_keyValue);
 
             var codeWriter = context.CodeWriter;
 
@@ -752,7 +752,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Looks like:
             //
-            // builder.AddMultipleAttributes(2, ...);
+            // _builder.AddMultipleAttributes(2, ...);
             context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddMultipleAttributes}");
             context.CodeWriter.Write((_sourceSequence++).ToString());
             context.CodeWriter.WriteParameterSeparator();
@@ -790,9 +790,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             // Looks like:
             //
-            // builder.AddComponentReferenceCapture(2, (__value) = { _field = (MyComponent)__value; });
+            // _builder.AddComponentReferenceCapture(2, (__value) = { _field = (MyComponent)__value; });
             // OR
-            // builder.AddElementReferenceCapture(2, (__value) = { _field = (ElementReference)__value; });
+            // _builder.AddElementReferenceCapture(2, (__value) = { _field = (ElementReference)__value; });
             var codeWriter = context.CodeWriter;
 
             var methodName = node.IsComponentCapture

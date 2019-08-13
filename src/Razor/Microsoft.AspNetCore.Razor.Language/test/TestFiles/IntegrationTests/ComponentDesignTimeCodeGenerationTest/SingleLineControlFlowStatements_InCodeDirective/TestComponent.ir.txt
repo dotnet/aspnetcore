@@ -17,12 +17,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (60:2,7 [217] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (60:2,7 [217] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder builder)\n    {\n        var output = string.Empty;\n        if (builder == null) output = "Builder is null!";\n        else output = "Builder is not null!";\n        
-            MarkupElement - (277:8,8 [22] x:\dir\subdir\Test\TestComponent.cshtml) - p
-                HtmlContent - (280:8,11 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (280:8,11 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
-                CSharpExpression - (289:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (289:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
-            CSharpCode - (299:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (299:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n
+            CSharpCode - (60:2,7 [221] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (60:2,7 [221] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder __builder)\n    {\n        var output = string.Empty;\n        if (__builder == null) output = "Builder is null!";\n        else output = "Builder is not null!";\n        
+            MarkupElement - (281:8,8 [22] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                HtmlContent - (284:8,11 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (284:8,11 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
+                CSharpExpression - (293:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (293:8,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
+            CSharpCode - (303:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (303:8,30 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n

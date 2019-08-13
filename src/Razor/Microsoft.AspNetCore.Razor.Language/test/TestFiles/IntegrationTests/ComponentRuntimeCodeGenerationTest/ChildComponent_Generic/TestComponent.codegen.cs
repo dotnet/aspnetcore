@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent<string>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(
+            __builder.OpenComponent<Test.MyComponent<string>>(0);
+            __builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<string>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                   "hi"
@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

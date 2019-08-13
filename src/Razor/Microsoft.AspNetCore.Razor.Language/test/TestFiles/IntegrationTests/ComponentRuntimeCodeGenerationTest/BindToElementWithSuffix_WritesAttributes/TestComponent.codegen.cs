@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.OpenElement(0, "div");
+            __builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                    ParentValue
@@ -23,9 +23,9 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
-            builder.SetUpdatesAttributeName("myvalue");
-            builder.CloseElement();
+            __builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
+            __builder.SetUpdatesAttributeName("myvalue");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

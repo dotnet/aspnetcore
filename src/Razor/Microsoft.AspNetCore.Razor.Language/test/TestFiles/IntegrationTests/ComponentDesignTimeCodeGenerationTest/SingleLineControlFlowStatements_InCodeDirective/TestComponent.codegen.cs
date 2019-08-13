@@ -25,17 +25,17 @@ using Microsoft.AspNetCore.Components.Rendering;
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
         }
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
         var output = string.Empty;
-        if (builder == null) output = "Builder is null!";
+        if (__builder == null) output = "Builder is null!";
         else output = "Builder is not null!";
         
 

@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(__builder, 0, 1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "hi"
@@ -22,8 +22,8 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.AddMarkupContent(2, "\r\n");
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 3, 4, 
+            __builder.AddMarkupContent(2, "\r\n");
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(__builder, 3, 4, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "how are you?"
@@ -32,8 +32,8 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.AddMarkupContent(5, "\r\n");
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_2(builder, 6, 7, 
+            __builder.AddMarkupContent(5, "\r\n");
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_2(__builder, 6, 7, 
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "bye!"
@@ -51,23 +51,23 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem __arg0)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
-        builder.AddAttribute(__seq0, "Item", __arg0);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        __builder.AddAttribute(__seq0, "Item", __arg0);
+        __builder.CloseComponent();
         }
-        public static void CreateMyComponent_1<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_1<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem __arg0)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
-        builder.AddAttribute(__seq0, "Item", __arg0);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        __builder.AddAttribute(__seq0, "Item", __arg0);
+        __builder.CloseComponent();
         }
-        public static void CreateMyComponent_2<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0)
+        public static void CreateMyComponent_2<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem __arg0)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
-        builder.AddAttribute(__seq0, "Item", __arg0);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        __builder.AddAttribute(__seq0, "Item", __arg0);
+        __builder.CloseComponent();
         }
     }
 }

@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateTest_MyComponent_0(builder, 0, 1, 
+            __Blazor.Test.TestComponent.TypeInference.CreateTest_MyComponent_0(__builder, 0, 1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                           "hi"
@@ -21,10 +21,10 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 2, (context) => (builder2) => {
-                builder2.AddMarkupContent(3, "\r\n  ");
-                builder2.OpenElement(4, "div");
-                builder2.AddContent(5, 
+            , 2, (context) => (__builder2) => {
+                __builder2.AddMarkupContent(3, "\r\n  ");
+                __builder2.OpenElement(4, "div");
+                __builder2.AddContent(5, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
         context.ToLower()
@@ -33,8 +33,8 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.CloseElement();
-                builder2.AddMarkupContent(6, "\r\n");
+                __builder2.CloseElement();
+                __builder2.AddMarkupContent(6, "\r\n");
             }
             );
         }
@@ -46,12 +46,12 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateTest_MyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, global::Microsoft.AspNetCore.Components.RenderFragment<TItem> __arg1)
+        public static void CreateTest_MyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem __arg0, int __seq1, global::Microsoft.AspNetCore.Components.RenderFragment<TItem> __arg1)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
-        builder.AddAttribute(__seq0, "Item", __arg0);
-        builder.AddAttribute(__seq1, "ChildContent", __arg1);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        __builder.AddAttribute(__seq0, "Item", __arg0);
+        __builder.AddAttribute(__seq1, "ChildContent", __arg1);
+        __builder.CloseComponent();
         }
     }
 }

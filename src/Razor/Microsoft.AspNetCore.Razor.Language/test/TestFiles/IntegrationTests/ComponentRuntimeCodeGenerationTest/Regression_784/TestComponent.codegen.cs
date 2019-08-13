@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "p");
-            builder.AddAttribute(1, "onmouseover", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+            __builder.OpenElement(0, "p");
+            __builder.AddAttribute(1, "onmouseover", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                  OnComponentHover
@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(2, "style", "background:" + " " + (
+            __builder.AddAttribute(2, "style", "background:" + " " + (
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                        ParentBgColor
@@ -32,7 +32,7 @@ namespace Test
 #line hidden
 #nullable disable
             ) + ";");
-            builder.CloseElement();
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

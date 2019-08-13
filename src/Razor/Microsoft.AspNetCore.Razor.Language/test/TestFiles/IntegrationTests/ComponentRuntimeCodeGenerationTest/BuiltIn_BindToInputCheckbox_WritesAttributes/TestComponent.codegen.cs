@@ -11,11 +11,11 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "checkbox");
-            builder.AddAttribute(2, "checked", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.OpenElement(0, "input");
+            __builder.AddAttribute(1, "type", "checkbox");
+            __builder.AddAttribute(2, "checked", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                Enabled
@@ -24,9 +24,9 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled));
-            builder.SetUpdatesAttributeName("checked");
-            builder.CloseElement();
+            __builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled));
+            __builder.SetUpdatesAttributeName("checked");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

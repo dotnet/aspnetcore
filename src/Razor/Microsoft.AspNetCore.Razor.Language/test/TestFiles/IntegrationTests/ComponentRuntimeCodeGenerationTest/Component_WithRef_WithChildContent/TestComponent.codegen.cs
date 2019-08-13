@@ -16,16 +16,16 @@ namespace Test
         #pragma warning restore 0169
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "SomeProp", "val");
-            builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-                builder2.AddMarkupContent(3, "\r\n    Some ");
-                builder2.AddMarkupContent(4, "<el>further</el> content\r\n");
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "SomeProp", "val");
+            __builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.AddMarkupContent(3, "\r\n    Some ");
+                __builder2.AddMarkupContent(4, "<el>further</el> content\r\n");
             }
             ));
-            builder.AddComponentReferenceCapture(5, (__value) => {
+            __builder.AddComponentReferenceCapture(5, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                    myInstance = (Test.MyComponent)__value;
@@ -35,7 +35,7 @@ namespace Test
 #nullable disable
             }
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

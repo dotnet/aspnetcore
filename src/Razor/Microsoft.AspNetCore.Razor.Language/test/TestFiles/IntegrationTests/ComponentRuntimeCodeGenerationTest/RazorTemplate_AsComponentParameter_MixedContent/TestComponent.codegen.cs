@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -20,10 +20,10 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            (builder2) => {
-                builder2.OpenElement(0, "li");
-                builder2.AddContent(1, "#");
-                builder2.AddContent(2, 
+            (__builder2) => {
+                __builder2.OpenElement(0, "li");
+                __builder2.AddContent(1, "#");
+                __builder2.AddContent(2, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                context.Index
@@ -32,8 +32,8 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.AddContent(3, " - ");
-                builder2.AddContent(4, 
+                __builder2.AddContent(3, " - ");
+                __builder2.AddContent(4, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                 context.Item.ToLower()
@@ -42,7 +42,7 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.CloseElement();
+                __builder2.CloseElement();
             }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -51,8 +51,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.OpenComponent<Test.MyComponent>(5);
-            builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(
+            __builder.OpenComponent<Test.MyComponent>(5);
+            __builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                         template
@@ -61,7 +61,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

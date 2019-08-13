@@ -17,9 +17,9 @@ using System;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.AddMarkupContent(0, "<h1>Hello</h1>");
+            __builder.AddMarkupContent(0, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998
     }

@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddComponentReferenceCapture(1, (__value) => {
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddComponentReferenceCapture(1, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                    myInstance = (Test.MyComponent)__value;
@@ -24,7 +24,7 @@ namespace Test
 #nullable disable
             }
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore

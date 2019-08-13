@@ -11,14 +11,14 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-                builder2.AddContent(2, "hello");
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.AddContent(2, "hello");
             }
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

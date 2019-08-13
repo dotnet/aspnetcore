@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(__builder, 0, 1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                      "hi"
@@ -29,9 +29,9 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , 3, (context) => (builder2) => {
-                builder2.OpenElement(4, "div");
-                builder2.AddContent(5, 
+            , 3, (context) => (__builder2) => {
+                __builder2.OpenElement(4, "div");
+                __builder2.AddContent(5, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                       context.ToLower()
@@ -40,11 +40,11 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.CloseElement();
+                __builder2.CloseElement();
             }
-            , 6, (item) => (builder2) => {
-                builder2.AddMarkupContent(7, "\r\n  ");
-                builder2.AddContent(8, 
+            , 6, (item) => (__builder2) => {
+                __builder2.AddMarkupContent(7, "\r\n  ");
+                __builder2.AddContent(8, 
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
    System.Math.Max(0, item.Item)
@@ -53,7 +53,7 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                builder2.AddMarkupContent(9, ";\r\n");
+                __builder2.AddMarkupContent(9, ";\r\n");
             }
             );
         }
@@ -65,14 +65,14 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<TItem1, TItem2>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder, int seq, int __seq0, TItem1 __arg0, int __seq1, global::System.Collections.Generic.List<TItem2> __arg1, int __seq2, global::Microsoft.AspNetCore.Components.RenderFragment<TItem1> __arg2, int __seq3, global::Microsoft.AspNetCore.Components.RenderFragment<global::Test.MyComponent<TItem1, TItem2>.Context> __arg3)
+        public static void CreateMyComponent_0<TItem1, TItem2>(global::Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, int seq, int __seq0, TItem1 __arg0, int __seq1, global::System.Collections.Generic.List<TItem2> __arg1, int __seq2, global::Microsoft.AspNetCore.Components.RenderFragment<TItem1> __arg2, int __seq3, global::Microsoft.AspNetCore.Components.RenderFragment<global::Test.MyComponent<TItem1, TItem2>.Context> __arg3)
         {
-        builder.OpenComponent<global::Test.MyComponent<TItem1, TItem2>>(seq);
-        builder.AddAttribute(__seq0, "Item", __arg0);
-        builder.AddAttribute(__seq1, "Items", __arg1);
-        builder.AddAttribute(__seq2, "ChildContent", __arg2);
-        builder.AddAttribute(__seq3, "AnotherChildContent", __arg3);
-        builder.CloseComponent();
+        __builder.OpenComponent<global::Test.MyComponent<TItem1, TItem2>>(seq);
+        __builder.AddAttribute(__seq0, "Item", __arg0);
+        __builder.AddAttribute(__seq1, "Items", __arg1);
+        __builder.AddAttribute(__seq2, "ChildContent", __arg2);
+        __builder.AddAttribute(__seq3, "AnotherChildContent", __arg3);
+        __builder.CloseComponent();
         }
     }
 }

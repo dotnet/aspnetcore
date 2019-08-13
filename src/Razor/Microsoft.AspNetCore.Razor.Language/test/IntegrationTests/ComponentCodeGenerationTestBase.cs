@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 @using Microsoft.AspNetCore.Components.Rendering;
 
 @code {
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
         var output = string.Empty;
-        if (builder == null) output = ""Builder is null!"";
+        if (__builder == null) output = ""Builder is null!"";
         else output = ""Builder is not null!"";
         <p>Output: @output</p>
     }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
 @{
     var output = string.Empty;
-    if (builder == null) output = ""Builder is null!"";
+    if (__builder == null) output = ""Builder is null!"";
     else output = ""Builder is not null!"";
     <p>Output: @output</p>
 }");
@@ -85,10 +85,10 @@ namespace Test
             var generated = CompileToCSharp(@"
 @using Microsoft.AspNetCore.Components.Rendering;
 
-@{ RenderChildComponent(builder); }
+@{ RenderChildComponent(__builder); }
 
 @code {
-    void RenderChildComponent(RenderTreeBuilder builder)
+    void RenderChildComponent(RenderTreeBuilder __builder)
     {
         <MyComponent />
     }

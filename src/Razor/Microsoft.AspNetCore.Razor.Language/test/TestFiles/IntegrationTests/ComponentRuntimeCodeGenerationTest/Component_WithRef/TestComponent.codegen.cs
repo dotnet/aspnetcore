@@ -16,12 +16,12 @@ namespace Test
         #pragma warning restore 0169
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "ParamBefore", "before");
-            builder.AddAttribute(2, "ParamAfter", "after");
-            builder.AddComponentReferenceCapture(3, (__value) => {
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "ParamBefore", "before");
+            __builder.AddAttribute(2, "ParamAfter", "after");
+            __builder.AddComponentReferenceCapture(3, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                         myInstance = (Test.MyComponent)__value;
@@ -31,7 +31,7 @@ namespace Test
 #nullable disable
             }
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }
