@@ -107,6 +107,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             try
             {
+                if (!File.Exists(file))
+                {
+                    throw new ReferenceAssemblyNotFoundException(file);
+                }
+
                 using var peReader = new PEReader(File.OpenRead(file));
                 if (!peReader.HasMetadata)
                 {

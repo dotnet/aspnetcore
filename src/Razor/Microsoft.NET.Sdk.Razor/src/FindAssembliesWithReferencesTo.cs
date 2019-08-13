@@ -51,6 +51,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var assemblyNames = provider.ResolveAssemblies();
                 ResolvedAssemblies = assemblyNames.ToArray();
             }
+            catch (ReferenceAssemblyNotFoundException ex)
+            {
+                // Print a warning and return. We cannot produce a correct document at this point.
+                var warning = "Reference assembly {0} could not be found. This is typically caused by build errors in referenced projects.";
+                Log.LogWarning(null, "RAZORSDK1007", null, null, 0, 0, 0, 0, warning, ex.FileName);
+                return true;
+            }
             catch (Exception ex)
             {
                 Log.LogErrorFromException(ex);

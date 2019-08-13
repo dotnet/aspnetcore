@@ -177,5 +177,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.Equal(outputFilethumbPrint, GetThumbPrint(outputFile));
             }
         }
+
+        [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        public async Task Build_ProjectWithMissingAssemblyReference_PrintsWarning()
+        {
+            var result = await DotnetMSBuild("Build /p:BuildProjectReferences=false");
+
+            Assert.BuildFailed(result);
+
+            Assert.BuildWarning(result, "RAZORSDK1007");
+            Assert.BuildError(result, "CS0006");
+        }
     }
 }
