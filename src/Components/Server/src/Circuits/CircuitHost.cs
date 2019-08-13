@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     var count = Descriptors.Count;
                     for (var i = 0; i < count; i++)
                     {
-                        var (componentType, domElementSelector) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, domElementSelector);
+                        var (componentType, sequence) = Descriptors[i];
+                        await Renderer.AddComponentAsync(componentType, sequence.ToString());
                     }
 
                     Log.InitializationSucceeded(_logger);
@@ -543,8 +543,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                return
-                    $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
+                return $"There was an unhandled exception on the current circuit, so this circuit will be terminated. For more details turn on " +
                     $"detailed exceptions in '{typeof(CircuitOptions).Name}.{nameof(CircuitOptions.DetailedErrors)}'. {additionalInformation}";
             }
         }

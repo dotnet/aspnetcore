@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override void InitializeAsyncCore()
         {
+            base.InitializeAsyncCore();
+            // We need this as we've changed ServerPathBase to "/subdir/"
             Navigate(ServerPathBase, noReload: false);
             WaitUntilTestSelectorReady();
         }

@@ -324,9 +324,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public static partial class HtmlHelperComponentExtensions
     {
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, Microsoft.AspNetCore.Mvc.Rendering.RenderMode renderMode, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
     public static partial class HtmlHelperDisplayExtensions
     {
@@ -609,6 +609,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void Dispose() { }
         public void EndForm() { }
         protected virtual void GenerateEndForm() { }
+    }
+    public enum RenderMode
+    {
+        Static = 1,
+        Server = 2,
+        ServerPrerendered = 3,
     }
     public partial class SelectList : Microsoft.AspNetCore.Mvc.Rendering.MultiSelectList
     {

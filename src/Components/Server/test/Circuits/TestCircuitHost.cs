@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
                     NullLoggerFactory.Instance,
                     new CircuitOptions(),
-                    jsRuntime,
                     clientProxy,
                     NullLogger.Instance);
             }

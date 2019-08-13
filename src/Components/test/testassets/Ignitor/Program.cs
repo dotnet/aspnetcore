@@ -50,7 +50,7 @@ namespace Ignitor
                 }
             };
 
-            await client.ConnectAsync(uri, prerendered: true);
+            await client.ConnectAsync(uri);
             await done.Task;
 
             return 0;

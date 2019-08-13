@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
-        private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
         private readonly CircuitOptions _options;
         private readonly ILogger _logger;
@@ -37,12 +36,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
             CircuitOptions options,
-            IJSRuntime jsRuntime,
             CircuitClientProxy client,
             ILogger logger)
             : base(serviceProvider, loggerFactory)
         {
-            _jsRuntime = jsRuntime;
             _client = client;
             _options = options;
             _logger = logger;
@@ -61,11 +58,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
 
-            var attachComponentTask = _jsRuntime.InvokeVoidAsync(
-                "Blazor._internal.attachRootComponentToElement",
-                domElementSelector,
-                componentId);
-            CaptureAsyncExceptions(attachComponentTask.AsTask());
+            var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
+            CaptureAsyncExceptions(attachComponentTask);
 
             return RenderRootComponentAsync(componentId);
         }

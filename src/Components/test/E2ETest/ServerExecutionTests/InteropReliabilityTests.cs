@@ -618,7 +618,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private async Task GoToTestComponent(IList<Batch> batches)
         {
             var rootUri = _serverFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
             Assert.Single(batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");

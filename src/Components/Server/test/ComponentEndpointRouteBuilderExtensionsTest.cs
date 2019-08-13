@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
                 .UseRouting()
                 .UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub<MyComponent>("app", dispatchOptions => called = true);
+                endpoints.MapBlazorHub(dispatchOptions => called = true);
             }).Build();
 
             // Assert
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
                 .UseRouting()
                 .UseEndpoints(endpoints =>
                 {
-                    endpoints.MapBlazorHub(Mock.Of<IComponent>().GetType(),"app", "_blazor", dispatchOptions => called = true);
+                    endpoints.MapBlazorHub("_blazor", dispatchOptions => called = true);
                 }).Build();
 
             // Assert

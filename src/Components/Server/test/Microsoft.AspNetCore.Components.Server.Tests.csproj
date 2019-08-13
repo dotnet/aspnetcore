@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -18,6 +18,9 @@
     <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack" />
+
+    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentSerializer.cs" LinkBase="Mvc" />
+    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentInvocationSequence.cs" LinkBase="Mvc" />
   </ItemGroup>
 
 </Project>

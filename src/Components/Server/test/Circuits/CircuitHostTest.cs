@@ -252,14 +252,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
-                Mock.Of<IJSRuntime>(),
                 Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), jsRuntime, new CircuitClientProxy(client, "connection"), NullLogger.Instance)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
+                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), new CircuitClientProxy(client, "connection"), NullLogger.Instance)
             {
             }
 

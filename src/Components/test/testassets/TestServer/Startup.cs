@@ -1,10 +1,7 @@
 using System.Threading.Tasks;
-using BasicTestApp;
-using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,16 +79,30 @@ namespace TestServer
                     options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
 
                     // We want the default to be en-US so that the tests for bind can work consistently.
-                    options.SetDefaultCulture("en-US"); 
+                    options.SetDefaultCulture("en-US");
                 });
 
-                app.UseRouting();
+                app.MapWhen(ctx => ctx.Request.Cookies.TryGetValue("__blazor_execution_mode", out var value) && value == "server",
+                    child =>
+                    {
+                        child.UseRouting();
+                        child.UseEndpoints(childEndpoints =>
+                        {
+                            childEndpoints.MapBlazorHub();
+                            childEndpoints.MapFallbackToPage("/_ServerHost");
+                        });
+                    });
 
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapBlazorHub(typeof(Index), selector: "root");
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
-                });
+                app.MapWhen(ctx => !ctx.Request.Query.ContainsKey("__blazor_execution_mode"),
+                    child =>
+                    {
+                        child.UseRouting();
+                        child.UseEndpoints(childEndpoints =>
+                        {
+                            childEndpoints.MapBlazorHub();
+                            childEndpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                        });
+                    });
             });
 
             // Separately, mount a prerendered server-side Blazor app on /prerendered
@@ -103,7 +114,7 @@ namespace TestServer
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapBlazorHub<TestRouter>(selector: "app");
+                    endpoints.MapBlazorHub();
                 });
             });
 
