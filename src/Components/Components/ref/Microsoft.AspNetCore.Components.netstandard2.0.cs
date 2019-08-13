@@ -16,6 +16,15 @@ namespace Microsoft.AspNetCore.Components
         public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync();
         protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
     }
+    public sealed partial class AuthorizeRouteView : Microsoft.AspNetCore.Components.RouteView
+    {
+        public AuthorizeRouteView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected override void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+    }
     public partial class AuthorizeView : Microsoft.AspNetCore.Components.AuthorizeViewCore
     {
         public AuthorizeView() { }
@@ -38,7 +47,7 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected abstract Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
@@ -95,7 +104,7 @@ namespace Microsoft.AspNetCore.Components
         public CascadingAuthenticationState() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnInitialized() { }
         void System.IDisposable.Dispose() { }
     }
@@ -105,7 +114,7 @@ namespace Microsoft.AspNetCore.Components
         public CascadingParameterAttribute() { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class CascadingValue<T> : Microsoft.AspNetCore.Components.IComponent
+    public partial class CascadingValue<TValue> : Microsoft.AspNetCore.Components.IComponent
     {
         public CascadingValue() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -115,7 +124,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public T Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
@@ -127,7 +136,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
         public ComponentBase() { }
-        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
@@ -179,17 +188,17 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.EventCallback Create(object receiver, System.Func<object, System.Threading.Tasks.Task> callback) { throw null; }
         public Microsoft.AspNetCore.Components.EventCallback Create(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> CreateInferred<T>(object receiver, System.Action<T> callback, T value) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> CreateInferred<TValue>(object receiver, System.Action<TValue> callback, TValue value) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> CreateInferred<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback, T value) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> CreateInferred<TValue>(object receiver, System.Func<TValue, System.Threading.Tasks.Task> callback, TValue value) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, Microsoft.AspNetCore.Components.EventCallback callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, Microsoft.AspNetCore.Components.EventCallback callback) { throw null; }
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, Microsoft.AspNetCore.Components.EventCallback<T> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Action callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Action<T> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
-        public Microsoft.AspNetCore.Components.EventCallback<T> Create<T>(object receiver, System.Func<T, System.Threading.Tasks.Task> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, Microsoft.AspNetCore.Components.EventCallback<TValue> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Action callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Action<TValue> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Func<System.Threading.Tasks.Task> callback) { throw null; }
+        public Microsoft.AspNetCore.Components.EventCallback<TValue> Create<TValue>(object receiver, System.Func<TValue, System.Threading.Tasks.Task> callback) { throw null; }
     }
     public static partial class EventCallbackFactoryBinderExtensions
     {
@@ -232,13 +241,13 @@ namespace Microsoft.AspNetCore.Components
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct EventCallback<T>
+    public readonly partial struct EventCallback<TValue>
     {
         private readonly object _dummy;
-        public static readonly Microsoft.AspNetCore.Components.EventCallback<T> Empty;
+        public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
-        public System.Threading.Tasks.Task InvokeAsync(T arg) { throw null; }
+        public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
     public partial interface IComponent
     {
@@ -277,6 +286,16 @@ namespace Microsoft.AspNetCore.Components
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public partial class LayoutView : Microsoft.AspNetCore.Components.IComponent
+    {
+        public LayoutView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public System.Type Layout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
     public sealed partial class LocationChangeException : System.Exception
     {
@@ -323,20 +342,6 @@ namespace Microsoft.AspNetCore.Components
         protected OwningComponentBase() { }
         protected TService Service { get { throw null; } }
     }
-    public partial class PageDisplay : Microsoft.AspNetCore.Components.IComponent
-    {
-        public PageDisplay() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Type Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public System.Collections.Generic.IDictionary<string, object> PageParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
-    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class ParameterAttribute : System.Attribute
     {
@@ -360,11 +365,11 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
         public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
         public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
-        public T GetValueOrDefault<T>(string parameterName) { throw null; }
-        public T GetValueOrDefault<T>(string parameterName, T defaultValue) { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName) { throw null; }
+        public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue) { throw null; }
         public void SetParameterProperties(object target) { }
         public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
-        public bool TryGetValue<T>(string parameterName, out T result) { throw null; }
+        public bool TryGetValue<TValue>(string parameterName, out TValue result) { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator
         {
@@ -374,8 +379,8 @@ namespace Microsoft.AspNetCore.Components
             public bool MoveNext() { throw null; }
         }
     }
-    public delegate void RenderFragment(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder);
-    public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<T>(T value);
+    public delegate void RenderFragment(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder);
+    public delegate Microsoft.AspNetCore.Components.RenderFragment RenderFragment<TValue>(TValue value);
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderHandle
     {
@@ -390,6 +395,23 @@ namespace Microsoft.AspNetCore.Components
     {
         public RouteAttribute(string template) { }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class RouteData
+    {
+        public RouteData(System.Type pageType, System.Collections.Generic.IReadOnlyDictionary<string, object> routeValues) { }
+        public System.Type PageType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public partial class RouteView : Microsoft.AspNetCore.Components.IComponent
+    {
+        public RouteView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public System.Type DefaultLayout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RouteData RouteData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
+        protected virtual void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.CompilerServices
@@ -444,7 +466,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public FieldIdentifier(object model, string fieldName) { throw null; }
         public string FieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<T>(System.Linq.Expressions.Expression<System.Func<T>> accessor) { throw null; }
+        public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) { throw null; }
         public override bool Equals(object obj) { throw null; }
         public override int GetHashCode() { throw null; }
@@ -513,17 +535,49 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public abstract Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get; }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
-        protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public virtual System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.Rendering.EventFieldInfo fieldInfo, System.EventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
         protected Microsoft.AspNetCore.Components.IComponent InstantiateComponent(System.Type componentType) { throw null; }
+        protected virtual void ProcessPendingRender() { }
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected System.Threading.Tasks.Task RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) { throw null; }
         protected abstract System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch);
+    }
+    public sealed partial class RenderTreeBuilder : System.IDisposable
+    {
+        public RenderTreeBuilder() { }
+        public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
+        public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
+        public void AddAttribute(int sequence, string name, bool value) { }
+        public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
+        public void AddAttribute(int sequence, string name, object value) { }
+        public void AddAttribute(int sequence, string name, string value) { }
+        public void AddAttribute<TArgument>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) { }
+        public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
+        public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
+        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
+        public void AddContent(int sequence, object textContent) { }
+        public void AddContent(int sequence, string textContent) { }
+        public void AddContent<TValue>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<TValue> fragment, TValue value) { }
+        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
+        public void AddMarkupContent(int sequence, string markupContent) { }
+        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
+        public void Clear() { }
+        public void CloseComponent() { }
+        public void CloseElement() { }
+        public void CloseRegion() { }
+        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
+        public void OpenComponent(int sequence, System.Type componentType) { }
+        public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
+        public void OpenElement(int sequence, string elementName) { }
+        public void OpenRegion(int sequence) { }
+        public void SetKey(object value) { }
+        public void SetUpdatesAttributeName(string updatesAttributeName) { }
+        void System.IDisposable.Dispose() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -547,38 +601,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public readonly int Count;
         public ArrayRange(T[] array, int count) { throw null; }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<T> Clone() { throw null; }
-    }
-    public sealed partial class RenderTreeBuilder : System.IDisposable
-    {
-        public RenderTreeBuilder() { }
-        public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
-        public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
-        public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
-        public void AddAttribute(int sequence, string name, object value) { }
-        public void AddAttribute(int sequence, string name, string value) { }
-        public void AddAttribute<T>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<T> value) { }
-        public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
-        public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
-        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
-        public void AddContent(int sequence, object textContent) { }
-        public void AddContent(int sequence, string textContent) { }
-        public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
-        public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
-        public void AddMarkupContent(int sequence, string markupContent) { }
-        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
-        public void Clear() { }
-        public void CloseComponent() { }
-        public void CloseElement() { }
-        public void CloseRegion() { }
-        public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
-        public void OpenComponent(int sequence, System.Type componentType) { }
-        public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
-        public void OpenElement(int sequence, string elementName) { }
-        public void OpenRegion(int sequence) { }
-        public void SetKey(object value) { }
-        public void SetUpdatesAttributeName(string updatesAttributeName) { }
-        void System.IDisposable.Dispose() { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
@@ -648,15 +670,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Reflection.Assembly AppAssembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.RouteData> Found { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment NotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
-        protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }

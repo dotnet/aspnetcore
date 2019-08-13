@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
@@ -23,8 +23,9 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
-        private readonly RendererRegistry _rendererRegistry;
+        private readonly CircuitOptions _options;
         private readonly ILogger _logger;
+        internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
         private long _nextRenderId = 1;
         private bool _disposing = false;
 
@@ -39,26 +40,20 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         public RemoteRenderer(
             IServiceProvider serviceProvider,
             ILoggerFactory loggerFactory,
-            RendererRegistry rendererRegistry,
+            CircuitOptions options,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
             HtmlEncoder encoder,
             ILogger logger)
             : base(serviceProvider, loggerFactory, encoder.Encode)
         {
-            _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
-
-            Id = _rendererRegistry.Add(this);
+            _options = options;
             _logger = logger;
         }
 
-        internal ConcurrentQueue<UnacknowledgedRenderBatch> UnacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
-
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
-
-        public int Id { get; }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -73,12 +68,39 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var attachComponentTask = _jsRuntime.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",
-                Id,
                 domElementSelector,
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
 
             return RenderRootComponentAsync(componentId);
+        }
+
+        protected override void ProcessPendingRender()
+        {
+            if (_unacknowledgedRenderBatches.Count >= _options.MaxBufferedUnacknowledgedRenderBatches)
+            {
+                // If we got here it means we are at max capacity, so we don't want to actually process the queue,
+                // as we have a client that is not acknowledging render batches fast enough (something we consider needs
+                // to be fast).
+                // The result is something as follows:
+                // Lets imagine an extreme case where the server produces a new batch every milisecond.
+                // Lets say the client is able to ACK a batch every 100 miliseconds.
+                // When the app starts the client might see the sequence 0->(MaxUnacknowledgedRenderBatches-1) and then
+                // after 100 miliseconds it sees it jump to 1xx, then to 2xx where xx is something between {0..99} the
+                // reason for this is that the server slows down rendering new batches to as fast as the client can consume
+                // them.
+                // Similarly, if a client were to send events at a faster pace than the server can consume them, the server
+                // would still proces the events, but would not produce new renders until it gets an ack that frees up space
+                // for a new render.
+                // We should never see UnacknowledgedRenderBatches.Count > _options.MaxBufferedUnacknowledgedRenderBatches
+
+                // But if we do, it's safer to simply disable the rendering in that case too instead of allowing batches to
+                Log.FullUnacknowledgedRenderBatchesQueue(_logger);
+
+                return;
+            }
+
+            base.ProcessPendingRender();
         }
 
         /// <inheritdoc />
@@ -103,8 +125,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         protected override void Dispose(bool disposing)
         {
             _disposing = true;
-            _rendererRegistry.TryRemove(Id);
-            while (UnacknowledgedRenderBatches.TryDequeue(out var entry))
+            while (_unacknowledgedRenderBatches.TryDequeue(out var entry))
             {
                 entry.CompletionSource.TrySetCanceled();
                 entry.Data.Dispose();
@@ -146,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 // Buffer the rendered batches no matter what. We'll send it down immediately when the client
                 // is connected or right after the client reconnects.
 
-                UnacknowledgedRenderBatches.Enqueue(pendingRender);
+                _unacknowledgedRenderBatches.Enqueue(pendingRender);
             }
             catch
             {
@@ -167,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // All the batches are sent in order based on the fact that SignalR
             // provides ordering for the underlying messages and that the batches
             // are always in order.
-            return Task.WhenAll(UnacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+            return Task.WhenAll(_unacknowledgedRenderBatches.Select(b => WriteBatchBytesAsync(b)));
         }
 
         private async Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending)
@@ -190,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
                 Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId, pending.BatchId, pending.Data.Count);
                 var segment = new ArraySegment<byte>(pending.Data.Buffer, 0, pending.Data.Count);
-                await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, segment);
+                await _client.SendAsync("JS.RenderBatch", pending.BatchId, segment);
             }
             catch (Exception e)
             {
@@ -203,12 +224,12 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // disposed.
         }
 
-        public void OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
+        public Task OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
         {
             if (_disposing)
             {
                 // Disposing so don't do work.
-                return;
+                return Task.CompletedTask;
             }
 
             // When clients send acks we know for sure they received and applied the batch.
@@ -234,18 +255,21 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // synchronizes calls to hub methods. That is, it won't issue more than one call to this method from the same hub
             // at the same time on different threads.
 
-            if (!UnacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
+            if (!_unacknowledgedRenderBatches.TryPeek(out var nextUnacknowledgedBatch) || incomingBatchId < nextUnacknowledgedBatch.BatchId)
             {
                 Log.ReceivedDuplicateBatchAck(_logger, incomingBatchId);
+                return Task.CompletedTask;
             }
             else
             {
                 var lastBatchId = nextUnacknowledgedBatch.BatchId;
                 // Order is important here so that we don't prematurely dequeue the last nextUnacknowledgedBatch
-                while (UnacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
+                while (_unacknowledgedRenderBatches.TryPeek(out nextUnacknowledgedBatch) && nextUnacknowledgedBatch.BatchId <= incomingBatchId)
                 {
                     lastBatchId = nextUnacknowledgedBatch.BatchId;
-                    UnacknowledgedRenderBatches.TryDequeue(out _);
+                    // At this point the queue is definitely not full, we have at least emptied one slot, so we allow a further
+                    // full queue log entry the next time it fills up.
+                    _unacknowledgedRenderBatches.TryDequeue(out _);
                     ProcessPendingBatch(errorMessageOrNull, nextUnacknowledgedBatch);
                 }
 
@@ -253,7 +277,16 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 {
                     HandleException(
                         new InvalidOperationException($"Received an acknowledgement for batch with id '{incomingBatchId}' when the last batch produced was '{lastBatchId}'."));
+                    return Task.CompletedTask;
                 }
+
+                // Normally we will not have pending renders, but it might happen that we reached the limit of
+                // available buffered renders and new renders got queued.
+                // Invoke ProcessBufferedRenderRequests so that we might produce any additional batch that is
+                // missing.
+
+                // We return the task in here, but the caller doesn't await it.
+                return Dispatcher.InvokeAsync(() => ProcessPendingRender());
             }
         }
 
@@ -321,6 +354,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             private static readonly Action<ILogger, long, string, double, Exception> _completingBatchWithError;
             private static readonly Action<ILogger, long, double, Exception> _completingBatchWithoutError;
             private static readonly Action<ILogger, long, Exception> _receivedDuplicateBatchAcknowledgement;
+            private static readonly Action<ILogger, Exception> _fullUnacknowledgedRenderBatchesQueue;
 
             private static class EventIds
             {
@@ -331,6 +365,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 public static readonly EventId CompletingBatchWithError = new EventId(104, "CompletingBatchWithError");
                 public static readonly EventId CompletingBatchWithoutError = new EventId(105, "CompletingBatchWithoutError");
                 public static readonly EventId ReceivedDuplicateBatchAcknowledgement = new EventId(106, "ReceivedDuplicateBatchAcknowledgement");
+                public static readonly EventId FullUnacknowledgedRenderBatchesQueue = new EventId(107, "FullUnacknowledgedRenderBatchesQueue");
             }
 
             static Log()
@@ -369,6 +404,11 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     LogLevel.Debug,
                     EventIds.ReceivedDuplicateBatchAcknowledgement,
                     "Received a duplicate ACK for batch id '{IncomingBatchId}'.");
+
+                _fullUnacknowledgedRenderBatchesQueue = LoggerMessage.Define(
+                    LogLevel.Debug,
+                    EventIds.FullUnacknowledgedRenderBatchesQueue,
+                    "The queue of unacknowledged render batches is full.");
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -421,10 +461,27 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                     null);
             }
 
-            internal static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
+            public static void ReceivedDuplicateBatchAck(ILogger logger, long incomingBatchId)
             {
                 _receivedDuplicateBatchAcknowledgement(logger, incomingBatchId, null);
             }
+
+            public static void FullUnacknowledgedRenderBatchesQueue(ILogger logger)
+            {
+                _fullUnacknowledgedRenderBatchesQueue(logger, null);
+            }
         }
+    }
+
+    internal readonly struct PendingRender
+    {
+        public PendingRender(int componentId, RenderFragment renderFragment)
+        {
+            ComponentId = componentId;
+            RenderFragment = renderFragment;
+        }
+
+        public int ComponentId { get; }
+        public RenderFragment RenderFragment { get; }
     }
 }

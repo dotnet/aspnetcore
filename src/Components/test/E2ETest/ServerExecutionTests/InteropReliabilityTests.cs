@@ -10,6 +10,8 @@ using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -17,9 +19,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [Flaky("https://github.com/aspnet/AspNetCore/issues/12940", FlakyOn.All)]
     public class InteropReliabilityTests : IClassFixture<AspNetSiteServerFixture>
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(5);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public InteropReliabilityTests(AspNetSiteServerFixture serverFixture)
@@ -77,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task CannotInvokeJSInvokableMethodsWithWrongNumberOfArguments()
         {
             // Arrange
@@ -256,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task LogsJSInteropCompletionsCallbacksAndContinuesWorkingInAllSituations()
         {
             // Arrange
@@ -383,7 +386,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 null);
 
             Assert.Contains(
-                (LogLevel.Debug, "DispatchEventFailedToParseEventDescriptor"),
+                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
+                logEvents);
+
+            await ValidateClientKeepsWorking(Client, batches);
+        }
+
+        [Fact]
+        public async Task DispatchingEventsWithInvalidEventDescriptor()
+        {
+            // Arrange
+            var (interopCalls, dotNetCompletions, batches) = ConfigureClient();
+            await GoToTestComponent(batches);
+            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
+            var logEvents = new List<(LogLevel logLevel, string)>();
+            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
+
+            // Act
+            await Client.HubConnection.InvokeAsync(
+                "DispatchBrowserEvent",
+                "{Invalid:{\"payload}",
+                "{}");
+
+            Assert.Contains(
+                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
                 logEvents);
 
             await ValidateClientKeepsWorking(Client, batches);
@@ -400,7 +426,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
 
             // Act
-            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
+            var browserDescriptor = new WebEventDescriptor()
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 6,
@@ -413,13 +439,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 "{Invalid:{\"payload}");
 
             Assert.Contains(
-                (LogLevel.Debug, "DispatchEventFailedToDispatchEvent"),
+                (LogLevel.Debug, "DispatchEventFailedToParseEventData"),
                 logEvents);
 
             await ValidateClientKeepsWorking(Client, batches);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12940")]
         public async Task DispatchingEventsWithInvalidEventHandlerId()
         {
             // Arrange
@@ -435,7 +461,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 Type = "click",
                 Detail = 1
             };
-            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
+            var browserDescriptor = new WebEventDescriptor()
             {
                 BrowserRendererId = 0,
                 EventHandlerId = 1,
@@ -456,47 +482,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public async Task DispatchingEventThroughJSInterop()
-        {
-            // Arrange
-            var (interopCalls, dotNetCompletions, batches) = ConfigureClient();
-            await GoToTestComponent(batches);
-            var sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            var logEvents = new List<(LogLevel logLevel, string eventIdName)>();
-            sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name));
-
-            // Act
-            var mouseEventArgs = new UIMouseEventArgs()
-            {
-                Type = "click",
-                Detail = 1
-            };
-            var browserDescriptor = new RendererRegistryEventDispatcher.BrowserEventDescriptor()
-            {
-                BrowserRendererId = 0,
-                EventHandlerId = 1,
-                EventArgsType = "mouse",
-            };
-
-            var serializerOptions = TestJsonSerializerOptionsProvider.Options;
-            var uiArgs = JsonSerializer.Serialize(mouseEventArgs, serializerOptions);
-
-            await Assert.ThrowsAsync<TaskCanceledException>(() => Client.InvokeDotNetMethod(
-                0,
-                "Microsoft.AspNetCore.Components.Web",
-                "DispatchEvent",
-                null,
-                JsonSerializer.Serialize(new object[] { browserDescriptor, uiArgs }, serializerOptions)));
-
-            Assert.Contains(
-                (LogLevel.Debug, "DispatchEventThroughJSInterop"),
-                logEvents);
-
-            await ValidateClientKeepsWorking(Client, batches);
-        }
-
-
-        [Fact]
         public async Task EventHandlerThrowsSyncExceptionTerminatesTheCircuit()
         {
             // Arrange
@@ -507,18 +492,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            await Client.ClickAsync("event-handler-throw-sync");
+            await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
 
             Assert.Contains(
                 logEvents,
                 e => LogLevel.Warning == e.logLevel &&
                     "UnhandledExceptionInCircuit" == e.eventIdName &&
                     "Handler threw an exception" == e.exception.Message);
-
-            await ValidateClientKeepsWorking(Client, batches);
         }
 
-        private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, int, byte[])> batches) =>
+        private Task ValidateClientKeepsWorking(BlazorClient Client, List<(int, byte[])> batches) =>
             ValidateClientKeepsWorking(Client, () => batches.Count);
 
         private async Task ValidateClientKeepsWorking(BlazorClient Client, Func<int> countAccessor)
@@ -529,7 +512,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(currentBatches + 1, countAccessor());
         }
 
-        private async Task GoToTestComponent(List<(int, int, byte[])> batches)
+        private async Task GoToTestComponent(List<(int, byte[])> batches)
         {
             var rootUri = _serverFixture.RootUri;
             Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
@@ -539,12 +522,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Equal(2, batches.Count);
         }
 
-        private (List<(int id, string identifier, string args)>, List<string>, List<(int, int, byte[])>) ConfigureClient()
+        private (List<(int id, string identifier, string args)>, List<string>, List<(int, byte[])>) ConfigureClient()
         {
             var interopCalls = new List<(int, string, string)>();
             Client.JSInterop += (int arg1, string arg2, string arg3) => interopCalls.Add((arg1, arg2, arg3));
-            var batches = new List<(int, int, byte[])>();
-            Client.RenderBatchReceived += (id, renderer, data) => batches.Add((id, renderer, data));
+            var batches = new List<(int, byte[])>();
+            Client.RenderBatchReceived += (renderer, data) => batches.Add((renderer, data));
             var endInvokeDotNetCompletions = new List<string>();
             Client.DotNetInteropCompletion += (completion) => endInvokeDotNetCompletions.Add(completion);
             return (interopCalls, endInvokeDotNetCompletions, batches);

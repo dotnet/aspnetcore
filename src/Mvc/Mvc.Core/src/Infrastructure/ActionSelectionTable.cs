@@ -66,10 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // For action selection, ignore attribute routed actions
                 items: actions.Items.Where(a => a.AttributeRouteInfo == null),
 
-                getRouteKeys: a => a.RouteValues.Keys,
+                getRouteKeys: a => a.RouteValues?.Keys,
                 getRouteValue: (a, key) =>
                 {
-                    a.RouteValues.TryGetValue(key, out var value);
+                    string value = null;
+                    a.RouteValues?.TryGetValue(key, out value);
                     return value ?? string.Empty;
                 });
         }
@@ -87,10 +88,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     return e.GetType() == typeof(Endpoint);
                 }),
 
-                getRouteKeys: e => e.Metadata.GetMetadata<ActionDescriptor>().RouteValues.Keys,
+                getRouteKeys: e => e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.Keys,
                 getRouteValue: (e, key) =>
                 {
-                    e.Metadata.GetMetadata<ActionDescriptor>().RouteValues.TryGetValue(key, out var value);
+                    string value = null;
+                    e.Metadata.GetMetadata<ActionDescriptor>()?.RouteValues?.TryGetValue(key, out value);
                     return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
                 });
         }
@@ -112,9 +114,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             foreach (var item in items)
             {
-                foreach (var key in getRouteKeys(item))
+                var keys = getRouteKeys(item);
+                if (keys != null)
                 {
-                    routeKeys.Add(key);
+                    foreach (var key in keys)
+                    {
+                        routeKeys.Add(key);
+                    }
                 }
             }
 

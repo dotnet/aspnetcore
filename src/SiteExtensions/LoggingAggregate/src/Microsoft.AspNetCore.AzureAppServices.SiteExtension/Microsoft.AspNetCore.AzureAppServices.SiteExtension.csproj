@@ -14,11 +14,10 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <RestoreSources>
-      $(RestoreSources);
-      $(ArtifactsNonShippingPackagesDir)
-    </RestoreSources>
     <NoSemVer20>true</NoSemVer20>
+
+    <!-- Grab packages LB.csproj should have just built. -->
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,15 +38,13 @@
   </ItemGroup>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">
-
     <ItemGroup>
-        <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
-        <!-- Temporarily skip the common files -->
-        <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
+      <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
 
-        <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
+      <!-- Temporarily skip the common files -->
+      <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
+      <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
     </ItemGroup>
-
   </Target>
 
 </Project>

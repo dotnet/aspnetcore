@@ -26,6 +26,6 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public Type Handler { get; set; }
 
-        public IDictionary<string, object> Parameters { get; set; }
+        public IReadOnlyDictionary<string, object> Parameters { get; set; }
     }
 }

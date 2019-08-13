@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         public async Task ReloadingThePage_GracefullyDisconnects_TheCurrentCircuit()
         {
             // Arrange & Act
-            _ = ((IJavaScriptExecutor)Browser).ExecuteScript("location.reload()");
+            Browser.Navigate().Refresh();
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
@@ -70,7 +70,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Close();
             // Set to null so that other tests in this class can create a new browser if necessary so
             // that tests don't fail when running together.
-            Browser = null;
 
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 

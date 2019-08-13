@@ -11,7 +11,4 @@
     <!-- loader.js is hard-coded to assume it can load .pdbs regardless of Debug/Release configuration -->
     <BlazorEnableDebugging>true</BlazorEnableDebugging>
   </PropertyGroup>
-
-  <ItemGroup>
-  </ItemGroup>
 </Project>

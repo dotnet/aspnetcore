@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -47,6 +48,9 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
+
+        public new ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId)
+            => base.GetCurrentRenderTreeFrames(componentId);
 
         public void RenderRootComponent(int componentId, ParameterView? parameters = default)
         {

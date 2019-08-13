@@ -3,10 +3,13 @@
 
 namespace Microsoft.AspNetCore.NodeServices
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class EmbeddedResourceReader
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static string Read(System.Type assemblyContainingType, string path) { throw null; }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial interface INodeServices : System.IDisposable
     {
         System.Threading.Tasks.Task<T> InvokeAsync<T>(string moduleName, params object[] args);
@@ -14,10 +17,13 @@ namespace Microsoft.AspNetCore.NodeServices
         System.Threading.Tasks.Task<T> InvokeExportAsync<T>(string moduleName, string exportedFunctionName, params object[] args);
         System.Threading.Tasks.Task<T> InvokeExportAsync<T>(System.Threading.CancellationToken cancellationToken, string moduleName, string exportedFunctionName, params object[] args);
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class NodeServicesFactory
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static Microsoft.AspNetCore.NodeServices.INodeServices CreateNodeServices(Microsoft.AspNetCore.NodeServices.NodeServicesOptions options) { throw null; }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class NodeServicesOptions
     {
         public NodeServicesOptions(System.IServiceProvider serviceProvider) { }
@@ -31,6 +37,7 @@ namespace Microsoft.AspNetCore.NodeServices
         public string ProjectPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string[] WatchFileExtensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public sealed partial class StringAsTempFile : System.IDisposable
     {
         public StringAsTempFile(string content, System.Threading.CancellationToken applicationStoppingToken) { }
@@ -41,10 +48,12 @@ namespace Microsoft.AspNetCore.NodeServices
 }
 namespace Microsoft.AspNetCore.NodeServices.HostingModels
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial interface INodeInstance : System.IDisposable
     {
         System.Threading.Tasks.Task<T> InvokeExportAsync<T>(System.Threading.CancellationToken cancellationToken, string moduleName, string exportNameOrNull, params object[] args);
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class NodeInvocationException : System.Exception
     {
         public NodeInvocationException(string message, string details) { }
@@ -52,6 +61,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         public bool AllowConnectionDraining { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool NodeInstanceUnavailable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public partial class NodeInvocationInfo
     {
         public NodeInvocationInfo() { }
@@ -59,10 +69,13 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         public string ExportedFunctionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ModuleName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class NodeServicesOptionsExtensions
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void UseHttpHosting(this Microsoft.AspNetCore.NodeServices.NodeServicesOptions options) { }
     }
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public abstract partial class OutOfProcessNodeInstance : Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance, System.IDisposable
     {
         protected readonly Microsoft.Extensions.Logging.ILogger OutputLogger;
@@ -80,9 +93,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
+    [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
     public static partial class NodeServicesServiceCollectionExtensions
     {
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void AddNodeServices(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection) { }
+        [System.ObsoleteAttribute("Use Microsoft.AspNetCore.SpaServices.Extensions")]
         public static void AddNodeServices(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Action<Microsoft.AspNetCore.NodeServices.NodeServicesOptions> setupAction) { }
     }
 }

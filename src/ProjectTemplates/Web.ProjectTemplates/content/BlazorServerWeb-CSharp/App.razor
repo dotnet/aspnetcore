@@ -1,7 +1,14 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="typeof(Startup).Assembly">
-        <NotFound>
+﻿<Router AppAssembly="@typeof(Program).Assembly">
+    <Found Context="routeData">
+@*#if (OrganizationalAuth || IndividualAuth)
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+#else
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+#endif*@
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
             <p>Sorry, there's nothing at this address.</p>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
+        </LayoutView>
+    </NotFound>
+</Router>

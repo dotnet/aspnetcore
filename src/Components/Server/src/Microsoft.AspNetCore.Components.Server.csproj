@@ -21,6 +21,16 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+
+    <!-- Add a project dependency without reference output assemblies to enforce build order -->
+    <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
+    <ProjectReference
+      Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -30,6 +40,10 @@
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
+
+    <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
+    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
+    <Compile Include="..\..\Shared\src\WebEventData.cs" />
 
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
@@ -53,12 +67,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!--
-      We check in the Release / Production build of blazor.*.js, but not the Debug builds. Consequently the former is always available to embed, the latter is only available
-      if Web.JS was built locally. Use the Debug build when available and building in Debug configuration.
-    -->
-    <BlazorServerJSFile>..\..\Web.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
-    <BlazorServerJSFile Condition="'$(Configuration)' == 'Debug' AND Exists('..\..\Web.JS\dist\Debug\blazor.server.js')">..\..\Web.JS\dist\Debug\blazor.server.js</BlazorServerJSFile>
+    <BlazorServerJSFile>..\..\Web.JS\dist\$(Configuration)\blazor.server.js</BlazorServerJSFile>
   </PropertyGroup>
 
   <ItemGroup>

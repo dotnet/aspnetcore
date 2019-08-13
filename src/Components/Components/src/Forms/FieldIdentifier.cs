@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
         /// </summary>
         /// <param name="accessor">An expression that identifies an object member.</param>
-        public static FieldIdentifier Create<T>(Expression<Func<T>> accessor)
+        /// <typeparam name="TField">The field <see cref="Type"/>.</typeparam>
+        public static FieldIdentifier Create<TField>(Expression<Func<TField>> accessor)
         {
             if (accessor == null)
             {

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests
             services.AddRouting();
             services.AddSignalR();
             services.AddServerSideBlazor();
+            services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
 
             var serviceProvder = services.BuildServiceProvider();
 

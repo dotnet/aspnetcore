@@ -1,30 +1,25 @@
 param(
   [Parameter(Mandatory=$true)][int] $BuildId,
   [Parameter(Mandatory=$true)][int] $ChannelId,
-  [Parameter(Mandatory=$true)][string] $BarToken,
-  [string] $MaestroEndpoint = "https://maestro-prod.westus2.cloudapp.azure.com",
-  [string] $ApiVersion = "2019-01-16"
+  [Parameter(Mandatory=$true)][string] $MaestroApiAccessToken,
+  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = "https://maestro-prod.westus2.cloudapp.azure.com",
+  [Parameter(Mandatory=$false)][string] $MaestroApiVersion = "2019-01-16"
 )
 
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
-
-. $PSScriptRoot\..\tools.ps1
-
-function Get-Headers([string]$accept, [string]$barToken) {
-  $headers = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
-  $headers.Add('Accept',$accept)
-  $headers.Add('Authorization',"Bearer $barToken")
-  return $headers
-}
+. $PSScriptRoot\post-build-utils.ps1
 
 try {
-  $maestroHeaders = Get-Headers 'application/json' $BarToken
+  # Check that the channel we are going to promote the build to exist
+  $channelInfo = Get-MaestroChannel -ChannelId $ChannelId
+
+  if (!$channelInfo) {
+    Write-Host "Channel with BAR ID $ChannelId was not found in BAR!"
+    ExitWithExitCode 1
+  }
 
   # Get info about which channels the build has already been promoted to
-  $getBuildApiEndpoint = "$MaestroEndpoint/api/builds/${BuildId}?api-version=$ApiVersion"
-  $buildInfo = Invoke-WebRequest -Method Get -Uri $getBuildApiEndpoint -Headers $maestroHeaders | ConvertFrom-Json
-
+  $buildInfo = Get-MaestroBuild -BuildId $BuildId
+  
   if (!$buildInfo) {
     Write-Host "Build with BAR ID $BuildId was not found in BAR!"
     ExitWithExitCode 1
@@ -40,10 +35,10 @@ try {
     }
   }
 
-  Write-Host "Build not present in channel $ChannelId. Promoting build ... "
+  Write-Host "Promoting build '$BuildId' to channel '$ChannelId'."
 
-  $promoteBuildApiEndpoint = "$maestroEndpoint/api/channels/${ChannelId}/builds/${BuildId}?api-version=$ApiVersion"
-  Invoke-WebRequest -Method Post -Uri $promoteBuildApiEndpoint -Headers $maestroHeaders
+  Assign-BuildToChannel -BuildId $BuildId -ChannelId $ChannelId
+
   Write-Host "done."
 } 
 catch {

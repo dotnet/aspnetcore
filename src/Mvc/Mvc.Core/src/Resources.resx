@@ -510,4 +510,7 @@
   <data name="UnexpectedJsonEnd" xml:space="preserve">
     <value>Unexcepted end when reading JSON.</value>
   </data>
+  <data name="ApiConventions_Title_500" xml:space="preserve">
+    <value>An error occured while processing your request.</value>
+  </data>
 </root>

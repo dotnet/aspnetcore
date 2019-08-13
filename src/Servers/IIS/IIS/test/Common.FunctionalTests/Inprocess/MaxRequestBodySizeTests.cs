@@ -78,6 +78,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            // Logs get tangled up due to ANCM debug logs and managed logs logging at the same time.
+            // Disable it for this test as we are trying to verify a log.
+            deploymentParameters.HandlerSettings["debugLevel"] = "";
             deploymentParameters.ServerConfigActionList.Add(
                 (config, _) => {
                     config

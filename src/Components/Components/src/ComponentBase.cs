@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -171,10 +171,25 @@ namespace Microsoft.AspNetCore.Components
             _renderHandle = renderHandle;
         }
 
+
         /// <summary>
-        /// Method invoked to apply initial or updated parameters to the component.
+        /// Sets parameters supplied by the component's parent in the render tree.
         /// </summary>
-        /// <param name="parameters">The parameters to apply.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>A <see cref="Task"/> that completes when the component has finished updating and rendering itself.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <see cref="SetParametersAsync(ParameterView)"/> method should be passed the entire set of parameter values each
+        /// time <see cref="SetParametersAsync(ParameterView)"/> is called. It not required that the caller supply a parameter
+        /// value for all parameters that are logically understood by the component.
+        /// </para>
+        /// <para>
+        /// The default implementation of <see cref="SetParametersAsync(ParameterView)"/> will set the value of each property
+        /// decorated with <see cref="ParameterAttribute" /> or <see cref="CascadingParameterAttribute" /> that has
+        /// a corresponding value in the <see cref="ParameterView" />. Parameters that do not have a corresponding value
+        /// will be unchanged.
+        /// </para>
+        /// </remarks>
         public virtual Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);

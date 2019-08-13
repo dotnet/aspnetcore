@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("False", () => appElement.FindElement(By.Id("identity-authenticated")).Text);
             Browser.Equal(string.Empty, () => appElement.FindElement(By.Id("identity-name")).Text);
             Browser.Equal("(none)", () => appElement.FindElement(By.Id("test-claim")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -56,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("True", () => appElement.FindElement(By.Id("identity-authenticated")).Text);
             Browser.Equal("someone cool", () => appElement.FindElement(By.Id("identity-name")).Text);
             Browser.Equal("Test claim value", () => appElement.FindElement(By.Id("test-claim")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -66,6 +68,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilExists(By.CssSelector("#no-authorization-rule .not-authorized"));
             Browser.Equal("You're not authorized, anonymous", () =>
                 appElement.FindElement(By.CssSelector("#no-authorization-rule .not-authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -75,6 +78,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("Welcome, Some User!", () =>
                 appElement.FindElement(By.CssSelector("#no-authorization-rule .authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -84,6 +88,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("Welcome, Some User!", () =>
                 appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -93,6 +98,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("You're not authorized, Some User", () =>
                 appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -102,6 +108,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("Welcome, Bert!", () =>
                 appElement.FindElement(By.CssSelector("#authorize-policy .authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -111,6 +118,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("You're not authorized, Mallory", () =>
                 appElement.FindElement(By.CssSelector("#authorize-policy .not-authorized")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -120,6 +128,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageAllowingAnonymous);
             Browser.Equal("Welcome to PageAllowingAnonymous!", () =>
                 appElement.FindElement(By.CssSelector("#auth-success")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -129,6 +138,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageAllowingAnonymous);
             Browser.Equal("Welcome to PageAllowingAnonymous!", () =>
                 appElement.FindElement(By.CssSelector("#auth-success")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -138,6 +148,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringAuthorization);
             Browser.Equal("Welcome to PageRequiringAuthorization!", () =>
                 appElement.FindElement(By.CssSelector("#auth-success")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -147,6 +158,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringAuthorization);
             Browser.Equal("Sorry, anonymous, you're not authorized.", () =>
                 appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -156,6 +168,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringPolicy);
             Browser.Equal("Welcome to PageRequiringPolicy!", () =>
                 appElement.FindElement(By.CssSelector("#auth-success")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -165,6 +178,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringPolicy);
             Browser.Equal("Sorry, Mallory, you're not authorized.", () =>
                 appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -174,6 +188,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringRole);
             Browser.Equal("Welcome to PageRequiringRole!", () =>
                 appElement.FindElement(By.CssSelector("#auth-success")).Text);
+            AssertExpectedLayoutUsed();
         }
 
         [Fact]
@@ -183,6 +198,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountAndNavigateToAuthTest(PageRequiringRole);
             Browser.Equal("Sorry, Bert, you're not authorized.", () =>
                 appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+            AssertExpectedLayoutUsed();
+        }
+
+        private void AssertExpectedLayoutUsed()
+        {
+            WaitUntilExists(By.Id("auth-links"));
         }
 
         protected IWebElement MountAndNavigateToAuthTest(string authLinkText)

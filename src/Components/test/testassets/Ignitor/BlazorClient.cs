@@ -50,7 +50,7 @@ namespace Ignitor
 
         public event Action<int, string, string> JSInterop;
 
-        public event Action<int, int, byte[]> RenderBatchReceived;
+        public event Action<int, byte[]> RenderBatchReceived;
 
         public event Action<string> DotNetInteropCompletion;
 
@@ -112,14 +112,20 @@ namespace Ignitor
             return NextErrorReceived.Completion.Task;
         }
 
-        public async Task ClickAsync(string elementId)
+        public Task ClickAsync(string elementId, bool expectRenderBatch = true)
         {
             if (!Hive.TryFindElementById(elementId, out var elementNode))
             {
                 throw new InvalidOperationException($"Could not find element with id {elementId}.");
             }
-
-            await ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            if (expectRenderBatch)
+            {
+                return ExpectRenderBatch(() => elementNode.ClickAsync(HubConnection));
+            }
+            else
+            {
+                return elementNode.ClickAsync(HubConnection);
+            }
         }
 
         public async Task SelectAsync(string elementId, string value)
@@ -226,7 +232,7 @@ namespace Ignitor
 
             HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
-            HubConnection.On<int, int, byte[]>("JS.RenderBatch", OnRenderBatch);
+            HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
@@ -280,11 +286,11 @@ namespace Ignitor
             }
         }
 
-        private void OnRenderBatch(int browserRendererId, int batchId, byte[] batchData)
+        private void OnRenderBatch(int batchId, byte[] batchData)
         {
             try
             {
-                RenderBatchReceived?.Invoke(browserRendererId, batchId, batchData);
+                RenderBatchReceived?.Invoke(batchId, batchData);
 
                 var batch = RenderBatchReader.Read(batchData);
 
@@ -292,7 +298,7 @@ namespace Ignitor
 
                 if (ConfirmRenderBatch)
                 {
-                    HubConnection.InvokeAsync("OnRenderCompleted", batchId, /* error */ null);
+                    _ = ConfirmBatch(batchId);
                 }
 
                 NextBatchReceived?.Completion?.TrySetResult(null);
@@ -301,6 +307,11 @@ namespace Ignitor
             {
                 NextBatchReceived?.Completion?.TrySetResult(e);
             }
+        }
+
+        public Task ConfirmBatch(int batchId, string error = null)
+        {
+            return HubConnection.InvokeAsync("OnRenderCompleted", batchId, error);
         }
 
         private void OnError(string error)

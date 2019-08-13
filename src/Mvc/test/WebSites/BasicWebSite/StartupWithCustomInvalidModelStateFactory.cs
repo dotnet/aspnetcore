@@ -24,15 +24,11 @@ namespace BasicWebSite
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
-                var previous = options.InvalidModelStateResponseFactory;
                 options.InvalidModelStateResponseFactory = context =>
                 {
-                    var result = (BadRequestObjectResult)previous(context);
-                    if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute))
-                    {
-                        result.ContentTypes.Clear();
-                        result.ContentTypes.Add("application/vnd.error+json");
-                    }
+                    var result = new BadRequestObjectResult(context.ModelState);
+                    result.ContentTypes.Clear();
+                    result.ContentTypes.Add("application/vnd.error+json");
 
                     return result;
                 };

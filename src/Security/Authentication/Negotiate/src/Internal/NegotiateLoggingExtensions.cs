@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _enablingCredentialPersistence;
         private static Action<ILogger, string, Exception> _disablingCredentialPersistence;
         private static Action<ILogger, Exception> _exceptionProcessingAuth;
+        private static Action<ILogger, Exception> _credentialError;
+        private static Action<ILogger, Exception> _clientError;
         private static Action<ILogger, Exception> _challengeNegotiate;
         private static Action<ILogger, Exception> _reauthenticating;
         private static Action<ILogger, Exception> _deferring;
@@ -50,6 +52,14 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(8, "Deferring"),
                 logLevel: LogLevel.Information,
                 formatString: "Deferring to the server's implementation of Windows Authentication.");
+            _credentialError = LoggerMessage.Define(
+                eventId: new EventId(9, "CredentialError"),
+                logLevel: LogLevel.Debug,
+                formatString: "There was a problem with the users credentials.");
+            _clientError = LoggerMessage.Define(
+                eventId: new EventId(10, "ClientError"),
+                logLevel: LogLevel.Debug,
+                formatString: "The users authentication request was invalid.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
@@ -75,5 +85,11 @@ namespace Microsoft.Extensions.Logging
 
         public static void Deferring(this ILogger logger)
             => _deferring(logger, null);
+
+        public static void CredentialError(this ILogger logger, Exception ex)
+            => _credentialError(logger, ex);
+
+        public static void ClientError(this ILogger logger, Exception ex)
+            => _clientError(logger, ex);
     }
 }

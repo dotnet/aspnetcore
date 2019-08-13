@@ -6,10 +6,7 @@ param(
   [Parameter(Mandatory=$true)][string] $ToolDestinationPath     # Where the validation tool should be downloaded to
 )
 
-$ErrorActionPreference = "Stop"
-Set-StrictMode -Version 2.0
-
-. $PSScriptRoot\..\tools.ps1
+. $PSScriptRoot\post-build-utils.ps1
 
 try {
   $url = "https://raw.githubusercontent.com/NuGet/NuGetGallery/jver-verify/src/VerifyMicrosoftPackage/verify.ps1" 
