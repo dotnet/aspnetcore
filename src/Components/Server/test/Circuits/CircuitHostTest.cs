@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -238,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class TestRemoteRenderer : RemoteRenderer
         {
             public TestRemoteRenderer(IServiceProvider serviceProvider, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), jsRuntime, new CircuitClientProxy(client, "connection"), HtmlEncoder.Default, NullLogger.Instance)
+                : base(serviceProvider, NullLoggerFactory.Instance, new CircuitOptions(), jsRuntime, new CircuitClientProxy(client, "connection"), NullLogger.Instance)
             {
             }
 

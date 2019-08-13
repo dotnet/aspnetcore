@@ -6,23 +6,22 @@ using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+namespace Microsoft.AspNetCore.Mvc.RazorComponents
 {
-    public abstract class HtmlRendererTestBase
+    public class HtmlRendererTest
     {
         protected readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
-
-        protected abstract HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider);
 
         [Fact]
         public void RenderComponentAsync_CanRenderEmptyElement()
         {
             // Arrange
-
             var expectedHtml = new[] { "<", "p", ">", "</", "p", ">" };
             var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
             {
@@ -98,7 +97,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Assert
             Assert.Equal(expectedHtml, result);
         }
-
 
         [Fact]
         public void RenderComponentAsync_CanRenderWithAttributes()
@@ -272,6 +270,91 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Assert
             Assert.Equal(expectedHtml, result);
         }
+        
+        [Fact]
+        public void RenderComponentAsync_MarksSelectedOptionsAsSelected()
+        {
+            // Arrange
+            var expectedHtml = "<p>" +
+                @"<select unrelated-attribute-before=""a"" value=""b"" unrelated-attribute-after=""c"">" +
+                @"<option unrelated-attribute=""a"" value=""a"">Pick value a</option>" +
+                @"<option unrelated-attribute=""a"" value=""b"" selected>Pick value b</option>" +
+                @"<option unrelated-attribute=""a"" value=""c"">Pick value c</option>" +
+                "</select>" +
+                @"<option value=""b"">unrelated option</option>" +
+                "</p>";
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "p");
+                rtb.OpenElement(1, "select");
+                rtb.AddAttribute(2, "unrelated-attribute-before", "a");
+                rtb.AddAttribute(3, "value", "b");
+                rtb.AddAttribute(4, "unrelated-attribute-after", "c");
+
+                foreach (var optionValue in new[] { "a", "b", "c"})
+                {
+                    rtb.OpenElement(5, "option");
+                    rtb.AddAttribute(6, "unrelated-attribute", "a");
+                    rtb.AddAttribute(7, "value", optionValue);
+                    rtb.AddContent(8, $"Pick value {optionValue}");
+                    rtb.CloseElement(); // option
+                }
+
+                rtb.CloseElement(); // select
+
+                rtb.OpenElement(9, "option"); // To show other value-matching options don't get marked as selected
+                rtb.AddAttribute(10, "value", "b");
+                rtb.AddContent(11, "unrelated option");
+                rtb.CloseElement(); // option
+
+                rtb.CloseElement(); // p
+            })).BuildServiceProvider();
+
+            var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+            // Assert
+            Assert.Equal(expectedHtml, string.Concat(result));
+        }
+
+        [Fact]
+        public void RenderComponentAsync_MarksSelectedOptionsAsSelected_WithOptGroups()
+        {
+            // Arrange
+            var expectedHtml =
+                @"<select value=""beta"">" +
+                @"<optgroup><option value=""alpha"">alpha</option></optgroup>" +
+                @"<optgroup><option value=""beta"" selected>beta</option></optgroup>" +
+                @"<optgroup><option value=""gamma"">gamma</option></optgroup>" +
+                "</select>";
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "select");
+                rtb.AddAttribute(1, "value", "beta");
+
+                foreach (var optionValue in new[] { "alpha", "beta", "gamma" })
+                {
+                    rtb.OpenElement(2, "optgroup");
+                    rtb.OpenElement(3, "option");
+                    rtb.AddAttribute(4, "value", optionValue);
+                    rtb.AddContent(5, optionValue);
+                    rtb.CloseElement(); // option
+                    rtb.CloseElement(); // optgroup
+                }
+
+                rtb.CloseElement(); // select
+            })).BuildServiceProvider();
+
+            var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterView.Empty)));
+
+            // Assert
+            Assert.Equal(expectedHtml, string.Concat(result));
+        }
 
         [Fact]
         public void RenderComponentAsync_CanRenderComponentAsyncWithChildrenComponents()
@@ -358,11 +441,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             // Act
             var result = GetResult(htmlRenderer.Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<ComponentWithParameters>(
-                new ParameterView(new[] {
-                    RenderTreeFrame.Element(0,string.Empty),
-                    RenderTreeFrame.Attribute(1,"update",change),
-                    RenderTreeFrame.Attribute(2,"value",5)
-                }, 0))));
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "update", change },
+                    { "value", 5 }
+                }))));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -499,6 +582,31 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Assert.Equal(expectedHtml, result.Tokens);
         }
 
+        [Fact]
+        public async Task PrerendersMultipleComponentsSuccessfully()
+        {
+            // Arrange
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "p");
+                rtb.AddMarkupContent(1, "<span>Hello world!</span>");
+                rtb.CloseElement();
+            })).BuildServiceProvider();
+            var renderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var first = await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty));
+            var second = await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<TestComponent>(ParameterView.Empty));
+
+            // Assert
+            Assert.Equal(0, first.ComponentId);
+            Assert.Equal(1, second.ComponentId);
+        }
+
+        private HtmlRenderer GetHtmlRenderer(IServiceProvider serviceProvider)
+        {
+            return new HtmlRenderer(serviceProvider, NullLoggerFactory.Instance, _encoder);
+        }
 
         private class NestedAsyncComponent : ComponentBase
         {

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -17,7 +16,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Rendering
 {
-    internal class RemoteRenderer : HtmlRenderer
+    internal class RemoteRenderer : Renderer
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -43,9 +42,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             CircuitOptions options,
             IJSRuntime jsRuntime,
             CircuitClientProxy client,
-            HtmlEncoder encoder,
             ILogger logger)
-            : base(serviceProvider, loggerFactory, encoder.Encode)
+            : base(serviceProvider, loggerFactory)
         {
             _jsRuntime = jsRuntime;
             _client = client;

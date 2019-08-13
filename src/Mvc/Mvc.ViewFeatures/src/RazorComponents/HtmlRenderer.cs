@@ -12,10 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
-    /// <summary>
-    /// A <see cref="Renderer"/> that produces HTML.
-    /// </summary>
-    public class HtmlRenderer : Renderer
+    internal class HtmlRenderer : Renderer
     {
         private static readonly HashSet<string> SelfClosingElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -26,12 +23,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private readonly Func<string, string> _htmlEncoder;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="HtmlRenderer"/>.
-        /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
         public HtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, Func<string, string> htmlEncoder)
             : base(serviceProvider, loggerFactory)
         {
@@ -58,30 +49,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return CanceledRenderTask;
         }
 
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
-        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterView initialParameters)
         {
             var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
 
-            var result = new List<string>();
-            var newPosition = RenderFrames(result, frames, 0, frames.Count);
+            var context = new HtmlRenderingContext();
+            var newPosition = RenderFrames(context, frames, 0, frames.Count);
             Debug.Assert(newPosition == frames.Count);
-            return new ComponentRenderedText(componentId, result);
+            return new ComponentRenderedText(componentId, context.Result);
         }
 
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterView"/> with the initial parameters to render the component.</param>
-        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterView initialParameters) where TComponent : IComponent
         {
             return RenderComponentAsync(typeof(TComponent), initialParameters);
@@ -91,13 +68,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected override void HandleException(Exception exception)
             => ExceptionDispatchInfo.Capture(exception).Throw();
 
-        private int RenderFrames(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+        private int RenderFrames(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             var nextPosition = position;
             var endPosition = position + maxElements;
             while (position < endPosition)
             {
-                nextPosition = RenderCore(result, frames, position, maxElements);
+                nextPosition = RenderCore(context, frames, position);
                 if (position == nextPosition)
                 {
                     throw new InvalidOperationException("We didn't consume any input.");
@@ -109,28 +86,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         private int RenderCore(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
-            int position,
-            int length)
+            int position)
         {
             ref var frame = ref frames.Array[position];
             switch (frame.FrameType)
             {
                 case RenderTreeFrameType.Element:
-                    return RenderElement(result, frames, position);
+                    return RenderElement(context, frames, position);
                 case RenderTreeFrameType.Attribute:
-                    return RenderAttributes(result, frames, position, 1);
+                    throw new InvalidOperationException($"Attributes should only be encountered within {nameof(RenderElement)}");
                 case RenderTreeFrameType.Text:
-                    result.Add(_htmlEncoder(frame.TextContent));
+                    context.Result.Add(_htmlEncoder(frame.TextContent));
                     return ++position;
                 case RenderTreeFrameType.Markup:
-                    result.Add(frame.MarkupContent);
+                    context.Result.Add(frame.MarkupContent);
                     return ++position;
                 case RenderTreeFrameType.Component:
-                    return RenderChildComponent(result, frames, position);
+                    return RenderChildComponent(context, frames, position);
                 case RenderTreeFrameType.Region:
-                    return RenderFrames(result, frames, position + 1, frame.RegionSubtreeLength - 1);
+                    return RenderFrames(context, frames, position + 1, frame.RegionSubtreeLength - 1);
                 case RenderTreeFrameType.ElementReferenceCapture:
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     return ++position;
@@ -140,30 +116,57 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         private int RenderChildComponent(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
             int position)
         {
             ref var frame = ref frames.Array[position];
             var childFrames = GetCurrentRenderTreeFrames(frame.ComponentId);
-            RenderFrames(result, childFrames, 0, childFrames.Count);
+            RenderFrames(context, childFrames, 0, childFrames.Count);
             return position + frame.ComponentSubtreeLength;
         }
 
         private int RenderElement(
-            List<string> result,
+            HtmlRenderingContext context,
             ArrayRange<RenderTreeFrame> frames,
             int position)
         {
             ref var frame = ref frames.Array[position];
+            var result = context.Result;
             result.Add("<");
             result.Add(frame.ElementName);
-            var afterAttributes = RenderAttributes(result, frames, position + 1, frame.ElementSubtreeLength - 1);
+            var afterAttributes = RenderAttributes(context, frames, position + 1, frame.ElementSubtreeLength - 1, out var capturedValueAttribute);
+
+            // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
+            // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
+            // a way of converting Blazor's select binding feature to regular static HTML.
+            if (context.ClosestSelectValueAsString != null
+                && string.Equals(frame.ElementName, "option", StringComparison.OrdinalIgnoreCase)
+                && string.Equals(capturedValueAttribute, context.ClosestSelectValueAsString, StringComparison.Ordinal))
+            {
+                result.Add(" selected");
+            }
+
             var remainingElements = frame.ElementSubtreeLength + position - afterAttributes;
             if (remainingElements > 0)
             {
                 result.Add(">");
-                var afterElement = RenderChildren(result, frames, afterAttributes, remainingElements);
+
+                var isSelect = string.Equals(frame.ElementName, "select", StringComparison.OrdinalIgnoreCase);
+                if (isSelect)
+                {
+                    context.ClosestSelectValueAsString = capturedValueAttribute;
+                }
+
+                var afterElement = RenderChildren(context, frames, afterAttributes, remainingElements);
+
+                if (isSelect)
+                {
+                    // There's no concept of nested <select> elements, so as soon as we're exiting one of them,
+                    // we can safely say there is no longer any value for this
+                    context.ClosestSelectValueAsString = null;
+                }
+
                 result.Add("</");
                 result.Add(frame.ElementName);
                 result.Add(">");
@@ -188,24 +191,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private int RenderChildren(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+        private int RenderChildren(HtmlRenderingContext context, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             if (maxElements == 0)
             {
                 return position;
             }
 
-            return RenderFrames(result, frames, position, maxElements);
+            return RenderFrames(context, frames, position, maxElements);
         }
 
         private int RenderAttributes(
-            List<string> result,
-            ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+            HtmlRenderingContext context,
+            ArrayRange<RenderTreeFrame> frames, int position, int maxElements, out string capturedValueAttribute)
         {
+            capturedValueAttribute = null;
+
             if (maxElements == 0)
             {
                 return position;
             }
+
+            var result = context.Result;
 
             for (var i = 0; i < maxElements; i++)
             {
@@ -214,6 +221,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 if (frame.FrameType != RenderTreeFrameType.Attribute)
                 {
                     return candidateIndex;
+                }
+
+                if (frame.AttributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
+                {
+                    capturedValueAttribute = frame.AttributeValue as string;
                 }
 
                 switch (frame.AttributeValue)
@@ -246,6 +258,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             await RenderRootComponentAsync(componentId, initialParameters);
 
             return (componentId, GetCurrentRenderTreeFrames(componentId));
+        }
+
+        private class HtmlRenderingContext
+        {
+            public List<string> Result { get; } = new List<string>();
+
+            public string ClosestSelectValueAsString { get; set; }
         }
     }
 }

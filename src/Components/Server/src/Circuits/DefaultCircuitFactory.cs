@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var components = ResolveComponentMetadata(httpContext);
 
             var scope = _scopeFactory.CreateScope();
-            var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
             var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
             jsRuntime.Initialize(client);
@@ -76,7 +75,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 _options,
                 jsRuntime,
                 client,
-                encoder,
                 _loggerFactory.CreateLogger<RemoteRenderer>());
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
