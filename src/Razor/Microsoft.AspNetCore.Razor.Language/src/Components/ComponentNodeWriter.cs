@@ -209,11 +209,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     if (child is ComponentAttributeIntermediateNode attribute)
                     {
-                        var typeName = attribute.TypeName;
-                        if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
+                        string typeName;
+                        if (attribute.GloballyQualifiedTypeName != null)
                         {
-                            typeName = "global::" + typeName;
+                            typeName = attribute.GloballyQualifiedTypeName;
                         }
+                        else
+                        {
+                            typeName = attribute.TypeName;
+                            if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
+                            {
+                                typeName = "global::" + typeName;
+                            }
+                        }
+
                         p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
                     }
                     else if (child is SplatIntermediateNode splat)

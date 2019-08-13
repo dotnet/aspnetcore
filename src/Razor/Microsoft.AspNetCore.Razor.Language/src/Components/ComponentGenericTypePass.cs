@@ -207,11 +207,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 foreach (var attribute in node.Attributes)
                 {
+                    string globallyQualifiedTypeName = null;
+
+                    if (attribute.TypeName != null)
+                    {
+                        globallyQualifiedTypeName = rewriter.Rewrite(attribute.TypeName);
+                        attribute.GloballyQualifiedTypeName = globallyQualifiedTypeName;
+                    }
+
                     if (attribute.BoundAttribute?.IsGenericTypedProperty() ?? false && attribute.TypeName != null)
                     {
                         // If we know the type name, then replace any generic type parameter inside it with
                         // the known types.
-                        attribute.TypeName = rewriter.Rewrite(attribute.TypeName);
+                        attribute.TypeName = globallyQualifiedTypeName;
                     }
                     else if (attribute.TypeName == null && (attribute.BoundAttribute?.IsDelegateProperty() ?? false))
                     {

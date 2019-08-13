@@ -102,6 +102,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string TypeName { get; set; }
 
+        public string GloballyQualifiedTypeName { get; set; }
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)
@@ -127,6 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             formatter.WriteProperty(nameof(PropertyName), PropertyName);
             formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
             formatter.WriteProperty(nameof(TypeName), TypeName);
+            formatter.WriteProperty(nameof(GloballyQualifiedTypeName), GloballyQualifiedTypeName);
         }
 
         public bool TryParseEventCallbackTypeArgument(out string argument)
