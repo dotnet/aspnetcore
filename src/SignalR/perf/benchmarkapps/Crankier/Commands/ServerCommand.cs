@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
                 .UseConfiguration(config)
                 .ConfigureLogging(loggerFactory =>
                 {
-                    loggerFactory.AddConsole().SetMinimumLevel(logLevel);   
+                    loggerFactory.AddConsole().SetMinimumLevel(logLevel);
                 })
                 .UseKestrel()
                 .UseStartup<Startup>();
