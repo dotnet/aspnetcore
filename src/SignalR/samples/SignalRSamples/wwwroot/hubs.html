@@ -27,6 +27,7 @@
             <option value="hubT">Hub&lt;T&gt;</option>
         </select>
 
+        <input type="text" id="displayname" placeholder="Enter User Name" />
         <input type="button" id="connect" value="Connect" />
         <input type="button" id="disconnect" value="Disconnect" />
 
@@ -58,6 +59,7 @@
         <div class="input-append">
             <input type="text" id="me-message-text" placeholder="Type a message" />
             <input type="button" id="send" class="btn" value="Send to Me" />
+            <input type="hidden" id="displayname" />
         </div>
     </form>
 
@@ -138,6 +140,13 @@
     var connection;
 
     click('connect', function (event) {
+
+        name = document.getElementById("displayname").value
+        if (name === "") {
+            alert("Please enter a valid name");
+            return;
+        }
+
         let hubRoute = hubTypeDropdown.value || "default";
         let protocol = protocolDropdown.value === "msgpack" ?
             new signalR.protocols.msgpack.MessagePackHubProtocol() :
@@ -148,6 +157,7 @@
             options.transport = signalR.HttpTransportType[transportDropdown.value];
         }
 
+        hubRoute = hubRoute + "?name=" + name;
         console.log('http://' + document.location.host + '/' + hubRoute);
 
         var connectionBuilder = new signalR.HubConnectionBuilder()
@@ -205,45 +215,45 @@
 
     click('broadcast', function (event) {
         let data = getText('message-text');
-        invoke(connection, 'Send', data);
+        invoke(connection, 'Send', name, data);
     });
 
     click('join-group', function (event) {
         let groupName = getText('group-name');
-        invoke(connection, 'JoinGroup', groupName);
+        invoke(connection, 'JoinGroup', groupName, name);
     });
 
     click('leave-group', function (event) {
         let groupName = getText('group-name');
-        invoke(connection, 'LeaveGroup', groupName);
+        invoke(connection, 'LeaveGroup', groupName, name);
     });
 
     click('groupmsg', function (event) {
         let groupName = getText('group-name');
         let message = getText('group-message-text');
-        invoke(connection, 'SendToGroup', groupName, message);
+        invoke(connection, 'SendToGroup', groupName, name, message);
     });
 
     click('others-groupmsg', function (event) {
         let groupName = getText('group-name');
         let message = getText('group-message-text');
-        invoke(connection, 'SendToOthersInGroup', groupName, message);
+        invoke(connection, 'SendToOthersInGroup', groupName, name, message);
     });
 
     click('send', function (event) {
         let data = getText('me-message-text');
-        invoke(connection, 'Echo', data);
+        invoke(connection, 'Echo', name, data);
     });
 
     click('broadcast-exceptme', function (event) {
         let data = getText('message-text');
-        invoke(connection, 'SendToOthers', data);
+        invoke(connection, 'SendToOthers', name, data);
     });
 
     click('connection-send', function (event) {
         let data = getText('connection-message-text');
         let id = getText('connection-id');
-        invoke(connection, 'SendToConnection', id, data);
+        invoke(connection, 'SendToConnection', id, name, data);
     });
 
 </script>
