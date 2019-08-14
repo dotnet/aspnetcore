@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- This needs to be hard-coded, since these test projects choose not to import Directory.Build.Props from the root of the repo -->
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
