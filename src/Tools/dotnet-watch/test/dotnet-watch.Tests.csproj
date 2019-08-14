@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- This needs to be hard-coded, since these test projects choose not to import Directory.Build.Props from the root of the repo -->
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
