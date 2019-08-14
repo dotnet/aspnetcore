@@ -60,17 +60,17 @@ namespace Microsoft.AspNetCore.Components.Web
                 return eventArgsType switch
                 {
                     "change" => DeserializeChangeEventArgs(eventArgsJson),
-                    "clipboard" => Deserialize<UIClipboardEventArgs>(eventArgsJson),
-                    "drag" => Deserialize<UIDragEventArgs>(eventArgsJson),
-                    "error" => Deserialize<UIErrorEventArgs>(eventArgsJson),
-                    "focus" => Deserialize<UIFocusEventArgs>(eventArgsJson),
-                    "keyboard" => Deserialize<UIKeyboardEventArgs>(eventArgsJson),
-                    "mouse" => Deserialize<UIMouseEventArgs>(eventArgsJson),
-                    "pointer" => Deserialize<UIPointerEventArgs>(eventArgsJson),
-                    "progress" => Deserialize<UIProgressEventArgs>(eventArgsJson),
-                    "touch" => Deserialize<UITouchEventArgs>(eventArgsJson),
+                    "clipboard" => Deserialize<ClipboardEventArgs>(eventArgsJson),
+                    "drag" => Deserialize<DragEventArgs>(eventArgsJson),
+                    "error" => Deserialize<ErrorEventArgs>(eventArgsJson),
+                    "focus" => Deserialize<FocusEventArgs>(eventArgsJson),
+                    "keyboard" => Deserialize<KeyboardEventArgs>(eventArgsJson),
+                    "mouse" => Deserialize<MouseEventArgs>(eventArgsJson),
+                    "pointer" => Deserialize<PointerEventArgs>(eventArgsJson),
+                    "progress" => Deserialize<ProgressEventArgs>(eventArgsJson),
+                    "touch" => Deserialize<TouchEventArgs>(eventArgsJson),
                     "unknown" => EventArgs.Empty,
-                    "wheel" => Deserialize<UIWheelEventArgs>(eventArgsJson),
+                    "wheel" => Deserialize<WheelEventArgs>(eventArgsJson),
                     _ => throw new InvalidOperationException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
                 };
             }

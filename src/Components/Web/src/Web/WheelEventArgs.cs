@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about a mouse wheel event that is being raised.
     /// </summary>
-    public class UIWheelEventArgs : UIMouseEventArgs
+    public class WheelEventArgs : MouseEventArgs
     {
         /// <summary>
         /// The horizontal scroll amount.
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components
         public double DeltaZ { get; set; }
 
         /// <summary>
-        /// The unit of the delta values scroll amount. 
+        /// The unit of the delta values scroll amount.
         /// </summary>
         public long DeltaMode { get; set; }
     }

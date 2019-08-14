@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Represents a single contact point on a touch-sensitive device.
     /// The contact point is commonly a finger or stylus and the device may be a touchscreen or trackpad.
     /// </summary>
-    public class UITouchPoint
+    public class TouchPoint
     {
         /// <summary>
         /// A unique identifier for this Touch object.

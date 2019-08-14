@@ -4,12 +4,12 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Provides extension methods for <see cref="EventCallbackFactory"/> and <see cref="EventArgs"/> types.
     /// </summary>
-    public static class WebEventCallbackFactoryUIEventArgsExtensions
+    public static class WebEventCallbackFactoryEventArgsExtensions
     {
         /// <summary>
         /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIClipboardEventArgs> callback)
+        public static EventCallback<ClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ClipboardEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIClipboardEventArgs>(receiver, callback);
+            return factory.Create<ClipboardEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIClipboardEventArgs, Task> callback)
+        public static EventCallback<ClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ClipboardEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIClipboardEventArgs>(receiver, callback);
+            return factory.Create<ClipboardEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIDragEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIDragEventArgs> callback)
+        public static EventCallback<DragEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<DragEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIDragEventArgs>(receiver, callback);
+            return factory.Create<DragEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -73,14 +73,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIDragEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIDragEventArgs, Task> callback)
+        public static EventCallback<DragEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<DragEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIDragEventArgs>(receiver, callback);
+            return factory.Create<DragEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -91,14 +91,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIErrorEventArgs> callback)
+        public static EventCallback<ErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ErrorEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIErrorEventArgs>(receiver, callback);
+            return factory.Create<ErrorEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -109,14 +109,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIErrorEventArgs, Task> callback)
+        public static EventCallback<ErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ErrorEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIErrorEventArgs>(receiver, callback);
+            return factory.Create<ErrorEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -127,14 +127,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIFocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIFocusEventArgs> callback)
+        public static EventCallback<FocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<FocusEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIFocusEventArgs>(receiver, callback);
+            return factory.Create<FocusEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -145,14 +145,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIFocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIFocusEventArgs, Task> callback)
+        public static EventCallback<FocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<FocusEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIFocusEventArgs>(receiver, callback);
+            return factory.Create<FocusEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -163,14 +163,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIKeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIKeyboardEventArgs> callback)
+        public static EventCallback<KeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<KeyboardEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIKeyboardEventArgs>(receiver, callback);
+            return factory.Create<KeyboardEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -181,14 +181,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIKeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIKeyboardEventArgs, Task> callback)
+        public static EventCallback<KeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<KeyboardEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIKeyboardEventArgs>(receiver, callback);
+            return factory.Create<KeyboardEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -199,14 +199,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIMouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIMouseEventArgs> callback)
+        public static EventCallback<MouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<MouseEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIMouseEventArgs>(receiver, callback);
+            return factory.Create<MouseEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -217,14 +217,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIMouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIMouseEventArgs, Task> callback)
+        public static EventCallback<MouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<MouseEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIMouseEventArgs>(receiver, callback);
+            return factory.Create<MouseEventArgs>(receiver, callback);
         }
         /// <summary>
         /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
@@ -234,32 +234,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIPointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIPointerEventArgs> callback)
+        public static EventCallback<PointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<PointerEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIPointerEventArgs>(receiver, callback);
-        }
-
-        /// <summary>
-        /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
-        /// <paramref name="callback"/>.
-        /// </summary>
-        /// <param name="factory">The <see cref="EventCallbackFactory"/>.</param>
-        /// <param name="receiver">The event receiver.</param>
-        /// <param name="callback">The event callback.</param>
-        /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIPointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIPointerEventArgs, Task> callback)
-        {
-            if (factory == null)
-            {
-                throw new ArgumentNullException(nameof(factory));
-            }
-
-            return factory.Create<UIPointerEventArgs>(receiver, callback);
+            return factory.Create<PointerEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -270,14 +252,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIProgressEventArgs> callback)
+        public static EventCallback<PointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<PointerEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIProgressEventArgs>(receiver, callback);
+            return factory.Create<PointerEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -288,14 +270,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIProgressEventArgs, Task> callback)
+        public static EventCallback<ProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ProgressEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIProgressEventArgs>(receiver, callback);
+            return factory.Create<ProgressEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -306,14 +288,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UITouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UITouchEventArgs> callback)
+        public static EventCallback<ProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ProgressEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UITouchEventArgs>(receiver, callback);
+            return factory.Create<ProgressEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -324,14 +306,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UITouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UITouchEventArgs, Task> callback)
+        public static EventCallback<TouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<TouchEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UITouchEventArgs>(receiver, callback);
+            return factory.Create<TouchEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -342,14 +324,14 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIWheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<UIWheelEventArgs> callback)
+        public static EventCallback<TouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<TouchEventArgs, Task> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIWheelEventArgs>(receiver, callback);
+            return factory.Create<TouchEventArgs>(receiver, callback);
         }
 
         /// <summary>
@@ -360,14 +342,32 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="receiver">The event receiver.</param>
         /// <param name="callback">The event callback.</param>
         /// <returns>The <see cref="EventCallback"/>.</returns>
-        public static EventCallback<UIWheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<UIWheelEventArgs, Task> callback)
+        public static EventCallback<WheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<WheelEventArgs> callback)
         {
             if (factory == null)
             {
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            return factory.Create<UIWheelEventArgs>(receiver, callback);
+            return factory.Create<WheelEventArgs>(receiver, callback);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+        /// <paramref name="callback"/>.
+        /// </summary>
+        /// <param name="factory">The <see cref="EventCallbackFactory"/>.</param>
+        /// <param name="receiver">The event receiver.</param>
+        /// <param name="callback">The event callback.</param>
+        /// <returns>The <see cref="EventCallback"/>.</returns>
+        public static EventCallback<WheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<WheelEventArgs, Task> callback)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            return factory.Create<WheelEventArgs>(receiver, callback);
         }
     }
 }

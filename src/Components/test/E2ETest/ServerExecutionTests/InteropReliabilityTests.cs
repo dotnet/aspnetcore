@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             sink.MessageLogged += (wc) => logEvents.Add((wc.LogLevel, wc.EventId.Name, wc.Exception));
 
             // Act
-            var mouseEventArgs = new UIMouseEventArgs()
+            var mouseEventArgs = new MouseEventArgs()
             {
                 Type = "click",
                 Detail = 1

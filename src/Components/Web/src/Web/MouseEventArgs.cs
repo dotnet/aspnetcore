@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about a mouse event that is being raised.
     /// </summary>
-    public class UIMouseEventArgs : EventArgs
+    public class MouseEventArgs : EventArgs
     {
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.

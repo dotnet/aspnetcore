@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// The <see cref="DataTransfer"/> object is used to hold the data that is being dragged during a drag and drop operation.
-    /// It may hold one or more <see cref="UIDataTransferItem"/>, each of one or more data types.
+    /// It may hold one or more <see cref="DataTransferItem"/>, each of one or more data types.
     /// For more information about drag and drop, see HTML Drag and Drop API.
     /// </summary>
     public class DataTransfer
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Components
         public string[] Files { get; set; }
 
         /// <summary>
-        /// Gives a <see cref="UIDataTransferItem"/> array which is a list of all of the drag data.
+        /// Gives a <see cref="DataTransferItem"/> array which is a list of all of the drag data.
         /// </summary>
-        public UIDataTransferItem[] Items { get; set; }
+        public DataTransferItem[] Items { get; set; }
 
         /// <summary>
         /// An array of <see cref="string"/> giving the formats that were set in the dragstart event.

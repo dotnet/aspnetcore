@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about an error event that is being raised.
     /// </summary>
-    public class UIErrorEventArgs : EventArgs
+    public class ErrorEventArgs : EventArgs
     {
         /// <summary>
         /// Gets a a human-readable error message describing the problem.
