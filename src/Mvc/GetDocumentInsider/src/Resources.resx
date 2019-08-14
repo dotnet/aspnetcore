@@ -151,7 +151,8 @@
     <value>Method '{0}' not found in type '{1}' with expected signature.</value>
   </data>
   <data name="ServiceNotFound" xml:space="preserve">
-    <value>Unable to find service type '{0}' in dependency injection container.</value>
+    <value>Unable to find service type '{0}' in dependency injection container. Update the 'Startup' class to register a document.</value>
+    <comment>Do not translate 'Startup'</comment>
   </data>
   <data name="MethodReturnedNull" xml:space="preserve">
     <value>Method '{0}' of type '{1}' returned null. Must return a non-null '{2}'.</value>
@@ -185,5 +186,9 @@
   </data>
   <data name="ServiceProviderNotFound" xml:space="preserve">
     <value>Unable to resolve a non-null '{0}' implementation using method '{1}', '{2}' or '{3}' of type '{4}'.</value>
+  </data>
+  <data name="DocumentsNotFound" xml:space="preserve">
+    <value>Unable to find any registered documents. Update the 'Startup' class to register a document.</value>
+    <comment>Do not translate 'Startup'</comment>
   </data>
 </root>

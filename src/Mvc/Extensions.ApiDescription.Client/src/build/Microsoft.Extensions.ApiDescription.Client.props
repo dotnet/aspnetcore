@@ -39,7 +39,7 @@
 
     <!--
       If 'true' (the default), build projects referenced in @(OpenApiProjectReference) items before retrieving that
-      project's Open API documents list (or generating code). If 'false', ensure the referenced projects build before
+      project's OpenAPI documents list (or generating code). If 'false', ensure the referenced projects build before
       this one in the solution or through other means. IDEs may be confused about the project dependency graph in this
       case.
     -->
@@ -47,7 +47,7 @@
         Condition="'$(OpenApiBuildReferencedProjects)' == ''">true</OpenApiBuildReferencedProjects>
 
     <!--
-      Default folder to place code generated from Open API documents. Value is interpreted relative to the project
+      Default folder to place code generated from OpenAPI documents. Value is interpreted relative to the project
       folder, unless already an absolute path. Part of the default %(OutputPath) metadata of @(OpenApiReference) and
       @(OpenApiProjectReference) items.
     -->

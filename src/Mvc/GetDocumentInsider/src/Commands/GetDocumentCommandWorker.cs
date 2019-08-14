@@ -137,6 +137,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             }
 
             // Write out the documents.
+            var found = false;
             Directory.CreateDirectory(context.OutputDirectory);
             var filePathList = new List<string>();
             foreach (var documentName in documentNames)
@@ -153,6 +154,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 }
 
                 filePathList.Add(filePath);
+                found = true;
             }
 
             // Write out the cache file.
@@ -160,7 +162,12 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             using var writer = new StreamWriter(stream);
             writer.WriteLine(string.Join(Environment.NewLine, filePathList));
 
-            return true;
+            if (!found)
+            {
+                Reporter.WriteError(Resources.DocumentsNotFound);
+            }
+
+            return found;
         }
 
         private static string GetDocument(

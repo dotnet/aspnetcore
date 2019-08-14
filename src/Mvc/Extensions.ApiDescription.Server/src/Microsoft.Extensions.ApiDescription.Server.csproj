@@ -10,7 +10,7 @@
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
-    <PackageTags>MSBuild;Swagger;Open API;code generation;Web API</PackageTags>
+    <PackageTags>MSBuild;Swagger;OpenAPI;code generation;Web API;service reference;document generation</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
     <DevelopmentDependency>true</DevelopmentDependency>
 

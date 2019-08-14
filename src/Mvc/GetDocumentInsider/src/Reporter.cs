@@ -9,6 +9,9 @@ namespace Microsoft.Extensions.ApiDescription.Tool
 {
     internal static class Reporter
     {
+        private static AnsiTextWriter Error = new AnsiTextWriter(Console.Error);
+        private static AnsiTextWriter Out = new AnsiTextWriter(Console.Out);
+
         public static bool IsVerbose { get; set; }
         public static bool NoColor { get; set; }
         public static bool PrefixOutput { get; set; }
@@ -17,7 +20,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => NoColor ? value : colorizeFunc(value);
 
         public static void WriteError(string message)
-            => WriteLine(Prefix("error:   ", Colorize(message, x => Bold + Red + x + Reset)));
+            => WriteLine(Prefix("error:   ", Colorize(message, x => Bold + Red + x + Reset)), isError: true);
 
         public static void WriteWarning(string message)
             => WriteLine(Prefix("warn:    ", Colorize(message, x => Bold + Yellow + x + Reset)));
@@ -32,7 +35,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         {
             if (IsVerbose)
             {
-                WriteLine(Prefix("verbose: ", Colorize(message, x => Bold + Black + x + Reset)));
+                WriteLine(Prefix("verbose: ", Colorize(message, x => Gray + x + Reset)));
             }
         }
 
@@ -43,15 +46,15 @@ namespace Microsoft.Extensions.ApiDescription.Tool
                     value.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Select(l => prefix + l))
                 : value;
 
-        private static void WriteLine(string value)
+        private static void WriteLine(string value, bool isError = false)
         {
             if (NoColor)
             {
-                Console.WriteLine(value);
+                (isError ? Console.Error : Console.Out).WriteLine(value);
             }
             else
             {
-                AnsiConsole.WriteLine(value);
+                (isError ? Error : Out).WriteLine(value);
             }
         }
     }
