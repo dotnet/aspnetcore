@@ -40,8 +40,8 @@ namespace Microsoft.JSInterop
                 throw new JsonException($"Required property {DotNetObjectRefKey} not found.");
             }
 
-            var value = (TValue)DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
-            return new DotNetObjectRef<TValue>(dotNetObjectId, value);
+            var referenceManager = DotNetObjectRefManager.Current;
+            return (DotNetObjectRef<TValue>)referenceManager.FindDotNetObject(dotNetObjectId);
         }
 
         public override void Write(Utf8JsonWriter writer, DotNetObjectRef<TValue> value, JsonSerializerOptions options)

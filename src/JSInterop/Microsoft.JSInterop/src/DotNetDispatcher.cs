@@ -18,6 +18,7 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class DotNetDispatcher
     {
+        private const string DisposeDotNetObjectReferenceMethodName = "__Dispose";
         internal static readonly JsonEncodedText DotNetObjectRefKey = JsonEncodedText.Encode("__dotNetObject");
 
         private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
@@ -38,7 +39,7 @@ namespace Microsoft.JSInterop
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            var targetInstance = (object)null;
+            IDotNetObjectRef targetInstance = default;
             if (dotNetObjectId != default)
             {
                 targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
@@ -78,7 +79,7 @@ namespace Microsoft.JSInterop
             // original stack traces.
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
-            object targetInstance = null;
+            IDotNetObjectRef targetInstance = null;
 
             try
             {
@@ -127,21 +128,28 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object targetInstance, string argsJson)
+        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, IDotNetObjectRef objectReference, string argsJson)
         {
             AssemblyKey assemblyKey;
-            if (targetInstance != null)
+            if (objectReference is null)
+            {
+                assemblyKey = new AssemblyKey(assemblyName);
+            }
+            else
             {
                 if (assemblyName != null)
                 {
                     throw new ArgumentException($"For instance method calls, '{nameof(assemblyName)}' should be null. Value received: '{assemblyName}'.");
                 }
 
-                assemblyKey = new AssemblyKey(targetInstance.GetType().Assembly);
-            }
-            else
-            {
-                assemblyKey = new AssemblyKey(assemblyName);
+                if (string.Equals(DisposeDotNetObjectReferenceMethodName, methodIdentifier, StringComparison.Ordinal))
+                {
+                    // The client executed dotNetObjectReference.dispose(). Dispose the reference and exit.
+                    objectReference.Dispose();
+                    return default;
+                }
+
+                assemblyKey = new AssemblyKey(objectReference.Value.GetType().Assembly);
             }
 
             var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
@@ -150,7 +158,8 @@ namespace Microsoft.JSInterop
 
             try
             {
-                return methodInfo.Invoke(targetInstance, suppliedArgs);
+                // objectReference will be null if this call invokes a static JSInvokable method.
+                return methodInfo.Invoke(objectReference?.Value, suppliedArgs);
             }
             catch (TargetInvocationException tie) // Avoid using exception filters for AOT runtime support
             {
@@ -278,22 +287,6 @@ namespace Microsoft.JSInterop
             {
                 throw new JsonException("Invalid JSON");
             }
-        }
-
-        /// <summary>
-        /// Releases the reference to the specified .NET object. This allows the .NET runtime
-        /// to garbage collect that object if there are no other references to it.
-        ///
-        /// To avoid leaking memory, the JavaScript side code must call this for every .NET
-        /// object it obtains a reference to. The exception is if that object is used for
-        /// the entire lifetime of a given user's session, in which case it is released
-        /// automatically when the JavaScript runtime is disposed.
-        /// </summary>
-        /// <param name="dotNetObjectId">The identifier previously passed to JavaScript code.</param>
-        [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(ReleaseDotNetObject))]
-        public static void ReleaseDotNetObject(long dotNetObjectId)
-        {
-            DotNetObjectRefManager.Current.ReleaseDotNetObject(dotNetObjectId);
         }
 
         private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)

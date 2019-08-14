@@ -16,23 +16,53 @@ namespace Microsoft.JSInterop
     [JsonConverter(typeof(DotNetObjectReferenceJsonConverterFactory))]
     public sealed class DotNetObjectRef<TValue> : IDotNetObjectRef, IDisposable where TValue : class
     {
+        private readonly DotNetObjectRefManager _referenceManager;
+        private readonly TValue _value;
+        private readonly long _objectId;
+
         /// <summary>
         /// Initializes a new instance of <see cref="DotNetObjectRef{TValue}" />.
         /// </summary>
-        /// <param name="objectId">The object Id.</param>
+        /// <param name="referenceManager"></param>
         /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectRef(long objectId, TValue value)
+        internal DotNetObjectRef(DotNetObjectRefManager referenceManager, TValue value)
         {
-            ObjectId = objectId;
-            Value = value;
+            _referenceManager = referenceManager;
+            _objectId = _referenceManager.TrackObject(this);
+            _value = value;
+        }
+
+        internal DotNetObjectRef(DotNetObjectRefManager referenceManager, long objectId, TValue value)
+        {
+            _referenceManager = referenceManager;
+            _objectId = objectId;
+            _value = value;
         }
 
         /// <summary>
         /// Gets the object instance represented by this wrapper.
         /// </summary>
-        public TValue Value { get; }
+        public TValue Value
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _value;
+            }
+        }
 
-        internal long ObjectId { get; }
+        internal long ObjectId
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _objectId;
+            }
+        }
+
+        object IDotNetObjectRef.Value => Value;
+
+        internal bool Disposed { get; private set; }
 
         /// <summary>
         /// Stops tracking this object reference, allowing it to be garbage collected
@@ -41,7 +71,19 @@ namespace Microsoft.JSInterop
         /// </summary>
         public void Dispose()
         {
-            DotNetObjectRefManager.Current.ReleaseDotNetObject(ObjectId);
+            if (!Disposed)
+            {
+                Disposed = true;
+                _referenceManager.ReleaseDotNetObject(_objectId);
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
         }
     }
 }

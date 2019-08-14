@@ -24,10 +24,11 @@ namespace Microsoft.JSInterop
             var objRef = DotNetObjectRef.Create(new object());
 
             // Act
+            Assert.Equal(1, objRef.ObjectId);
             objRef.Dispose();
 
             // Assert
-            var ex = Assert.Throws<ArgumentException>(() => jsRuntime.ObjectRefManager.FindDotNetObject(objRef.ObjectId));
+            var ex = Assert.Throws<ArgumentException>(() => jsRuntime.ObjectRefManager.FindDotNetObject(1));
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
         });
     }

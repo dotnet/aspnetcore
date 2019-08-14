@@ -8,8 +8,6 @@ namespace Microsoft.JSInterop
         public static void BeginInvoke(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
         public static void EndInvoke(string arguments) { }
         public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
-        [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.ReleaseDotNetObject")]
-        public static void ReleaseDotNetObject(long dotNetObjectId) { }
     }
     public static partial class DotNetObjectRef
     {
@@ -18,7 +16,7 @@ namespace Microsoft.JSInterop
     public sealed partial class DotNetObjectRef<TValue> : System.IDisposable where TValue : class
     {
         internal DotNetObjectRef() { }
-        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public TValue Value { get { throw null; } }
         public void Dispose() { }
     }
     public partial interface IJSInProcessRuntime : Microsoft.JSInterop.IJSRuntime

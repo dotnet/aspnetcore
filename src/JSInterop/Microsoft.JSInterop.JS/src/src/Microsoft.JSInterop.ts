@@ -66,7 +66,11 @@ module DotNet {
     }
   }
 
-  function invokePossibleInstanceMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[]): Promise<T> {
+  function invokePossibleInstanceMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, ...args: any[]): Promise<T> {
+    if (assemblyName && dotNetObjectId) {
+      throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`) ;
+    }
+
     const asyncCallId = nextAsyncCallId++;
     const resultPromise = new Promise<T>((resolve, reject) => {
       pendingAsyncCalls[asyncCallId] = { resolve, reject };
@@ -269,10 +273,7 @@ module DotNet {
     }
 
     public dispose() {
-      const promise = invokeMethodAsync<any>(
-        'Microsoft.JSInterop',
-        'DotNetDispatcher.ReleaseDotNetObject',
-        this._id);
+      const promise = invokePossibleInstanceMethodAsync<any>(null, '__Dispose', this._id);
       promise.catch(error => console.error(error));
     }
 

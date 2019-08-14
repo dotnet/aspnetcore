@@ -282,10 +282,10 @@ namespace Microsoft.JSInterop
             Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":3},\"obj3\":{\"__dotNetObject\":4},\"obj1SameRef\":{\"__dotNetObject\":1},\"obj1DifferentRef\":{\"__dotNetObject\":2}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
-            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1));
-            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(2));
-            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(3));
-            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(4));
+            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1).Value);
+            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(2).Value);
+            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(3).Value);
+            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(4).Value);
         }
 
         [Fact]
