@@ -134,6 +134,30 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public async Task ConnectAsync_InvokesCircuitHandlers_DisposesCircuitOnFailure()
+        {
+            // Arrange
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+            var registry = CreateRegistry(circuitIdFactory);
+            var handler = new Mock<CircuitHandler> { CallBase = true };
+            handler.Setup(h => h.OnConnectionUpAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>())).Throws(new InvalidTimeZoneException());
+            var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
+            registry.Register(circuitHost);
+
+            var newClient = Mock.Of<IClientProxy>();
+            var newConnectionId = "new-id";
+
+            // Act
+            var result = await registry.ConnectAsync(circuitHost.CircuitId, newClient, newConnectionId, default);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Null(circuitHost.Handle.CircuitHost); // Will be null if disposed.
+            Assert.Empty(registry.ConnectedCircuits);
+            Assert.Equal(0, registry.DisconnectedCircuits.Count);
+        }
+
+        [Fact]
         public async Task DisconnectAsync_DoesNothing_IfCircuitIsInactive()
         {
             // Arrange
@@ -409,7 +433,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             protected override void OnEntryEvicted(object key, object value, EvictionReason reason, object state)
             {
                 base.OnEntryEvicted(key, value, reason, state);
-                OnAfterEntryEvicted();
+                OnAfterEntryEvicted?.Invoke();
             }
         }
 

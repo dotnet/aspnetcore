@@ -144,23 +144,43 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task Page_Handler_ReturnPartialWithoutModel()
+        public async Task PageWithoutModel_ReturnPartial()
         {
             // Act
-            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithoutModel");
+            using var document = await Client.GetHtmlDocumentAsync("PageWithoutModelRenderPartial");
 
             var element = document.RequiredQuerySelector("#content");
-            Assert.Equal("Welcome, Guest", element.TextContent);
+            Assert.Equal("Hello from Razor Page", element.TextContent);
         }
 
         [Fact]
-        public async Task Page_Handler_ReturnPartialWithModel()
+        public async Task PageWithModel_Works()
         {
             // Act
-            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithModel");
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial");
 
             var element = document.RequiredQuerySelector("#content");
-            Assert.Equal("Welcome, Admin", element.TextContent);
+            Assert.Equal("Hello from RenderPartialModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialUsingPageModelWorks()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/UsePageModelAsPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello from RenderPartialWithModel", element.TextContent);
+        }
+
+        [Fact]
+        public async Task PageWithModel_PartialWithNoModel()
+        {
+            // Act
+            using var document = await Client.GetHtmlDocumentAsync("RenderPartial/NoPartialModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Hello default", element.TextContent);
         }
 
         [Fact]

@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.Server
         {
             try
             {
-                await Registry.Terminate(circuitId);
+                await Registry.TerminateAsync(circuitId);
                 Log.CircuitTerminatedGracefully(Logger, circuitId);
             }
             catch (Exception e)

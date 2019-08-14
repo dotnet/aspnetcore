@@ -84,7 +84,7 @@ namespace Templates.Test.SpaTemplateTest
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
             // localdb is not installed on the CI machines, so skip it.
-            var shouldVisitFetchData = !useLocalDb;
+            var shouldVisitFetchData = !(useLocalDb && Project.IsCIEnvironment);
 
             if (usesAuth)
             {

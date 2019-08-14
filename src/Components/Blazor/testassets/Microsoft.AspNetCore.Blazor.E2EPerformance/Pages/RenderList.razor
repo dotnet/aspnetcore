@@ -46,7 +46,7 @@ Number of items: <input id="num-items" type="number" @bind=numItems />
         show = true;
     }
 
-    protected override void OnAfterRender()
+    protected override void OnAfterRender(bool firstRender)
     {
         BenchmarkEvent.Send(JSRuntime, "Finished rendering list");
     }
