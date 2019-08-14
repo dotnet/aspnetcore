@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
 {
-    internal class TestJSRuntime : JSRuntimeBase
+    internal class TestJSRuntime : JSRuntime
     {
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
         {
@@ -18,7 +18,7 @@ namespace Microsoft.JSInterop
             throw new NotImplementedException();
         }
 
-        public static async Task WithJSRuntime(Action<JSRuntimeBase> testCode)
+        public static async Task WithJSRuntime(Action<JSRuntime> testCode)
         {
             // Since the tests rely on the asynclocal JSRuntime.Current, ensure we
             // are on a distinct async context with a non-null JSRuntime.Current

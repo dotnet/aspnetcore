@@ -8,20 +8,20 @@ using static Microsoft.JSInterop.TestJSRuntime;
 
 namespace Microsoft.JSInterop
 {
-    public class DotNetObjectRefTest
+    public class DotNetObjectReferenceTest
     {
         [Fact]
         public Task CanAccessValue() => WithJSRuntime(_ =>
         {
             var obj = new object();
-            Assert.Same(obj, DotNetObjectRef.Create(obj).Value);
+            Assert.Same(obj, DotNetObjectReference.Create(obj).Value);
         });
 
         [Fact]
         public Task NotifiesAssociatedJsRuntimeOfDisposal() => WithJSRuntime(jsRuntime =>
         {
             // Arrange
-            var objRef = DotNetObjectRef.Create(new object());
+            var objRef = DotNetObjectReference.Create(new object());
 
             // Act
             Assert.Equal(1, objRef.ObjectId);

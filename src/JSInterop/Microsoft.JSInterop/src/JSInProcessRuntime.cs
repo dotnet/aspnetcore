@@ -8,7 +8,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Abstract base class for an in-process JavaScript runtime.
     /// </summary>
-    public abstract class JSInProcessRuntimeBase : JSRuntimeBase, IJSInProcessRuntime
+    public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     {
         /// <summary>
         /// Invokes the specified JavaScript function synchronously.

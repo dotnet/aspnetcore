@@ -3,19 +3,13 @@
 
 namespace Microsoft.JSInterop
 {
-    public static partial class DotNetDispatcher
+    public static partial class DotNetObjectReference
     {
-        public static void BeginInvoke(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
-        public static void EndInvoke(string arguments) { }
-        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
+        public static Microsoft.JSInterop.DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class { throw null; }
     }
-    public static partial class DotNetObjectRef
+    public sealed partial class DotNetObjectReference<TValue> : System.IDisposable where TValue : class
     {
-        public static Microsoft.JSInterop.DotNetObjectRef<TValue> Create<TValue>(TValue value) where TValue : class { throw null; }
-    }
-    public sealed partial class DotNetObjectRef<TValue> : System.IDisposable where TValue : class
-    {
-        internal DotNetObjectRef() { }
+        internal DotNetObjectReference() { }
         public TValue Value { get { throw null; } }
         public void Dispose() { }
     }
@@ -25,38 +19,61 @@ namespace Microsoft.JSInterop
     }
     public partial interface IJSRuntime
     {
-        System.Threading.Tasks.Task<TValue> InvokeAsync<TValue>(string identifier, System.Collections.Generic.IEnumerable<object> args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
-        System.Threading.Tasks.Task<TValue> InvokeAsync<TValue>(string identifier, params object[] args);
+        System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
+        System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, System.Threading.CancellationToken cancellationToken, object[] args);
     }
     public partial class JSException : System.Exception
     {
         public JSException(string message) { }
         public JSException(string message, System.Exception innerException) { }
     }
-    public abstract partial class JSInProcessRuntimeBase : Microsoft.JSInterop.JSRuntimeBase, Microsoft.JSInterop.IJSInProcessRuntime, Microsoft.JSInterop.IJSRuntime
+    public abstract partial class JSInProcessRuntime : Microsoft.JSInterop.JSRuntime, Microsoft.JSInterop.IJSInProcessRuntime, Microsoft.JSInterop.IJSRuntime
     {
-        protected JSInProcessRuntimeBase() { }
+        protected JSInProcessRuntime() { }
         protected abstract string InvokeJS(string identifier, string argsJson);
         public TValue Invoke<TValue>(string identifier, params object[] args) { throw null; }
     }
+    public static partial class JSInProcessRuntimeExtensions
+    {
+        public static void InvokeVoid(this Microsoft.JSInterop.IJSInProcessRuntime jsRuntime, string identifier, params object[] args) { }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true)]
-    public partial class JSInvokableAttribute : System.Attribute
+    public sealed partial class JSInvokableAttribute : System.Attribute
     {
         public JSInvokableAttribute() { }
         public JSInvokableAttribute(string identifier) { }
         public string Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public static partial class JSRuntime
+    public abstract partial class JSRuntime : Microsoft.JSInterop.IJSRuntime
     {
-        public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }
-    }
-    public abstract partial class JSRuntimeBase : Microsoft.JSInterop.IJSRuntime
-    {
-        protected JSRuntimeBase() { }
+        protected JSRuntime() { }
         protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
         protected internal abstract void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId);
-        public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, System.Collections.Generic.IEnumerable<object> args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
+        public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) { throw null; }
+        public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, System.Threading.CancellationToken cancellationToken, object[] args) { throw null; }
+        public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }
+    }
+    public static partial class JSRuntimeExtensions
+    {
+        public static System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, params object[] args) { throw null; }
+        public static System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.Threading.CancellationToken cancellationToken, params object[] args) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.TimeSpan timeout, params object[] args) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, params object[] args) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.Threading.CancellationToken cancellationToken, params object[] args) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime jsRuntime, string identifier, System.TimeSpan timeout, params object[] args) { throw null; }
+    }
+}
+namespace Microsoft.JSInterop.Infrastructure
+{
+    public static partial class DotNetDispatcher
+    {
+        public static void BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
+        public static void EndInvokeJS(string arguments) { }
+        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
     }
 }

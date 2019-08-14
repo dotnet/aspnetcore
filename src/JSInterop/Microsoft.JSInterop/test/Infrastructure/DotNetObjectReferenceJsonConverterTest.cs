@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using static Microsoft.JSInterop.TestJSRuntime;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetObjectReferenceJsonConverterTest
     {
@@ -14,12 +14,12 @@ namespace Microsoft.JSInterop.Tests
         public Task Read_Throws_IfJsonIsMissingDotNetObjectProperty() => WithJSRuntime(_ =>
         {
             // Arrange
-            var dotNetObjectRef = DotNetObjectRef.Create(new TestModel());
+            var dotNetObjectRef = DotNetObjectReference.Create(new TestModel());
 
             var json = "{}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json));
             Assert.Equal("Required property __dotNetObject not found.", ex.Message);
         });
 
@@ -27,12 +27,12 @@ namespace Microsoft.JSInterop.Tests
         public Task Read_Throws_IfJsonContainsUnknownContent() => WithJSRuntime(_ =>
         {
             // Arrange
-            var dotNetObjectRef = DotNetObjectRef.Create(new TestModel());
+            var dotNetObjectRef = DotNetObjectReference.Create(new TestModel());
 
             var json = "{\"foo\":2}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json));
             Assert.Equal("Unexcepted JSON property foo.", ex.Message);
         });
 
@@ -41,13 +41,13 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var input = new TestModel();
-            var dotNetObjectRef = DotNetObjectRef.Create(input);
+            var dotNetObjectRef = DotNetObjectReference.Create(input);
             var objectId = dotNetObjectRef.ObjectId;
 
             var json = $"{{\"__dotNetObject\":{objectId}";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json));
             Assert.IsAssignableFrom<JsonException>(ex);
         });
 
@@ -56,13 +56,13 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var input = new TestModel();
-            var dotNetObjectRef = DotNetObjectRef.Create(input);
+            var dotNetObjectRef = DotNetObjectReference.Create(input);
             var objectId = dotNetObjectRef.ObjectId;
 
             var json = $"{{\"__dotNetObject\":{objectId},\"__dotNetObject\":{objectId}}}";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json));
             Assert.IsAssignableFrom<JsonException>(ex);
         });
 
@@ -71,13 +71,13 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var input = new TestModel();
-            var dotNetObjectRef = DotNetObjectRef.Create(input);
+            var dotNetObjectRef = DotNetObjectReference.Create(input);
             var objectId = dotNetObjectRef.ObjectId;
 
             var json = $"{{\"__dotNetObject\":{objectId}}}";
 
             // Act
-            var deserialized = JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json);
+            var deserialized = JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json);
 
             // Assert
             Assert.Same(input, deserialized.Value);
@@ -92,13 +92,13 @@ namespace Microsoft.JSInterop.Tests
             // Track a few instances and verify that the deserialized value returns the correct value.
             var instance1 = new TestModel();
             var instance2 = new TestModel();
-            var ref1 = DotNetObjectRef.Create(instance1);
-            var ref2 = DotNetObjectRef.Create(instance2);
+            var ref1 = DotNetObjectReference.Create(instance1);
+            var ref2 = DotNetObjectReference.Create(instance2);
 
             var json = $"[{{\"__dotNetObject\":{ref2.ObjectId}}},{{\"__dotNetObject\":{ref1.ObjectId}}}]";
 
             // Act
-            var deserialized = JsonSerializer.Deserialize<DotNetObjectRef<TestModel>[]>(json);
+            var deserialized = JsonSerializer.Deserialize<DotNetObjectReference<TestModel>[]>(json);
 
             // Assert
             Assert.Same(instance2, deserialized[0].Value);
@@ -110,7 +110,7 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var input = new TestModel();
-            var dotNetObjectRef = DotNetObjectRef.Create(input);
+            var dotNetObjectRef = DotNetObjectReference.Create(input);
             var objectId = dotNetObjectRef.ObjectId;
 
             var json =
@@ -119,7 +119,7 @@ namespace Microsoft.JSInterop.Tests
 }}";
 
             // Act
-            var deserialized = JsonSerializer.Deserialize<DotNetObjectRef<TestModel>>(json);
+            var deserialized = JsonSerializer.Deserialize<DotNetObjectReference<TestModel>>(json);
 
             // Assert
             Assert.Same(input, deserialized.Value);
@@ -130,7 +130,7 @@ namespace Microsoft.JSInterop.Tests
         public Task WriteJsonTwice_KeepsObjectId() => WithJSRuntime(_ =>
         {
             // Arrange
-            var dotNetObjectRef = DotNetObjectRef.Create(new TestModel());
+            var dotNetObjectRef = DotNetObjectReference.Create(new TestModel());
 
             // Act
             var json1 = JsonSerializer.Serialize(dotNetObjectRef);

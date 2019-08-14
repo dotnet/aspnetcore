@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class JSInProcessRuntimeBaseTest
     {
@@ -43,12 +43,12 @@ namespace Microsoft.JSInterop.Tests
 
             // Act
             // Showing we can pass the DotNetObject either as top-level args or nested
-            var syncResult = runtime.Invoke<DotNetObjectRef<object>>("test identifier",
-                DotNetObjectRef.Create(obj1),
+            var syncResult = runtime.Invoke<DotNetObjectReference<object>>("test identifier",
+                DotNetObjectReference.Create(obj1),
                 new Dictionary<string, object>
                 {
-                    { "obj2",  DotNetObjectRef.Create(obj2) },
-                    { "obj3",  DotNetObjectRef.Create(obj3) },
+                    { "obj2",  DotNetObjectReference.Create(obj2) },
+                    { "obj3",  DotNetObjectReference.Create(obj3) },
                 });
 
             // Assert: Handles null result string
@@ -78,11 +78,11 @@ namespace Microsoft.JSInterop.Tests
             var obj2 = new object();
 
             // Act
-            var syncResult = runtime.Invoke<DotNetObjectRef<object>[]>(
+            var syncResult = runtime.Invoke<DotNetObjectReference<object>[]>(
                 "test identifier",
-                DotNetObjectRef.Create(obj1),
+                DotNetObjectReference.Create(obj1),
                 "some other arg",
-                DotNetObjectRef.Create(obj2));
+                DotNetObjectReference.Create(obj2));
             var call = runtime.InvokeCalls.Single();
 
             // Assert
@@ -95,7 +95,7 @@ namespace Microsoft.JSInterop.Tests
             public string StringValue { get; set; }
         }
 
-        class TestJSInProcessRuntime : JSInProcessRuntimeBase
+        class TestJSInProcessRuntime : JSInProcessRuntime
         {
             public List<InvokeArgs> InvokeCalls { get; set; } = new List<InvokeArgs>();
 

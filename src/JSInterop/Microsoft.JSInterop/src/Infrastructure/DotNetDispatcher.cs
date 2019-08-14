@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     /// <summary>
     /// Provides methods that receive incoming calls from JS to .NET.
@@ -39,10 +39,10 @@ namespace Microsoft.JSInterop
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            IDotNetObjectRef targetInstance = default;
+            IDotNetObjectReference targetInstance = default;
             if (dotNetObjectId != default)
             {
-                targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
+                targetInstance = DotNetObjectReferenceManager.Current.FindDotNetObject(dotNetObjectId);
             }
 
             var syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
@@ -63,7 +63,7 @@ namespace Microsoft.JSInterop
         /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static void BeginInvoke(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static void BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -73,19 +73,19 @@ namespace Microsoft.JSInterop
             // DotNetDispatcher only works with JSRuntimeBase instances.
             // If the developer wants to use a totally custom IJSRuntime, then their JS-side
             // code has to implement its own way of returning async results.
-            var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
+            var jsRuntimeBaseInstance = (JSRuntime)JSRuntime.Current;
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
-            IDotNetObjectRef targetInstance = null;
+            IDotNetObjectReference targetInstance = null;
 
             try
             {
                 if (dotNetObjectId != default)
                 {
-                    targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
+                    targetInstance = DotNetObjectReferenceManager.Current.FindDotNetObject(dotNetObjectId);
                 }
 
                 syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
@@ -128,7 +128,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, IDotNetObjectRef objectReference, string argsJson)
+        private static object InvokeSynchronously(string assemblyName, string methodIdentifier, IDotNetObjectReference objectReference, string argsJson)
         {
             AssemblyKey assemblyKey;
             if (objectReference is null)
@@ -227,7 +227,7 @@ namespace Microsoft.JSInterop
                     jsonReader.ValueTextEquals(DotNetObjectRefKey.EncodedUtf8Bytes))
                 {
                     // The JSON payload has the shape we expect from a DotNetObjectRef instance.
-                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectRef<>);
+                    return !parameterType.IsGenericType || parameterType.GetGenericTypeDefinition() != typeof(DotNetObjectReference<>);
                 }
 
                 return false;
@@ -239,9 +239,9 @@ namespace Microsoft.JSInterop
         /// associated <see cref="Task"/> as completed.
         /// </summary>
         /// <remarks>
-        /// All exceptions from <see cref="EndInvoke"/> are caught
+        /// All exceptions from <see cref="EndInvokeJS"/> are caught
         /// are delivered via JS interop to the JavaScript side when it requests confirmation, as
-        /// the mechanism to call <see cref="EndInvoke"/> relies on
+        /// the mechanism to call <see cref="EndInvokeJS"/> relies on
         /// using JS->.NET interop. This overload is meant for directly triggering completion callbacks
         /// for .NET -> JS operations without going through JS interop, so the callsite for this
         /// method is responsible for handling any possible exception generated from the arguments
@@ -252,13 +252,13 @@ namespace Microsoft.JSInterop
         /// This method can throw any exception either from the argument received or as a result
         /// of executing any callback synchronously upon completion.
         /// </exception>
-        public static void EndInvoke(string arguments)
+        public static void EndInvokeJS(string arguments)
         {
-            var jsRuntimeBase = (JSRuntimeBase)JSRuntime.Current;
+            var jsRuntimeBase = (JSRuntime)JSRuntime.Current;
             ParseEndInvokeArguments(jsRuntimeBase, arguments);
         }
 
-        internal static void ParseEndInvokeArguments(JSRuntimeBase jsRuntimeBase, string arguments)
+        internal static void ParseEndInvokeArguments(JSRuntime jsRuntimeBase, string arguments)
         {
             var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
 

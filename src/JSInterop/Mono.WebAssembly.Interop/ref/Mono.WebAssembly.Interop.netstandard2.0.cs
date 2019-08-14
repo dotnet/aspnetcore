@@ -3,7 +3,7 @@
 
 namespace Mono.WebAssembly.Interop
 {
-    public partial class MonoWebAssemblyJSRuntime : Microsoft.JSInterop.JSInProcessRuntimeBase
+    public partial class MonoWebAssemblyJSRuntime : Microsoft.JSInterop.JSInProcessRuntime
     {
         public MonoWebAssemblyJSRuntime() { }
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson) { }

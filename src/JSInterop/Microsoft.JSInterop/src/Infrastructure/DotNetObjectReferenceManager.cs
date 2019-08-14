@@ -5,27 +5,27 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
-    internal class DotNetObjectRefManager
+    internal class DotNetObjectReferenceManager
     {
         private long _nextId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
-        private readonly ConcurrentDictionary<long, IDotNetObjectRef> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectRef>();
+        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectReference>();
 
-        public static DotNetObjectRefManager Current
+        public static DotNetObjectReferenceManager Current
         {
             get
             {
-                if (!(JSRuntime.Current is JSRuntimeBase jsRuntimeBase))
+                if (!(JSRuntime.Current is JSRuntime jsRuntime))
                 {
-                    throw new InvalidOperationException("JSRuntime must be set up correctly and must be an instance of JSRuntimeBase to use DotNetObjectRef.");
+                    throw new InvalidOperationException("JSRuntime must be set up correctly and must be an instance of JSRuntimeBase to use DotNetObjectReference.");
                 }
 
-                return jsRuntimeBase.ObjectRefManager;
+                return jsRuntime.ObjectRefManager;
             }
         }
 
-        public long TrackObject(IDotNetObjectRef dotNetObjectRef)
+        public long TrackObject(IDotNetObjectReference dotNetObjectRef)
         {
             var dotNetObjectId = Interlocked.Increment(ref _nextId);
             _trackedRefsById[dotNetObjectId] = dotNetObjectRef;
@@ -33,7 +33,7 @@ namespace Microsoft.JSInterop
             return dotNetObjectId;
         }
 
-        public IDotNetObjectRef FindDotNetObject(long dotNetObjectId)
+        public IDotNetObjectReference FindDotNetObject(long dotNetObjectId)
         {
             return _trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef)
                 ? dotNetObjectRef
@@ -45,7 +45,7 @@ namespace Microsoft.JSInterop
         /// Stops tracking the specified .NET object reference.
         /// This may be invoked either by disposing a DotNetObjectRef in .NET code, or via JS interop by calling "dispose" on the corresponding instance in JavaScript code
         /// </summary>
-        /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectRef{TValue}"/>.</param>
+        /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
         public void ReleaseDotNetObject(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
     }
 }

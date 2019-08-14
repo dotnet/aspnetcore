@@ -5,6 +5,7 @@ using System;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
 
 namespace Mono.WebAssembly.Interop
@@ -13,7 +14,7 @@ namespace Mono.WebAssembly.Interop
     /// Provides methods for invoking JavaScript functions for applications running
     /// on the Mono WebAssembly runtime.
     /// </summary>
-    public class MonoWebAssemblyJSRuntime : JSInProcessRuntimeBase
+    public class MonoWebAssemblyJSRuntime : JSInProcessRuntime
     {
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson)
@@ -37,7 +38,7 @@ namespace Mono.WebAssembly.Interop
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void EndInvokeJS(string argsJson)
-            => DotNetDispatcher.EndInvoke(argsJson);
+            => DotNetDispatcher.EndInvokeJS(argsJson);
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
@@ -58,7 +59,7 @@ namespace Mono.WebAssembly.Interop
                 assemblyName = assemblyNameOrDotNetObjectId;
             }
 
-            DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            DotNetDispatcher.BeginInvokeDotNet(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
         protected override void EndInvokeDotNet(

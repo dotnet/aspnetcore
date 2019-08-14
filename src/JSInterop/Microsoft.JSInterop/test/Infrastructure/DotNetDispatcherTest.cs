@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     public class DotNetDispatcherTest
     {
@@ -114,7 +114,7 @@ namespace Microsoft.JSInterop
         {
             // Arrange: Track a .NET object to use as an arg
             var arg3 = new TestDTO { IntVal = 999, StringVal = "My string" };
-            var objectRef = DotNetObjectRef.Create(arg3);
+            var objectRef = DotNetObjectReference.Create(arg3);
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Arrange: Remaining args
@@ -142,7 +142,7 @@ namespace Microsoft.JSInterop
             Assert.False(resultDto2Ref.TryGetProperty(nameof(TestDTO.IntVal), out _));
 
             Assert.True(resultDto2Ref.TryGetProperty(DotNetDispatcher.DotNetObjectRefKey.EncodedUtf8Bytes, out var property));
-            var resultDto2 = Assert.IsType<DotNetObjectRef<TestDTO>>(DotNetObjectRefManager.Current.FindDotNetObject(property.GetInt64())).Value;
+            var resultDto2 = Assert.IsType<DotNetObjectReference<TestDTO>>(DotNetObjectReferenceManager.Current.FindDotNetObject(property.GetInt64())).Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(1299, resultDto2.IntVal);
         });
@@ -153,7 +153,7 @@ namespace Microsoft.JSInterop
             // Arrange
             var method = nameof(SomePublicType.IncorrectDotNetObjectRefUsage);
             var arg3 = new TestDTO { IntVal = 999, StringVal = "My string" };
-            var objectRef = DotNetObjectRef.Create(arg3);
+            var objectRef = DotNetObjectReference.Create(arg3);
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Arrange: Remaining args
@@ -175,7 +175,7 @@ namespace Microsoft.JSInterop
         {
             // Arrange: Track some instance
             var targetInstance = new SomePublicType();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
@@ -191,7 +191,7 @@ namespace Microsoft.JSInterop
         {
             // Arrange: Track some instance
             var targetInstance = new DerivedClass();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
@@ -207,10 +207,10 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var targetInstance = new SomePublicType();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
 
             // Act
-            DotNetDispatcher.BeginInvoke(null, null, "__Dispose", objectRef.ObjectId, null);
+            DotNetDispatcher.BeginInvokeDotNet(null, null, "__Dispose", objectRef.ObjectId, null);
 
             // Assert
             Assert.True(objectRef.Disposed);
@@ -224,7 +224,7 @@ namespace Microsoft.JSInterop
 
             // Arrange: Track some instance, then dispose it
             var targetInstance = new SomePublicType();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
             jsRuntime.Invoke<object>("unimportant", objectRef);
             objectRef.Dispose();
 
@@ -242,7 +242,7 @@ namespace Microsoft.JSInterop
 
             // Arrange: Track some instance, then dispose it
             var targetInstance = new SomePublicType();
-            var objectRef = DotNetObjectRef.Create(targetInstance);
+            var objectRef = DotNetObjectReference.Create(targetInstance);
             jsRuntime.Invoke<object>("unimportant", objectRef);
             objectRef.Dispose();
 
@@ -261,10 +261,10 @@ namespace Microsoft.JSInterop
             var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, true, testDTO }, JsonSerializerOptionsProvider.Options);
 
             // Act
-            DotNetDispatcher.EndInvoke(argsJson);
+            DotNetDispatcher.EndInvokeJS(argsJson);
 
             // Assert
-            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
+            Assert.True(task.IsCompletedSuccessfully);
             var result = task.Result;
             Assert.Equal(testDTO.StringVal, result.StringVal);
             Assert.Equal(testDTO.IntVal, result.IntVal);
@@ -279,10 +279,10 @@ namespace Microsoft.JSInterop
             var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, false, expected }, JsonSerializerOptionsProvider.Options);
 
             // Act
-            DotNetDispatcher.EndInvoke(argsJson);
+            DotNetDispatcher.EndInvokeJS(argsJson);
 
             // Assert
-            var ex = await Assert.ThrowsAsync<JSException>(() => task);
+            var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
             Assert.Equal(expected, ex.Message);
         });
 
@@ -297,7 +297,7 @@ namespace Microsoft.JSInterop
 
             // Act
             cts.Cancel();
-            DotNetDispatcher.EndInvoke(argsJson);
+            DotNetDispatcher.EndInvokeJS(argsJson);
 
             // Assert
             Assert.True(task.IsCanceled);
@@ -311,10 +311,10 @@ namespace Microsoft.JSInterop
             var argsJson = JsonSerializer.Serialize(new object[] { jsRuntime.LastInvocationAsyncHandle, false, null }, JsonSerializerOptionsProvider.Options);
 
             // Act
-            DotNetDispatcher.EndInvoke(argsJson);
+            DotNetDispatcher.EndInvokeJS(argsJson);
 
             // Assert
-            var ex = await Assert.ThrowsAsync<JSException>(() => task);
+            var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
             Assert.Empty(ex.Message);
         });
 
@@ -325,8 +325,8 @@ namespace Microsoft.JSInterop
             var targetInstance = new SomePublicType();
             var arg2 = new TestDTO { IntVal = 1234, StringVal = "My string" };
             jsRuntime.Invoke<object>("unimportant",
-                DotNetObjectRef.Create(targetInstance),
-                DotNetObjectRef.Create(arg2));
+                DotNetObjectReference.Create(targetInstance),
+                DotNetObjectReference.Create(arg2));
             var argsJson = "[\"myvalue\",{\"__dotNetObject\":2}]";
 
             // Act
@@ -334,7 +334,7 @@ namespace Microsoft.JSInterop
 
             // Assert
             Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
-            var resultDto = ((DotNetObjectRef<TestDTO>)jsRuntime.ObjectRefManager.FindDotNetObject(3)).Value;
+            var resultDto = ((DotNetObjectReference<TestDTO>)jsRuntime.ObjectRefManager.FindDotNetObject(3)).Value;
             Assert.Equal(1235, resultDto.IntVal);
             Assert.Equal("MY STRING", resultDto.StringVal);
         });
@@ -362,7 +362,7 @@ namespace Microsoft.JSInterop
         public Task CannotInvokeWithMoreParameters() => WithJSRuntime(jsRuntime =>
         {
             // Arrange
-            var objectRef = DotNetObjectRef.Create(new TestDTO { IntVal = 4 });
+            var objectRef = DotNetObjectReference.Create(new TestDTO { IntVal = 4 });
             var argsJson = JsonSerializer.Serialize(new object[]
             {
                 new TestDTO { StringVal = "Another string", IntVal = 456 },
@@ -386,8 +386,8 @@ namespace Microsoft.JSInterop
             // Arrange: Track some instance plus another object we'll pass as a param
             var targetInstance = new SomePublicType();
             var arg2 = new TestDTO { IntVal = 1234, StringVal = "My string" };
-            var arg1Ref = DotNetObjectRef.Create(targetInstance);
-            var arg2Ref = DotNetObjectRef.Create(arg2);
+            var arg1Ref = DotNetObjectReference.Create(targetInstance);
+            var arg2Ref = DotNetObjectReference.Create(arg2);
             jsRuntime.Invoke<object>("unimportant", arg1Ref, arg2Ref);
 
             // Arrange: all args
@@ -400,7 +400,7 @@ namespace Microsoft.JSInterop
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvoke(callId, null, "InvokableAsyncMethod", 1, argsJson);
+            DotNetDispatcher.BeginInvokeDotNet(callId, null, "InvokableAsyncMethod", 1, argsJson);
             await resultTask;
 
             // Assert: Correct completion information
@@ -413,7 +413,7 @@ namespace Microsoft.JSInterop
             Assert.Equal(2000, resultDto1.IntVal);
 
             // Assert: Second result value marshalled by ref
-            var resultDto2Ref = Assert.IsType<DotNetObjectRef<TestDTO>>(result[1]);
+            var resultDto2Ref = Assert.IsType<DotNetObjectReference<TestDTO>>(result[1]);
             var resultDto2 = resultDto2Ref.Value;
             Assert.Equal("MY STRING", resultDto2.StringVal);
             Assert.Equal(2468, resultDto2.IntVal);
@@ -427,7 +427,7 @@ namespace Microsoft.JSInterop
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, nameof(ThrowingClass.ThrowingMethod), default, default);
+            DotNetDispatcher.BeginInvokeDotNet(callId, thisAssemblyName, nameof(ThrowingClass.ThrowingMethod), default, default);
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
@@ -449,7 +449,7 @@ namespace Microsoft.JSInterop
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, nameof(ThrowingClass.AsyncThrowingMethod), default, default);
+            DotNetDispatcher.BeginInvokeDotNet(callId, thisAssemblyName, nameof(ThrowingClass.AsyncThrowingMethod), default, default);
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
@@ -469,7 +469,7 @@ namespace Microsoft.JSInterop
             // Arrange
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, "InvocableStaticWithParams", default, "<xml>not json</xml>");
+            DotNetDispatcher.BeginInvokeDotNet(callId, thisAssemblyName, "InvocableStaticWithParams", default, "<xml>not json</xml>");
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
@@ -486,7 +486,7 @@ namespace Microsoft.JSInterop
             // Arrange
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvoke(callId, null, "InvokableInstanceVoid", 1, null);
+            DotNetDispatcher.BeginInvokeDotNet(callId, null, "InvokableInstanceVoid", 1, null);
 
             // Assert
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
@@ -611,7 +611,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, {{\"intVal\": 7}}]");
 
-            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
+            Assert.True(task.IsCompletedSuccessfully);
             Assert.Equal(7, task.Result.IntVal);
         }
 
@@ -623,7 +623,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, [1, 2, 3]]");
 
-            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
+            Assert.True(task.IsCompletedSuccessfully);
             Assert.Equal(new[] { 1, 2, 3 }, task.Result);
         }
 
@@ -635,7 +635,7 @@ namespace Microsoft.JSInterop
 
             DotNetDispatcher.ParseEndInvokeArguments(jsRuntime, $"[{jsRuntime.LastInvocationAsyncHandle}, true, null]");
 
-            Assert.True(task.IsCompleted && task.Status == TaskStatus.RanToCompletion);
+            Assert.True(task.IsCompletedSuccessfully);
             Assert.Null(task.Result);
         }
 
@@ -685,7 +685,7 @@ namespace Microsoft.JSInterop
                 => new TestDTO { StringVal = "Test", IntVal = 123 };
 
             [JSInvokable("InvocableStaticWithParams")]
-            public static object[] MyInvocableWithParams(TestDTO dtoViaJson, int[] incrementAmounts, DotNetObjectRef<TestDTO> dtoByRef)
+            public static object[] MyInvocableWithParams(TestDTO dtoViaJson, int[] incrementAmounts, DotNetObjectReference<TestDTO> dtoByRef)
                 => new object[]
                 {
                     new TestDTO // Return via JSON marshalling
@@ -693,7 +693,7 @@ namespace Microsoft.JSInterop
                         StringVal = dtoViaJson.StringVal.ToUpperInvariant(),
                         IntVal = dtoViaJson.IntVal + incrementAmounts.Sum()
                     },
-                    DotNetObjectRef.Create(new TestDTO // Return by ref
+                    DotNetObjectReference.Create(new TestDTO // Return by ref
                     {
                         StringVal = dtoByRef.Value.StringVal.ToUpperInvariant(),
                         IntVal = dtoByRef.Value.IntVal + incrementAmounts.Sum()
@@ -715,7 +715,7 @@ namespace Microsoft.JSInterop
             }
 
             [JSInvokable]
-            public object[] InvokableInstanceMethod(string someString, DotNetObjectRef<TestDTO> someDTORef)
+            public object[] InvokableInstanceMethod(string someString, DotNetObjectReference<TestDTO> someDTORef)
             {
                 var someDTO = someDTORef.Value;
                 // Returning an array to make the point that object references
@@ -723,7 +723,7 @@ namespace Microsoft.JSInterop
                 return new object[]
                 {
                     $"You passed {someString}",
-                    DotNetObjectRef.Create(new TestDTO
+                    DotNetObjectReference.Create(new TestDTO
                     {
                         IntVal = someDTO.IntVal + 1,
                         StringVal = someDTO.StringVal.ToUpperInvariant()
@@ -732,7 +732,7 @@ namespace Microsoft.JSInterop
             }
 
             [JSInvokable]
-            public async Task<object[]> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectRef<TestDTO> dtoByRefWrapper)
+            public async Task<object[]> InvokableAsyncMethod(TestDTO dtoViaJson, DotNetObjectReference<TestDTO> dtoByRefWrapper)
             {
                 await Task.Delay(50);
                 var dtoByRef = dtoByRefWrapper.Value;
@@ -743,7 +743,7 @@ namespace Microsoft.JSInterop
                         StringVal = dtoViaJson.StringVal.ToUpperInvariant(),
                         IntVal = dtoViaJson.IntVal * 2,
                     },
-                    DotNetObjectRef.Create(new TestDTO // Return by ref
+                    DotNetObjectReference.Create(new TestDTO // Return by ref
                     {
                         StringVal = dtoByRef.StringVal.ToUpperInvariant(),
                         IntVal = dtoByRef.IntVal * 2,
@@ -789,7 +789,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        public class TestJSRuntime : JSInProcessRuntimeBase
+        public class TestJSRuntime : JSInProcessRuntime
         {
             private TaskCompletionSource<object> _nextInvocationTcs = new TaskCompletionSource<object>();
             public Task NextInvocationTask => _nextInvocationTcs.Task;

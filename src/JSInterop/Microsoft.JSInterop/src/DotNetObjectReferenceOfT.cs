@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Json.Serialization;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -14,28 +15,21 @@ namespace Microsoft.JSInterop
     /// </summary>
     /// <typeparam name="TValue">The type of the value to wrap.</typeparam>
     [JsonConverter(typeof(DotNetObjectReferenceJsonConverterFactory))]
-    public sealed class DotNetObjectRef<TValue> : IDotNetObjectRef, IDisposable where TValue : class
+    public sealed class DotNetObjectReference<TValue> : IDotNetObjectReference, IDisposable where TValue : class
     {
-        private readonly DotNetObjectRefManager _referenceManager;
+        private readonly DotNetObjectReferenceManager _referenceManager;
         private readonly TValue _value;
         private readonly long _objectId;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DotNetObjectRef{TValue}" />.
+        /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
         /// </summary>
         /// <param name="referenceManager"></param>
         /// <param name="value">The value to pass by reference.</param>
-        internal DotNetObjectRef(DotNetObjectRefManager referenceManager, TValue value)
+        internal DotNetObjectReference(DotNetObjectReferenceManager referenceManager, TValue value)
         {
             _referenceManager = referenceManager;
             _objectId = _referenceManager.TrackObject(this);
-            _value = value;
-        }
-
-        internal DotNetObjectRef(DotNetObjectRefManager referenceManager, long objectId, TValue value)
-        {
-            _referenceManager = referenceManager;
-            _objectId = objectId;
             _value = value;
         }
 
@@ -60,7 +54,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        object IDotNetObjectRef.Value => Value;
+        object IDotNetObjectReference.Value => Value;
 
         internal bool Disposed { get; private set; }
 
