@@ -8,8 +8,8 @@
     <Reference Include="Microsoft.AspNetCore.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Components"  />
   </ItemGroup>
-<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <Compile Include="Microsoft.AspNetCore.Components.Authorization.netcoreapp3.0.cs" />
+<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp5.0'">
+    <Compile Include="Microsoft.AspNetCore.Components.Authorization.netcoreapp5.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Components"  />
   </ItemGroup>
