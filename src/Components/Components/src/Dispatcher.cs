@@ -24,6 +24,20 @@ namespace Microsoft.AspNetCore.Components
         internal event UnhandledExceptionEventHandler UnhandledException;
 
         /// <summary>
+        /// Validates that the currently executing code is running inside the dispatcher.
+        /// </summary>
+        public void AssertAccess()
+        {
+            if (!CheckAccess())
+            {
+                throw new InvalidOperationException(
+                    "The current thread is not associated with the Dispatcher. " +
+                    "Use InvokeAsync() to switch execution to the Dispatcher when " +
+                    "triggering rendering or component state.");
+            }
+        }
+
+        /// <summary>
         /// Returns a value that determines whether using the dispatcher to invoke a work item is required
         /// from the current context.
         /// </summary>

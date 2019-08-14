@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHost : IAsyncDisposable
     {
-        private readonly SemaphoreSlim HandlerLock = new SemaphoreSlim(1);
         private readonly IServiceScope _scope;
         private readonly CircuitOptions _options;
         private readonly CircuitHandler[] _circuitHandlers;
@@ -187,35 +186,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.CircuitOpened(_logger, Circuit.Id);
 
-            await HandlerLock.WaitAsync(cancellationToken);
+            Renderer.Dispatcher.AssertAccess();
 
-            try
+            List<Exception> exceptions = null;
+
+            for (var i = 0; i < _circuitHandlers.Length; i++)
             {
-                List<Exception> exceptions = null;
-
-                for (var i = 0; i < _circuitHandlers.Length; i++)
+                var circuitHandler = _circuitHandlers[i];
+                try
                 {
-                    var circuitHandler = _circuitHandlers[i];
-                    try
-                    {
-                        await circuitHandler.OnCircuitOpenedAsync(Circuit, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitOpenedAsync), ex);
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(ex);
-                    }
+                    await circuitHandler.OnCircuitOpenedAsync(Circuit, cancellationToken);
                 }
-
-                if (exceptions != null)
+                catch (Exception ex)
                 {
-                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
+                    Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitOpenedAsync), ex);
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(ex);
                 }
             }
-            finally
+
+            if (exceptions != null)
             {
-                HandlerLock.Release();
+                throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
             }
         }
 
@@ -223,35 +215,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.ConnectionUp(_logger, Circuit.Id, Client.ConnectionId);
 
-            await HandlerLock.WaitAsync(cancellationToken);
+            Renderer.Dispatcher.AssertAccess();
+            
+            List<Exception> exceptions = null;
 
-            try
+            for (var i = 0; i < _circuitHandlers.Length; i++)
             {
-                List<Exception> exceptions = null;
-
-                for (var i = 0; i < _circuitHandlers.Length; i++)
+                var circuitHandler = _circuitHandlers[i];
+                try
                 {
-                    var circuitHandler = _circuitHandlers[i];
-                    try
-                    {
-                        await circuitHandler.OnConnectionUpAsync(Circuit, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionUpAsync), ex);
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(ex);
-                    }
+                    await circuitHandler.OnConnectionUpAsync(Circuit, cancellationToken);
                 }
-
-                if (exceptions != null)
+                catch (Exception ex)
                 {
-                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
+                    Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionUpAsync), ex);
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(ex);
                 }
             }
-            finally
+
+            if (exceptions != null)
             {
-                HandlerLock.Release();
+                throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
             }
         }
 
@@ -259,35 +244,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.ConnectionDown(_logger, Circuit.Id, Client.ConnectionId);
 
-            await HandlerLock.WaitAsync(cancellationToken);
+            Renderer.Dispatcher.AssertAccess();
+            
+            List<Exception> exceptions = null;
 
-            try
+            for (var i = 0; i < _circuitHandlers.Length; i++)
             {
-                List<Exception> exceptions = null;
-
-                for (var i = 0; i < _circuitHandlers.Length; i++)
+                var circuitHandler = _circuitHandlers[i];
+                try
                 {
-                    var circuitHandler = _circuitHandlers[i];
-                    try
-                    {
-                        await circuitHandler.OnConnectionDownAsync(Circuit, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionDownAsync), ex);
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(ex);
-                    }
+                    await circuitHandler.OnConnectionDownAsync(Circuit, cancellationToken);
                 }
-
-                if (exceptions != null)
+                catch (Exception ex)
                 {
-                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
+                    Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnConnectionDownAsync), ex);
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(ex);
                 }
             }
-            finally
+
+            if (exceptions != null)
             {
-                HandlerLock.Release();
+                throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
             }
         }
 
@@ -295,35 +273,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             Log.CircuitClosed(_logger, Circuit.Id);
 
-            await HandlerLock.WaitAsync(cancellationToken);
+            List<Exception> exceptions = null;
 
-            try
+            for (var i = 0; i < _circuitHandlers.Length; i++)
             {
-                List<Exception> exceptions = null;
-
-                for (var i = 0; i < _circuitHandlers.Length; i++)
+                var circuitHandler = _circuitHandlers[i];
+                try
                 {
-                    var circuitHandler = _circuitHandlers[i];
-                    try
-                    {
-                        await circuitHandler.OnCircuitClosedAsync(Circuit, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitClosedAsync), ex);
-                        exceptions ??= new List<Exception>();
-                        exceptions.Add(ex);
-                    }
+                    await circuitHandler.OnCircuitClosedAsync(Circuit, cancellationToken);
                 }
-
-                if (exceptions != null)
+                catch (Exception ex)
                 {
-                    throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
+                    Log.CircuitHandlerFailed(_logger, circuitHandler, nameof(CircuitHandler.OnCircuitClosedAsync), ex);
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(ex);
                 }
             }
-            finally
+
+            if (exceptions != null)
             {
-                HandlerLock.Release();
+                throw new AggregateException("Encountered exceptions while executing circuit handlers.", exceptions);
             }
         }
 

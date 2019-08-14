@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class Dispatcher
     {
         protected Dispatcher() { }
+        public void AssertAccess() { }
         public abstract bool CheckAccess();
         public static Microsoft.AspNetCore.Components.Dispatcher CreateDefault() { throw null; }
         public abstract System.Threading.Tasks.Task InvokeAsync(System.Action workItem);

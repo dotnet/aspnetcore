@@ -264,6 +264,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/13086", FlakyOn.AzP.Windows)]
         public async Task ContinuesWorkingAfterInvalidAsyncReturnCallback()
         {
             // Arrange
