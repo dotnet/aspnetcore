@@ -3,7 +3,7 @@
 
 using System;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Web
 {

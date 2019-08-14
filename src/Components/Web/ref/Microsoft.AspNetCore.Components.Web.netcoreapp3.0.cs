@@ -395,6 +395,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         void System.IDisposable.Dispose() { }
     }
 }
+namespace Microsoft.AspNetCore.Components.RenderTree
+{
+    public sealed partial class WebEventDescriptor
+    {
+        public WebEventDescriptor() { }
+        public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
 namespace Microsoft.AspNetCore.Components.Routing
 {
     public partial class NavLink : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
@@ -418,16 +429,5 @@ namespace Microsoft.AspNetCore.Components.Routing
     {
         Prefix = 0,
         All = 1,
-    }
-}
-namespace Microsoft.AspNetCore.Components.Web
-{
-    public sealed partial class WebEventDescriptor
-    {
-        public WebEventDescriptor() { }
-        public int BrowserRendererId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Components.Rendering.EventFieldInfo EventFieldInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public ulong EventHandlerId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
