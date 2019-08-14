@@ -87,6 +87,8 @@
       Condition="$(OpenApiGenerateCodeAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
       Inputs="@(OpenApiReference)"
       Outputs="%(OutputPath)">
+    <Error Condition="!Exists('%(OpenApiReference.FullPath)')" Text="Input OpenAPI file %(Identity) does not exist." />
+
     <MSBuild Projects="$(MSBuildProjectFullPath)"
         BuildInParallel="$(BuildInParallel)"
         Properties="GeneratorTargetPath=%(OpenApiReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"

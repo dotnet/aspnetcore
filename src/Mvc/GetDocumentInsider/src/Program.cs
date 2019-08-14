@@ -33,14 +33,12 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             {
                 if (ex is CommandException || ex is CommandParsingException)
                 {
-                    Reporter.WriteVerbose(ex.ToString());
+                    Reporter.WriteError(ex.Message);
                 }
                 else
                 {
-                    Reporter.WriteInformation(ex.ToString());
+                    Reporter.WriteError(ex.ToString());
                 }
-
-                Reporter.WriteError(ex.Message);
 
                 return 1;
             }

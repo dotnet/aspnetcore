@@ -5,13 +5,13 @@
   -->
   <PropertyGroup>
     <!--
-      Options added to the Open API document generation tool ('dotnet-getdocument') command line. Available options
+      Options added to the OpenAPI document generation tool ('dotnet-getdocument') command line. Available options
       control console output: 'no-color', 'prefix-output' and 'verbose'. All require a double-dash prefix.
     -->
     <OpenApiGenerateDocumentsOptions Condition=" '$(OpenApiGenerateDocumentsOptions)' == '' " />
 
     <!--
-      If 'true' (the default when targeting .NET Framework or .NET Core 2.1 and later), enable generation of Open API
+      If 'true' (the default when targeting .NET Framework or .NET Core 2.1 and later), enable generation of OpenAPI
       documents. Otherwise, this feature is completely disabled. This controls whether the 'OpenApiGenerateDocuments'
       project capability is visible, enables / disables the 'GenerateOpenApiDocuments' target and provides the
       $(OpenApiGenerateDocumentsOnBuild) default.
@@ -19,13 +19,13 @@
     <OpenApiGenerateDocuments Condition=" '$(OpenApiGenerateDocuments)' == '' " />
 
     <!--
-      If 'true' (the default if $(OpenApiGenerateDocuments) is 'true'), will generate Open API documents after every
+      If 'true' (the default if $(OpenApiGenerateDocuments) is 'true'), will generate OpenAPI documents after every
       build. Set to 'false' when targets are invoked from the command line or tied to another target.
     -->
     <OpenApiGenerateDocumentsOnBuild Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == '' " />
 
     <!--
-      Where to place Open API documents generated from the application. Value is interpreted relative to the project
+      Where to place OpenAPI documents generated from the application. Value is interpreted relative to the project
       folder, unless already an absolute path.
     -->
     <OpenApiDocumentsDirectory
