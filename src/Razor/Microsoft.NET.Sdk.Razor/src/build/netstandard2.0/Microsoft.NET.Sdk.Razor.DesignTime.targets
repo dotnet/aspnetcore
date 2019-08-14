@@ -40,6 +40,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       Activates the set of nesting behaviors we want from solution explorer.
     -->
     <ProjectCapability Include="WebNestingDefaults" />
+
+    <!--
+      Tooling support for TypeScript files.
+    -->
+    <ProjectCapability Include="SupportsTypeScriptNuGet" />
   </ItemGroup>
 
   <!--
