@@ -171,8 +171,13 @@ try {
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
     $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>nul'
 
+    # Temporary: Disable check for blazor js file
+    $changedFilesExclusion = "src/Components/Web.JS/dist/Release/blazor.server.js"
+
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
+            if ($file -eq $changedFilesExclusion) {continue}
+
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
             & git --no-pager diff --ignore-space-at-eol $filePath
