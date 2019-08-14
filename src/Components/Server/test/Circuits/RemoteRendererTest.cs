@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 component.TriggerRender();
             }
 
-            await renderer.OnRenderCompleted(2, null);
+            await renderer.OnRenderCompletedAsync(2, null);
 
             // Assert
             Assert.Equal(9, renderer._unacknowledgedRenderBatches.Count);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             }
             Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
 
-            await renderer.OnRenderCompleted(2, null);
+            await renderer.OnRenderCompletedAsync(2, null);
 
             // Assert
             Assert.Equal(10, renderer._unacknowledgedRenderBatches.Count);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
-            _ = renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompletedAsync(2, null);
 
             @event.Reset();
             firstBatchTCS.SetResult(null);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
 
             foreach (var id in renderIds.ToArray())
             {
-                _ = renderer.OnRenderCompleted(id, null);
+                _ = renderer.OnRenderCompletedAsync(id, null);
             }
 
             secondBatchTCS.SetResult(null);
@@ -234,14 +234,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Receive the ack for the intial batch
-            _ = renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompletedAsync(2, null);
             // Receive the ack for the second batch
-            _ = renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompletedAsync(3, null);
 
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
             // Repeat the ack for the third batch
-            _ = renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompletedAsync(3, null);
 
             // Assert
             Assert.Empty(exceptions);
@@ -297,14 +297,14 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Receive the ack for the intial batch
-            _ = renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompletedAsync(2, null);
             // Receive the ack for the second batch
-            _ = renderer.OnRenderCompleted(2, null);
+            _ = renderer.OnRenderCompletedAsync(2, null);
 
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
             // Repeat the ack for the third batch
-            _ = renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompletedAsync(3, null);
 
             // Assert
             Assert.Empty(exceptions);
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             };
 
             // Pretend that we missed the ack for the initial batch
-            _ = renderer.OnRenderCompleted(3, null);
+            _ = renderer.OnRenderCompletedAsync(3, null);
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.OnRenderCompleted(4, null));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.OnRenderCompletedAsync(4, null));
             firstBatchTCS.SetResult(null);
             secondBatchTCS.SetResult(null);
 

@@ -328,20 +328,20 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         // Called by the client when it completes rendering a batch.
-        // OnRenderCompleted is used in a fire-and-forget context, so it's responsible for its own
+        // OnRenderCompletedAsync is used in a fire-and-forget context, so it's responsible for its own
         // error handling.
-        public async Task OnRenderCompleted(long renderId, string errorMessageOrNull)
+        public async Task OnRenderCompletedAsync(long renderId, string errorMessageOrNull)
         {
             AssertInitialized();
             AssertNotDisposed();
 
             try
             {
-                _ = Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+                _ = Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull);
             }
             catch (Exception e)
             {
-                // Captures sync exceptions when invoking OnRenderCompleted.
+                // Captures sync exceptions when invoking OnRenderCompletedAsync.
                 // An exception might be throw synchronously when we receive an ack for a batch we never produced.
                 Log.OnRenderCompletedFailed(_logger, renderId, CircuitId, e);
                 await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(e, $"Failed to complete render batch '{renderId}'."));
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Dispatch any buffered renders we accumulated during a disconnect.
             // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
-            // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+            // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
             _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 

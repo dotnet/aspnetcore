@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             // disposed.
         }
 
-        public Task OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
+        public Task OnRenderCompletedAsync(long incomingBatchId, string errorMessageOrNull)
         {
             if (_disposing)
             {

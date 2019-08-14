@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Components.Server
             }
 
             Log.ReceivedConfirmationForBatch(_logger, renderId);
-            _ = circuitHost.OnRenderCompleted(renderId, errorMessageOrNull);
+            _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
         }
 
         public async ValueTask OnLocationChanged(string uri, bool intercepted)
