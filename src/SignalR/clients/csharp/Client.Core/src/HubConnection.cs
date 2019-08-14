@@ -22,7 +22,6 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     /// Before hub methods can be invoked the connection must be started using <see cref="StartAsync"/>.
     /// Clean up a connection using <see cref="StopAsync"/> or <see cref="DisposeAsync"/>.
     /// </remarks>
-    public partial class HubConnection
+    public partial class HubConnection : IAsyncDisposable
     {
         public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromSeconds(30); // Server ping rate is 15 sec, this is 2 times that.
         public static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(15);
@@ -292,8 +291,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
-        public async Task DisposeAsync()
+        /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
+        public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
