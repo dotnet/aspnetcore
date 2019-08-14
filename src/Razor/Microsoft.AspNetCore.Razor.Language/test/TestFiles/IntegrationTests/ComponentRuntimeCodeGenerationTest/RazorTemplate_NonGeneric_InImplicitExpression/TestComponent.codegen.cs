@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.AddContent(0, 
+            __builder.AddContent(0, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
  RenderPerson(
@@ -21,8 +21,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            (builder2) => {
-                builder2.AddMarkupContent(1, "<div>HI</div>");
+            (__builder2) => {
+                __builder2.AddMarkupContent(1, "<div>HI</div>");
             }
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"

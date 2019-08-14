@@ -11,12 +11,12 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "Foo", "test");
-            builder.AddAttribute(2, "foo", "test");
-            builder.CloseComponent();
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "Foo", "test");
+            __builder.AddAttribute(2, "foo", "test");
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

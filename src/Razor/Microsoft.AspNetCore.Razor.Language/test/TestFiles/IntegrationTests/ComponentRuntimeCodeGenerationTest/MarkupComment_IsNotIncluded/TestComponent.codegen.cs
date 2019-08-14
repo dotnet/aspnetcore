@@ -11,7 +11,7 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -21,8 +21,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.OpenElement(0, "div");
-            builder.AddContent(1, 
+            __builder.OpenElement(0, "div");
+            __builder.AddContent(1, 
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
       myValue
@@ -31,8 +31,8 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.AddMarkupContent(2, "  ");
-            builder.CloseElement();
+            __builder.AddMarkupContent(2, "  ");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
     }

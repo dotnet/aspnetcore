@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                           1
@@ -23,10 +23,10 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
-            builder.AddMarkupContent(2, "\r\n");
-            builder.OpenComponent<Test.Mycomponent>(3);
-            builder.AddAttribute(4, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
+            __builder.CloseComponent();
+            __builder.AddMarkupContent(2, "\r\n");
+            __builder.OpenComponent<Test.Mycomponent>(3);
+            __builder.AddAttribute(4, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                           2
@@ -35,7 +35,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

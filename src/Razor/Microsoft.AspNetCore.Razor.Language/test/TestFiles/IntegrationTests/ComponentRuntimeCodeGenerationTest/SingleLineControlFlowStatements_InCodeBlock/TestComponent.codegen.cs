@@ -18,22 +18,22 @@ using Microsoft.AspNetCore.Components.RenderTree;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
   
     var output = string.Empty;
-    if (builder == null) output = "Builder is null!";
+    if (__builder == null) output = "Builder is null!";
     else output = "Builder is not null!";
 
 #line default
 #line hidden
 #nullable disable
-            builder.AddContent(0, "    ");
-            builder.OpenElement(1, "p");
-            builder.AddContent(2, "Output: ");
-            builder.AddContent(3, 
+            __builder.AddContent(0, "    ");
+            __builder.OpenElement(1, "p");
+            __builder.AddContent(2, "Output: ");
+            __builder.AddContent(3, 
 #nullable restore
 #line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
                 output
@@ -42,8 +42,8 @@ using Microsoft.AspNetCore.Components.RenderTree;
 #line hidden
 #nullable disable
             );
-            builder.CloseElement();
-            builder.AddMarkupContent(4, "\r\n");
+            __builder.CloseElement();
+            __builder.AddMarkupContent(4, "\r\n");
         }
         #pragma warning restore 1998
     }

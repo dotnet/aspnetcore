@@ -18,7 +18,7 @@ namespace Test
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __o = typeof(
 #nullable restore
@@ -47,7 +47,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<string>)((context) => (builder2) => {
+            __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<string>)((context) => (__builder2) => {
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                 __o = context.ToLower();
@@ -57,7 +57,7 @@ namespace Test
 #nullable disable
             }
             ));
-            builder.AddAttribute(-1, "AnotherChildContent", (Microsoft.AspNetCore.Components.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (builder2) => {
+            __builder.AddAttribute(-1, "AnotherChildContent", (Microsoft.AspNetCore.Components.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (__builder2) => {
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
 __o = System.Math.Max(0, item.Item);

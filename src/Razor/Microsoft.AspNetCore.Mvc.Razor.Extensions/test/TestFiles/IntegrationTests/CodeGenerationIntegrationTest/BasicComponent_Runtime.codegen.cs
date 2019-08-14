@@ -12,10 +12,10 @@ namespace __GeneratedComponent
     public class AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 : Microsoft.AspNetCore.Components.ComponentBase, IDisposable
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", 
+            __builder.OpenElement(0, "div");
+            __builder.AddAttribute(1, "class", 
 #nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
              this.ToString()
@@ -24,8 +24,8 @@ namespace __GeneratedComponent
 #line hidden
 #nullable disable
             );
-            builder.AddMarkupContent(2, "\r\n    Hello world\r\n    ");
-            builder.AddContent(3, 
+            __builder.AddMarkupContent(2, "\r\n    Hello world\r\n    ");
+            __builder.AddContent(3, 
 #nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
      string.Format("{0}", "Hello")
@@ -34,8 +34,8 @@ namespace __GeneratedComponent
 #line hidden
 #nullable disable
             );
-            builder.AddMarkupContent(4, "\r\n");
-            builder.CloseElement();
+            __builder.AddMarkupContent(4, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

@@ -11,9 +11,9 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.AddMarkupContent(0, "<input @onCLICK=\"OnClick\">");
+            __builder.AddMarkupContent(0, "<input @onCLICK=\"OnClick\">");
         }
         #pragma warning restore 1998
 #nullable restore

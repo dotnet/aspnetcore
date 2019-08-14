@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private readonly Stack<ScopeEntry> _stack = new Stack<ScopeEntry>();
         private int _builderVarNumber = 1;
 
-        public string BuilderVarName { get; private set; } = "builder";
+        public string BuilderVarName { get; private set; } = ComponentsApi.RenderTreeBuilder.BuilderParameter;
 
         public void OpenComponentScope(CodeRenderingContext context, string name, string parameterName)
         {
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             _builderVarNumber += delta;
             BuilderVarName = _builderVarNumber == 1
-                ? "builder"
-                : $"builder{_builderVarNumber}";
+                ? ComponentsApi.RenderTreeBuilder.BuilderParameter
+                : $"{ComponentsApi.RenderTreeBuilder.BuilderParameter}{_builderVarNumber}";
         }
 
         private class ScopeEntry

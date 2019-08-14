@@ -18,15 +18,15 @@ using Test;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.HeaderComponent>(0);
-            builder.AddAttribute(1, "Header", "head");
-            builder.CloseComponent();
-            builder.AddMarkupContent(2, "\r\n");
-            builder.OpenComponent<AnotherTest.FooterComponent>(3);
-            builder.AddAttribute(4, "Footer", "feet");
-            builder.CloseComponent();
+            __builder.OpenComponent<Test.HeaderComponent>(0);
+            __builder.AddAttribute(1, "Header", "head");
+            __builder.CloseComponent();
+            __builder.AddMarkupContent(2, "\r\n");
+            __builder.OpenComponent<AnotherTest.FooterComponent>(3);
+            __builder.AddAttribute(4, "Footer", "feet");
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

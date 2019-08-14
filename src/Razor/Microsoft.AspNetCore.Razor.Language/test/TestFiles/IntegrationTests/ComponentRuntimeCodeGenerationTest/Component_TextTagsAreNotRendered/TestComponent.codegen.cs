@@ -11,11 +11,11 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.Counter>(0);
-            builder.CloseComponent();
-            builder.AddMarkupContent(1, "\r\n");
+            __builder.OpenComponent<Test.Counter>(0);
+            __builder.CloseComponent();
+            __builder.AddMarkupContent(1, "\r\n");
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
  if (true)
@@ -25,7 +25,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            builder.AddContent(2, "This text is rendered");
+            __builder.AddContent(2, "This text is rendered");
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
                                       

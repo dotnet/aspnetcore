@@ -11,11 +11,11 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.AddMarkupContent(0, "<h1>Hello</h1>\r\n\r\n");
-            builder.OpenComponent<Test.SomeOtherComponent>(1);
-            builder.CloseComponent();
+            __builder.AddMarkupContent(0, "<h1>Hello</h1>\r\n\r\n");
+            __builder.OpenComponent<Test.SomeOtherComponent>(1);
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

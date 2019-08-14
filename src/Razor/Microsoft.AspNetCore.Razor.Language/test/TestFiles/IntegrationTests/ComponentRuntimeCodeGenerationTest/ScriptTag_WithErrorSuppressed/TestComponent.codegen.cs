@@ -11,17 +11,17 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "div");
-            builder.AddMarkupContent(1, "\r\n    ");
-            builder.OpenElement(2, "script");
-            builder.AddAttribute(3, "src", "some/url.js");
-            builder.AddAttribute(4, "anotherattribute", true);
-            builder.AddMarkupContent(5, "\r\n        some text\r\n        some more text\r\n    ");
-            builder.CloseElement();
-            builder.AddMarkupContent(6, "\r\n");
-            builder.CloseElement();
+            __builder.OpenElement(0, "div");
+            __builder.AddMarkupContent(1, "\r\n    ");
+            __builder.OpenElement(2, "script");
+            __builder.AddAttribute(3, "src", "some/url.js");
+            __builder.AddAttribute(4, "anotherattribute", true);
+            __builder.AddMarkupContent(5, "\r\n        some text\r\n        some more text\r\n    ");
+            __builder.CloseElement();
+            __builder.AddMarkupContent(6, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
     }

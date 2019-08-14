@@ -11,20 +11,20 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "div");
-            builder.AddMarkupContent(1, "\r\n  ");
-            builder.OpenElement(2, "a");
-            builder.AddAttribute(3, "href", "/cool-url");
-            builder.AddAttribute(4, "style", true);
-            builder.AddAttribute(5, "disabled", true);
-            builder.AddAttribute(6, "href", "/even-cooler-url");
-            builder.AddAttribute(7, "href", true);
-            builder.AddContent(8, "Learn the ten cool tricks your compiler author will hate!");
-            builder.CloseElement();
-            builder.AddMarkupContent(9, "\r\n");
-            builder.CloseElement();
+            __builder.OpenElement(0, "div");
+            __builder.AddMarkupContent(1, "\r\n  ");
+            __builder.OpenElement(2, "a");
+            __builder.AddAttribute(3, "href", "/cool-url");
+            __builder.AddAttribute(4, "style", true);
+            __builder.AddAttribute(5, "disabled", true);
+            __builder.AddAttribute(6, "href", "/even-cooler-url");
+            __builder.AddAttribute(7, "href", true);
+            __builder.AddContent(8, "Learn the ten cool tricks your compiler author will hate!");
+            __builder.CloseElement();
+            __builder.AddMarkupContent(9, "\r\n");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
     }

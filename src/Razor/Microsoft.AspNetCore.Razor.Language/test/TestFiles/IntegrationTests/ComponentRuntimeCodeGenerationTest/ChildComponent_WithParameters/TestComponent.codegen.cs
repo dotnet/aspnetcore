@@ -11,10 +11,10 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "IntProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Int32>(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                  123
@@ -23,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(2, "BoolProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
+            __builder.AddAttribute(2, "BoolProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<System.Boolean>(
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                   true
@@ -32,8 +32,8 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(3, "StringProperty", "My string");
-            builder.AddAttribute(4, "ObjectProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Test.SomeType>(
+            __builder.AddAttribute(3, "StringProperty", "My string");
+            __builder.AddAttribute(4, "ObjectProperty", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Test.SomeType>(
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
                     new SomeType()
@@ -42,7 +42,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

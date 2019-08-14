@@ -11,11 +11,11 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "attributebefore", "before");
-            builder.AddMultipleAttributes(2, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>>>(
+            __builder.OpenElement(0, "elem");
+            __builder.AddAttribute(1, "attributebefore", "before");
+            __builder.AddMultipleAttributes(2, Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<global::System.Collections.Generic.IEnumerable<global::System.Collections.Generic.KeyValuePair<string, object>>>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                              someAttributes
@@ -24,9 +24,9 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddAttribute(3, "attributeafter", "after");
-            builder.AddContent(4, "Hello");
-            builder.CloseElement();
+            __builder.AddAttribute(3, "attributeafter", "after");
+            __builder.AddContent(4, "Hello");
+            __builder.CloseElement();
         }
         #pragma warning restore 1998
 #nullable restore

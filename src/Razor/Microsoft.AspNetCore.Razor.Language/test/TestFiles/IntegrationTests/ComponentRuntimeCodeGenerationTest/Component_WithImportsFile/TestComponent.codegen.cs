@@ -32,10 +32,10 @@ using System.Reflection;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.Counter>(0);
-            builder.CloseComponent();
+            __builder.OpenComponent<Test.Counter>(0);
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

@@ -28,7 +28,7 @@ using System.Reflection;
         #pragma warning disable 1998
         protected void Execute()
         {
-            builder.AddContent(0, 
+            __builder.AddContent(0, 
 #nullable restore
 #line 5 "x:\dir\subdir\Test\_Imports.razor"
  Foo

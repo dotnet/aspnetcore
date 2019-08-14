@@ -311,12 +311,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 // Writes something like:
                 //
-                // builder.OpenComponent<MyComponent>(0);
-                // builder.AddAttribute(1, "Foo", ...);
-                // builder.AddAttribute(2, "ChildContent", ...);
-                // builder.SetKey(someValue);
-                // builder.AddElementCapture(3, (__value) => _field = __value);
-                // builder.CloseComponent();
+                // __builder.OpenComponent<MyComponent>(0);
+                // __builder.AddAttribute(1, "Foo", ...);
+                // __builder.AddAttribute(2, "ChildContent", ...);
+                // __builder.SetKey(someValue);
+                // __builder.AddElementCapture(3, (__value) => _field = __value);
+                // __builder.CloseComponent();
 
                 foreach (var typeArgument in node.TypeArguments)
                 {
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // the component on the builder. We generate a method elsewhere, and then pass all of the information
                 // to that method. We pass in all of the attribute values + the sequence numbers.
                 //
-                // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, ..., 2, ..., 3, ....);
+                // __Blazor.MyComponent.TypeInference.CreateMyComponent_0(__builder, 0, 1, ..., 2, ..., 3, ....);
 
                 // Preserve order of attributes + splats
                 var attributes = node.Children.Where(s =>
@@ -676,9 +676,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Writes something like:
             //
-            // builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
+            // __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder73) => { ... }));
             // OR
-            // builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
+            // __builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
             BeginWriteAttribute(context.CodeWriter, node.AttributeName);
             context.CodeWriter.Write($"({node.TypeName})(");
 
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Looks like:
             //
-            // builder.SetKey(_keyValue);
+            // __builder.SetKey(_keyValue);
 
             var codeWriter = context.CodeWriter;
 
@@ -811,7 +811,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Looks like:
             //
-            // builder.AddMultipleAttributes(2, ...);
+            // __builder.AddMultipleAttributes(2, ...);
             context.CodeWriter.WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddMultipleAttributes}");
             context.CodeWriter.Write("-1");
             context.CodeWriter.WriteParameterSeparator();

@@ -25,13 +25,13 @@ using Test3;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.CloseComponent();
-            builder.AddMarkupContent(1, "\r\n");
-            builder.OpenComponent<Test2.SomeComponent>(2);
-            builder.CloseComponent();
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.CloseComponent();
+            __builder.AddMarkupContent(1, "\r\n");
+            __builder.OpenComponent<Test2.SomeComponent>(2);
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
     }

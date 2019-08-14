@@ -11,12 +11,12 @@ namespace Test
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "ParamBefore", "before");
-            builder.AddAttribute(2, "ParamAfter", "after");
-            builder.SetKey(
+            __builder.OpenComponent<Test.MyComponent>(0);
+            __builder.AddAttribute(1, "ParamBefore", "before");
+            __builder.AddAttribute(2, "ParamAfter", "after");
+            __builder.SetKey(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                         someDate.Day
@@ -25,7 +25,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore

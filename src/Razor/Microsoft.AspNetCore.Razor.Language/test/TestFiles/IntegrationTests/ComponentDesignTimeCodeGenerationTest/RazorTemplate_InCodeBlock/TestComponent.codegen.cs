@@ -18,7 +18,7 @@ namespace Test
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -28,7 +28,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            (builder2) => {
+            (__builder2) => {
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                                             __o = person.Name;
