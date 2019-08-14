@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private bool _isBatchInProgress;
         private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
+        private bool _disposed;
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The id for the component.</param>
         /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
-        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
+        protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrentRenderTree.GetFrames();
 
         /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
@@ -403,6 +404,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         protected virtual void ProcessPendingRender()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(Renderer), "Cannot process pending renders after the renderer has been disposed.");
+            }
+
             ProcessRenderQueue();
         }
 
@@ -587,15 +593,30 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Log.RenderingComponent(_logger, componentState);
             componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
+            List<Exception> exceptions = null;
+
             // Process disposal queue now in case it causes further component renders to be enqueued
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                disposeComponentState.DisposeInBatch(_batchBuilder);
+                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                {
+                    exceptions ??= new List<Exception>();
+                    exceptions.Add(exception);
+                }
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
+            }
+
+            if (exceptions?.Count > 1)
+            {
+                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+            }
+            else if (exceptions?.Count == 1)
+            {
+                HandleException(exceptions[0]);
             }
         }
 
@@ -681,6 +702,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
+            _disposed = true;
+
+            // It's important that we handle all exceptions here before reporting any of them.
+            // This way we can dispose all components before an error handler kicks in.
+            List<Exception> exceptions = null;
             foreach (var componentState in _componentStateById.Values)
             {
                 Log.DisposingComponent(_logger, componentState);
@@ -693,11 +719,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     }
                     catch (Exception exception)
                     {
-                        HandleException(exception);
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
                     }
                 }
+            }
 
-                _batchBuilder.Dispose();
+            _componentStateById.Clear(); // So we know they were all disposed
+            _batchBuilder.Dispose();
+
+            if (exceptions?.Count > 1)
+            {
+                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+            }
+            else if (exceptions?.Count == 1)
+            {
+                HandleException(exceptions[0]);
             }
         }
 

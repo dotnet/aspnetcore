@@ -316,8 +316,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             await connection.StartAsync().OrTimeout();
                             await connection.Transport.Output.WriteAsync(new byte[] { 0x42 }).OrTimeout();
 
-                            // We should get the exception in the transport input completion.
-                            await Assert.ThrowsAsync<HttpRequestException>(() => connection.Transport.Input.WaitForWriterToComplete()).OrTimeout();
+                            await Assert.ThrowsAsync<HttpRequestException>(async () => await connection.Transport.Input.ReadAsync());
                         });
                 }
             }

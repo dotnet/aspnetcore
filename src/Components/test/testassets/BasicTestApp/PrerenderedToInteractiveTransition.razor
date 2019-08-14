@@ -1,5 +1,6 @@
 @page "/prerendered-transition"
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IComponentContext ComponentContext
 
 <CascadingAuthenticationState>
@@ -22,13 +23,10 @@
 
 @code {
     int count;
-    bool firstRender = false;
-    protected override Task OnAfterRenderAsync()
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (firstRender)
         {
-            firstRender = true;
-
             // We need to queue another render when we connect, otherwise the
             // browser won't see anything.
             StateHasChanged();

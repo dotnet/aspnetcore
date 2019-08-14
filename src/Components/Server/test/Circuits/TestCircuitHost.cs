@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +15,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class TestCircuitHost : CircuitHost
     {
-        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
-            : base(circuitId, scope, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
+        private TestCircuitHost(string circuitId, IServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
+            : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
         {
-        }
-
-        protected override void OnHandlerError(CircuitHandler circuitHandler, string handlerMethod, Exception ex)
-        {
-            ExceptionDispatchInfo.Capture(ex).Throw();
         }
 
         public static CircuitHost Create(
@@ -47,7 +39,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new CircuitOptions(),
                     jsRuntime,
                     clientProxy,
-                    HtmlEncoder.Default,
                     NullLogger.Instance);
             }
 
@@ -55,6 +46,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new TestCircuitHost(
                 circuitId ?? Guid.NewGuid().ToString(),
                 serviceScope,
+                new CircuitOptions(),
                 clientProxy,
                 remoteRenderer,
                 new List<ComponentDescriptor>(),

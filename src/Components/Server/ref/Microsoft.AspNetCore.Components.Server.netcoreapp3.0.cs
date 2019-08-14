@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Components.Server
         protected abstract System.TimeSpan RevalidationInterval { get; }
         protected virtual void Dispose(bool disposing) { }
         void System.IDisposable.Dispose() { }
-        protected abstract System.Threading.Tasks.Task<bool> ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.AuthenticationState authenticationState, System.Threading.CancellationToken cancellationToken);
+        protected abstract System.Threading.Tasks.Task<bool> ValidateAuthenticationStateAsync(Microsoft.AspNetCore.Components.Authorization.AuthenticationState authenticationState, System.Threading.CancellationToken cancellationToken);
     }
-    public partial class ServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.AuthenticationStateProvider, Microsoft.AspNetCore.Components.IHostEnvironmentAuthenticationStateProvider
+    public partial class ServerAuthenticationStateProvider : Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider, Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider
     {
         public ServerAuthenticationStateProvider() { }
-        public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync() { throw null; }
-        public void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> authenticationStateTask) { }
+        public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> GetAuthenticationStateAsync() { throw null; }
+        public void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> authenticationStateTask) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Server.Circuits

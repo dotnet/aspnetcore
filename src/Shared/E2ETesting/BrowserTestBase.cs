@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
         private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
 
+        // Limit the number of concurrent browser tests.
+        private readonly static int MaxConcurrentBrowsers = Environment.ProcessorCount * 2;
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(MaxConcurrentBrowsers);
+        private bool _semaphoreHeld;
+
         public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
         {
             BrowserFixture = browserFixture;
@@ -39,6 +44,11 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public Task DisposeAsync()
         {
+            if (_semaphoreHeld)
+            {
+                _semaphore.Release();
+            }
+
             return Task.CompletedTask;
         }
 
@@ -49,6 +59,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public virtual async Task InitializeAsync(string isolationContext)
         {
+            await _semaphore.WaitAsync(TimeSpan.FromMinutes(30));
+            _semaphoreHeld = true;
+
             var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, isolationContext);
             _asyncBrowser.Value = browser;
             _logs.Value = logs;
@@ -67,15 +80,14 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         protected IWebElement WaitUntilExists(By findBy, int timeoutSeconds = 10, bool throwOnError = false)
         {
-            List<LogEntry> errors = null;
+            IReadOnlyList<LogEntry> errors = null;
             IWebElement result = null;
             new WebDriverWait(Browser, TimeSpan.FromSeconds(timeoutSeconds)).Until(driver =>
             {
                 if (throwOnError && Browser.Manage().Logs.AvailableLogTypes.Contains(LogType.Browser))
                 {
                     // Fail-fast if any errors were logged to the console.
-                    var log = Browser.Manage().Logs.GetLog(LogType.Browser);
-                    errors = log.Where(IsError).ToList();
+                    errors = Browser.GetBrowserLogs(LogLevel.Severe);
                     if (errors.Count > 0)
                     {
                         return true;

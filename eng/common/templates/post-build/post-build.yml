@@ -52,6 +52,7 @@ stages:
             filePath: eng\common\sdk-task.ps1
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+              /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
               /p:Configuration=Release
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
