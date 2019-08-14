@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         Inline = 1,
 
         /// <summary>
-        /// Hidden input fields will be rendered for each checkbox at the bottom of the form element. Use this for default MVC behavior.
+        /// Hidden input fields will be rendered for each checkbox at the bottom of the form element. This is the preferred render method and default MVC behavior.
+        /// If <see cref="Microsoft.AspNetCore.Mvc.ViewFeatures.FormContext.CanRenderAtEndOfForm"/> is <c>false</c>, will fall back on <see cref="Inline"/>.
         /// </summary>
         EndOfForm = 2
     }
