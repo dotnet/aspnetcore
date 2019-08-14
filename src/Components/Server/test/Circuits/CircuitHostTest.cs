@@ -40,6 +40,33 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public async Task DisposeAsync_DisposesScopeAsynchronouslyIfPossible()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            serviceScope
+                .As<IAsyncDisposable>()
+                .Setup(f => f.DisposeAsync())
+                .Returns(new ValueTask(Task.CompletedTask))
+                .Verifiable();
+
+            var remoteRenderer = GetRemoteRenderer();
+            var circuitHost = TestCircuitHost.Create(
+                Guid.NewGuid().ToString(),
+                serviceScope.Object,
+                remoteRenderer);
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert
+            serviceScope.Verify(s => s.Dispose(), Times.Never());
+            serviceScope.As<IAsyncDisposable>().Verify(s => s.DisposeAsync(), Times.Once());
+            Assert.True(remoteRenderer.Disposed);
+            Assert.Null(circuitHost.Handle.CircuitHost);
+        }
+
+        [Fact]
         public async Task DisposeAsync_DisposesResourcesAndSilencesException()
         {
             // Arrange

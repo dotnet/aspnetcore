@@ -170,7 +170,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 try
                 {
                     Renderer.Dispose();
-                    _scope.Dispose();
+
+                    // This cast is needed because it's possible the scope may not support async dispose.
+                    // Our DI container does, but other DI systems may not.
+                    if (_scope is IAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    else
+                    {
+                        _scope.Dispose();
+                    }
+
                     Log.DisposeSucceeded(_logger, CircuitId);
                 }
                 catch (Exception ex)
