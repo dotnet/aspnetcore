@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about an clipboard event that is being raised.
     /// </summary>
-    public class UIClipboardEventArgs : EventArgs
+    public class ClipboardEventArgs : EventArgs
     {
         /// <summary>
         /// Gets or sets the type of the event.

@@ -50,6 +50,15 @@ namespace Microsoft.AspNetCore.Components
         public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
         public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
+    public sealed partial class BindElementAttribute : System.Attribute
+    {
+        public BindElementAttribute(string element, string suffix, string valueAttribute, string changeAttribute) { }
+        public string ChangeAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Element { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
@@ -191,6 +200,13 @@ namespace Microsoft.AspNetCore.Components
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
+    }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
+    public sealed partial class EventHandlerAttribute : System.Attribute
+    {
+        public EventHandlerAttribute(string attributeName, System.Type eventArgsType) { }
+        public string AttributeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type EventArgsType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial interface IComponent
     {

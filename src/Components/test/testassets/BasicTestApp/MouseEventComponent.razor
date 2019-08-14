@@ -35,63 +35,63 @@
 
     string message;
 
-    void OnMouseOver(UIMouseEventArgs e)
+    void OnMouseOver(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseover,";
         StateHasChanged();
     }
 
-    void OnMouseOut(UIMouseEventArgs e)
+    void OnMouseOut(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseout,";
         StateHasChanged();
     }
 
-    void OnMouseMove(UIMouseEventArgs e)
+    void OnMouseMove(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousemove,";
         StateHasChanged();
     }
 
-    void OnMouseDown(UIMouseEventArgs e)
+    void OnMouseDown(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmousedown,";
         StateHasChanged();
     }
 
-    void OnMouseUp(UIMouseEventArgs e)
+    void OnMouseUp(MouseEventArgs e)
     {
         DumpEvent(e);
         message += "onmouseup,";
         StateHasChanged();
     }
 
-    void OnPointerDown(UIPointerEventArgs e)
+    void OnPointerDown(PointerEventArgs e)
     {
         DumpEvent(e);
         message += "onpointerdown";
         StateHasChanged();
     }
 
-    void OnDragStart(UIDragEventArgs e)
+    void OnDragStart(DragEventArgs e)
     {
         DumpEvent(e);
         message += "ondragstart,";
         StateHasChanged();
     }
 
-    void OnDrop(UIDragEventArgs e)
+    void OnDrop(DragEventArgs e)
     {
         DumpEvent(e);
         message += "ondrop,";
         StateHasChanged();
     }
 
-    void DumpEvent(UIMouseEventArgs e)
+    void DumpEvent(MouseEventArgs e)
     {
         Console.WriteLine(JsonSerializer.Serialize(e));
     }

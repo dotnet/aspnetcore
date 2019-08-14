@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 EventArgsType = "mouse",
             });
 
-            var eventArgs = new UIMouseEventArgs
+            var eventArgs = new MouseEventArgs
             {
                 Type = "click",
                 Detail = 1,

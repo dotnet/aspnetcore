@@ -98,7 +98,7 @@ namespace Ignitor
                 throw new InvalidOperationException("Element does not have a click event.");
             }
 
-            var mouseEventArgs = new UIMouseEventArgs()
+            var mouseEventArgs = new MouseEventArgs()
             {
                 Type = clickEventDescriptor.EventName,
                 Detail = 1

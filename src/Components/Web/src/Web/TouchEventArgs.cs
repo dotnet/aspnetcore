@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about a touch event that is being raised.
     /// </summary>
-    public class UITouchEventArgs : EventArgs
+    public class TouchEventArgs : EventArgs
     {
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.Components
         public long Detail { get; set; }
 
         /// <summary>
-        /// A list of <see cref="UITouchPoint"/> for every point of contact currently touching the surface.
+        /// A list of <see cref="TouchPoint"/> for every point of contact currently touching the surface.
         /// </summary>
-        public UITouchPoint[] Touches { get; set; }
+        public TouchPoint[] Touches { get; set; }
 
         /// <summary>
-        /// A list of <see cref="UITouchPoint"/> for every point of contact that is touching the surface and started on the element that is the target of the current event.
+        /// A list of <see cref="TouchPoint"/> for every point of contact that is touching the surface and started on the element that is the target of the current event.
         /// </summary>
-        public UITouchPoint[] TargetTouches { get; set; }
+        public TouchPoint[] TargetTouches { get; set; }
 
         /// <summary>
         /// A list of Touches for every point of contact which contributed to the event.
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components
         /// For the touchmove event this must be a list of the touch points that have moved since the last event.
         /// For the touchend and touchcancel events this must be a list of the touch points that have just been removed from the surface.
         /// </summary>
-        public UITouchPoint[] ChangedTouches { get; set; }
+        public TouchPoint[] ChangedTouches { get; set; }
 
         /// <summary>
         /// true if the control key was down when the event was fired. false otherwise.

@@ -3,23 +3,23 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Supplies information about a keyboard event that is being raised.
     /// </summary>
-    public class UIKeyboardEventArgs : EventArgs
+    public class KeyboardEventArgs : EventArgs
     {
         /// <summary>
-        /// The key value of the key represented by the event. 
-        /// If the value has a printed representation, this attribute's value is the same as the char attribute. 
-        /// Otherwise, it's one of the key value strings specified in 'Key values'. 
+        /// The key value of the key represented by the event.
+        /// If the value has a printed representation, this attribute's value is the same as the char attribute.
+        /// Otherwise, it's one of the key value strings specified in 'Key values'.
         /// If the key can't be identified, this is the string "Unidentified"
         /// </summary>
         public string Key { get; set; }
 
         /// <summary>
-        /// Holds a string that identifies the physical key being pressed. 
+        /// Holds a string that identifies the physical key being pressed.
         /// The value is not affected by the current keyboard layout or modifier state, so a particular key will always return the same value.
         /// </summary>
         public string Code { get; set; }
