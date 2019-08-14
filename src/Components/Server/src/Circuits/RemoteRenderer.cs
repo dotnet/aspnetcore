@@ -6,17 +6,14 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Rendering
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteRenderer : Renderer
+    internal class RemoteRenderer : Microsoft.AspNetCore.Components.RenderTree.Renderer
     {
         private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
 
@@ -132,7 +129,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         }
 
         /// <inheritdoc />
-        protected override Task UpdateDisplayAsync(in RenderBatch batch)
+        protected override Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch batch)
         {
             if (_disposing)
             {

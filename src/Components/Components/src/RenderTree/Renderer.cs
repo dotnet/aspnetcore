@@ -6,15 +6,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Components.Rendering
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
-    /// Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
-    /// dispatching events to them, and notifying when the user interface is being updated.
+    /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
+    /// of the Blazor framework. These types will change in a future release.
     /// </summary>
+    //
+    // Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
+    // dispatching events to them, and notifying when the user interface is being updated.
     public abstract partial class Renderer : IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
