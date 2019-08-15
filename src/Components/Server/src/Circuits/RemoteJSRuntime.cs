@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class RemoteJSRuntime : JSRuntimeBase
+    internal class RemoteJSRuntime : JSRuntime
     {
         private readonly CircuitOptions _options;
         private readonly ILogger<RemoteJSRuntime> _logger;
