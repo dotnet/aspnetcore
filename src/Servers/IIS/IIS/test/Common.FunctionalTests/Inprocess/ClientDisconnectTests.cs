@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             for (var j = 0; j < 20; j++)
             {
                 // Windows has a max connection limit of 10 for the IIS server,
-                // so setting limit fairly low. 
+                // so setting limit fairly low.
                 const int numRequests = 5;
                 async Task RunRequests()
                 {

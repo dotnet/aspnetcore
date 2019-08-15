@@ -9,7 +9,6 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 
 namespace Templates.Test
 {
