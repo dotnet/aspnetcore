@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         private void LogMessages(WriteContext context)
         {
-            var log = new LogMessage(context.LogLevel, context.Message, context.Exception);
+            var log = new LogMessage(context.LogLevel, context.EventId, context.Message, context.Exception);
             Logs.Enqueue(log);
             Output.WriteLine(log.ToString());
         }
@@ -308,10 +308,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l => (l.LogLevel, l.Message, l.Exception?.Message) ==
-                (LogLevel.Debug,
-                $"Failed to complete render batch '1846' in circuit host '{Client.CircuitId}'.",
-                "Received an acknowledgement for batch with id '1846' when the last batch produced was '4'."));
+
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "OnRenderCompletedFailed");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
+            Assert.Matches("Failed to complete render batch '1846' in circuit host '.*'\\.", entry.Message);
+            Assert.Equal("Received an acknowledgement for batch with id '1846' when the last batch produced was '4'.", entry.Exception.Message);
         }
 
         [Fact]
@@ -383,10 +384,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
             Assert.DoesNotContain(Logs, l => l.LogLevel > LogLevel.Information);
-            Assert.Contains(Logs, l =>
-            {
-                return (l.LogLevel, l.Message) == (LogLevel.Debug, $"Location change to 'http://example.com' in circuit '{Client.CircuitId}' failed.");
-            });
+
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "LocationChangeFailed");
+            Assert.Equal(LogLevel.Debug, entry.LogLevel);
+            Assert.Matches("Location change to 'http://example.com' in circuit '.*' failed\\.", entry.Message);
         }
 
         [Fact]
@@ -413,10 +414,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Assert
             var actualError = Assert.Single(Errors);
             Assert.Equal(expectedError, actualError);
-            Assert.Contains(Logs, l =>
-            {
-                return (l.LogLevel, l.Message) == (LogLevel.Error, $"Location change to '{new Uri(_serverFixture.RootUri,"/test")}' in circuit '{Client.CircuitId}' failed.");
-            });
+
+            var entry = Assert.Single(Logs, l => l.EventId.Name == "LocationChangeFailed");
+            Assert.Equal(LogLevel.Error, entry.LogLevel);
+            Assert.Matches($"Location change to '{new Uri(_serverFixture.RootUri, "/test")}' in circuit '.*' failed\\.", entry.Message);
         }
 
         [Theory]
@@ -500,20 +501,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [DebuggerDisplay("{LogLevel.ToString(),nq} - {Message ?? \"null\",nq} - {Exception?.Message,nq}")]
         private class LogMessage
         {
-            public LogMessage(LogLevel logLevel, string message, Exception exception)
+            public LogMessage(LogLevel logLevel, EventId eventId, string message, Exception exception)
             {
                 LogLevel = logLevel;
+                EventId = eventId;
                 Message = message;
                 Exception = exception;
             }
 
             public LogLevel LogLevel { get; set; }
+            public EventId EventId { get; set; }
             public string Message { get; set; }
             public Exception Exception { get; set; }
 
             public override string ToString()
             {
-                return $"{LogLevel}: {Message}{(Exception != null ? Environment.NewLine : "")}{Exception}";
+                return $"{LogLevel}: {EventId} {Message}{(Exception != null ? Environment.NewLine : "")}{Exception}";
             }
         }
 

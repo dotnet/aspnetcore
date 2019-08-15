@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, string, Exception> _createdConnectedCircuit =
-                LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(1, "CreatedConnectedCircuit"), "Created circuit {CircuitId} for connection {ConnectionId}");
+            private static readonly Action<ILogger, CircuitId, string, Exception> _createdConnectedCircuit =
+                LoggerMessage.Define<CircuitId, string>(LogLevel.Debug, new EventId(1, "CreatedConnectedCircuit"), "Created circuit {CircuitId} for connection {ConnectionId}");
 
-            private static readonly Action<ILogger, string, Exception> _createdDisconnectedCircuit =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "CreatedDisconnectedCircuit"), "Created circuit {CircuitId} for disconnected client");
+            private static readonly Action<ILogger, CircuitId, Exception> _createdDisconnectedCircuit =
+                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(2, "CreatedDisconnectedCircuit"), "Created circuit {CircuitId} for disconnected client");
 
             internal static void CreatedCircuit(ILogger logger, CircuitHost circuitHost)
             {
