@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             appElement.FindElement(By.Id("run-without-dispatch")).Click();
 
             Browser.Contains(
-                $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the Dispatcher. Use Invoke() or InvokeAsync() to switch execution to the Dispatcher when triggering rendering or modifying any state accessed during rendering.",
+                $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.",
                 () => result.Text);
         }
     }

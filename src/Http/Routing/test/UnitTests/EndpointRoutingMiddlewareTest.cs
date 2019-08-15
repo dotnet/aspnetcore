@@ -21,72 +21,7 @@ namespace Microsoft.AspNetCore.Routing
     public class EndpointRoutingMiddlewareTest
     {
         [Fact]
-        public async Task Invoke_ChangedPath_ResultsInDifferentResult()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-            var matcher = new Mock<Matcher>();
-            var pathToEndpoints = new Dictionary<string, Endpoint>()
-            {
-                ["/initial"] = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "initialEndpoint"),
-                ["/changed"] = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "changedEndpoint")
-            };
-            matcher.Setup(m => m.MatchAsync(httpContext))
-                .Callback<HttpContext>(context =>
-                {
-                    var endpointToSet = pathToEndpoints[context.Request.Path];
-                    context.SetEndpoint(endpointToSet);
-                })
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-            var matcherFactory = Mock.Of<MatcherFactory>(factory => factory.CreateMatcher(It.IsAny<EndpointDataSource>()) == matcher.Object);
-            var middleware = CreateMiddleware(
-                matcherFactory: matcherFactory,
-                next: context =>
-                {
-                    Assert.True(pathToEndpoints.TryGetValue(context.Request.Path, out var expectedEndpoint));
-
-                    var currentEndpoint = context.GetEndpoint();
-                    Assert.Equal(expectedEndpoint, currentEndpoint);
-
-                    return Task.CompletedTask;
-                });
-
-            // Act
-            httpContext.Request.Path = "/initial";
-            await middleware.Invoke(httpContext);
-            httpContext.Request.Path = "/changed";
-            await middleware.Invoke(httpContext);
-
-            // Assert
-            matcher.Verify();
-        }
-
-        [Fact]
-        public async Task Invoke_OnException_ResetsEndpoint()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var middleware = CreateMiddleware(next: context => throw new Exception());
-
-            // Act
-            try
-            {
-                await middleware.Invoke(httpContext);
-            }
-            catch
-            {
-                // Do nothing, we expect the test to throw.
-            }
-
-            // Assert
-            var endpoint = httpContext.GetEndpoint();
-            Assert.Null(endpoint);
-        }
-
-        [Fact]
-        public async Task Invoke_OnCall_SetsEndpointFeatureAndResetsEndpoint()
+        public async Task Invoke_OnCall_SetsEndpointFeature()
         {
             // Arrange
             var httpContext = CreateHttpContext();
@@ -99,36 +34,14 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
             Assert.NotNull(endpointFeature);
-            Assert.Null(endpointFeature.Endpoint);
         }
 
         [Fact]
-        public async Task Invoke_OnCall_SetsEndpointFeatureAndResetsRouteValues()
+        public async Task Invoke_SkipsRouting_IfEndpointSet()
         {
             // Arrange
             var httpContext = CreateHttpContext();
-            var initialRouteData = new RouteData();
-            initialRouteData.Values["test"] = true;
-            httpContext.Features.Set<IRoutingFeature>(new RoutingFeature()
-            {
-                RouteData = initialRouteData,
-            });
-            var middleware = CreateMiddleware();
-
-            // Act
-            await middleware.Invoke(httpContext);
-
-            // Assert
-            Assert.Null(httpContext.GetRouteValue("test"));
-        }
-
-        [Fact]
-        public async Task Invoke_SkipsRoutingAndMaintainsEndpoint_IfEndpointSet()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-            var expectedEndpoint = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp");
-            httpContext.SetEndpoint(expectedEndpoint);
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp"));
 
             var middleware = CreateMiddleware();
 
@@ -137,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             var endpoint = httpContext.GetEndpoint();
-            Assert.Same(expectedEndpoint, endpoint);
+            Assert.NotNull(endpoint);
             Assert.Equal("myapp", endpoint.DisplayName);
         }
 
@@ -182,29 +95,22 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var httpContext = CreateHttpContext();
-            var nextCalled = false;
 
-            var middleware = CreateMiddleware(next: context =>
-            {
-                var routeData = httpContext.GetRouteData();
-                var routeValue = httpContext.GetRouteValue("controller");
-                var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-                nextCalled = true;
+            var middleware = CreateMiddleware();
 
-                // Assert
-                Assert.NotNull(routeData);
-                Assert.Equal("Home", (string)routeValue);
-
-                // changing route data value is reflected in endpoint feature values
-                routeData.Values["testKey"] = "testValue";
-                Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
-
-                return Task.CompletedTask;
-            });
-
-            // Act & Assert
+            // Act
             await middleware.Invoke(httpContext);
-            Assert.True(nextCalled);
+            var routeData = httpContext.GetRouteData();
+            var routeValue = httpContext.GetRouteValue("controller");
+            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
+
+            // Assert
+            Assert.NotNull(routeData);
+            Assert.Equal("Home", (string)routeValue);
+
+            // changing route data value is reflected in endpoint feature values
+            routeData.Values["testKey"] = "testValue";
+            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
         }
 
         [Fact]
@@ -212,29 +118,22 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var httpContext = CreateHttpContext();
-            var called = false;
 
-            var middleware = CreateMiddleware(next: context =>
-            {
-                var routeData = httpContext.GetRouteData();
-                var routeValue = httpContext.GetRouteValue("controller");
-                var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-                called = true;
+            var middleware = CreateMiddleware();
 
-                // Assert
-                Assert.NotNull(routeData);
-                Assert.Equal("Home", (string)routeValue);
-
-                // changing route data value is reflected in endpoint feature values
-                routeData.Values["testKey"] = "testValue";
-                Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
-
-                return Task.CompletedTask;
-            });
-
-            // Act & Assert
+            // Act
             await middleware.Invoke(httpContext);
-            Assert.True(called);
+            var routeData = httpContext.GetRouteData();
+            var routeValue = httpContext.GetRouteValue("controller");
+            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
+
+            // Assert
+            Assert.NotNull(routeData);
+            Assert.Equal("Home", (string)routeValue);
+
+            // changing route data value is reflected in endpoint feature values
+            routeData.Values["testKey"] = "testValue";
+            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
         }
 
         [Fact]
