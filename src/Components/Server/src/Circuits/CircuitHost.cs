@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
@@ -342,7 +343,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     SetCurrentJSRuntime();
                     Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                    DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+                    DotNetDispatcher.BeginInvokeDotNet(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
                 });
             }
             catch (Exception ex)
@@ -377,7 +378,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         Log.EndInvokeJSSucceeded(_logger, asyncCall);
                     }
 
-                    DotNetDispatcher.EndInvoke(arguments);
+                    DotNetDispatcher.EndInvokeJS(arguments);
                 });
             }
             catch (Exception ex)
