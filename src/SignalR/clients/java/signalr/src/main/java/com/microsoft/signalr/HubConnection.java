@@ -21,6 +21,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.*;
 
+
 /**
  * A connection used to invoke hub methods on a SignalR Server.
  */
@@ -327,7 +328,7 @@ public class HubConnection {
         handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
         CompletableSubject tokenCompletable = CompletableSubject.create();
-        localHeaders.put("User-Agent", "Microsoft/SignalR/3.1/OtherUserAgentThings");
+        localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
         if (headers != null) {
             this.localHeaders.putAll(headers);
         }

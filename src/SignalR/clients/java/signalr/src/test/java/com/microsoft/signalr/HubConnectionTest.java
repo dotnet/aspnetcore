@@ -2205,7 +2205,8 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
-        assertEquals("Microsoft/SignalR/3.1/OtherUserAgentThings", header.get());
+
+        assertTrue(header.get().startsWith("Microsoft SignalR/"));
     }
 
     @Test
