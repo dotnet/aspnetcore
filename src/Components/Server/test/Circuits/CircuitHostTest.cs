@@ -26,9 +26,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer);
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
 
             // Act
             await circuitHost.DisposeAsync();
@@ -52,9 +51,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer);
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
 
             // Act
             await circuitHost.DisposeAsync();
@@ -77,9 +75,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .Throws<InvalidTimeZoneException>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer,
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer,
                 handlers: new[] { handler.Object });
 
             var throwOnDisposeComponent = new ThrowOnDisposeComponent();
@@ -101,9 +98,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer();
             var circuitHost = TestCircuitHost.Create(
-                Guid.NewGuid().ToString(),
-                serviceScope.Object,
-                remoteRenderer);
+                serviceScope: serviceScope.Object,
+                remoteRenderer: remoteRenderer);
 
             var component = new DispatcherComponent(circuitHost.Renderer.Dispatcher);
             circuitHost.Renderer.AssignRootComponentId(component);

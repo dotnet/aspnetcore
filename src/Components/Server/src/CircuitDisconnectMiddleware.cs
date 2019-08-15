@@ -39,65 +39,71 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-            var (hasCircuitId, circuitId) = await TryGetCircuitIdAsync(context);
-            if (!hasCircuitId)
+            var circuitId = await GetCircuitIdAsync(context);
+            if (circuitId is null)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
-            await TerminateCircuitGracefully(circuitId);
+            await TerminateCircuitGracefully(circuitId.Value);
 
             context.Response.StatusCode = StatusCodes.Status200OK;
         }
 
-        private async Task<(bool, string)> TryGetCircuitIdAsync(HttpContext context)
+        private async Task<CircuitId?> GetCircuitIdAsync(HttpContext context)
         {
             try
             {
                 if (!context.Request.HasFormContentType)
                 {
-                    return (false, null);
+                    return default;
                 }
 
                 var form = await context.Request.ReadFormAsync();
-                if (!form.TryGetValue(CircuitIdKey, out var circuitId) || !CircuitIdFactory.ValidateCircuitId(circuitId))
+                if (!form.TryGetValue(CircuitIdKey, out var text))
                 {
-                    return (false, null);
+                    return default;
                 }
 
-                return (true, circuitId);
+                if (!CircuitIdFactory.TryParseCircuitId(text, out var circuitId))
+                {
+                    Log.InvalidCircuitId(Logger, text);
+                    return default;
+                }
+
+                return circuitId;
             }
             catch
             {
-                return (false, null);
+                return default;
             }
         }
 
-        private async Task TerminateCircuitGracefully(string circuitId)
+        private async Task TerminateCircuitGracefully(CircuitId circuitId)
         {
-            try
-            {
-                await Registry.TerminateAsync(circuitId);
-                Log.CircuitTerminatedGracefully(Logger, circuitId);
-            }
-            catch (Exception e)
-            {
-                Log.UnhandledExceptionInCircuit(Logger, circuitId, e);
-            }
+            // We don't expect TerminateAsync to throw.
+            Log.CircuitTerminatingGracefully(Logger, circuitId);
+            await Registry.TerminateAsync(circuitId);
+            Log.CircuitTerminatedGracefully(Logger, circuitId);
         }
 
         private class Log
         {
-            private static readonly Action<ILogger, string, Exception> _circuitTerminatedGracefully =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "CircuitTerminatedGracefully"), "Circuit '{CircuitId}' terminated gracefully");
+            private static readonly Action<ILogger, CircuitId, Exception> _circuitTerminatingGracefully =
+                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(1, "CircuitTerminatingGracefully"), "Circuit with id '{CircuitId}' terminating gracefully.");
 
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionInCircuit =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(2, "UnhandledExceptionInCircuit"), "Unhandled exception in circuit {CircuitId} while terminating gracefully.");
+            private static readonly Action<ILogger, CircuitId, Exception> _circuitTerminatedGracefully =
+                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(2, "CircuitTerminatedGracefully"), "Circuit with id '{CircuitId}' terminated gracefully.");
 
-            public static void CircuitTerminatedGracefully(ILogger logger, string circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
+            private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "InvalidCircuitId"), "CircuitDisconnectMiddleware recieved an invalid circuit id '{CircuitIdSecret}'.");
 
-            public static void UnhandledExceptionInCircuit(ILogger logger, string circuitId, Exception exception) => _unhandledExceptionInCircuit(logger, circuitId, exception);
+            public static void CircuitTerminatingGracefully(ILogger logger, CircuitId circuitId) => _circuitTerminatingGracefully(logger, circuitId, null);
+
+            public static void CircuitTerminatedGracefully(ILogger logger, CircuitId circuitId) => _circuitTerminatedGracefully(logger, circuitId, null);
+
+            public static void InvalidCircuitId(ILogger logger, string circuitSecret) => _invalidCircuitId(logger, circuitSecret, null);
         }
     }
 }

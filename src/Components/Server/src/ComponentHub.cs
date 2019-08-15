@@ -38,17 +38,20 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
+        private readonly CircuitIdFactory _circuitIdFactory;
         private readonly CircuitRegistry _circuitRegistry;
         private readonly CircuitOptions _options;
         private readonly ILogger _logger;
 
         public ComponentHub(
             CircuitFactory circuitFactory,
+            CircuitIdFactory circuitIdFactory,
             CircuitRegistry circuitRegistry,
             ILogger<ComponentHub> logger,
             IOptions<CircuitOptions> options)
         {
             _circuitFactory = circuitFactory;
+            _circuitIdFactory = circuitIdFactory;
             _circuitRegistry = circuitRegistry;
             _options = options.Value;
             _logger = logger;
@@ -129,7 +132,12 @@ namespace Microsoft.AspNetCore.Components.Server
                 // to run inside it until after InitializeAsync completes.
                 _circuitRegistry.Register(circuitHost);
                 SetCircuit(circuitHost);
-                return circuitHost.CircuitId;
+
+                // Returning the secret here so the client can reconnect.
+                //
+                // Logging the secret and circuit ID here so we can associate them with just logs (if TRACE level is on).
+                Log.CreatedCircuit(_logger, circuitHost.CircuitId, circuitHost.CircuitId.Secret, Context.ConnectionId);
+                return circuitHost.CircuitId.Secret;
             }
             catch (Exception ex)
             {
@@ -142,10 +150,22 @@ namespace Microsoft.AspNetCore.Components.Server
             }
         }
 
-        public async ValueTask<bool> ConnectCircuit(string circuitId)
+        public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)
         {
-            // ConnectionAsync will not throw.
-            var circuitHost = await _circuitRegistry.ConnectAsync(circuitId, Clients.Caller, Context.ConnectionId, Context.ConnectionAborted);
+            // TryParseCircuitId will not throw.
+            if (!_circuitIdFactory.TryParseCircuitId(circuitIdSecret, out var circuitId))
+            {
+                // Invalid id.
+                Log.InvalidCircuitId(_logger, circuitIdSecret);
+                return false;
+            }
+
+            // ConnectAsync will not throw.
+            var circuitHost = await _circuitRegistry.ConnectAsync(
+                circuitId,
+                Clients.Caller,
+                Context.ConnectionId,
+                Context.ConnectionAborted);
             if (circuitHost != null)
             {
                 SetCircuit(circuitHost);
@@ -270,8 +290,8 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, string, Exception> _unhandledExceptionInCircuit =
                 LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, "UnhandledExceptionInCircuit"), "Unhandled exception in circuit {CircuitId}");
 
-            private static readonly Action<ILogger, string, Exception> _circuitAlreadyInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
+            private static readonly Action<ILogger, CircuitId, Exception> _circuitAlreadyInitialized =
+                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(4, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
@@ -285,11 +305,17 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CircuitInitializationFailed"), "Circuit initialization failed");
 
+            private static readonly Action<ILogger, CircuitId, string, string, Exception> _createdCircuit =
+                LoggerMessage.Define<CircuitId, string, string>(LogLevel.Debug, new EventId(8, "CreatedCircuit"), "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'");
+
+            private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "InvalidCircuitId"), "ConnectAsync recieved an invalid circuit id '{CircuitIdSecret}'");
+
             public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName) => _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
 
             public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
 
-            public static void CircuitAlreadyInitialized(ILogger logger, string circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
+            public static void CircuitAlreadyInitialized(ILogger logger, CircuitId circuitId) => _circuitAlreadyInitialized(logger, circuitId, null);
 
             public static void CircuitHostNotInitialized(ILogger logger, [CallerMemberName] string callSite = "") => _circuitHostNotInitialized(logger, callSite, null);
 
@@ -298,6 +324,28 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void InvalidInputData(ILogger logger, [CallerMemberName] string callSite = "") => _invalidInputData(logger, callSite, null);
 
             public static void CircuitInitializationFailed(ILogger logger, Exception exception) => _circuitInitializationFailed(logger, exception);
+
+            public static void CreatedCircuit(ILogger logger, CircuitId circuitId, string circuitSecret, string connectionId)
+            {
+                // Redact the secret unless tracing is on.
+                if (!logger.IsEnabled(LogLevel.Trace))
+                {
+                    circuitSecret = "(redacted)";
+                }
+
+                _createdCircuit(logger, circuitId, circuitSecret, connectionId, null);
+            }
+
+            public static void InvalidCircuitId(ILogger logger, string circuitSecret)
+            {
+                // Redact the secret unless tracing is on.
+                if (!logger.IsEnabled(LogLevel.Trace))
+                {
+                    circuitSecret = "(redacted)";
+                }
+
+                _invalidCircuitId(logger, circuitSecret, null);
+            }
         }
     }
 }

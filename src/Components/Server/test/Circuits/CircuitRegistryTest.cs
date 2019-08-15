@@ -163,14 +163,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Arrange
             var registry = CreateRegistry();
             var circuitHost = TestCircuitHost.Create();
-            registry.DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
+            registry.DisconnectedCircuits.Set(circuitHost.CircuitId.Secret, circuitHost, new MemoryCacheEntryOptions { Size = 1 });
 
             // Act
             await registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
 
             // Assert
             Assert.Empty(registry.ConnectedCircuits.Values);
-            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
         }
 
         [Fact]
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Same(client, circuitHost.Client.Client);
             Assert.Equal(newId, circuitHost.Client.ConnectionId);
 
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Same(client, circuitHost.Client.Client);
             Assert.Equal(newId, circuitHost.Client.ConnectionId);
 
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
         }
 
         [Fact]
@@ -322,9 +322,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             // Act
             // Verify it's present in the dictionary.
-            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+            Assert.True(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out var _));
             await Task.Run(() => tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out var _));
         }
 
         [Fact]
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.True(registry.ConnectedCircuits.TryGetValue(circuitHost.CircuitId, out var cacheValue));
             Assert.Same(circuitHost, cacheValue);
             // Nothing should be disconnected.
-            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId, out var _));
+            Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out var _));
         }
 
         private class TestCircuitRegistry : CircuitRegistry
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             public Action OnAfterEntryEvicted { get; set; }
 
-            protected override (CircuitHost, bool) ConnectCore(string circuitId, IClientProxy clientProxy, string connectionId)
+            protected override (CircuitHost, bool) ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId)
             {
                 if (BeforeConnect != null)
                 {

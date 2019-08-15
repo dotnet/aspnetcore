@@ -68,9 +68,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange & Act
             Browser.Close();
-            // Set to null so that other tests in this class can create a new browser if necessary so
-            // that tests don't fail when running together.
-
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
