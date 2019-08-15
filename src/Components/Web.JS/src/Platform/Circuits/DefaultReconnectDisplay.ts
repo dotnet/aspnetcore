@@ -1,4 +1,5 @@
 import { ReconnectDisplay } from './ReconnectDisplay';
+import { Logger, LogLevel } from '../Logging/Logger';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
@@ -11,7 +12,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   reloadParagraph: HTMLParagraphElement;
 
-  constructor(dialogId: string, private document: Document) {
+  constructor(dialogId: string, private readonly document: Document, private readonly logger: Logger) {
     this.modal = this.document.createElement('div');
     this.modal.id = dialogId;
 
@@ -38,8 +39,19 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.button.addEventListener('click', async () => {
       this.show();
-      const successful = await window['Blazor'].reconnect();
-      if (!successful) {
+
+      try {
+        // reconnect will asynchronously return:
+        // - true to mean success
+        // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
+        // - exception to mean we didn't reach the server (this can be sync or async)
+        const successful = await window['Blazor'].reconnect();
+        if (!successful) {
+          this.rejected();
+        }
+      } catch (err) {
+        // We got an exception, server is currently unavailable
+        this.logger.log(LogLevel.Error, err);
         this.failed();
       }
     });
@@ -65,5 +77,11 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'block';
     this.reloadParagraph.style.display = 'none';
     this.message.innerHTML = 'Reconnection failed. Try <a href>reloading</a> the page if you\'re unable to reconnect.';
+  }
+
+  rejected(): void {
+    this.button.style.display = 'none';
+    this.reloadParagraph.style.display = 'none';
+    this.message.innerHTML = 'Could not reconnect to the server. <a href>Reload</a> the page to restore functionality.';
   }
 }
