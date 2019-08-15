@@ -93,6 +93,7 @@ function createTestDisplay(): ReconnectDisplay {
   return {
     show: jest.fn(),
     hide: jest.fn(),
-    failed: jest.fn()
+    failed: jest.fn(),
+    rejected: jest.fn()
   };
 }
