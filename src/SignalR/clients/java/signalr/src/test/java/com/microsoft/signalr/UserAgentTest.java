@@ -17,7 +17,7 @@ public class UserAgentTest {
         return Stream.of(
                 Arguments.of("Windows XP", "Windows NT"),
                 Arguments.of("wInDoWs 95", "Windows NT"),
-                Arguments.of("Macintosh", "Mac"),
+                Arguments.of("Macintosh", "macOS"),
                 Arguments.of("Linux", "Linux"),
                 Arguments.of("unix", "Linux"),
                 Arguments.of("", ""),
