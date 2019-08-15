@@ -2883,7 +2883,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 return renderer.DispatchEventAsync(eventHandlerId, new EventArgs());
             });
-            Assert.Equal($"There is no event handler with ID {eventHandlerId}", ex.Message);
+            Assert.Contains($"There is no event handler associated with this event. EventId: '{eventHandlerId}'.", ex.Message);
             Assert.Equal(2, numEventsFired);
         }
 

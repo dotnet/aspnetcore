@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class Dispatcher
     {
         protected Dispatcher() { }
+        public void AssertAccess() { }
         public abstract bool CheckAccess();
         public static Microsoft.AspNetCore.Components.Dispatcher CreateDefault() { throw null; }
         public abstract System.Threading.Tasks.Task InvokeAsync(System.Action workItem);
@@ -195,10 +196,6 @@ namespace Microsoft.AspNetCore.Components
     {
         void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters);
-    }
-    public partial interface IComponentContext
-    {
-        bool IsConnected { get; }
     }
     public partial interface IHandleAfterRender
     {

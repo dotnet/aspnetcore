@@ -45,7 +45,7 @@ describe('DefaultReconnectDisplay', () => {
         display.failed();
 
         expect(display.modal.style.display).toBe('block');
-        expect(display.message.textContent).toBe('Failed to reconnect to the server.');
+        expect(display.message.innerHTML).toBe('Reconnection failed. Try <a href=\"\">reloading</a> the page if you\'re unable to reconnect.');
         expect(display.button.style.display).toBe('block');
     });
 

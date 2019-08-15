@@ -3,5 +3,6 @@
     <NpmTestArgs>test</NpmTestArgs>
     <Configuration Condition="'$(Configuration)' == '' AND '$(ContinuousIntegrationBuild)' == 'true'">Release</Configuration>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <PackOnBuild>false</PackOnBuild>
   </PropertyGroup>
 </Project>
