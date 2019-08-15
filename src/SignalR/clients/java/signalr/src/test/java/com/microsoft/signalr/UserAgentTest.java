@@ -24,6 +24,12 @@ public class UserAgentTest {
                 Arguments.of("1234", ""));
     }
 
+    @ParameterizedTest
+    @MethodSource("OperatingSystems")
+    public void getOSName(String osInput, String os) {
+        assertEquals(os, UserAgentHelper.findOSName(osInput));
+    }
+
     private static Stream<Arguments> Versions() {
         return Stream.of(
                 Arguments.of("1.0.0", "1.0.0"),

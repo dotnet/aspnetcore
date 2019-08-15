@@ -48,7 +48,7 @@ public class UserAgentHelper {
         if (operatingSystem.indexOf("win") >= 0) {
             return "Windows NT";
         } else if (operatingSystem.contains("mac")) {
-            return "Mac";
+            return "macOS";
         } else if (operatingSystem.contains("nix") || operatingSystem.contains("nux") || operatingSystem.contains("aix")) {
             return "Linux";
         }
