@@ -11,7 +11,7 @@ public class UserAgentHelper {
         return USER_AGENT;
     }
 
-    public static String createUserAgentString(){
+    public static String createUserAgentString() {
         StringBuilder agentBuilder = new StringBuilder("Microsoft SignalR/");
 
         // Parsing version numbers
