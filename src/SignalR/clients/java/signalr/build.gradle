@@ -123,9 +123,9 @@ task generateVersionClass {
 package com.microsoft.signalr;
 
 public class Version {
-	public static String getDetailedVersion() {
-		return "$project.version";
-	}
+    public static String getDetailedVersion() {
+        return "$project.version";
+    }
 }
 """
     }
