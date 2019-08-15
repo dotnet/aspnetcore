@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 {
@@ -16,6 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
         private readonly ConnectionCounter _counter;
         private ConnectionSummary _lastSummary;
         private Timer _timer;
+        private int _executingDoWork;
 
         public ConnectionCounterHostedService(ConnectionCounter counter)
         {
@@ -32,30 +32,35 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 
         private void DoWork(object state)
         {
-            var summary = _counter.Summary;
-
-            if (summary.PeakConnections > 0)
+            if (Interlocked.Exchange(ref _executingDoWork, 1) == 0)
             {
-                if (_timeSinceFirstConnection.ElapsedTicks == 0)
+                var summary = _counter.Summary;
+
+                if (summary.PeakConnections > 0)
                 {
-                    _timeSinceFirstConnection.Start();
+                    if (_timeSinceFirstConnection.ElapsedTicks == 0)
+                    {
+                        _timeSinceFirstConnection.Start();
+                    }
+
+                    var elapsed = _timeSinceFirstConnection.Elapsed;
+
+                    if (_lastSummary != null)
+                    {
+                        Console.WriteLine(@"[{0:hh\:mm\:ss}] Current: {1}, peak: {2}, connected: {3}, disconnected: {4}, rate: {5}/s",
+                            elapsed,
+                            summary.CurrentConnections,
+                            summary.PeakConnections,
+                            summary.TotalConnected - _lastSummary.TotalConnected,
+                            summary.TotalDisconnected - _lastSummary.TotalDisconnected,
+                            summary.CurrentConnections - _lastSummary.CurrentConnections
+                            );
+                    }
+
+                    _lastSummary = summary;
                 }
 
-                var elapsed = _timeSinceFirstConnection.Elapsed;
-
-                if (_lastSummary != null)
-                {
-                    Console.WriteLine(@"[{0:hh\:mm\:ss}] Current: {1}, peak: {2}, connected: {3}, disconnected: {4}, rate: {5}/s",
-                        elapsed,
-                        summary.CurrentConnections,
-                        summary.PeakConnections,
-                        summary.TotalConnected - _lastSummary.TotalConnected,
-                        summary.TotalDisconnected - _lastSummary.TotalDisconnected,
-                        summary.CurrentConnections - _lastSummary.CurrentConnections
-                        );
-                }
-
-                _lastSummary = summary;
+                Interlocked.Exchange(ref _executingDoWork, 0);
             }
         }
 
