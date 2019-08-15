@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (oldState != newState)
                     {
-                        Debug.Assert(!_decrementCalled);
+                        Debug.Assert(_decrementCalled);
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
                         RequestBodyPipe.Writer.Complete();

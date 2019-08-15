@@ -228,7 +228,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RepoTasks.GenerateSharedFrameworkDepsFile
       DepsFilePath="$(ProjectDepsFilePath)"
       TargetFramework="$(TargetFrameworkMoniker)"
-      FrameworkName="$(SharedFxName)"
+      FrameworkName="$(TargetingPackName)"
       FrameworkVersion="$(SharedFxVersion)"
       References="@(_RuntimeReference)"
       RuntimeIdentifier="$(RuntimeIdentifier)"
