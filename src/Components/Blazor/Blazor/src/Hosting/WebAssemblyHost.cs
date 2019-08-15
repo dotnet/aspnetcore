@@ -30,15 +30,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            // We need to do this as early as possible, it eliminates a bunch of problems. Note that what we do
-            // is a bit fragile. If you see things breaking because JSRuntime.Current isn't set, then it's likely
-            // that something on the startup path went wrong.
-            //
-            // We want to the JSRuntime created here to be the 'ambient' runtime when JS calls back into .NET. When
-            // this happens in the browser it will be a direct call from Mono. We effectively needs to set the
-            // JSRuntime in the 'root' execution context which implies that we want to do as part of a direct
-            // call from Program.Main, and before any 'awaits'.
-            JSRuntime.SetCurrentJSRuntime(_runtime);
             SetBrowserHttpMessageHandlerAsDefault();
 
             return StartAsyncAwaited();

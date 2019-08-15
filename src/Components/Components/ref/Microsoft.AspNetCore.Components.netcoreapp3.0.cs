@@ -110,6 +110,8 @@ namespace Microsoft.AspNetCore.Components
     public readonly partial struct ElementReference
     {
         private readonly object _dummy;
+        public ElementReference(string id) { throw null; }
+        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback

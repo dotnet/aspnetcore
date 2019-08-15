@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
 
-            var attachComponentTask = _jsRuntime.InvokeAsync<object>(
+            var attachComponentTask = _jsRuntime.InvokeVoidAsync(
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId);
@@ -340,15 +340,16 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
             public ValueStopwatch ValueStopwatch { get; }
         }
 
-        private void CaptureAsyncExceptions(Task task)
+        private async void CaptureAsyncExceptions(ValueTask task)
         {
-            task.ContinueWith(t =>
+            try
             {
-                if (t.IsFaulted)
-                {
-                    UnhandledException?.Invoke(this, t.Exception);
-                }
-            });
+                await task;
+            }
+            catch (Exception ex)
+            {
+                UnhandledException?.Invoke(this, ex);
+            }
         }
 
         private static class Log

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -16,6 +16,8 @@
     <Compile Include="..\..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="..\..\..\Shared\src\WebEventData.cs" />
+
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
   </ItemGroup>
 
 </Project>

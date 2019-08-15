@@ -1,24 +1,32 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
+using System.Text;
 using System.Text.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
-    public class ElementReferenceTest
+    public class ElementReferenceJsonConverterTest
     {
+        private readonly ElementReferenceJsonConverter Converter = new ElementReferenceJsonConverter();
+
         [Fact]
         public void Serializing_Works()
         {
             // Arrange
             var elementReference = ElementReference.CreateWithUniqueId();
             var expected = $"{{\"__internalId\":\"{elementReference.Id}\"}}";
+            var memoryStream = new MemoryStream();
+            var writer = new Utf8JsonWriter(memoryStream);
 
             // Act
-            var json = JsonSerializer.Serialize(elementReference, JsonSerializerOptionsProvider.Options);
+            Converter.Write(writer, elementReference, new JsonSerializerOptions());
+            writer.Flush();
 
             // Assert
+            var json = Encoding.UTF8.GetString(memoryStream.ToArray());
             Assert.Equal(expected, json);
         }
 
@@ -28,9 +36,12 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var id = ElementReference.CreateWithUniqueId().Id;
             var json = $"{{\"__internalId\":\"{id}\"}}";
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var reader = new Utf8JsonReader(bytes);
+            reader.Read();
 
             // Act
-            var elementReference = JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options);
+            var elementReference = Converter.Read(ref reader, typeof(ElementReference), new JsonSerializerOptions());
 
             // Assert
             Assert.Equal(id, elementReference.Id);
@@ -45,9 +56,12 @@ namespace Microsoft.AspNetCore.Components
 @$"{{
     ""__internalId"": ""{id}""
 }}";
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var reader = new Utf8JsonReader(bytes);
+            reader.Read();
 
             // Act
-            var elementReference = JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options);
+            var elementReference = Converter.Read(ref reader, typeof(ElementReference), new JsonSerializerOptions());
 
             // Assert
             Assert.Equal(id, elementReference.Id);
@@ -58,9 +72,15 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var json = "{\"id\":\"some-value\"}";
+            var bytes = Encoding.UTF8.GetBytes(json);
 
             // Act
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options));
+            var ex = Assert.Throws<JsonException>(() =>
+            {
+                var reader = new Utf8JsonReader(bytes);
+                reader.Read();
+                Converter.Read(ref reader, typeof(ElementReference), new JsonSerializerOptions());
+            });
 
             // Assert
             Assert.Equal("Unexpected JSON property 'id'.", ex.Message);
@@ -71,9 +91,15 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var json = "{}";
+            var bytes = Encoding.UTF8.GetBytes(json);
 
             // Act
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<ElementReference>(json, JsonSerializerOptionsProvider.Options));
+            var ex = Assert.Throws<JsonException>(() =>
+            {
+                var reader = new Utf8JsonReader(bytes);
+                reader.Read();
+                Converter.Read(ref reader, typeof(ElementReference), new JsonSerializerOptions());
+            });
 
             // Assert
             Assert.Equal("__internalId is required.", ex.Message);

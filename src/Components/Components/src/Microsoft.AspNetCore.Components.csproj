@@ -10,14 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.JSInterop" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <Reference Include="System.Buffers" />
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">

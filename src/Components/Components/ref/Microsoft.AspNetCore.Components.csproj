@@ -5,13 +5,12 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.AspNetCore.Components.netstandard2.0.cs" />
-    <Reference Include="Microsoft.JSInterop"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
+    <Reference Include="System.Buffers"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Components.netcoreapp3.0.cs" />
-    <Reference Include="Microsoft.JSInterop"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions"  />
   </ItemGroup>

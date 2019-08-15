@@ -427,12 +427,8 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private TestRemoteRenderer GetRemoteRenderer(IServiceProvider serviceProvider, CircuitClientProxy circuitClient = null)
         {
             var jsRuntime = new Mock<IJSRuntime>();
-            jsRuntime.Setup(r => r.InvokeAsync<object>(
-                "Blazor._internal.attachRootComponentToElement",
-                It.IsAny<int>(),
-                It.IsAny<string>(),
-                It.IsAny<int>()))
-                .ReturnsAsync(Task.FromResult<object>(null));
+            jsRuntime.Setup(r => r.InvokeAsync<object>("Blazor._internal.attachRootComponentToElement", It.IsAny<object[]>()))
+                .ReturnsAsync(new ValueTask<object>((object)null));
 
             return new TestRemoteRenderer(
                 serviceProvider,
