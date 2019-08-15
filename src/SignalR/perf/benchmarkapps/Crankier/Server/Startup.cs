@@ -18,10 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var signalrBuilder = services.AddSignalR(o =>
-            {
-                o.EnableDetailedErrors = true;
-            })
+            var signalrBuilder = services.AddSignalR();
 
             services.AddSingleton<ConnectionCounter>();
 
