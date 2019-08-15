@@ -43,7 +43,8 @@ namespace Microsoft.AspNetCore.SignalR.Crankier.Server
             return Task.CompletedTask;
         }
 
-        public override Task OnDisconnectedAsync(Exception exception) {
+        public override Task OnDisconnectedAsync(Exception exception)
+        {
             _counter?.Disconnected();
             return Task.CompletedTask;
         }
