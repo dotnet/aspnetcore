@@ -21,7 +21,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.*;
 
-
 /**
  * A connection used to invoke hub methods on a SignalR Server.
  */
