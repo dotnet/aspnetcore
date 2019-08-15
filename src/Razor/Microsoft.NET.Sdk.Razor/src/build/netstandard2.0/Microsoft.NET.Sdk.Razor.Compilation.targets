@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <!--
   What follows in this file is based on:
-     https://github.com/dotnet/roslyn/blob/db4f836b97db1e7ad261e51c67cc80c6f3c28791/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets
+     https://github.com/dotnet/roslyn/blob/21263069b7e8522441d829fc59a3aa5b3a3cf938/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets
 
   We need to keep this basically up to date, as well as track the set of modifications we've made. Try to keep the formatting
   similar to the original to reduce noise. In general try to only deviate from the CoreCompile target when we need to for
@@ -111,10 +111,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
-    <PropertyGroup>
-      <LangVersion Condition="'$(LangVersion)' == '' AND
-        (('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v3.0') OR
-         ('$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.1'))">preview</LangVersion>
+    <PropertyGroup Condition="('$(TargetFrameworkIdentifier)' != '.NETCoreApp' OR '$(TargetFrameworkVersion)' != 'v3.0') AND
+                            ('$(TargetFrameworkIdentifier)' != '.NETStandard' OR '$(TargetFrameworkVersion)' != 'v2.1')">
+      <MaxSupportedLangVersion Condition="'$(MaxSupportedLangVersion)' == ''">7.3</MaxSupportedLangVersion>
+      <LangVersion Condition="'$(LangVersion)' == ''">$(MaxSupportedLangVersion)</LangVersion>
     </PropertyGroup>
 
     <Csc
