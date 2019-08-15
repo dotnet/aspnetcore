@@ -291,8 +291,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <summary>
         /// Disposes the <see cref="HubConnection"/>.
         /// </summary>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous dispose.</returns>
-        public async Task DisposeAsync()
+        /// <returns>A <see cref="ValueTask"/> that represents the asynchronous dispose.</returns>
+        public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
@@ -503,6 +503,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 if (disposing)
                 {
+                    // Must set this before calling DisposeAsync because the service provider has a reference to the HubConnection and will try to dispose it again
                     _disposed = true;
                     if (_serviceProvider is IAsyncDisposable asyncDispose)
                     {
@@ -1532,11 +1533,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 throw new Exception($"Assertion failed in {memberName}, at {fileName}:{lineNumber}: {message}");
             }
-        }
-
-        ValueTask IAsyncDisposable.DisposeAsync()
-        {
-            return new ValueTask(DisposeAsync());
         }
 
         private class Subscription : IDisposable
