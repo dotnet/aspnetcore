@@ -140,7 +140,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ10013", diagnostic.Id);
+            Assert.Equal("RZ10011", diagnostic.Id);
             Assert.Equal(
                 "Component 'lowerCase' starts with a lowercase character. Component names cannot start with a lowercase character.",
                 diagnostic.GetMessage());
@@ -159,7 +159,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ10014", diagnostic.Id);
+            Assert.Equal("RZ10012", diagnostic.Id);
             Assert.Equal(RazorDiagnosticSeverity.Warning, diagnostic.Severity);
             Assert.Equal(
                 "Found markup element with unexpected name 'PossibleComponent'. If this is intended to be a component, add a @using directive for its namespace.",
@@ -196,7 +196,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("RZ10015", diagnostic.Id);
+            Assert.Equal("RZ10013", diagnostic.Id);
             Assert.Equal(
                 "The start tag name 'MyComponent' does not match the end tag name 'mycomponent'. Components must have matching start and end tag names (case-sensitive).",
                 diagnostic.GetMessage());

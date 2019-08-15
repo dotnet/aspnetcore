@@ -3305,39 +3305,10 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent TItem=int Item=""3"" @ref=""_my"" />
+
 @code {
-    MyComponent myInstance;
-    void DoStuff() { GC.KeepAlive(myInstance); }
-}
-", throwOnFailure: false);
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldRequiredForGeneric.Id);
-        }
-
-        [Fact]
-        public void GenericComponent_WithComponentRef_SuppressField()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Components;
-
-namespace Test
-{
-    public class MyComponent<TItem> : ComponentBase
-    {
-        [Parameter] public TItem Item { get; set; }
-    }
-}
-"));
-
-            // Act
-            var generated = CompileToCSharp(@"
-<MyComponent TItem=int Item=""3"" @ref=""_my"" @ref:suppressField />
-@code {
-    MyComponent<int> _my;
-    void DoStuff() { GC.KeepAlive(_my); }
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
 }
 ");
 
@@ -3366,38 +3337,6 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent Item=""3"" @ref=""_my"" />
-
-@code {
-    private MyComponent<int> _my;
-    public void Foo() { System.GC.KeepAlive(_my); }
-}
-", throwOnFailure: true);
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldRequiredForGeneric.Id);
-
-        }
-
-        [Fact]
-        public void GenericComponent_WithComponentRef_TypeInference_SuppressField()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Components;
-
-namespace Test
-{
-    public class MyComponent<TItem> : ComponentBase
-    {
-        [Parameter] public TItem Item { get; set; }
-    }
-}
-"));
-
-            // Act
-            var generated = CompileToCSharp(@"
-<MyComponent Item=""3"" @ref=""_my"" @ref:suppressField />
 
 @code {
     private MyComponent<int> _my;
@@ -3900,7 +3839,13 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>");
+<elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>
+
+@code {
+    private Microsoft.AspNetCore.Components.ElementReference myElem;
+    public void Foo() { System.GC.KeepAlive(myElem); }
+}
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -3916,7 +3861,10 @@ namespace Test
 <input type=""text"" data-slider-min=""@Min"" @ref=""@_element"" />
 
 @code {
+        private ElementReference _element;
+
         [Parameter] public int Min { get; set; }
+        public void Foo() { System.GC.KeepAlive(_element); }
     }
 ");
 
@@ -3924,35 +3872,6 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
-        }
-
-        [Fact]
-        public void Element_WithRef_SuppressField()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
-<elem @ref=""myElem"" @ref:suppressField>Hello</elem>
-@code {
-    ElementReference myElem;
-    void DoStuff() { GC.KeepAlive(myElem); }
-}");
-
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
-
-        [Fact]
-        public void Element_WithRef_SuppressFieldWithValue_ResultsInDiagnostic()
-        {
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
-<elem @ref=""myElem"" @ref:suppressField=""false"">Hello</elem>", throwOnFailure: false);
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(diagnostic.Id, ComponentDiagnosticFactory.RefSuppressFieldNotMinimized.Id);
         }
 
         [Fact]
@@ -3972,7 +3891,13 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />");
+<MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />
+
+@code {
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
+}
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -4000,36 +3925,12 @@ namespace Test
 <MyComponent @ref=""myInstance"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
-");
 
-            // Assert
-            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
-            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
-            CompileToAssembly(generated);
-        }
-
-        [Fact]
-        public void Component_WithRef_SuppressField()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Components;
-
-namespace Test
-{
-    public class MyComponent : ComponentBase
-    {
-    }
-}
-"));
-
-            // Arrange/Act
-            var generated = CompileToCSharp(@"
-<MyComponent @ref=""myInstance"" @ref:suppressField />
 @code {
-    MyComponent myInstance;
-    void DoStuff() { GC.KeepAlive(myInstance); }
-}");
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
+}
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

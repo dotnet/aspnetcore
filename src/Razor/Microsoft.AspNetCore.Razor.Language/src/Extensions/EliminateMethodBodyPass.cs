@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal sealed class EliminateMethodBodyPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        // Run early in the optimization phase
-        public override int Order => int.MinValue;
+        // Run late in the optimization phase
+        public override int Order => int.MaxValue;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {

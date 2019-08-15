@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.True(item.CaseSensitive);
 
             Assert.Equal(
-                "Generates the specified field, and populates it during rendering with a reference to the element or component.",
+                "Populates the specified field or property with a reference to the element or component.",
                 item.Documentation);
 
             Assert.Equal("Microsoft.AspNetCore.Components", item.AssemblyName);
@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.False(attribute.IsIndexerStringProperty);
 
             Assert.Equal(
-                "Generates the specified field, and populates it during rendering with a reference to the element or component.",
+                "Populates the specified field or property with a reference to the element or component.",
                 attribute.Documentation);
 
             Assert.Equal("@ref", attribute.Name);
@@ -85,13 +85,6 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.False(attribute.IsStringProperty);
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
-
-            var parameter = Assert.Single(attribute.BoundAttributeParameters);
-            Assert.Empty(parameter.Diagnostics);
-            Assert.Equal(":suppressField", parameter.DisplayName);
-            Assert.Equal("Suppresses the generation of a field by '@ref'. Specify '@ref:suppressField' to define your own property or field.", parameter.Documentation);
-            Assert.True(parameter.IsBooleanProperty);
-            Assert.Equal("suppressField", parameter.Name);
         }
     }
 }

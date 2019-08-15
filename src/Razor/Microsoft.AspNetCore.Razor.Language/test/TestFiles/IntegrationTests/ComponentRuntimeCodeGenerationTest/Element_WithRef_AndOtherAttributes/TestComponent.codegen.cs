@@ -10,11 +10,6 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
-        #pragma warning disable 0414
-        #pragma warning disable 0169
-        private global::Microsoft.AspNetCore.Components.ElementReference _element;
-        #pragma warning restore 0169
-        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
@@ -45,7 +40,10 @@ namespace Test
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
+        private ElementReference _element;
+
         [Parameter] public int Min { get; set; }
+        public void Foo() { System.GC.KeepAlive(_element); }
     
 
 #line default

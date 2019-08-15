@@ -13,26 +13,34 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.OpenElement(0, "elem");
-            __builder.AddElementReferenceCapture(1, (__value) => {
+            __builder.OpenComponent<Test.MyComponent<int>>(0);
+            __builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<int>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-            myElem = __value;
+                             3
+
+#line default
+#line hidden
+#nullable disable
+            ));
+            __builder.AddComponentReferenceCapture(2, (__value) => {
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                      _my = (Test.MyComponent<int>)__value;
 
 #line default
 #line hidden
 #nullable disable
             }
             );
-            __builder.AddContent(2, "Hello");
-            __builder.CloseElement();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
 #nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    ElementReference myElem;
-    void DoStuff() { GC.KeepAlive(myElem); }
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
 
 #line default
 #line hidden

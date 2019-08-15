@@ -396,35 +396,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return RazorDiagnostic.Create(DuplicateComponentParameterDirective, source ?? SourceSpan.Undefined, attributeName, directiveAttributeName);
         }
 
-        public static readonly RazorDiagnosticDescriptor RefSuppressFieldNotMinimized =
-            new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}10011",
-                () =>
-                    "The directive attribute '@ref:suppressField' must be used as a minimized attribute. Providing an attribute value like '@ref:suppressField=\"false\"' " +
-                    "is not supported.",
-                RazorDiagnosticSeverity.Error);
-
-        public static RazorDiagnostic Create_RefSuppressFieldNotMinimized(SourceSpan? source = null)
-        {
-            return RazorDiagnostic.Create(RefSuppressFieldNotMinimized, source ?? SourceSpan.Undefined);
-        }
-
-        public static readonly RazorDiagnosticDescriptor RefSuppressFieldRequiredForGeneric =
-            new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}10012",
-                () =>
-                    "Using '@ref' on a generic-typed component requires manually defining a field to hold the component reference. Use '@ref:suppressField' to " +
-                    "suppress field generation, and manually define a field inside '@code {{ }}' to contain the reference.",
-                RazorDiagnosticSeverity.Error);
-
-        public static RazorDiagnostic Create_RefSuppressFieldRequiredForGeneric(SourceSpan? source = null)
-        {
-            return RazorDiagnostic.Create(RefSuppressFieldRequiredForGeneric, source ?? SourceSpan.Undefined);
-        }
-
         public static readonly RazorDiagnosticDescriptor ComponentNamesCannotStartWithLowerCase =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}10013",
+                $"{DiagnosticPrefix}10011",
                 () => "Component '{0}' starts with a lowercase character. Component names cannot start with a lowercase character.",
                 RazorDiagnosticSeverity.Error);
 
@@ -438,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly RazorDiagnosticDescriptor UnexpectedMarkupElement =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}10014",
+                $"{DiagnosticPrefix}10012",
                 () => "Found markup element with unexpected name '{0}'. If this is intended to be a component, add a @using directive for its namespace.",
                 RazorDiagnosticSeverity.Warning);
 
@@ -452,7 +426,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly RazorDiagnosticDescriptor InconsistentStartAndEndTagName =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}10015",
+                $"{DiagnosticPrefix}10013",
                 () => "The start tag name '{0}' does not match the end tag name '{1}'. Components must have matching start and end tag names (case-sensitive).",
                 RazorDiagnosticSeverity.Error);
 

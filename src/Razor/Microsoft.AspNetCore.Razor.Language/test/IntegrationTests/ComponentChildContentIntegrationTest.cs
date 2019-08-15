@@ -163,7 +163,7 @@ Some Content
             // Assert
             Assert.Collection(
                 generated.Diagnostics,
-                d => Assert.Equal("RZ10014", d.Id),
+                d => Assert.Equal("RZ10012", d.Id),
                 d => Assert.Equal("RZ9996", d.Id));
         }
 

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Verify component compilation succeeded
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "ComponentApp.dll"), "ComponentApp.Components.Pages.Counter");
 
-            Assert.BuildWarning(result, "RZ10014");
+            Assert.BuildWarning(result, "RZ10012");
         }
 
         [Fact]

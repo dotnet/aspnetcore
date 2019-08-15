@@ -10,16 +10,11 @@ namespace Test
     using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
-        #pragma warning disable 0414
-        #pragma warning disable 0169
-        private Test.MyComponent<TItem> _my;
-        #pragma warning restore 0169
-        #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            builder.OpenComponent<Test.MyComponent<int>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<int>(
+            __builder.OpenComponent<Test.MyComponent<int>>(0);
+            __builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<int>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                              3
@@ -28,7 +23,7 @@ namespace Test
 #line hidden
 #nullable disable
             ));
-            builder.AddComponentReferenceCapture(2, (__value) => {
+            __builder.AddComponentReferenceCapture(2, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                       _my = (Test.MyComponent<int>)__value;
@@ -38,9 +33,18 @@ namespace Test
 #nullable disable
             }
             );
-            builder.CloseComponent();
+            __builder.CloseComponent();
         }
         #pragma warning restore 1998
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+       
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+
+#line default
+#line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591
