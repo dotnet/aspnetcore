@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+namespace Microsoft.AspNetCore.Testing
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
     public class OSSkipConditionAttribute : Attribute, ITestCondition

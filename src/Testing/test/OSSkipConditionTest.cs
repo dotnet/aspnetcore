@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+namespace Microsoft.AspNetCore.Testing
 {
     public class OSSkipConditionTest
     {

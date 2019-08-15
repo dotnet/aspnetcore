@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
     /// Marks a test as "Flaky" so that the build will sequester it and ignore failures.

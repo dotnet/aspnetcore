@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+namespace Microsoft.AspNetCore.Testing
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public sealed class DockerOnlyAttribute : Attribute, ITestCondition

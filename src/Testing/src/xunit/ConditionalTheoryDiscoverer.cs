@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing.xunit
+namespace Microsoft.AspNetCore.Testing
 {
     internal class ConditionalTheoryDiscoverer : TheoryDiscoverer
     {
