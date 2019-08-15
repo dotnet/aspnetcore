@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -69,7 +70,8 @@ namespace Microsoft.AspNetCore.Hosting
             => ToString().Substring(LogPreamble.Length);
 
         internal static string EscapedValueOrEmptyMarker(string potentialValue)
-            => potentialValue?.Length > 0 ? Uri.EscapeDataString(potentialValue) : EmptyEntry;
+            // Encode space as +
+            => potentialValue?.Length > 0 ? potentialValue.Replace(' ', '+') : EmptyEntry;
 
         internal static string ValueOrEmptyMarker<T>(T? potentialValue) where T : struct, IFormattable
             => potentialValue?.ToString(null, CultureInfo.InvariantCulture) ?? EmptyEntry;
