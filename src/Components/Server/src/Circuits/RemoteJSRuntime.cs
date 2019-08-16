@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             _clientProxy.SendAsync(
                 "JS.EndInvokeDotNet",
-                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptionsProvider.Options));
+                JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions));
         }
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
