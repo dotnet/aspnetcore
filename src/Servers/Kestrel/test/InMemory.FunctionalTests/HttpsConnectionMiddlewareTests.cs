@@ -590,6 +590,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
         }
 
+        [Theory]
+        [InlineData(HttpProtocols.Http1)]
+        [InlineData(HttpProtocols.Http2)]
+        [InlineData(HttpProtocols.Http1AndHttp2)]
+        public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(_x509Certificate2);
+                listenOptions.Protocols = httpProtocols;
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // SslStream is used to ensure the certificate is actually passed to the server
+                    // HttpClient might not send the certificate because it is invalid or it doesn't match any
+                    // of the certificate authorities sent by the server in the SSL handshake.
+                    var sslOptions = new SslClientAuthenticationOptions
+                    {
+                        TargetHost = "localhost",
+                        EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11,
+                        ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11, SslApplicationProtocol.Http2 },
+                    };
+
+                    using var stream = OpenSslStream(connection.Stream);
+                    await stream.AuthenticateAsClientAsync(sslOptions);
+
+                    Assert.Equal(
+                        httpProtocols.HasFlag(HttpProtocols.Http2) ?
+                            SslApplicationProtocol.Http2 :
+                            SslApplicationProtocol.Http11,
+                        stream.NegotiatedApplicationProtocol);
+                }
+            }
+        }
+
         private static async Task App(HttpContext httpContext)
         {
             var request = httpContext.Request;
