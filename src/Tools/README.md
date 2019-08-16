@@ -1,5 +1,4 @@
-DotNetTools
-===========
+# DotNetTools
 
 ## Projects
 
@@ -13,6 +12,13 @@ The folder contains command-line tools for ASP.NET Core that are bundled* in the
 *\*This applies to .NET Core CLI 2.1.300-preview2 and up. For earlier versions of the CLI, these tools must be installed separately.*
 
 *For 2.0 CLI and earlier, see <https://github.com/aspnet/DotNetTools/tree/rel/2.0.0/README.md> for details.*
+
+This folder also contains the infrastructure for our partners' service reference features:
+
+- [Extensions.ApiDescription.Client](Extensions.ApiDescription.Client/README.md) MSBuild glue for OpenAPI code generation.
+- [Extensions.ApiDescription.Server](Extensions.ApiDescription.Server/README.md) MSBuild glue for OpenAPI document generation.
+- [dotnet-getdocument](dotnet-getdocument/README.md) the outside man of OpenAPI document generation tool.
+- [GetDocument.Insider](GetDocumentInsider/README.md) the inside man of OpenAPI document generation tool.
 
 ## Usage
 
