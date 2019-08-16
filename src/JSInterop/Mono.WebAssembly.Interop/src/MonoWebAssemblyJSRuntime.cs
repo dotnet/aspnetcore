@@ -16,6 +16,25 @@ namespace Mono.WebAssembly.Interop
     /// </summary>
     public class MonoWebAssemblyJSRuntime : JSInProcessRuntime
     {
+        /// <summary>
+        /// Gets the <see cref="MonoWebAssemblyJSRuntime"/> used to perform operations using <see cref="DotNetDispatcher"/>.
+        /// </summary>
+        private static MonoWebAssemblyJSRuntime Instance { get; set; }
+
+        /// <summary>
+        /// Initializes the <see cref="MonoWebAssemblyJSRuntime"/> to be used to perform operations using <see cref="DotNetDispatcher"/>.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="MonoWebAssemblyJSRuntime"/> instance.</param>
+        protected static void Initialize(MonoWebAssemblyJSRuntime jsRuntime)
+        {
+            if (Instance != null)
+            {
+                throw new InvalidOperationException("MonoWebAssemblyJSRuntime has already been initialized.");
+            }
+
+            Instance = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        }
+
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson)
         {
@@ -34,11 +53,11 @@ namespace Mono.WebAssembly.Interop
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
-            => DotNetDispatcher.Invoke(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
+            => DotNetDispatcher.Invoke(Instance, assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void EndInvokeJS(string argsJson)
-            => DotNetDispatcher.EndInvokeJS(argsJson);
+            => DotNetDispatcher.EndInvokeJS(Instance, argsJson);
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
@@ -59,7 +78,7 @@ namespace Mono.WebAssembly.Interop
                 assemblyName = assemblyNameOrDotNetObjectId;
             }
 
-            DotNetDispatcher.BeginInvokeDotNet(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            DotNetDispatcher.BeginInvokeDotNet(Instance, callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
         protected override void EndInvokeDotNet(
@@ -84,7 +103,7 @@ namespace Mono.WebAssembly.Interop
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 

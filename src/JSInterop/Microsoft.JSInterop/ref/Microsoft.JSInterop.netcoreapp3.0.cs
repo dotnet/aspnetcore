@@ -48,11 +48,11 @@ namespace Microsoft.JSInterop
     {
         protected JSRuntime() { }
         protected System.TimeSpan? DefaultAsyncTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected internal System.Text.Json.JsonSerializerOptions JsonSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
         protected internal abstract void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId);
         public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) { throw null; }
         public System.Threading.Tasks.ValueTask<TValue> InvokeAsync<TValue>(string identifier, System.Threading.CancellationToken cancellationToken, object[] args) { throw null; }
-        public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }
     }
     public static partial class JSRuntimeExtensions
     {
@@ -72,8 +72,8 @@ namespace Microsoft.JSInterop.Infrastructure
 {
     public static partial class DotNetDispatcher
     {
-        public static void BeginInvokeDotNet(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
-        public static void EndInvokeJS(string arguments) { }
-        public static string Invoke(string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
+        public static void BeginInvokeDotNet(Microsoft.JSInterop.JSRuntime jsRuntime, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
+        public static void EndInvokeJS(Microsoft.JSInterop.JSRuntime jsRuntime, string arguments) { }
+        public static string Invoke(Microsoft.JSInterop.JSRuntime jsRuntime, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { throw null; }
     }
 }

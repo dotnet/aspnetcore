@@ -14,23 +14,6 @@ namespace Microsoft.JSInterop
 {
     public class JSRuntimeTest
     {
-        #region this will be removed eventually
-        [Fact]
-        public async Task CanHaveDistinctJSRuntimeInstancesInEachAsyncContext()
-        {
-            var tasks = Enumerable.Range(0, 20).Select(async _ =>
-            {
-                var jsRuntime = new TestJSRuntime();
-                JSRuntime.SetCurrentJSRuntime(jsRuntime);
-                await Task.Delay(50).ConfigureAwait(false);
-                Assert.Same(jsRuntime, JSRuntime.Current);
-            });
-
-            await Task.WhenAll(tasks);
-            Assert.Null(JSRuntime.Current);
-        }
-        #endregion
-
         [Fact]
         public void DispatchesAsyncCallsWithDistinctAsyncHandles()
         {
@@ -274,7 +257,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSRuntime();
-            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
             var obj3 = new object();
@@ -296,15 +278,15 @@ namespace Microsoft.JSInterop
             // Assert: Serialized as expected
             var call = runtime.BeginInvokeCalls.Single();
             Assert.Equal("test identifier", call.Identifier);
-            Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":3},\"obj3\":{\"__dotNetObject\":4},\"obj1SameRef\":{\"__dotNetObject\":1},\"obj1DifferentRef\":{\"__dotNetObject\":2}}]", call.ArgsJson);
+            Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3},\"obj1SameRef\":{\"__dotNetObject\":1},\"obj1DifferentRef\":{\"__dotNetObject\":4}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
-            Assert.Same(obj1Ref, runtime.ObjectRefManager.FindDotNetObject(1));
+            Assert.Same(obj1Ref, runtime.GetObjectReference(1));
             Assert.Same(obj1, obj1Ref.Value);
-            Assert.NotSame(obj1Ref, runtime.ObjectRefManager.FindDotNetObject(2));
-            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(2).Value);
-            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(3).Value);
-            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(4).Value);
+            Assert.NotSame(obj1Ref, runtime.GetObjectReference(2));
+            Assert.Same(obj2, runtime.GetObjectReference(2).Value);
+            Assert.Same(obj3, runtime.GetObjectReference(3).Value);
+            Assert.Same(obj1, runtime.GetObjectReference(4).Value);
         }
 
         [Fact]

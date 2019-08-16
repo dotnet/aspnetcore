@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop.Infrastructure;
-
 namespace Microsoft.JSInterop
 {
     /// <summary>
@@ -17,7 +15,7 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <see cref="DotNetObjectReference{TValue}" />.</returns>
         public static DotNetObjectReference<TValue> Create<TValue>(TValue value) where TValue : class
         {
-            return new DotNetObjectReference<TValue>(DotNetObjectReferenceManager.Current, value);
+            return new DotNetObjectReference<TValue>(value);
         }
     }
 }

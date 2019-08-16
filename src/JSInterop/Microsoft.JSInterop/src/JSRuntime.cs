@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -16,35 +17,39 @@ namespace Microsoft.JSInterop
     /// </summary>
     public abstract partial class JSRuntime : IJSRuntime
     {
-        private static readonly AsyncLocal<IJSRuntime> _currentJSRuntime = new AsyncLocal<IJSRuntime>();
-
-        internal static IJSRuntime Current => _currentJSRuntime.Value;
-
+        private long _nextObjectReferenceId = 0; // 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
         private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-        private readonly ConcurrentDictionary<long, object> _pendingTasks
-            = new ConcurrentDictionary<long, object>();
-
+        private readonly ConcurrentDictionary<long, object> _pendingTasks = new ConcurrentDictionary<long, object>();
+        private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new ConcurrentDictionary<long, IDotNetObjectReference>();
         private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations =
             new ConcurrentDictionary<long, CancellationTokenRegistration>();
 
-        internal DotNetObjectReferenceManager ObjectRefManager { get; } = new DotNetObjectReferenceManager();
+        /// <summary>
+        /// Initializes a new instance of <see cref="JSRuntime"/>.
+        /// </summary>
+        protected JSRuntime()
+        {
+            JsonSerializerOptions = new JsonSerializerOptions
+            {
+                MaxDepth = 32,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+                Converters =
+                {
+                    new DotNetObjectReferenceJsonConverterFactory(this),
+                }
+            };
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
+        /// </summary>
+        protected internal JsonSerializerOptions JsonSerializerOptions { get; }
 
         /// <summary>
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
-
-        /// <summary>
-        /// Sets the current JS runtime to the supplied instance.
-        ///
-        /// This is intended for framework use. Developers should not normally need to call this method.
-        /// </summary>
-        /// <param name="instance">The new current <see cref="IJSRuntime"/>.</param>
-        public static void SetCurrentJSRuntime(IJSRuntime instance)
-        {
-            _currentJSRuntime.Value = instance
-                ?? throw new ArgumentNullException(nameof(instance));
-        }
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -103,7 +108,7 @@ namespace Microsoft.JSInterop
                 }
 
                 var argsJson = args?.Any() == true ?
-                    JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options) :
+                    JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
                 BeginInvokeJS(taskId, identifier, argsJson);
 
@@ -176,7 +181,7 @@ namespace Microsoft.JSInterop
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
-                    var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptionsProvider.Options);
+                    var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
@@ -191,5 +196,48 @@ namespace Microsoft.JSInterop
                 TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
             }
         }
+
+        internal long TrackObjectReference<TValue>(DotNetObjectReference<TValue> dotNetObjectReference) where TValue : class
+        {
+            if (dotNetObjectReference == null)
+            {
+                throw new ArgumentNullException(nameof(dotNetObjectReference));
+            }
+
+            dotNetObjectReference.ThrowIfDisposed();
+
+            var jsRuntime = dotNetObjectReference.JSRuntime;
+            if (jsRuntime is null)
+            {
+                var dotNetObjectId = Interlocked.Increment(ref _nextObjectReferenceId);
+
+                dotNetObjectReference.JSRuntime = this;
+                dotNetObjectReference.ObjectId = dotNetObjectId;
+
+                _trackedRefsById[dotNetObjectId] = dotNetObjectReference;
+            }
+            else if (!ReferenceEquals(this, jsRuntime))
+            {
+                throw new InvalidOperationException($"{dotNetObjectReference.GetType().Name} is already being tracked by a different instance of {nameof(JSRuntime)}." +
+                    $" A common cause is caching an instance of {nameof(DotNetObjectReference<TValue>)} globally. Consider creating instances of {nameof(DotNetObjectReference<TValue>)} at the JSInterop callsite.");
+            }
+
+            Debug.Assert(dotNetObjectReference.ObjectId != 0);
+            return dotNetObjectReference.ObjectId;
+        }
+
+        internal IDotNetObjectReference GetObjectReference(long dotNetObjectId)
+        {
+            return _trackedRefsById.TryGetValue(dotNetObjectId, out var dotNetObjectRef)
+                ? dotNetObjectRef
+                : throw new ArgumentException($"There is no tracked object with id '{dotNetObjectId}'. Perhaps the DotNetObjectReference instance was already disposed.", nameof(dotNetObjectId));
+        }
+
+        /// <summary>
+        /// Stops tracking the specified .NET object reference.
+        /// This may be invoked either by disposing a DotNetObjectRef in .NET code, or via JS interop by calling "dispose" on the corresponding instance in JavaScript code
+        /// </summary>
+        /// <param name="dotNetObjectId">The ID of the <see cref="DotNetObjectReference{TValue}"/>.</param>
+        internal void ReleaseObjectReference(long dotNetObjectId) => _trackedRefsById.TryRemove(dotNetObjectId, out _);
     }
 }

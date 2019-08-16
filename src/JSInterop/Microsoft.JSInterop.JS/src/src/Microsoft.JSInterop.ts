@@ -55,7 +55,7 @@ module DotNet {
     return invokePossibleInstanceMethodAsync(assemblyName, methodIdentifier, null, args);
   }
 
-  function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[]): T {
+  function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
       const argsJson = JSON.stringify(args, argReplacer);
@@ -66,7 +66,7 @@ module DotNet {
     }
   }
 
-  function invokePossibleInstanceMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, ...args: any[]): Promise<T> {
+  function invokePossibleInstanceMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
     if (assemblyName && dotNetObjectId) {
       throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`) ;
     }
@@ -273,7 +273,7 @@ module DotNet {
     }
 
     public dispose() {
-      const promise = invokePossibleInstanceMethodAsync<any>(null, '__Dispose', this._id);
+      const promise = invokePossibleInstanceMethodAsync<any>(null, '__Dispose', this._id, null);
       promise.catch(error => console.error(error));
     }
 

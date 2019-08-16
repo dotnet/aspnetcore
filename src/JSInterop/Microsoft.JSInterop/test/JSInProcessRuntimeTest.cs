@@ -18,7 +18,6 @@ namespace Microsoft.JSInterop
             {
                 NextResultJson = "{\"intValue\":123,\"stringValue\":\"Hello\"}"
             };
-            JSRuntime.SetCurrentJSRuntime(runtime);
 
             // Act
             var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true);
@@ -36,7 +35,6 @@ namespace Microsoft.JSInterop
         {
             // Arrange
             var runtime = new TestJSInProcessRuntime { NextResultJson = null };
-            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
             var obj3 = new object();
@@ -60,9 +58,9 @@ namespace Microsoft.JSInterop
             Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
-            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1).Value);
-            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(2).Value);
-            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(3).Value);
+            Assert.Same(obj1, runtime.GetObjectReference(1).Value);
+            Assert.Same(obj2, runtime.GetObjectReference(2).Value);
+            Assert.Same(obj3, runtime.GetObjectReference(3).Value);
         }
 
         [Fact]
@@ -73,7 +71,6 @@ namespace Microsoft.JSInterop
             {
                 NextResultJson = "[{\"__dotNetObject\":2},{\"__dotNetObject\":1}]"
             };
-            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
 
