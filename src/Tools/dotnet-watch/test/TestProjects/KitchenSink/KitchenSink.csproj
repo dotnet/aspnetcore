@@ -13,6 +13,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 <!-- Workaround while there is no 5.0 SDK available, copy known apphost/framework reference info from 3.0 -->
   <ItemGroup>
     <KnownAppHostPack 
@@ -24,7 +26,5 @@
       TargetFramework="netcoreapp5.0"
       />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

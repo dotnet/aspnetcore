@@ -12,6 +12,9 @@
   </ItemGroup>
 
 <!-- Workaround while there is no 5.0 SDK available, copy known apphost/framework reference info from 3.0 -->
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  
   <ItemGroup>
     <KnownAppHostPack 
       Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
