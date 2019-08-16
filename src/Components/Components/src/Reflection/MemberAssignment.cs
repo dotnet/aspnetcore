@@ -13,17 +13,34 @@ namespace Microsoft.AspNetCore.Components.Reflection
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
             Type type, BindingFlags bindingFlags)
         {
+            var dictionary = new Dictionary<string, List<PropertyInfo>>();
+
             while (type != null)
             {
                 var properties = type.GetProperties(bindingFlags)
                     .Where(prop => prop.DeclaringType == type);
                 foreach (var property in properties)
                 {
-                    yield return property;
+                    if (!dictionary.TryGetValue(property.Name, out var others))
+                    {
+                        others = new List<PropertyInfo>();
+                        dictionary.Add(property.Name, others);
+                    }
+
+                    if (others.Any(other => other.GetMethod?.GetBaseDefinition() == property.GetMethod?.GetBaseDefinition()))
+                    {
+                        // This is an inheritance case. We can safely ignore the value of property since
+                        // we have seen a more derived value.
+                        continue;
+                    }
+
+                    others.Add(property);
                 }
 
                 type = type.BaseType;
             }
+
+            return dictionary.Values.SelectMany(p => p);
         }
 
         public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property, bool cascading)
