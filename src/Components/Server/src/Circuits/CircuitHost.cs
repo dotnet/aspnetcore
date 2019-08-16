@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Components.Web.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -25,11 +24,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger _logger;
         private bool _initialized;
         private bool _disposed;
-
-        /// <summary>
-        /// Sets the <see cref="IJSRuntime"/> for the current excution context.
-        /// </summary>
-        public void SetCurrentJSRuntime() => JSInterop.JSRuntime.SetCurrentJSRuntime(JSRuntime);
 
         // This event is fired when there's an unrecoverable exception coming from the circuit, and
         // it need so be torn down. The registry listens to this even so that the circuit can
@@ -101,7 +95,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 try
                 {
-                    SetCurrentJSRuntime();
                     _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
                     await OnCircuitOpenedAsync(cancellationToken);
@@ -341,9 +334,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    SetCurrentJSRuntime();
                     Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                    DotNetDispatcher.BeginInvokeDotNet(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+                    DotNetDispatcher.BeginInvokeDotNet(JSRuntime, callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
                 });
             }
             catch (Exception ex)
@@ -367,7 +359,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    SetCurrentJSRuntime();
                     if (!succeded)
                     {
                         // We can log the arguments here because it is simply the JS error with the call stack.
@@ -378,7 +369,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                         Log.EndInvokeJSSucceeded(_logger, asyncCall);
                     }
 
-                    DotNetDispatcher.EndInvokeJS(arguments);
+                    DotNetDispatcher.EndInvokeJS(JSRuntime, arguments);
                 });
             }
             catch (Exception ex)
@@ -416,7 +407,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    SetCurrentJSRuntime();
                     return Renderer.DispatchEventAsync(
                         webEventData.EventHandlerId,
                         webEventData.EventFieldInfo,
@@ -444,7 +434,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
-                    SetCurrentJSRuntime();
                     Log.LocationChange(_logger, uri, CircuitId);
                     var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
                     navigationManager.NotifyLocationChanged(uri, intercepted);

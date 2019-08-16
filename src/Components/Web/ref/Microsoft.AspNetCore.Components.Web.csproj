@@ -8,11 +8,13 @@
     <Reference Include="Microsoft.AspNetCore.Components"  />
     <Reference Include="Microsoft.AspNetCore.Components.Forms"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
+    <Reference Include="Microsoft.JSInterop"  />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Components.Web.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Components"  />
     <Reference Include="Microsoft.AspNetCore.Components.Forms"  />
     <Reference Include="Microsoft.Extensions.DependencyInjection"  />
+    <Reference Include="Microsoft.JSInterop"  />
   </ItemGroup>
 </Project>
