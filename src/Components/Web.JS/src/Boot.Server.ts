@@ -37,13 +37,8 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     }
 
     const reconnection = existingConnection || await initializeConnection(options, logger);
-    if (reconnection.state !== signalR.HubConnectionState.Connected) {
-      logger.log(LogLevel.Information, 'Reconnection attempt failed. Unable to connect to the server.');
-      return false;
-    }
-
     if (!(await circuit.reconnect(reconnection))) {
-      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit failed.');
+      logger.log(LogLevel.Information, 'Reconnection attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
       return false;
     }
 
