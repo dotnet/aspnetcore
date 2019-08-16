@@ -21,6 +21,17 @@ namespace Microsoft.Extensions.CommandLineUtils
                     return 0;
                 });
 
+        public static CommandOption Option(this CommandLineApplication command, string template, string description)
+            => command.Option(
+                template,
+                description,
+                template.IndexOf('<') != -1
+                    ? template.EndsWith(">...") ? CommandOptionType.MultipleValue : CommandOptionType.SingleValue
+                    : CommandOptionType.NoValue);
+
+        public static void VersionOptionFromAssemblyAttributes(this CommandLineApplication app)
+            => app.VersionOptionFromAssemblyAttributes(typeof(CommandLineApplicationExtensions).Assembly);
+
         public static void VersionOptionFromAssemblyAttributes(this CommandLineApplication app, Assembly assembly)
             => app.VersionOption("--version", GetInformationalVersion(assembly));
 

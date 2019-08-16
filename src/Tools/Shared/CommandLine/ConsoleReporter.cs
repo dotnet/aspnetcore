@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Tools.Internal
 {
     public class ConsoleReporter : IReporter
     {
-        private object _writeLock = new object();
+        private readonly object _writeLock = new object();
 
         public ConsoleReporter(IConsole console)
             : this(console, verbose: false, quiet: false)
