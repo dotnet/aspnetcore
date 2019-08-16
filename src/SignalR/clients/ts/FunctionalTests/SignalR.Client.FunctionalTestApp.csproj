@@ -37,7 +37,7 @@
     <Reference Include="System.Reactive.Linq" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(BuildNodeJS)' == 'true'">
     <ProjectReference Include="..\signalr\signalr.npmproj" />
     <ProjectReference Include="..\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
   </ItemGroup>
