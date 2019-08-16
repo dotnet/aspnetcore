@@ -30,8 +30,12 @@ namespace BenchmarkDotNet.Attributes
             Add(Job.Core
 #if NETCOREAPP2_1
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-#else
+#elif NETCOREAPP3_0
                 .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
+#elif NETCOREAPP5_0
+                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp5.0", null, ".NET Core 5.0")))
+#else
+#error Target frameworks need to be updated.
 #endif
                 .With(new GcMode { Server = true })
                 .With(RunStrategy.Throughput));
