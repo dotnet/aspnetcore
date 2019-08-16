@@ -1,12 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
   <!--
     Settings users may update as they see fit.
   -->
   <PropertyGroup>
     <!--
-      Options added to the OpenAPI document generation tool ('dotnet-getdocument') command line. Available options
-      control console output: 'no-color', 'prefix-output' and 'verbose'. All require a double-dash prefix.
+      Options added to the OpenAPI document generation tool ('dotnet-getdocument') command line. For example, the
+      'prefix-output', 'quiet' and 'verbose' options control console output and the 'help' and 'version' options show
+      information. Long form options require a double-dash prefix.
     -->
     <OpenApiGenerateDocumentsOptions Condition=" '$(OpenApiGenerateDocumentsOptions)' == '' " />
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>dotnet-getdocument</AssemblyName>
     <Description>GetDocument Command-line Tool outside man</Description>
@@ -12,14 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../GetDocumentInsider/src/Ansi*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
     <Compile Include="../../GetDocumentInsider/src/CommandException.cs" />
-    <Compile Include="../../GetDocumentInsider/src/CommandLineUtils/*.cs" LinkBase="CommandLineUtils" />
     <Compile Include="../../GetDocumentInsider/src/Commands/CommandBase.cs" Link="Commands/CommandBase.cs" />
     <Compile Include="../../GetDocumentInsider/src/Commands/HelpCommandBase.cs" Link="Commands/HelpCommandBase.cs" />
-    <Compile Include="../../GetDocumentInsider/src/ProductInfo.cs" />
-    <Compile Include="../../GetDocumentInsider/src/Reporter.cs" />
+    <Compile Include="../../GetDocumentInsider/src/ProgramBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/ReporterExtensions.cs" />
 
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>
