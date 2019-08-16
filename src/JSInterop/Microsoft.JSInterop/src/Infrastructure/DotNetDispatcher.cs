@@ -28,12 +28,10 @@ namespace Microsoft.JSInterop.Infrastructure
         /// Receives a call from JS to .NET, locating and invoking the specified method.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-        /// <param name="assemblyName">The assembly containing the method to be invoked.</param>
-        /// <param name="methodIdentifier">The identifier of the method to be invoked. The method must be annotated with a <see cref="JSInvokableAttribute"/> matching this identifier string.</param>
-        /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
+        /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string Invoke(JSRuntime jsRuntime, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static string Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -41,12 +39,12 @@ namespace Microsoft.JSInterop.Infrastructure
             // because there would be nobody to police that. This method *is* the police.
 
             IDotNetObjectReference targetInstance = default;
-            if (dotNetObjectId != default)
+            if (invocationInfo.DotNetObjectId != default)
             {
-                targetInstance = jsRuntime.GetObjectReference(dotNetObjectId);
+                targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
             }
 
-            var syncResult = InvokeSynchronously(jsRuntime, assemblyName, methodIdentifier, targetInstance, argsJson);
+            var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
             if (syncResult == null)
             {
                 return null;
@@ -59,13 +57,10 @@ namespace Microsoft.JSInterop.Infrastructure
         /// Receives a call from JS to .NET, locating and invoking the specified method asynchronously.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
-        /// <param name="callId">A value identifying the asynchronous call that should be passed back with the result, or null if no result notification is required.</param>
-        /// <param name="assemblyName">The assembly containing the method to be invoked.</param>
-        /// <param name="methodIdentifier">The identifier of the method to be invoked. The method must be annotated with a <see cref="JSInvokableAttribute"/> matching this identifier string.</param>
-        /// <param name="dotNetObjectId">For instance method calls, identifies the target object.</param>
+        /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static void BeginInvokeDotNet(JSRuntime jsRuntime, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+        public static void BeginInvokeDotNet(JSRuntime jsRuntime, DotNetInvocationInfo invocationInfo, string argsJson)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
@@ -75,18 +70,19 @@ namespace Microsoft.JSInterop.Infrastructure
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
 
+            var callId = invocationInfo.CallId;
+
             object syncResult = null;
             ExceptionDispatchInfo syncException = null;
             IDotNetObjectReference targetInstance = null;
-
             try
             {
-                if (dotNetObjectId != default)
+                if (invocationInfo.DotNetObjectId != default)
                 {
-                    targetInstance = jsRuntime.GetObjectReference(dotNetObjectId);
+                    targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
                 }
 
-                syncResult = InvokeSynchronously(jsRuntime, assemblyName, methodIdentifier, targetInstance, argsJson);
+                syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
             }
             catch (Exception ex)
             {
@@ -101,7 +97,7 @@ namespace Microsoft.JSInterop.Infrastructure
             else if (syncException != null)
             {
                 // Threw synchronously, let's respond.
-                jsRuntime.EndInvokeDotNet(callId, false, syncException, assemblyName, methodIdentifier, dotNetObjectId);
+                jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(syncException.SourceException, "InvocationFailure"));
             }
             else if (syncResult is Task task)
             {
@@ -111,23 +107,27 @@ namespace Microsoft.JSInterop.Infrastructure
                 {
                     if (t.Exception != null)
                     {
-                        var exception = t.Exception.GetBaseException();
-
-                        jsRuntime.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception), assemblyName, methodIdentifier, dotNetObjectId);
+                        var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(t.Exception.GetBaseException());
+                        var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
+                        jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
                     }
 
                     var result = TaskGenericsUtil.GetTaskResult(task);
-                    jsRuntime.EndInvokeDotNet(callId, true, result, assemblyName, methodIdentifier, dotNetObjectId);
+                    jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(result));
                 }, TaskScheduler.Current);
             }
             else
             {
-                jsRuntime.EndInvokeDotNet(callId, true, syncResult, assemblyName, methodIdentifier, dotNetObjectId);
+                var dispatchResult = new DotNetInvocationResult(syncResult);
+                jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
             }
         }
 
-        private static object InvokeSynchronously(JSRuntime jsRuntime, string assemblyName, string methodIdentifier, IDotNetObjectReference objectReference, string argsJson)
+        private static object InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference objectReference, string argsJson)
         {
+            var assemblyName = callInfo.AssemblyName;
+            var methodIdentifier = callInfo.MethodIdentifier;
+
             AssemblyKey assemblyKey;
             if (objectReference is null)
             {

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -53,7 +52,10 @@ namespace Mono.WebAssembly.Interop
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static string InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
-            => DotNetDispatcher.Invoke(Instance, assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), argsJson);
+        {
+            var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId), callId: null);
+            return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
+        }
 
         // Invoked via Mono's JS interop mechanism (invoke_method)
         private static void EndInvokeJS(string argsJson)
@@ -78,32 +80,20 @@ namespace Mono.WebAssembly.Interop
                 assemblyName = assemblyNameOrDotNetObjectId;
             }
 
-            DotNetDispatcher.BeginInvokeDotNet(Instance, callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
+            DotNetDispatcher.BeginInvokeDotNet(Instance, callInfo, argsJson);
         }
 
-        protected override void EndInvokeDotNet(
-            string callId,
-            bool success,
-            object resultOrError,
-            string assemblyName,
-            string methodIdentifier,
-            long dotNetObjectId)
+        protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.
             // If the value is not an Exception, we'll just rely on it being directly JSON-serializable.
-            if (!success && resultOrError is Exception ex)
-            {
-                resultOrError = ex.ToString();
-            }
-            else if (!success && resultOrError is ExceptionDispatchInfo edi)
-            {
-                resultOrError = edi.SourceException.ToString();
-            }
+            var resultOrError = dispatchResult.Success ? dispatchResult.Result : dispatchResult.Exception.ToString();
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callId, success, resultOrError }, JsonSerializerOptions);
+            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
 namespace Microsoft.JSInterop
@@ -113,8 +114,8 @@ namespace Microsoft.JSInterop
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
                 => throw new NotImplementedException("This test only covers sync calls");
 
-            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId) =>
-                throw new NotImplementedException("This test only covers sync calls");
+            protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+                => throw new NotImplementedException("This test only covers sync calls");
         }
     }
 }

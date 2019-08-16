@@ -150,19 +150,11 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Completes an async JS interop call from JavaScript to .NET
         /// </summary>
-        /// <param name="callId">The id of the JavaScript callback to execute on completion.</param>
-        /// <param name="success">Whether the operation succeeded or not.</param>
-        /// <param name="resultOrError">The result of the operation or an object containing error details.</param>
-        /// <param name="assemblyName">The name of the method assembly if the invocation was for a static method.</param>
-        /// <param name="methodIdentifier">The identifier for the method within the assembly.</param>
-        /// <param name="dotNetObjectId">The tracking id of the dotnet object if the invocation was for an instance method.</param>
+        /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
+        /// <param name="invocationResult">The <see cref="DotNetInvocationResult"/>.</param>
         protected internal abstract void EndInvokeDotNet(
-            string callId,
-            bool success,
-            object resultOrError,
-            string assemblyName,
-            string methodIdentifier,
-            long dotNetObjectId);
+            DotNetInvocationInfo invocationInfo,
+            in DotNetInvocationResult invocationResult);
 
         internal void EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
         {

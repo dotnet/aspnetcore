@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
 namespace Microsoft.JSInterop
@@ -296,18 +297,20 @@ namespace Microsoft.JSInterop
             var expectedMessage = "An error ocurred while invoking '[Assembly]::Method'. Swapping to 'Development' environment will " +
                 "display more detailed information about the error that occurred.";
 
-            string GetMessage(string assembly, string method) => $"An error ocurred while invoking '[{assembly}]::{method}'. Swapping to 'Development' environment will " +
+            string GetMessage(DotNetInvocationInfo info) => $"An error ocurred while invoking '[{info.AssemblyName}]::{info.MethodIdentifier}'. Swapping to 'Development' environment will " +
                 "display more detailed information about the error that occurred.";
 
             var runtime = new TestJSRuntime()
             {
-                OnDotNetException = (e, a, m) => new JSError { Message = GetMessage(a, m) }
+                OnDotNetException = (invocationInfo) => new JSError { Message = GetMessage(invocationInfo) }
             };
 
             var exception = new Exception("Some really sensitive data in here");
+            var invocation = new DotNetInvocationInfo("Assembly", "Method", 0, "0");
+            var result = new DotNetInvocationResult(exception, default);
 
             // Act
-            runtime.EndInvokeDotNet("0", false, exception, "Assembly", "Method", 0);
+            runtime.EndInvokeDotNet(invocation, result);
 
             // Assert
             var call = runtime.EndInvokeDotNetCalls.Single();
@@ -356,20 +359,21 @@ namespace Microsoft.JSInterop
                 public object ResultOrError { get; set; }
             }
 
-            public Func<Exception, string, string, object> OnDotNetException { get; set; }
+            public Func<DotNetInvocationInfo, object> OnDotNetException { get; set; }
 
-            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
+            protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
             {
-                if (OnDotNetException != null && !success)
+                var resultOrError = invocationResult.Success ? invocationResult.Result : invocationResult.Exception;
+                if (OnDotNetException != null && !invocationResult.Success)
                 {
-                    resultOrError = OnDotNetException(resultOrError as Exception, assemblyName, methodIdentifier);
+                    resultOrError = OnDotNetException(invocationInfo);
                 }
 
                 EndInvokeDotNetCalls.Add(new EndInvokeDotNetArgs
                 {
-                    CallId = callId,
-                    Success = success,
-                    ResultOrError = resultOrError
+                    CallId = invocationInfo.CallId,
+                    Success = invocationResult.Success,
+                    ResultOrError = resultOrError,
                 });
             }
 

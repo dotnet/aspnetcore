@@ -20,7 +20,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                DotNetDispatcher.Invoke(new TestJSRuntime(), " ", "SomeMethod", default, "[]");
+                DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(" ", "SomeMethod", default, default), "[]");
             });
 
             Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
@@ -32,7 +32,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                DotNetDispatcher.Invoke(new TestJSRuntime(), "SomeAssembly", " ", default, "[]");
+                DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo("SomeAssembly", " ", default, default), "[]");
             });
 
             Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
@@ -45,7 +45,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var assemblyName = "Some.Fake.Assembly";
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                DotNetDispatcher.Invoke(new TestJSRuntime(), assemblyName, "SomeMethod", default, null);
+                DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(assemblyName, "SomeMethod", default, default), null);
             });
 
             Assert.Equal($"There is no loaded assembly with the name '{assemblyName}'.", ex.Message);
@@ -67,7 +67,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                DotNetDispatcher.Invoke(new TestJSRuntime(), thisAssemblyName, methodIdentifier, default, null);
+                DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(thisAssemblyName, methodIdentifier, default, default), null);
             });
 
             Assert.Equal($"The assembly '{thisAssemblyName}' does not contain a public method with [JSInvokableAttribute(\"{methodIdentifier}\")].", ex.Message);
@@ -79,7 +79,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
             SomePublicType.DidInvokeMyInvocableStaticVoid = false;
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, "InvocableStaticVoid", default, null);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticVoid", default, default), null);
 
             // Assert
             Assert.Null(resultJson);
@@ -91,7 +91,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, "InvocableStaticNonVoid", default, null);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticNonVoid", default, default), null);
             var result = JsonSerializer.Deserialize<TestDTO>(resultJson, jsRuntime.JsonSerializerOptions);
 
             // Assert
@@ -104,7 +104,7 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             // Arrange/Act
             var jsRuntime = new TestJSRuntime();
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, null);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(SomePublicType.InvokableMethodWithoutCustomIdentifier), default, default), null);
             var result = JsonSerializer.Deserialize<TestDTO>(resultJson, jsRuntime.JsonSerializerOptions);
 
             // Assert
@@ -130,7 +130,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }, jsRuntime.JsonSerializerOptions);
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, default), argsJson);
             var result = JsonDocument.Parse(resultJson);
             var root = result.RootElement;
 
@@ -171,7 +171,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, method, default, argsJson));
+                DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, method, default, default), argsJson));
             Assert.Equal($"In call to '{method}', parameter of type '{nameof(TestDTO)}' at index 3 must be declared as type 'DotNetObjectRef<TestDTO>' to receive the incoming value.", ex.Message);
         }
 
@@ -185,7 +185,7 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, null, "InvokableInstanceVoid", 1, null);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, default), null);
 
             // Assert
             Assert.Null(resultJson);
@@ -202,7 +202,7 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, null, "BaseClassInvokableInstanceVoid", 1, null);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "BaseClassInvokableInstanceVoid", 1, default), null);
 
             // Assert
             Assert.Null(resultJson);
@@ -219,7 +219,7 @@ namespace Microsoft.JSInterop.Infrastructure
             jsRuntime.Invoke<object>("unimportant", objectRef);
 
             // Act
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, null, null, "__Dispose", objectRef.ObjectId, null);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, "__Dispose", objectRef.ObjectId, default), null);
 
             // Assert
             Assert.True(objectRef.Disposed);
@@ -240,7 +240,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(
-                () => DotNetDispatcher.Invoke(jsRuntime, null, "InvokableInstanceVoid", 1, null));
+                () => DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, default), null));
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
         }
 
@@ -259,7 +259,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(
-                () => DotNetDispatcher.Invoke(jsRuntime, null, "InvokableInstanceVoid", 1, null));
+                () => DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, default), null));
             Assert.StartsWith("There is no tracked object with id '1'.", ex.Message);
         }
 
@@ -346,7 +346,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var argsJson = "[\"myvalue\",{\"__dotNetObject\":2}]";
 
             // Act
-            var resultJson = DotNetDispatcher.Invoke(jsRuntime, null, "InvokableInstanceMethod", 1, argsJson);
+            var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceMethod", 1, default), argsJson);
 
             // Assert
             Assert.Equal("[\"You passed myvalue\",{\"__dotNetObject\":3}]", resultJson);
@@ -369,7 +369,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act/Assert
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
+                DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, default), argsJson);
             });
 
             Assert.Equal("The call to 'InvocableStaticWithParams' expects '3' parameters, but received '2'.", ex.Message);
@@ -392,7 +392,7 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act/Assert
             var ex = Assert.Throws<JsonException>(() =>
             {
-                DotNetDispatcher.Invoke(jsRuntime, thisAssemblyName, "InvocableStaticWithParams", default, argsJson);
+                DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, default), argsJson);
             });
 
             Assert.Equal("Unexpected JSON token Number. Ensure that the call to `InvocableStaticWithParams' is supplied with exactly '3' parameters.", ex.Message);
@@ -419,13 +419,13 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, callId, null, "InvokableAsyncMethod", 1, argsJson);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, "InvokableAsyncMethod", 1, callId), argsJson);
             await resultTask;
 
             // Assert: Correct completion information
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
-            Assert.True(jsRuntime.LastCompletionStatus);
-            var result = Assert.IsType<object[]>(jsRuntime.LastCompletionResult);
+            Assert.True(jsRuntime.LastCompletionResult.Success);
+            var result = Assert.IsType<object[]>(jsRuntime.LastCompletionResult.Result);
             var resultDto1 = Assert.IsType<TestDTO>(result[0]);
 
             Assert.Equal("STRING VIA JSON", resultDto1.StringVal);
@@ -447,18 +447,17 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, callId, thisAssemblyName, nameof(ThrowingClass.ThrowingMethod), default, default);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(ThrowingClass.ThrowingMethod), default, callId), default);
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
-            Assert.False(jsRuntime.LastCompletionStatus); // Fails
+            Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
             // https://github.com/aspnet/AspNetCore/issues/8612
-            var exception = jsRuntime.LastCompletionResult is ExceptionDispatchInfo edi ? edi.SourceException.ToString() : null;
-            Assert.Contains(nameof(ThrowingClass.ThrowingMethod), exception);
+            Assert.Contains(nameof(ThrowingClass.ThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
         }
 
         [Fact]
@@ -470,18 +469,17 @@ namespace Microsoft.JSInterop.Infrastructure
             // Act
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, callId, thisAssemblyName, nameof(ThrowingClass.AsyncThrowingMethod), default, default);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, nameof(ThrowingClass.AsyncThrowingMethod), default, callId), default);
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
-            Assert.False(jsRuntime.LastCompletionStatus); // Fails
+            Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
 
             // Make sure the method that threw the exception shows up in the call stack
             // https://github.com/aspnet/AspNetCore/issues/8612
-            var exception = jsRuntime.LastCompletionResult is ExceptionDispatchInfo edi ? edi.SourceException.ToString() : null;
-            Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), exception);
+            Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), jsRuntime.LastCompletionResult.Exception.ToString());
         }
 
         [Fact]
@@ -491,15 +489,15 @@ namespace Microsoft.JSInterop.Infrastructure
             var jsRuntime = new TestJSRuntime();
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, callId, thisAssemblyName, "InvocableStaticWithParams", default, "<xml>not json</xml>");
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticWithParams", default, callId), "<xml>not json</xml>");
 
             await resultTask; // This won't throw, it sets properties on the jsRuntime.
 
             // Assert
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
-            Assert.False(jsRuntime.LastCompletionStatus); // Fails
-            var result = Assert.IsType<ExceptionDispatchInfo>(jsRuntime.LastCompletionResult);
-            Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", result.SourceException.ToString());
+            Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
+            var exception = jsRuntime.LastCompletionResult.Exception;
+            Assert.Contains("JsonReaderException: '<' is an invalid start of a value.", exception.ToString());
         }
 
         [Fact]
@@ -509,13 +507,13 @@ namespace Microsoft.JSInterop.Infrastructure
             var jsRuntime = new TestJSRuntime();
             var callId = "123";
             var resultTask = jsRuntime.NextInvocationTask;
-            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, callId, null, "InvokableInstanceVoid", 1, null);
+            DotNetDispatcher.BeginInvokeDotNet(jsRuntime, new DotNetInvocationInfo(null, "InvokableInstanceVoid", 1, callId), null);
 
             // Assert
             Assert.Equal(callId, jsRuntime.LastCompletionCallId);
-            Assert.False(jsRuntime.LastCompletionStatus); // Fails
-            var result = Assert.IsType<ExceptionDispatchInfo>(jsRuntime.LastCompletionResult);
-            Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectReference instance was already disposed.", result.SourceException.ToString());
+            Assert.False(jsRuntime.LastCompletionResult.Success); // Fails
+            var exception = jsRuntime.LastCompletionResult.Exception;
+            Assert.StartsWith("System.ArgumentException: There is no tracked object with id '1'. Perhaps the DotNetObjectReference instance was already disposed.", exception.ToString());
         }
 
         [Theory]
@@ -801,8 +799,7 @@ namespace Microsoft.JSInterop.Infrastructure
             public string LastInvocationArgsJson { get; private set; }
 
             public string LastCompletionCallId { get; private set; }
-            public bool LastCompletionStatus { get; private set; }
-            public object LastCompletionResult { get; private set; }
+            public DotNetInvocationResult LastCompletionResult { get; private set; }
 
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
             {
@@ -823,17 +820,10 @@ namespace Microsoft.JSInterop.Infrastructure
                 return null;
             }
 
-            protected internal override void EndInvokeDotNet(
-                string callId,
-                bool success,
-                object resultOrError,
-                string assemblyName,
-                string methodIdentifier,
-                long dotNetObjectId)
+            protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
             {
-                LastCompletionCallId = callId;
-                LastCompletionStatus = success;
-                LastCompletionResult = resultOrError;
+                LastCompletionCallId = invocationInfo.CallId;
+                LastCompletionResult = invocationResult;
                 _nextInvocationTcs.SetResult(null);
                 _nextInvocationTcs = new TaskCompletionSource<object>();
             }

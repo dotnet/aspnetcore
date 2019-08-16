@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
 {
@@ -12,7 +13,7 @@ namespace Microsoft.JSInterop
             throw new NotImplementedException();
         }
 
-        protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId)
+        protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
             throw new NotImplementedException();
         }
