@@ -61,11 +61,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
 
-            var attachComponentTask = _jsRuntime.InvokeAsync<object>(
+            var attachComponentTask = _jsRuntime.InvokeVoidAsync(
                 "Blazor._internal.attachRootComponentToElement",
                 domElementSelector,
                 componentId);
-            CaptureAsyncExceptions(attachComponentTask);
+            CaptureAsyncExceptions(attachComponentTask.AsTask());
 
             return RenderRootComponentAsync(componentId);
         }

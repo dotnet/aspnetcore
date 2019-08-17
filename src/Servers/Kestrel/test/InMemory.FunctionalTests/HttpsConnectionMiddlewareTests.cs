@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -613,8 +612,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         /// <summary>
         /// SslStream is used to ensure the certificate is actually passed to the server
-        /// HttpClient might not send the certificate because it is invalid or it doesn't match any 
-        /// of the certificate authorities sent by the server in the SSL handshake. 
+        /// HttpClient might not send the certificate because it is invalid or it doesn't match any
+        /// of the certificate authorities sent by the server in the SSL handshake.
         /// </summary>
         private static SslStream OpenSslStreamWithCert(Stream rawStream, X509Certificate2 clientCertificate = null)
         {

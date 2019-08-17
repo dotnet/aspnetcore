@@ -3,8 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Components
@@ -12,7 +10,6 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Represents a reference to a rendered element.
     /// </summary>
-    [JsonConverter(typeof(ElementReferenceConverter))]
     public readonly struct ElementReference
     {
         private static long _nextIdForWebAssemblyOnly = 1;
@@ -24,9 +21,9 @@ namespace Microsoft.AspNetCore.Components
         /// The Id is unique at least within the scope of a given user/circuit.
         /// This property is public to support Json serialization and should not be used by user code.
         /// </remarks>
-        internal string Id { get; }
+        public string Id { get; }
 
-        private ElementReference(string id)
+        public ElementReference(string id)
         {
             Id = id;
         }
@@ -52,49 +49,6 @@ namespace Microsoft.AspNetCore.Components
                 // For remote rendering, it's important not to disclose any cross-user state,
                 // such as the number of IDs that have been assigned.
                 return Guid.NewGuid().ToString("D", CultureInfo.InvariantCulture);
-            }
-        }
-
-        private sealed class ElementReferenceConverter : JsonConverter<ElementReference>
-        {
-            private static readonly JsonEncodedText IdProperty = JsonEncodedText.Encode("__internalId");
-
-            public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                string id = null;
-                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-                {
-                    if (reader.TokenType == JsonTokenType.PropertyName)
-                    {
-                        if (reader.ValueTextEquals(IdProperty.EncodedUtf8Bytes))
-                        {
-                            reader.Read();
-                            id = reader.GetString();
-                        }
-                        else
-                        {
-                            throw new JsonException($"Unexpected JSON property '{reader.GetString()}'.");
-                        }
-                    }
-                    else
-                    {
-                        throw new JsonException($"Unexcepted JSON Token {reader.TokenType}.");
-                    }
-                }
-
-                if (id is null)
-                {
-                    throw new JsonException("__internalId is required.");
-                }
-
-                return new ElementReference(id);
-            }
-
-            public override void Write(Utf8JsonWriter writer, ElementReference value, JsonSerializerOptions options)
-            {
-                writer.WriteStartObject();
-                writer.WriteString(IdProperty, value.Id);
-                writer.WriteEndObject();
             }
         }
     }

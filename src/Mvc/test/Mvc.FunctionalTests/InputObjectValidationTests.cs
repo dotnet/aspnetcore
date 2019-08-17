@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using FormatterWebSite;
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Xunit;
 
