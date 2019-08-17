@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ComponentHubReliabilityTest : IClassFixture<AspNetSiteServerFixture>, IDisposable
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(Debugger.IsAttached ? int.MaxValue : 10);
+        private static readonly TimeSpan DefaultLatencyTimeout = Debugger.IsAttached ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)

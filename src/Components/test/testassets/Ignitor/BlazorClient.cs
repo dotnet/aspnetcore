@@ -3,7 +3,10 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +20,8 @@ namespace Ignitor
 {
     public class BlazorClient
     {
+        private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
+
         public BlazorClient()
         {
             CancellationTokenSource = new CancellationTokenSource();
@@ -387,10 +392,11 @@ namespace Ignitor
             var httpClient = new HttpClient();
             Debug.Assert(httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", "__blazor_execution_mode=server"));
             var response = await httpClient.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
 
-            var match = Regex.Match(content, $"{Regex.Escape("<!--Blazor:")}(.+?){Regex.Escape("-->")}");
-            return $"[{match.Groups[1].Value}]";
+            var match = ReadMarkers(content);
+            return $"[{string.Join(", ", match)}]";
         }
 
         public void Cancel()
@@ -457,6 +463,23 @@ namespace Ignitor
             public CancellationTokenSource Cancellation { get; set; }
 
             public CancellationTokenRegistration CancellationRegistration { get; set; }
+        }
+
+        private string[] ReadMarkers(string content)
+        {
+            content = content.Replace("\r\n", "").Replace("\n", "");
+            var matches = Regex.Matches(content, MarkerPattern);
+            var markers = matches.Select(s => (value: s.Groups[1].Value, parsed: JsonDocument.Parse(s.Groups[1].Value)))
+                .Where(s =>
+                {
+                    var markerType = s.parsed.RootElement.GetProperty("type");
+                    return markerType.ValueKind != JsonValueKind.Undefined && markerType.GetString() == "server";
+                })
+                .OrderBy(p => p.parsed.RootElement.GetProperty("sequence").GetInt32())
+                .Select(p => p.value)
+                .ToArray();
+
+            return markers;
         }
     }
 }
