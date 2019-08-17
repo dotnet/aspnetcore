@@ -96,7 +96,7 @@ async function initializeConnection(options: BlazorOptions, logger: Logger, circ
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
 
-  const renderQueue = new RenderQueue(/* renderer ID unused with remote renderer */ 0, logger);
+  const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {
     logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
     renderQueue.processBatch(batchId, batchData, connection);
