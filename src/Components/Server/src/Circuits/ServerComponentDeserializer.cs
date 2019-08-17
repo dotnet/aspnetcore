@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Components.Server
             private static readonly Action<ILogger, int, Exception> _descriptorSequenceMustStartAtZero =
                 LoggerMessage.Define<int>(
                     LogLevel.Debug,
-                    new EventId(9, "DescriptorSequenceMustStartAtZero"),
+                    new EventId(8, "DescriptorSequenceMustStartAtZero"),
                     "The descriptor sequence '{sequence}' is an invalid start sequence.");
 
             public static void FailedToDeserializeDescriptor(ILogger<ServerComponentDeserializer> logger, Exception e) =>
@@ -247,10 +247,11 @@ namespace Microsoft.AspNetCore.Components.Server
             public static void InvalidMarkerType(ILogger<ServerComponentDeserializer> logger, string markerType) =>
                 _invalidMarkerType(logger, markerType, null);
 
+            public static void MissingMarkerDescriptor(ILogger<ServerComponentDeserializer> logger) =>
+                _missingMarkerDescriptor(logger, null);
+
             public static void MismatchedInvocationId(ILogger<ServerComponentDeserializer> logger, string invocationId, string currentInvocationId) =>
                 _mismatchedInvocationId(logger, invocationId, currentInvocationId, null);
-
-            public static void MissingMarkerDescriptor(ILogger<ServerComponentDeserializer> logger) => _missingMarkerDescriptor(logger, null);
 
             public static void OutOfSequenceDescriptor(ILogger<ServerComponentDeserializer> logger, int lastSequence, int sequence) =>
                 _outOfSequenceDescriptor(logger, lastSequence, sequence, null);
