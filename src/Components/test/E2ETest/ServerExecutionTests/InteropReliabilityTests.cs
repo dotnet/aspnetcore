@@ -589,6 +589,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
 
+            await Task.Delay(1000);
+
             Assert.Contains(
                 logEvents,
                 e => LogLevel.Error == e.logLevel &&
