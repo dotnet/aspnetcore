@@ -390,7 +390,7 @@ namespace Ignitor
         public async Task<string> GetPrerenderDescriptors(Uri uri)
         {
             var httpClient = new HttpClient();
-            Debug.Assert(httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", "__blazor_execution_mode=server"));
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", "__blazor_execution_mode=server");
             var response = await httpClient.GetAsync(uri);
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
