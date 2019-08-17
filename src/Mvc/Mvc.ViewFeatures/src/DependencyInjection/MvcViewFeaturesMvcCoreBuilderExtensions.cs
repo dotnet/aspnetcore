@@ -175,6 +175,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
+            // Component services for Blazor server-side interop
+            services.TryAddSingleton<ServerComponentSerializer>();
+
             //
             // View Components
             //

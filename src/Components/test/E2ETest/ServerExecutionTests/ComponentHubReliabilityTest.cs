@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,13 +18,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ComponentHubReliabilityTest : IClassFixture<AspNetSiteServerFixture>, IDisposable
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = TimeSpan.FromSeconds(Debugger.IsAttached ? 60 : 10);
+        private static readonly TimeSpan DefaultLatencyTimeout = Debugger.IsAttached ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10);
         private readonly AspNetSiteServerFixture _serverFixture;
 
         public ComponentHubReliabilityTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
@@ -75,14 +74,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "The circuit host '.*?' has already been initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
+            var descriptors = await Client.GetPrerenderDescriptors(baseUri);
 
             // Act
             await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync(
                 "StartCircuit",
                 baseUri,
-                baseUri + "/home"));
+                baseUri + "/home",
+                descriptors));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -97,10 +98,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "The uris provided are invalid.";
             var rootUri = _serverFixture.RootUri;
             var uri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(uri, prerendered: false, connectAutomatically: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(uri, connectAutomatically: false), "Couldn't connect to the app");
+            var descriptors = await Client.GetPrerenderDescriptors(uri);
 
             // Act
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null));
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", null, null, descriptors));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -117,12 +119,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "The circuit failed to initialize.";
             var rootUri = _serverFixture.RootUri;
             var uri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(uri, prerendered: false, connectAutomatically: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(uri, connectAutomatically: false), "Couldn't connect to the app");
+            var descriptors = await Client.GetPrerenderDescriptors(uri);
 
             // Act
             //
             // These are valid URIs by the BaseUri doesn't contain the Uri - so it fails to initialize.
-            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com"));
+            await Client.ExpectCircuitErrorAndDisconnect(() => Client.HubConnection.SendAsync("StartCircuit", uri, "http://example.com", descriptors));
 
             // Assert
             var actualError = Assert.Single(Errors);
@@ -137,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Circuit not initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
@@ -163,7 +166,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Circuit not initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
@@ -187,7 +190,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Circuit not initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
@@ -206,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private async Task GoToTestComponent(IList<Batch> batches)
         {
             var rootUri = _serverFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
             Assert.Single(batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.CounterComponent");
@@ -323,7 +326,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Circuit not initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
@@ -346,7 +349,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Circuit not initialized.";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false, connectAutomatically: false));
+            Assert.True(await Client.ConnectAsync(baseUri, connectAutomatically: false));
             Assert.Empty(Batches);
 
             // Act
@@ -372,7 +375,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
             // Act
@@ -401,7 +404,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.NavigationFailureComponent");
@@ -435,7 +438,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");
@@ -466,7 +469,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var expectedError = "Unhandled exception in circuit .*";
             var rootUri = _serverFixture.RootUri;
             var baseUri = new Uri(rootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");

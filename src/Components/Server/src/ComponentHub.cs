@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -37,23 +36,23 @@ namespace Microsoft.AspNetCore.Components.Server
     internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
+        private readonly ServerComponentDeserializer _serverComponentSerializer;
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitIdFactory _circuitIdFactory;
         private readonly CircuitRegistry _circuitRegistry;
-        private readonly CircuitOptions _options;
         private readonly ILogger _logger;
 
         public ComponentHub(
+            ServerComponentDeserializer serializer,
             CircuitFactory circuitFactory,
             CircuitIdFactory circuitIdFactory,
             CircuitRegistry circuitRegistry,
-            ILogger<ComponentHub> logger,
-            IOptions<CircuitOptions> options)
+            ILogger<ComponentHub> logger)
         {
+            _serverComponentSerializer = serializer;
             _circuitFactory = circuitFactory;
             _circuitIdFactory = circuitIdFactory;
             _circuitRegistry = circuitRegistry;
-            _options = options.Value;
             _logger = logger;
         }
 
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Server
             return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
-        public async ValueTask<string> StartCircuit(string baseUri, string uri)
+        public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords)
         {
             var circuitHost = GetCircuit();
             if (circuitHost != null)
@@ -104,11 +103,11 @@ namespace Microsoft.AspNetCore.Components.Server
                 return null;
             }
 
-            // From this point, we can try to actually initialize the circuit.
-            if (DefaultCircuitFactory.ResolveComponentMetadata(Context.GetHttpContext()).Count == 0)
+            if (!_serverComponentSerializer.TryDeserializeComponentDescriptorCollection(serializedComponentRecords, out var components))
             {
-                // No components preregistered so return. This is totally normal if the components were prerendered.
-                Log.NoComponentsRegisteredInEndpoint(_logger, Context.GetHttpContext().GetEndpoint()?.DisplayName);
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, $"The list of component records is not valid.");
+                Context.Abort();
                 return null;
             }
 
@@ -116,7 +115,7 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
                 circuitHost = _circuitFactory.CreateCircuitHost(
-                    Context.GetHttpContext(),
+                    components,
                     circuitClient,
                     baseUri,
                     uri,
@@ -187,7 +186,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-             _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+            _ = circuitHost.BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
         public async ValueTask EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments)
@@ -198,7 +197,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-             _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
+            _ = circuitHost.EndInvokeJSFromDotNet(asyncHandle, succeeded, arguments);
         }
 
         public async ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs)
@@ -209,7 +208,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-             _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
+            _ = circuitHost.DispatchEvent(eventDescriptor, eventArgs);
         }
 
         public async ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull)
@@ -232,7 +231,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 return;
             }
 
-             _ = circuitHost.OnLocationChangedAsync(uri, intercepted);
+            _ = circuitHost.OnLocationChangedAsync(uri, intercepted);
         }
 
         // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime
@@ -281,37 +280,29 @@ namespace Microsoft.AspNetCore.Components.Server
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _noComponentsRegisteredInEndpoint =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "NoComponentsRegisteredInEndpoint"), "No components registered in the current endpoint '{Endpoint}'");
-
             private static readonly Action<ILogger, long, Exception> _receivedConfirmationForBatch =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(2, "ReceivedConfirmationForBatch"), "Received confirmation for batch {BatchId}");
-
-            private static readonly Action<ILogger, string, Exception> _unhandledExceptionInCircuit =
-                LoggerMessage.Define<string>(LogLevel.Warning, new EventId(3, "UnhandledExceptionInCircuit"), "Unhandled exception in circuit {CircuitId}");
+                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(1, "ReceivedConfirmationForBatch"), "Received confirmation for batch {BatchId}");
 
             private static readonly Action<ILogger, CircuitId, Exception> _circuitAlreadyInitialized =
-                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(4, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
+                LoggerMessage.Define<CircuitId>(LogLevel.Debug, new EventId(2, "CircuitAlreadyInitialized"), "The circuit host '{CircuitId}' has already been initialized");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostNotInitialized =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "CircuitHostNotInitialized"), "Call to '{CallSite}' received before the circuit host initialization");
 
             private static readonly Action<ILogger, string, Exception> _circuitHostShutdown =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(6, "CircuitHostShutdown"), "Call to '{CallSite}' received after the circuit was shut down");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, "CircuitHostShutdown"), "Call to '{CallSite}' received after the circuit was shut down");
 
             private static readonly Action<ILogger, string, Exception> _invalidInputData =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, "InvalidInputData"), "Call to '{CallSite}' received invalid input data");
 
             private static readonly Action<ILogger, Exception> _circuitInitializationFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(8, "CircuitInitializationFailed"), "Circuit initialization failed");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(6, "CircuitInitializationFailed"), "Circuit initialization failed");
 
             private static readonly Action<ILogger, CircuitId, string, string, Exception> _createdCircuit =
-                LoggerMessage.Define<CircuitId, string, string>(LogLevel.Debug, new EventId(8, "CreatedCircuit"), "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'");
+                LoggerMessage.Define<CircuitId, string, string>(LogLevel.Debug, new EventId(7, "CreatedCircuit"), "Created circuit '{CircuitId}' with secret '{CircuitIdSecret}' for '{ConnectionId}'");
 
             private static readonly Action<ILogger, string, Exception> _invalidCircuitId =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, "InvalidCircuitId"), "ConnectAsync recieved an invalid circuit id '{CircuitIdSecret}'");
-
-            public static void NoComponentsRegisteredInEndpoint(ILogger logger, string endpointDisplayName) => _noComponentsRegisteredInEndpoint(logger, endpointDisplayName, null);
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, "InvalidCircuitId"), "ConnectAsync recieved an invalid circuit id '{CircuitIdSecret}'");
 
             public static void ReceivedConfirmationForBatch(ILogger logger, long batchId) => _receivedConfirmationForBatch(logger, batchId, null);
 

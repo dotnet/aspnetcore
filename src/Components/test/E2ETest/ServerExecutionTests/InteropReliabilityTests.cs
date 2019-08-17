@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -590,6 +589,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Act
             await Client.ClickAsync("event-handler-throw-sync", expectRenderBatch: false);
 
+            await Task.Delay(1000);
+
             Assert.Contains(
                 logEvents,
                 e => LogLevel.Error == e.logLevel &&
@@ -618,7 +619,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private async Task GoToTestComponent(IList<Batch> batches)
         {
             var rootUri = _serverFixture.RootUri;
-            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir"), prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(new Uri(rootUri, "/subdir")), "Couldn't connect to the app");
             Assert.Single(batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.ReliabilityComponent");

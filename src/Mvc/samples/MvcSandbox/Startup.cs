@@ -69,7 +69,7 @@ namespace MvcSandbox
 
                 builder.MapControllers();
                 builder.MapRazorPages();
-                builder.MapBlazorHub<MvcSandbox.Components.App>("app");
+                builder.MapBlazorHub();
                 builder.MapFallbackToPage("/Components");
             });
         }

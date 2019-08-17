@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange
             var baseUri = new Uri(_serverFixture.RootUri, "/subdir");
-            Assert.True(await Client.ConnectAsync(baseUri, prerendered: false), "Couldn't connect to the app");
+            Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
             await Client.SelectAsync("test-selector-select", "BasicTestApp.LimitCounterComponent");

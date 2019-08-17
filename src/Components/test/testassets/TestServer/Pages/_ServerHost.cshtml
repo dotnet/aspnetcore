@@ -1,16 +1,17 @@
+@page ""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <title>Basic test app</title>
-    <base href="/subdir/" />
+    <base href="~/" />
     <link href="style.css" rel="stylesheet" />
 
     <!-- Used by ExternalContentPackage -->
     <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
 </head>
 <body>
-    <root>Loading...</root>
+    <root>@(await Html.RenderComponentAsync<BasicTestApp.Index>(RenderMode.Server))</root>
 
     <!-- Used for testing interop scenarios between JS and .NET -->
     <script src="js/jsinteroptests.js"></script>
@@ -25,24 +26,14 @@
         function navigationManagerNavigate() {
             Blazor.navigateTo('/subdir/some-path');
         }
-
-        (function () {
-            // Load either blazor.webassembly.js or blazor.server.js depending
-            // on the hash part of the URL. This is just to give a way for the
-            // test runner to make the selection.
-            if (location.hash === '#server') {
-                location.hash = '';
-                document.cookie = '__blazor_execution_mode=server';
-                location.reload();
-            }
-            var src = location.hash === '#server'
-                ? 'blazor.server.js'
-                : 'blazor.webassembly.js';
-            document.write('<script src="_framework/' + src + '"><' + '/script>');
-        })();
     </script>
+
+    <script src="_framework/blazor.server.js"></script>
 
     <!-- Used by ExternalContentPackage -->
     <script src="_content/TestContentPackage/prompt.js"></script>
+    <script>
+        console.log('Blazor server-side');
+    </script>
 </body>
 </html>

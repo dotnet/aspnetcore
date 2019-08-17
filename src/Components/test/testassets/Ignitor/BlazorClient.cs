@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -17,6 +20,8 @@ namespace Ignitor
 {
     public class BlazorClient
     {
+        private const string MarkerPattern = ".*?<!--Blazor:(.*?)-->.*?";
+
         public BlazorClient()
         {
             CancellationTokenSource = new CancellationTokenSource();
@@ -29,6 +34,7 @@ namespace Ignitor
         }
 
         public TimeSpan? DefaultLatencyTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
+        public TimeSpan? DefaultConnectTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
         public Func<string, Exception> FormatError { get; set; }
 
@@ -265,7 +271,7 @@ namespace Ignitor
             await PrepareForNextDisconnect(timeout ?? DefaultLatencyTimeout);
         }
 
-        public async Task<bool> ConnectAsync(Uri uri, bool prerendered, bool connectAutomatically = true)
+        public async Task<bool> ConnectAsync(Uri uri, bool connectAutomatically = true)
         {
             var builder = new HubConnectionBuilder();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, IgnitorMessagePackHubProtocol>());
@@ -293,21 +299,11 @@ namespace Ignitor
                 return true;
             }
 
-            // Now everything is registered so we can start the circuit.
-            if (prerendered)
-            {
-                CircuitId = await GetPrerenderedCircuitIdAsync(uri);
-                var result = false;
-                await ExpectRenderBatch(async () => result = await HubConnection.InvokeAsync<bool>("ConnectCircuit", CircuitId));
-                return result;
-            }
-            else
-            {
-                await ExpectRenderBatch(
-                    async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri),
-                    TimeSpan.FromSeconds(10));
-                return CircuitId != null;
-            }
+            var descriptors = await GetPrerenderDescriptors(uri);
+            await ExpectRenderBatch(
+                async () => CircuitId = await HubConnection.InvokeAsync<string>("StartCircuit", uri, uri, descriptors),
+                DefaultConnectTimeout);
+            return CircuitId != null;
         }
 
         private void OnEndInvokeDotNet(string completion)
@@ -391,17 +387,16 @@ namespace Ignitor
             await ExpectDotNetInterop(() => HubConnection.InvokeAsync("BeginInvokeDotNetFromJS", callId?.ToString(), assemblyName, methodIdentifier, dotNetObjectId ?? 0, argsJson));
         }
 
-        private static async Task<string> GetPrerenderedCircuitIdAsync(Uri uri)
+        public async Task<string> GetPrerenderDescriptors(Uri uri)
         {
             var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", "__blazor_execution_mode=server");
             var response = await httpClient.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
 
-            // <!-- M.A.C.Component:{"circuitId":"CfDJ8KZCIaqnXmdF...PVd6VVzfnmc1","rendererId":"0","componentId":"0"} -->
-            var match = Regex.Match(content, $"{Regex.Escape("<!-- M.A.C.Component:")}(.+?){Regex.Escape(" -->")}");
-            var json = JsonDocument.Parse(match.Groups[1].Value);
-            var circuitId = json.RootElement.GetProperty("circuitId").GetString();
-            return circuitId;
+            var match = ReadMarkers(content);
+            return $"[{string.Join(", ", match)}]";
         }
 
         public void Cancel()
@@ -468,6 +463,23 @@ namespace Ignitor
             public CancellationTokenSource Cancellation { get; set; }
 
             public CancellationTokenRegistration CancellationRegistration { get; set; }
+        }
+
+        private string[] ReadMarkers(string content)
+        {
+            content = content.Replace("\r\n", "").Replace("\n", "");
+            var matches = Regex.Matches(content, MarkerPattern);
+            var markers = matches.Select(s => (value: s.Groups[1].Value, parsed: JsonDocument.Parse(s.Groups[1].Value)))
+                .Where(s =>
+                {
+                    var markerType = s.parsed.RootElement.GetProperty("type");
+                    return markerType.ValueKind != JsonValueKind.Undefined && markerType.GetString() == "server";
+                })
+                .OrderBy(p => p.parsed.RootElement.GetProperty("sequence").GetInt32())
+                .Select(p => p.value)
+                .ToArray();
+
+            return markers;
         }
     }
 }
