@@ -339,7 +339,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await Renderer.Dispatcher.InvokeAsync(() =>
                 {
                     Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
-                    DotNetDispatcher.BeginInvokeDotNet(JSRuntime, callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+                    var invocationInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
+                    DotNetDispatcher.BeginInvokeDotNet(JSRuntime, invocationInfo, argsJson);
                 });
             }
             catch (Exception ex)
