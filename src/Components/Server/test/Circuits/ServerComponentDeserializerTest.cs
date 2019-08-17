@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public void CanParseSingleDescriptor()
+        public void CanParseSingleMarker()
         {
             // Arrange
             var markers = SerializeMarkers(CreateMarkers(typeof(TestComponent)));
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Act & assert
             Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
             var deserializedDescriptor = Assert.Single(descriptors);
-            Assert.Equal(typeof(TestComponent), deserializedDescriptor.ComponentType);
+            Assert.Equal(typeof(TestComponent).FullName, deserializedDescriptor.ComponentType.FullName);
             Assert.Equal(0, deserializedDescriptor.Sequence);
         }
 
@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Assert.Equal(2, descriptors.Count);
 
             var firstDescriptor = descriptors[0];
-            Assert.Equal(typeof(TestComponent), firstDescriptor.ComponentType);
+            Assert.Equal(typeof(TestComponent).FullName, firstDescriptor.ComponentType.FullName);
             Assert.Equal(0, firstDescriptor.Sequence);
 
             var secondDescriptor = descriptors[1];
-            Assert.Equal(typeof(TestComponent), secondDescriptor.ComponentType);
+            Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
             Assert.Equal(1, secondDescriptor.Sequence);
         }
 
