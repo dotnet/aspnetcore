@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 
-namespace Microsoft.JSInterop.Tests
+namespace Microsoft.JSInterop
 {
     public class JSInProcessRuntimeBaseTest
     {
@@ -18,7 +19,6 @@ namespace Microsoft.JSInterop.Tests
             {
                 NextResultJson = "{\"intValue\":123,\"stringValue\":\"Hello\"}"
             };
-            JSRuntime.SetCurrentJSRuntime(runtime);
 
             // Act
             var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true);
@@ -36,19 +36,18 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var runtime = new TestJSInProcessRuntime { NextResultJson = null };
-            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
             var obj3 = new object();
 
             // Act
             // Showing we can pass the DotNetObject either as top-level args or nested
-            var syncResult = runtime.Invoke<DotNetObjectRef<object>>("test identifier",
-                DotNetObjectRef.Create(obj1),
+            var syncResult = runtime.Invoke<DotNetObjectReference<object>>("test identifier",
+                DotNetObjectReference.Create(obj1),
                 new Dictionary<string, object>
                 {
-                    { "obj2",  DotNetObjectRef.Create(obj2) },
-                    { "obj3",  DotNetObjectRef.Create(obj3) },
+                    { "obj2",  DotNetObjectReference.Create(obj2) },
+                    { "obj3",  DotNetObjectReference.Create(obj3) },
                 });
 
             // Assert: Handles null result string
@@ -60,9 +59,9 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
-            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1));
-            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(2));
-            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(3));
+            Assert.Same(obj1, runtime.GetObjectReference(1).Value);
+            Assert.Same(obj2, runtime.GetObjectReference(2).Value);
+            Assert.Same(obj3, runtime.GetObjectReference(3).Value);
         }
 
         [Fact]
@@ -73,16 +72,15 @@ namespace Microsoft.JSInterop.Tests
             {
                 NextResultJson = "[{\"__dotNetObject\":2},{\"__dotNetObject\":1}]"
             };
-            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
 
             // Act
-            var syncResult = runtime.Invoke<DotNetObjectRef<object>[]>(
+            var syncResult = runtime.Invoke<DotNetObjectReference<object>[]>(
                 "test identifier",
-                DotNetObjectRef.Create(obj1),
+                DotNetObjectReference.Create(obj1),
                 "some other arg",
-                DotNetObjectRef.Create(obj2));
+                DotNetObjectReference.Create(obj2));
             var call = runtime.InvokeCalls.Single();
 
             // Assert
@@ -95,7 +93,7 @@ namespace Microsoft.JSInterop.Tests
             public string StringValue { get; set; }
         }
 
-        class TestJSInProcessRuntime : JSInProcessRuntimeBase
+        class TestJSInProcessRuntime : JSInProcessRuntime
         {
             public List<InvokeArgs> InvokeCalls { get; set; } = new List<InvokeArgs>();
 
@@ -116,8 +114,8 @@ namespace Microsoft.JSInterop.Tests
             protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
                 => throw new NotImplementedException("This test only covers sync calls");
 
-            protected internal override void EndInvokeDotNet(string callId, bool success, object resultOrError, string assemblyName, string methodIdentifier, long dotNetObjectId) =>
-                throw new NotImplementedException("This test only covers sync calls");
+            protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+                => throw new NotImplementedException("This test only covers sync calls");
         }
     }
 }

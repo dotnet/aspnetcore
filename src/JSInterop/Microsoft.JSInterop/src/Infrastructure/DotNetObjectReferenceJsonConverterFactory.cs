@@ -5,13 +5,20 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class DotNetObjectReferenceJsonConverterFactory : JsonConverterFactory
     {
+        public DotNetObjectReferenceJsonConverterFactory(JSRuntime jsRuntime)
+        {
+            JSRuntime = jsRuntime;
+        }
+
+        public JSRuntime JSRuntime { get; }
+
         public override bool CanConvert(Type typeToConvert)
         {
-            return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(DotNetObjectRef<>);
+            return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(DotNetObjectReference<>);
         }
 
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions jsonSerializerOptions)
@@ -20,7 +27,7 @@ namespace Microsoft.JSInterop
             var instanceType = typeToConvert.GetGenericArguments()[0];
             var converterType = typeof(DotNetObjectReferenceJsonConverter<>).MakeGenericType(instanceType);
 
-            return (JsonConverter)Activator.CreateInstance(converterType);
+            return (JsonConverter)Activator.CreateInstance(converterType, JSRuntime);
         }
     }
 }

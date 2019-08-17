@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,21 +13,28 @@ namespace Microsoft.JSInterop
     {
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
+        /// <para>
+        /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="JSRuntime.DefaultAsyncTimeout"/>. To dispatch a call with a different timeout, or no timeout,
+        /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+        /// </para>
         /// </summary>
         /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        Task<TValue> InvokeAsync<TValue>(string identifier, params object[] args);
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
         /// </summary>
         /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
+        /// <param name="cancellationToken">
+        /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
+        /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+        /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
-        /// <param name="cancellationToken">A cancellation token to signal the cancellation of the operation.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        Task<TValue> InvokeAsync<TValue>(string identifier, IEnumerable<object> args, CancellationToken cancellationToken = default);
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
     }
 }

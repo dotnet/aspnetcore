@@ -5,13 +5,20 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Infrastructure
 {
-    internal sealed class DotNetObjectReferenceJsonConverter<TValue> : JsonConverter<DotNetObjectRef<TValue>> where TValue : class
+    internal sealed class DotNetObjectReferenceJsonConverter<TValue> : JsonConverter<DotNetObjectReference<TValue>> where TValue : class
     {
+        public DotNetObjectReferenceJsonConverter(JSRuntime jsRuntime)
+        {
+            JSRuntime = jsRuntime;
+        }
+
         private static JsonEncodedText DotNetObjectRefKey => DotNetDispatcher.DotNetObjectRefKey;
 
-        public override DotNetObjectRef<TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public JSRuntime JSRuntime { get; }
+
+        public override DotNetObjectReference<TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             long dotNetObjectId = 0;
 
@@ -40,14 +47,16 @@ namespace Microsoft.JSInterop
                 throw new JsonException($"Required property {DotNetObjectRefKey} not found.");
             }
 
-            var value = (TValue)DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
-            return new DotNetObjectRef<TValue>(dotNetObjectId, value);
+            var value = (DotNetObjectReference<TValue>)JSRuntime.GetObjectReference(dotNetObjectId);
+            return value;
         }
 
-        public override void Write(Utf8JsonWriter writer, DotNetObjectRef<TValue> value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DotNetObjectReference<TValue> value, JsonSerializerOptions options)
         {
+            var objectId = JSRuntime.TrackObjectReference<TValue>(value);
+
             writer.WriteStartObject();
-            writer.WriteNumber(DotNetObjectRefKey, value.ObjectId);
+            writer.WriteNumber(DotNetObjectRefKey, objectId);
             writer.WriteEndObject();
         }
     }

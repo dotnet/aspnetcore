@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop
     /// from untrusted callers. All inputs should be validated carefully.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class JSInvokableAttribute : Attribute
+    public sealed class JSInvokableAttribute : Attribute
     {
         /// <summary>
         /// Gets the identifier for the method. The identifier must be unique within the scope

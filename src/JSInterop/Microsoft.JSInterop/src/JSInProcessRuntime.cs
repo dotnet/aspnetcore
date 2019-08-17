@@ -8,7 +8,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Abstract base class for an in-process JavaScript runtime.
     /// </summary>
-    public abstract class JSInProcessRuntimeBase : JSRuntimeBase, IJSInProcessRuntime
+    public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     {
         /// <summary>
         /// Invokes the specified JavaScript function synchronously.
@@ -19,13 +19,13 @@ namespace Microsoft.JSInterop
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {
-            var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptionsProvider.Options));
+            var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptions));
             if (resultJson is null)
             {
                 return default;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptionsProvider.Options);
+            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerOptions);
         }
 
         /// <summary>
