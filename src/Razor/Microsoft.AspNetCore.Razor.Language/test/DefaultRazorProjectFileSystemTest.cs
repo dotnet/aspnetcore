@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
