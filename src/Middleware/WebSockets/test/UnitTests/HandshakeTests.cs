@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.WebSockets.Tests
         [InlineData("dGhpcyBpcyAxNWJ5dGVz")]
         [InlineData("")]
         [InlineData("24 length not base64 str")]
+        [InlineData("VUfWn1u2Ot0AICM6\u0100+/8Zg==")]
         public void RejectsInvalidRequestKeys(string key)
         {
             Assert.False(HandshakeHelpers.IsRequestKeyValid(key));
