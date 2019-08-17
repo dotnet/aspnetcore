@@ -590,10 +590,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(HttpProtocols.Http1)]
         [InlineData(HttpProtocols.Http2)]
         [InlineData(HttpProtocols.Http1AndHttp2)]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
         public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
