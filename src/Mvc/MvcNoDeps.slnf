@@ -2,9 +2,6 @@
   "solution": {
     "path": "Mvc.sln",
     "projects": [
-      "Extensions.ApiDescription.Client\\src\\Microsoft.Extensions.ApiDescription.Client.csproj",
-      "Extensions.ApiDescription.Server\\src\\Microsoft.Extensions.ApiDescription.Server.csproj",
-      "GetDocumentInsider\\src\\GetDocumentInsider.csproj",
       "Mvc.Abstractions\\src\\Microsoft.AspNetCore.Mvc.Abstractions.csproj",
       "Mvc.Abstractions\\test\\Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj",
       "Mvc.Analyzers\\src\\Microsoft.AspNetCore.Mvc.Analyzers.csproj",
@@ -40,7 +37,6 @@
       "Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
       "Mvc\\test\\Microsoft.AspNetCore.Mvc.Test.csproj",
       "benchmarks\\Microsoft.AspNetCore.Mvc.Performance\\Microsoft.AspNetCore.Mvc.Performance.csproj",
-      "dotnet-getdocument\\src\\dotnet-getdocument.csproj",
       "samples\\MvcSandbox\\MvcSandbox.csproj",
       "shared\\Mvc.Core.TestCommon\\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj",
       "shared\\Mvc.TestDiagnosticListener\\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj",
