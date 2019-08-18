@@ -6,7 +6,7 @@ Load testing for ASP.NET Core SignalR
 
 ### server
 
-The `server` command runs a WebHost exposing a single SignalR `Hub` endpoint on `/echo`.  After the first client connection, the server will periodically write concurrent connection information to the console.
+The `server` command runs a web host exposing a single SignalR `Hub` endpoint on `/echo`.  After the first client connection, the server will periodically write concurrent connection information to the console.
 
 ```
 > dotnet run -- help server
