@@ -12,6 +12,45 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouteTableFactoryTests
     {
         [Fact]
+        public void CanCacheRouteTable()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void CanCacheRouteTableWithDifferentAssembliesAndOrder()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { typeof(object).Assembly, GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.Same(routes1, routes2);
+        }
+
+        [Fact]
+        public void DoesNotCacheRouteTableForDifferentAssemblies()
+        {
+            // Arrange
+            var routes1 = RouteTableFactory.Create(new[] { GetType().Assembly, });
+
+            // Act
+            var routes2 = RouteTableFactory.Create(new[] { GetType().Assembly, typeof(object).Assembly, });
+
+            // Assert
+            Assert.NotSame(routes1, routes2);
+        }
+
+        [Fact]
         public void CanDiscoverRoute()
         {
             // Arrange & Act

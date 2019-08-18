@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -15,20 +16,21 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     internal static class RouteTableFactory
     {
-        private static readonly ConcurrentDictionary<Assembly, RouteTable> Cache =
-            new ConcurrentDictionary<Assembly, RouteTable>();
+        private static readonly ConcurrentDictionary<Key, RouteTable> Cache =
+            new ConcurrentDictionary<Key, RouteTable>();
         public static readonly IComparer<RouteEntry> RoutePrecedence = Comparer<RouteEntry>.Create(RouteComparison);
 
-        public static RouteTable Create(Assembly appAssembly)
+        public static RouteTable Create(IEnumerable<Assembly> assemblies)
         {
-            if (Cache.TryGetValue(appAssembly, out var resolvedComponents))
+            var key = new Key(assemblies.OrderBy(a => a.FullName).ToArray());
+            if (Cache.TryGetValue(key, out var resolvedComponents))
             {
                 return resolvedComponents;
             }
 
-            var componentTypes = appAssembly.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t));
+            var componentTypes = key.Assemblies.SelectMany(a => a.ExportedTypes.Where(t => typeof(IComponent).IsAssignableFrom(t)));
             var routeTable = Create(componentTypes);
-            Cache.TryAdd(appAssembly, routeTable);
+            Cache.TryAdd(key, routeTable);
             return routeTable;
         }
 
@@ -158,6 +160,62 @@ namespace Microsoft.AspNetCore.Components
 '{x.Template.TemplateText}' in '{x.Handler.FullName}'
 '{y.Template.TemplateText}' in '{y.Handler.FullName}'
 ");
+            }
+        }
+
+        private readonly struct Key : IEquatable<Key>
+        {
+            public readonly Assembly[] Assemblies;
+
+            public Key(Assembly[] assemblies)
+            {
+                Assemblies = assemblies;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is Key other ? base.Equals(other) : false;
+            }
+
+            public bool Equals(Key other)
+            {
+                if (Assemblies == null && other.Assemblies == null)
+                {
+                    return true;
+                }
+                else if (Assemblies == null ^ other.Assemblies == null)
+                {
+                    return false;
+                }
+                else if (Assemblies.Length != other.Assemblies.Length)
+                {
+                    return false;
+                }
+
+                for (var i = 0; i < Assemblies.Length; i++)
+                {
+                    if (!Assemblies[i].Equals(other.Assemblies[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public override int GetHashCode()
+            {
+                var hash = new HashCodeCombiner();
+
+                if (Assemblies != null)
+                {
+                    for (var i = 0; i < Assemblies.Length; i++)
+                    {
+                        hash.Add(Assemblies[i]);
+                    }
+                }
+
+                return hash;
             }
         }
     }
