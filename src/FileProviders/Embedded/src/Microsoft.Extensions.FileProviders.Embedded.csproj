@@ -3,10 +3,10 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp5.0</TargetFrameworks>
     <NuspecFile>$(MSBuildProjectName).multitarget.nuspec</NuspecFile>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp3.0</TargetFrameworks>
-    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">$(MSBuildProjectName).netcoreapp3.0.nuspec</NuspecFile>
+    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netcoreapp5.0</TargetFrameworks>
+    <NuspecFile Condition="'$(DotNetBuildFromSource)' == 'true'">$(MSBuildProjectName).netcoreapp5.0.nuspec</NuspecFile>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
