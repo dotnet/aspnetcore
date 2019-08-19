@@ -1,3 +1,6 @@
+parameters:
+  artifactsPublishingAdditionalParameters: ''
+
 stages:
 - stage: PVR_Publish
   dependsOn: validate
@@ -63,6 +66,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)\BlobArtifacts' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)\PackageArtifacts' 
             /p:Configuration=Release 
+            ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed

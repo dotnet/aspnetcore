@@ -1,5 +1,7 @@
 parameters:
   enableSymbolValidation: true
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
 
 stages:
 - stage: NetCore_Tools_Latest_Publish
@@ -20,10 +22,16 @@ stages:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Artifacts
+        displayName: Download Blob Artifacts
         inputs:
-          downloadType: specific files
-          matchingPattern: "*Artifacts*"
+          artifactName: 'BlobArtifacts'
+        continueOnError: true
+
+      - task: DownloadBuildArtifacts@0
+        displayName: Download PDB Artifacts
+        inputs:
+          artifactName: 'PDBArtifacts'
+        continueOnError: true
 
       - task: PowerShell@2
         displayName: Publish
@@ -34,7 +42,9 @@ stages:
             /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat) 
             /p:PDBArtifactsDirectory='$(Build.ArtifactStagingDirectory)/PDBArtifacts/'
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
+            /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
+            ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job:
     displayName: Publish Assets
@@ -92,6 +102,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/' 
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts/' 
             /p:Configuration=Release 
+            ${{ parameters.artifactsPublishingAdditionalParameters }}
         
       - task: NuGetCommand@2
         displayName: Publish Packages to AzDO Feed

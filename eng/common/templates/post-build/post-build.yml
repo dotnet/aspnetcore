@@ -7,6 +7,12 @@ parameters:
     enable: false
     params: ''
 
+  # These parameters let the user customize the call to sdk-task.ps1 for publishing
+  # symbols & general artifacts as well as for signing validation
+  symbolPublishingAdditionalParameters: ''
+  artifactsPublishingAdditionalParameters: ''
+  signingValidationAdditionalParameters: ''
+
   # Which stages should finish execution before post-build stages start
   dependsOn: [build]
 
@@ -53,7 +59,8 @@ stages:
             arguments: -task SigningValidation -restore -msbuildEngine dotnet
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
               /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
-              /p:Configuration=Release
+              /p:Configuration=Release 
+              ${{ parameters.signingValidationAdditionalParameters }}
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
     - job:
@@ -87,17 +94,31 @@ stages:
 - template: \eng\common\templates\post-build\channels\netcore-dev-5.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
 - template: \eng\common\templates\post-build\channels\public-dev-release.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
 - template: \eng\common\templates\post-build\channels\netcore-tools-latest.yml
   parameters:
     enableSymbolValidation: ${{ parameters.enableSymbolValidation }}
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
 - template: \eng\common\templates\post-build\channels\public-validation-release.yml
+  parameters:
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
 - template: \eng\common\templates\post-build\channels\public-release.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
 
 - template: \eng\common\templates\post-build\channels\internal-servicing.yml
+  parameters:
+    symbolPublishingAdditionalParameters: ${{ parameters.symbolPublishingAdditionalParameters }}
+    artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}

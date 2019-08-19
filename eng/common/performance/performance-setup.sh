@@ -3,7 +3,7 @@
 source_directory=$BUILD_SOURCESDIRECTORY
 core_root_directory=
 architecture=x64
-framework=netcoreapp3.0
+framework=netcoreapp5.0
 compilation_mode=tiered
 repository=$BUILD_REPOSITORY_NAME
 branch=$BUILD_SOURCEBRANCH
@@ -132,7 +132,7 @@ if [[ "$internal" == true ]]; then
     if [[ "$architecture" = "arm64" ]]; then
         queue=Ubuntu.1804.Arm64.Perf
     else
-        queue=Ubuntu.1804.Amd64.Perf
+        queue=Ubuntu.1804.Amd64.Tiger.Perf
     fi
 fi
 
@@ -156,21 +156,26 @@ if [[ "$use_core_run" = true ]]; then
     mv $core_root_directory $new_core_root
 fi
 
+ci=true
+
+_script_dir=$(pwd)/eng/common
+. "$_script_dir/pipeline-logging-functions.sh"
+
 # Make sure all of our variables are available for future steps
-echo "##vso[task.setvariable variable=UseCoreRun]$use_core_run"
-echo "##vso[task.setvariable variable=Architecture]$architecture"
-echo "##vso[task.setvariable variable=PayloadDirectory]$payload_directory"
-echo "##vso[task.setvariable variable=PerformanceDirectory]$performance_directory"
-echo "##vso[task.setvariable variable=WorkItemDirectory]$workitem_directory"
-echo "##vso[task.setvariable variable=Queue]$queue"
-echo "##vso[task.setvariable variable=SetupArguments]$setup_arguments"
-echo "##vso[task.setvariable variable=Python]python3"
-echo "##vso[task.setvariable variable=PerfLabArguments]$perflab_arguments"
-echo "##vso[task.setvariable variable=ExtraBenchmarkDotNetArguments]$extra_benchmark_dotnet_arguments"
-echo "##vso[task.setvariable variable=BDNCategories]$run_categories"
-echo "##vso[task.setvariable variable=TargetCsproj]$csproj"
-echo "##vso[task.setvariable variable=RunFromPerfRepo]$run_from_perf_repo"
-echo "##vso[task.setvariable variable=Creator]$creator"
-echo "##vso[task.setvariable variable=HelixSourcePrefix]$helix_source_prefix"
-echo "##vso[task.setvariable variable=Kind]$kind"
-echo "##vso[task.setvariable variable=_BuildConfig]$architecture.$kind.$framework"
+Write-PipelineSetVariable -name "UseCoreRun" -value "$use_core_run" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Architecture" -value "$architecture" -is_multi_job_variable false
+Write-PipelineSetVariable -name "PayloadDirectory" -value "$payload_directory" -is_multi_job_variable false
+Write-PipelineSetVariable -name "PerformanceDirectory" -value "$performance_directory" -is_multi_job_variable false
+Write-PipelineSetVariable -name "WorkItemDirectory" -value "$workitem_directory" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Queue" -value "$queue" -is_multi_job_variable false
+Write-PipelineSetVariable -name "SetupArguments" -value "$setup_arguments" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Python" -value "$python3" -is_multi_job_variable false
+Write-PipelineSetVariable -name "PerfLabArguments" -value "$perflab_arguments" -is_multi_job_variable false
+Write-PipelineSetVariable -name "ExtraBenchmarkDotNetArguments" -value "$extra_benchmark_dotnet_arguments" -is_multi_job_variable false
+Write-PipelineSetVariable -name "BDNCategories" -value "$run_categories" -is_multi_job_variable false
+Write-PipelineSetVariable -name "TargetCsproj" -value "$csproj" -is_multi_job_variable false
+Write-PipelineSetVariable -name "RunFromPerfRepo" -value "$run_from_perf_repo" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Creator" -value "$creator" -is_multi_job_variable false
+Write-PipelineSetVariable -name "HelixSourcePrefix" -value "$helix_source_prefix" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable false
+Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false

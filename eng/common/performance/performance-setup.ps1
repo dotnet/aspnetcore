@@ -2,7 +2,7 @@ Param(
     [string] $SourceDirectory=$env:BUILD_SOURCESDIRECTORY,
     [string] $CoreRootDirectory,
     [string] $Architecture="x64",
-    [string] $Framework="netcoreapp3.0",
+    [string] $Framework="netcoreapp5.0",
     [string] $CompilationMode="Tiered",
     [string] $Repository=$env:BUILD_REPOSITORY_NAME,
     [string] $Branch=$env:BUILD_SOURCEBRANCH,
@@ -33,7 +33,7 @@ if ($Framework.StartsWith("netcoreapp")) {
 }
 
 if ($Internal) {
-    $Queue = "Windows.10.Amd64.ClientRS5.Perf"
+    $Queue = "Windows.10.Amd64.19H1.Tiger.Perf"
     $PerfLabArguments = "--upload-to-perflab-container"
     $ExtraBenchmarkDotNetArguments = ""
     $Creator = ""
