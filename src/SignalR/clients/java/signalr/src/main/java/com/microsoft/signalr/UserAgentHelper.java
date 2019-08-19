@@ -26,21 +26,26 @@ public class UserAgentHelper {
         agentBuilder.append("; Java; ");
 
         // Vendor and Version
-        agentBuilder.append(System.getProperty("java.vendor"));
+        agentBuilder.append(getJavaVersion());
         agentBuilder.append("; ");
-        agentBuilder.append(System.getProperty("java.version"));
+        agentBuilder.append(getJavaVendor());
 
         return agentBuilder.toString();
     }
 
     static String getVersion(String detailedVersion) {
-        String version;
-        if (detailedVersion.contains("-")) {
-            version = detailedVersion.substring(0, detailedVersion.indexOf('-'));
-        } else {
-            version = detailedVersion;
-        }
-        return version;
+
+        // Getting the index of the second . so we can return just the major and minor version.
+        int shortVersionIndex = detailedVersion.indexOf(".", detailedVersion.indexOf(".") + 1);
+        return detailedVersion.substring(0, shortVersionIndex);
+    }
+
+    static String getJavaVendor() {
+        return System.getProperty("java.vendor");
+    }
+
+    static String getJavaVersion() {
+        return System.getProperty("java.version");
     }
 
     static String findOSName(String operatingSystem) {
