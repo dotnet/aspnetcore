@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>library</OutputType>
-    <RazorLangVersion>3.0</RazorLangVersion>
+    <RazorLangVersion>5.0</RazorLangVersion>
     <StaticWebAssetBasePath>_content/TestContentPackage</StaticWebAssetBasePath>
   </PropertyGroup>
 
