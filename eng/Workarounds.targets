@@ -32,6 +32,14 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
+<!-- Workaround while there is no 5.0 Razor SDK available, copy known framework reference info from 3.0 -->
+  <ItemGroup>
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      TargetFramework="netcoreapp5.0"
+      />
+  </ItemGroup>
+
   <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
   <Target Name="_WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
     <ItemGroup>
