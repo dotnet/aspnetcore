@@ -15,21 +15,4 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-<!-- Workaround while there is no 5.0 SDK available, copy known apphost/framework reference info from 3.0 -->
-
-  <PropertyGroup>
-    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <KnownAppHostPack 
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
-      TargetFramework="netcoreapp5.0"
-      />
-    <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
-      TargetFramework="netcoreapp5.0"
-      />
-  </ItemGroup>
-
 </Project>
