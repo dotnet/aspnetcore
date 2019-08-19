@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
     internal class CircuitIdFactory
     {
-        private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server.CircuitIdFactory";
+        private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server.CircuitIdFactory,V1";
 
         // We use 64 bytes, where the last 32 are the public version of the id.
         // This way we can always recover the public id from the secret form.
