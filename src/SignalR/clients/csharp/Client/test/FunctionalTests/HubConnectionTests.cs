@@ -1492,6 +1492,42 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task UserAgentCanBeSet()
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
+                    {
+                        options.Headers["User-Agent"] = "User Value";
+
+                    })
+                    .Build();
+                try
+                {
+                    await hubConnection.StartAsync().OrTimeout();
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "User-Agent" }).OrTimeout();
+                    Assert.NotNull(headerValues);
+                    Assert.Single(headerValues);
+
+                    var userAgent = headerValues[0];
+
+                    Assert.Equal("User Value", userAgent);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
         [ConditionalFact]
         [WebSocketsSupportedCondition]
         public async Task WebSocketOptionsAreApplied()

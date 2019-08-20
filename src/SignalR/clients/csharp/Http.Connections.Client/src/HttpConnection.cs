@@ -558,10 +558,24 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             {
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
-                    // For clearing User-Agent header.
-                    if (string.IsNullOrEmpty(header.Value)) {
-                        httpClient.DefaultRequestHeaders.Remove(header.Key);
-                    } else
+                    // Check if the key is User-Agent and remove if empty string then replace if it exists.
+                    if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if(string.IsNullOrEmpty(header.Value))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                        }
+                        else if (httpClient.DefaultRequestHeaders.Contains(header.Key))
+                        {
+                            httpClient.DefaultRequestHeaders.Remove(header.Key);
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                        else
+                        {
+                            httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                        }
+                    }
+                    else
                     {
                         httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
                     }
