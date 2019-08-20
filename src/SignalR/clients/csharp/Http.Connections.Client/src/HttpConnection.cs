@@ -551,14 +551,20 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.Timeout = HttpClientTimeout;
 
             // Start with the user agent header
-            httpClient.DefaultRequestHeaders.UserAgent.Add(Constants.UserAgentHeader);
+            httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgentHeader);
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
             {
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
-                    httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    // For clearing User-Agent header.
+                    if (string.IsNullOrEmpty(header.Value)) {
+                        httpClient.DefaultRequestHeaders.Remove(header.Key);
+                    } else
+                    {
+                        httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
                 }
             }
 
