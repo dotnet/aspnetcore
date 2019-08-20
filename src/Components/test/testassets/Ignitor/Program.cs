@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -38,9 +34,9 @@ namespace Ignitor
             var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Click the counter button 1000 times
-            client.RenderBatchReceived += (int batchId, byte[] data) =>
+            client.RenderBatchReceived += (batch) =>
             {
-                if (batchId < 1000)
+                if (batch.Id < 1000)
                 {
                     var _ = client.ClickAsync("thecounter");
                 }
@@ -56,8 +52,8 @@ namespace Ignitor
             return 0;
         }
 
-        private static void OnJSInterop(int callId, string identifier, string argsJson) =>
-            Console.WriteLine("JS Invoke: " + identifier + " (" + argsJson + ")");
+        private static void OnJSInterop(CapturedJSInteropCall call) =>
+            Console.WriteLine("JS Invoke: " + call.Identifier + " (" + call.ArgsJson + ")");
 
         public Program()
         {

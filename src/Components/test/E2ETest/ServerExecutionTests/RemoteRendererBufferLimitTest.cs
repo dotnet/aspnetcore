@@ -2,55 +2,33 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class RemoteRendererBufferLimitTest : IClassFixture<AspNetSiteServerFixture>, IDisposable
+    public class RemoteRendererBufferLimitTest : IgnitorTest<AspNetSiteServerFixture>
     {
-        private static readonly TimeSpan DefaultLatencyTimeout = Debugger.IsAttached ? TimeSpan.FromSeconds(60) : TimeSpan.FromMilliseconds(500);
-
-        private AspNetSiteServerFixture _serverFixture;
-
-        public RemoteRendererBufferLimitTest(AspNetSiteServerFixture serverFixture)
+        public RemoteRendererBufferLimitTest(AspNetSiteServerFixture serverFixture, ITestOutputHelper output)
+            : base(serverFixture, output)
         {
-            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
-            _serverFixture = serverFixture;
-
-            // Needed here for side-effects
-            _ = _serverFixture.RootUri;
-
-            Client = new BlazorClient() { DefaultLatencyTimeout = DefaultLatencyTimeout };
-            Client.RenderBatchReceived += (id, data) => Batches.Add(new Batch(id, data));
-
-            Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            Sink.MessageLogged += LogMessages;
         }
 
-        public BlazorClient Client { get; set; }
-
-        private IList<Batch> Batches { get; set; } = new List<Batch>();
-
-        // We use a stack so that we can search the logs in reverse order
-        private ConcurrentStack<LogMessage> Logs { get; set; } = new ConcurrentStack<LogMessage>();
-
-        public TestSink Sink { get; private set; }
+        protected override void InitializeFixture(AspNetSiteServerFixture serverFixture)
+        {
+            serverFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
+        }
 
         [Fact]
         public async Task DispatchedEventsWillKeepBeingProcessed_ButUpdatedWillBeDelayedUntilARenderIsAcknowledged()
         {
             // Arrange
-            var baseUri = new Uri(_serverFixture.RootUri, "/subdir");
+            var baseUri = new Uri(ServerFixture.RootUri, "/subdir");
             Assert.True(await Client.ConnectAsync(baseUri), "Couldn't connect to the app");
             Assert.Single(Batches);
 
@@ -75,48 +53,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Client.ConfirmRenderBatch = true;
 
             // This will resume the render batches.
-            await Client.ExpectRenderBatch(() => Client.ConfirmBatch(Batches[^1].Id));
+            await Client.ExpectRenderBatch(() => Client.ConfirmBatch(Batches.Last().Id));
 
             // Assert
             Assert.Equal("12", ((TextNode)Client.FindElementById("the-count").Children.Single()).TextContent);
             Assert.Equal(fullCount + 1, Batches.Count);
-        }
-
-        private void LogMessages(WriteContext context) => Logs.Push(new LogMessage(context.LogLevel, context.Message, context.Exception));
-
-        [DebuggerDisplay("{Message,nq}")]
-        private class LogMessage
-        {
-            public LogMessage(LogLevel logLevel, string message, Exception exception)
-            {
-                LogLevel = logLevel;
-                Message = message;
-                Exception = exception;
-            }
-
-            public LogLevel LogLevel { get; set; }
-            public string Message { get; set; }
-            public Exception Exception { get; set; }
-        }
-
-        private class Batch
-        {
-            public Batch(int id, byte[] data)
-            {
-                Id = id;
-                Data = data;
-            }
-
-            public int Id { get; }
-            public byte[] Data { get; }
-        }
-
-        public void Dispose()
-        {
-            if (Sink != null)
-            {
-                Sink.MessageLogged -= LogMessages;
-            }
         }
     }
 }
