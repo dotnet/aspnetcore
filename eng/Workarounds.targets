@@ -10,6 +10,11 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
+  <!-- Workaround while there is no publicly released 5.0 SDK available for source build, suppress unsupported version error -->
+  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <NETCoreAppMaximumVersion>5.0</NETCoreAppMaximumVersion>
+  </PropertyGroup>
+
   <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
   <!-- Workaround https://github.com/dotnet/source-build/issues/1112. Source link is currently disabled in source build so do not apply this worksaround. -->
   <Target Condition="'$(DotNetBuildFromSource)' != 'true'"
