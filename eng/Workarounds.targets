@@ -32,6 +32,14 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
+  <!-- Source Build still uses a 3.0 SDK, which we need to retarget to 5.0 until the first 5.0 SDK is publicly released -->
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <KnownFrameworkReference
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'netcoreapp3.0'))"
+      TargetFramework="netcoreapp5.0"
+      />
+  </ItemGroup>
+
   <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
   <Target Name="_WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
     <ItemGroup>
