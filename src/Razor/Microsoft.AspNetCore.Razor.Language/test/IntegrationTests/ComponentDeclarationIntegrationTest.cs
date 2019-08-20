@@ -156,7 +156,7 @@ namespace Test
 
         public class BaseClass : IComponent
         {
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
             }
 
@@ -164,7 +164,7 @@ namespace Test
             {
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 throw new System.NotImplementedException();
             }

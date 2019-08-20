@@ -8,18 +8,11 @@ Document -
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute -  - type=" - "
+                    HtmlAttribute - (6:0,6 [16] x:\dir\subdir\Test\TestComponent.cshtml) -  type=" - "
                         HtmlAttributeValue - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (13:0,13 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - checkbox
-                    HtmlAttribute - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - checked=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+                    HtmlAttribute - (22:0,22 [17] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind=" - "
+                        CSharpExpressionAttributeValue - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (31:0,31 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Enabled
-                            IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (30:0,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, 
-                            IntermediateToken -  - CSharp - Enabled
-                            IntermediateToken -  - CSharp - )
             CSharpCode - (51:1,7 [41] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (51:1,7 [41] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public bool Enabled { get; set; }\n

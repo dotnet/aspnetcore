@@ -1,14 +1,19 @@
-Source Location: (26:0,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (1:0,1 [41] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components.Web|
+Generated Location: (320:12,0 [41] )
+|using Microsoft.AspNetCore.Components.Web|
+
+Source Location: (70:1,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |OnClick|
-Generated Location: (1007:25,26 [7] )
+Generated Location: (1173:32,26 [7] )
 |OnClick|
 
-Source Location: (48:2,7 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (92:3,7 [60] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    private Action<UIMouseEventArgs> OnClick { get; set; }
+    private Action<MouseEventArgs> OnClick { get; set; }
 |
-Generated Location: (1514:45,7 [62] )
+Generated Location: (1680:52,7 [60] )
 |
-    private Action<UIMouseEventArgs> OnClick { get; set; }
+    private Action<MouseEventArgs> OnClick { get; set; }
 |
 

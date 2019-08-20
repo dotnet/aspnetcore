@@ -1,14 +1,14 @@
-Source Location: (46:2,7 [100] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (46:2,7 [98] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
-    private void Increment(UIEventArgs e) {
+    private void Increment(EventArgs e) {
         counter++;
     }
 |
-Generated Location: (1017:30,7 [100] )
+Generated Location: (990:30,7 [98] )
 |
     private int counter;
-    private void Increment(UIEventArgs e) {
+    private void Increment(EventArgs e) {
         counter++;
     }
 |

@@ -20,7 +20,7 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __o = Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __o = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                            CurrentDate
@@ -28,7 +28,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , format: 
+            ;
+            __o = 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                        Format
@@ -36,8 +37,7 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            );
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: Format);
+            ;
         }
         #pragma warning restore 1998
 #nullable restore

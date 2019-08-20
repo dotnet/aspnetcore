@@ -1,8 +1,8 @@
-Source Location: (72:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (116:2,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |
-Generated Location: (1261:32,7 [77] )
+Generated Location: (1425:39,7 [77] )
 |
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 |

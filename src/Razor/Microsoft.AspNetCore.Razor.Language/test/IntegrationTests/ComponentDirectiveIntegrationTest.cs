@@ -126,12 +126,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             [Parameter]
             public RenderFragment Body { get; set; }
 
-            public void Configure(RenderHandle renderHandle)
+            public void Attach(RenderHandle renderHandle)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SetParametersAsync(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterView parameters)
             {
                 throw new NotImplementedException();
             }

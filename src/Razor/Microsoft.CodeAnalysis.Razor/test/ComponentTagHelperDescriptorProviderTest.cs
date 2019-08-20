@@ -23,9 +23,9 @@ namespace Test
 {
     public class MyComponent : IComponent
     {
-        public void Configure(RenderHandle renderHandle) { }
+        public void Attach(RenderHandle renderHandle) { }
 
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -145,9 +145,9 @@ namespace Test
 {
     public class MyComponent<T> : IComponent
     {
-        public void Configure(RenderHandle renderHandle) { }
+        public void Attach(RenderHandle renderHandle) { }
 
-        public Task SetParametersAsync(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterView parameters)
         {
             return Task.CompletedTask;
         }
@@ -578,7 +578,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public Action<UIMouseEventArgs> OnClick { get; set; }
+        public Action<EventArgs> OnClick { get; set; }
     }
 }
 
@@ -604,7 +604,7 @@ namespace Test
 
             var attribute = Assert.Single(component.BoundAttributes);
             Assert.Equal("OnClick", attribute.Name);
-            Assert.Equal("System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>", attribute.TypeName);
+            Assert.Equal("System.Action<System.EventArgs>", attribute.TypeName);
 
             Assert.False(attribute.HasIndexer);
             Assert.False(attribute.IsBooleanProperty);
@@ -733,6 +733,7 @@ namespace Test
             // Arrange
 
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using System;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -740,7 +741,7 @@ namespace Test
     public class MyComponent : ComponentBase
     {
         [Parameter]
-        public EventCallback<UIMouseEventArgs> OnClick { get; set; }
+        public EventCallback<EventArgs> OnClick { get; set; }
     }
 }
 
@@ -769,7 +770,7 @@ namespace Test
                 a =>
                 {
                     Assert.Equal("OnClick", a.Name);
-                    Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIMouseEventArgs>", a.TypeName);
+                    Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.EventArgs>", a.TypeName);
                     Assert.False(a.HasIndexer);
                     Assert.False(a.IsBooleanProperty);
                     Assert.False(a.IsEnum);

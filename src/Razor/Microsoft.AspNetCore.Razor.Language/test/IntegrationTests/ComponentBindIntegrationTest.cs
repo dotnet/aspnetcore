@@ -83,6 +83,7 @@ namespace Test
             // We're looking for VS crash issues. Meaning if the parser returns
             // diagnostics we don't want to throw.
             var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
 <input type=""text"" @bind=""@page"" />
 @functions {
     public string page { get; set; } = ""text"";

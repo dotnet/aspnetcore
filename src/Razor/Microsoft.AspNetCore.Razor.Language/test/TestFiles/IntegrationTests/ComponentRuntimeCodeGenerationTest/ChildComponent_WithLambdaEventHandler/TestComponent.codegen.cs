@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenComponent<Test.MyComponent>(0);
-            __builder.AddAttribute(1, "OnClick", new System.Action<Microsoft.AspNetCore.Components.UIEventArgs>(
+            __builder.AddAttribute(1, "OnClick", new System.Action<System.EventArgs>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                         e => { Increment(); }

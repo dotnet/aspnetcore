@@ -15,8 +15,12 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [29] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (17:0,17 [8] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (17:0,17 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - x => { }
-                            IntermediateToken -  - CSharp - )
+                    HtmlAttribute - (6:0,6 [20] x:\dir\subdir\Test\TestComponent.cshtml) -  @onclick=" - "
+                        HtmlAttributeValue - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - x
+                        HtmlAttributeValue - (18:0,18 [3] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                            IntermediateToken - (19:0,19 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - =>
+                        HtmlAttributeValue - (21:0,21 [2] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                            IntermediateToken - (22:0,22 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - {
+                        HtmlAttributeValue - (23:0,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                            IntermediateToken - (24:0,24 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - }

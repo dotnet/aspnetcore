@@ -15,7 +15,7 @@ namespace Test
         {
             __builder.OpenElement(0, "input");
             __builder.AddAttribute(1, "type", "text");
-            __builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.AddAttribute(2, "@bind", 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
                            CurrentDate
@@ -23,9 +23,8 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
-            , format: "MM/dd/yyyy"));
-            __builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, format: "MM/dd/yyyy"));
-            __builder.SetUpdatesAttributeName("value");
+            );
+            __builder.AddAttribute(3, "@bind:format", "MM/dd/yyyy");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

@@ -8,15 +8,8 @@ Document -
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (14:0,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+                    HtmlAttribute - (6:0,6 [21] x:\dir\subdir\Test\TestComponent.cshtml) -  @bind=" - "
+                        CSharpExpressionAttributeValue - (14:0,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (15:0,15 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (14:0,14 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
-                        CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, 
-                            IntermediateToken -  - CSharp - ParentValue
-                            IntermediateToken -  - CSharp - )
             CSharpCode - (39:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (39:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
