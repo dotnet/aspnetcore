@@ -77,6 +77,16 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
             Assert.Equal(0, run);
 
+            // csproj contents
+            var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
+            using (var csprojStream = csproj.OpenRead())
+            using (var reader = new StreamReader(csprojStream))
+            {
+                var content = await reader.ReadToEndAsync();
+                // Don't remove the package reference, they might have taken other dependencies on it
+                Assert.Contains("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"", content);
+            }
+
             var remove = GetApplication();
             var removeRun = remove.Execute(new[] { "remove", FakeOpenApiUrl });
 
@@ -84,13 +94,13 @@ namespace Microsoft.DotNet.OpenApi.Remove.Tests
             Assert.Equal(0, removeRun);
 
             // csproj contents
-            var csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
-            using var csprojStream = csproj.OpenRead();
-            using var reader = new StreamReader(csprojStream);
-            var content = await reader.ReadToEndAsync();
+            csproj = new FileInfo(Path.Join(_tempDir.Root, "testproj.csproj"));
+            using var removedCsprojStream = csproj.OpenRead();
+            using var removedReader = new StreamReader(removedCsprojStream);
+            var removedContent = await removedReader.ReadToEndAsync();
             // Don't remove the package reference, they might have taken other dependencies on it
-            Assert.Contains("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"", content);
-            Assert.DoesNotContain($"<OpenApiReference", content);
+            Assert.Contains("<PackageReference Include=\"NSwag.ApiDescription.Client\" Version=\"", removedContent);
+            Assert.DoesNotContain($"<OpenApiReference", removedContent);
         }
 
         [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12738")]

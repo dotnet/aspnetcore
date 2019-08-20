@@ -33,9 +33,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             foreach (var sourceFile in _sourceProjectArg.Values)
             {
-                await EnsurePackagesInProjectAsync(projectFilePath, codeGenerator);
-
-                AddOpenAPIReference(OpenApiProjectReference, projectFilePath, sourceFile, codeGenerator);
+                await AddOpenAPIReference(OpenApiProjectReference, projectFilePath, sourceFile, codeGenerator);
             }
 
             return 0;

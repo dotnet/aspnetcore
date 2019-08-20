@@ -27,7 +27,9 @@ namespace Microsoft.DotNet.OpenApi.Commands
         public const string OpenApiProjectReference = "OpenApiProjectReference";
         protected const string SourceUrlAttrName = "SourceUrl";
 
+        public const string ContentDispositionHeaderName = "Content-Disposition";
         private const string CodeGeneratorAttrName = "CodeGenerator";
+        private const string DefaultExtension = ".json";
 
         internal const string PackageVersionUrl = "https://go.microsoft.com/fwlink/?linkid=2099561";
 
@@ -128,13 +130,14 @@ namespace Microsoft.DotNet.OpenApi.Commands
             return Uri.TryCreate(file, UriKind.Absolute, out var _) && file.StartsWith("http");
         }
 
-        internal void AddOpenAPIReference(
+        internal async Task AddOpenAPIReference(
             string tagName,
             FileInfo projectFile,
             string sourceFile,
             CodeGenerator? codeGenerator,
             string sourceUrl = null)
         {
+            await EnsurePackagesInProjectAsync(projectFile, codeGenerator);
             var project = LoadProject(projectFile);
             var items = project.GetItems(tagName);
             var fileItems = items.Where(i => string.Equals(GetFullPath(i.EvaluatedInclude), GetFullPath(sourceFile), StringComparison.Ordinal));
@@ -167,52 +170,10 @@ namespace Microsoft.DotNet.OpenApi.Commands
             }
 
             project.AddElementWithAttributes(tagName, sourceFile, metadata);
+            project.Save();
         }
 
-        internal async Task DownloadToFileAsync(string url, string destinationPath, bool overwrite)
-        {
-            Application application;
-            if (Parent is Application)
-            {
-                application = (Application)Parent;
-            }
-            else
-            {
-                application = (Application)Parent.Parent;
-            }
-
-            using var content = await _httpClient.GetStreamAsync(url);
-            await WriteToFileAsync(content, destinationPath, overwrite);
-        }
-
-        internal CodeGenerator? GetCodeGenerator(CommandOption codeGeneratorOption)
-        {
-            CodeGenerator? codeGenerator;
-            if (codeGeneratorOption.HasValue())
-            {
-                codeGenerator = Enum.Parse<CodeGenerator>(codeGeneratorOption.Value());
-            }
-            else
-            {
-                codeGenerator = null;
-            }
-
-            return codeGenerator;
-        }
-
-        internal void ValidateCodeGenerator(CommandOption codeGeneratorOption)
-        {
-            if (codeGeneratorOption.HasValue())
-            {
-                var value = codeGeneratorOption.Value();
-                if (!Enum.TryParse(value, out CodeGenerator _))
-                {
-                    throw new ArgumentException($"Invalid value '{value}' given as code generator.");
-                }
-            }
-        }
-
-        internal async Task EnsurePackagesInProjectAsync(FileInfo projectFile, CodeGenerator? codeGenerator)
+        private async Task EnsurePackagesInProjectAsync(FileInfo projectFile, CodeGenerator? codeGenerator)
         {
             var urlPackages = await LoadPackageVersionsFromURLAsync();
             var attributePackages = GetServicePackages(codeGenerator);
@@ -220,7 +181,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             foreach (var kvp in attributePackages)
             {
                 var packageId = kvp.Key;
-                var version = urlPackages.ContainsKey(packageId) ? urlPackages[packageId] : kvp.Value;
+                var version = urlPackages != null && urlPackages.ContainsKey(packageId) ? urlPackages[packageId] : kvp.Value;
 
                 var args = new[] {
                     "add",
@@ -263,6 +224,147 @@ namespace Microsoft.DotNet.OpenApi.Commands
             }
         }
 
+        internal async Task DownloadToFileAsync(string url, string destinationPath, bool overwrite)
+        {
+            using var response = await _httpClient.GetResponseAsync(url);
+            await WriteToFileAsync(await response.Stream, destinationPath, overwrite);
+        }
+
+        internal async Task<string> DownloadGivenOption(string url, CommandOption fileOption)
+        {
+            using var response = await _httpClient.GetResponseAsync(url);
+
+            if (response.IsSuccessCode())
+            {
+                string destinationPath;
+                if (fileOption.HasValue())
+                {
+                    destinationPath = fileOption.Value();
+                }
+                else
+                {
+                    var fileName = GetFileNameFromResponse(response, url);
+                    var fullPath = GetFullPath(fileName);
+                    var directory = Path.GetDirectoryName(fullPath);
+                    destinationPath = GetUniqueFileName(directory, Path.GetFileNameWithoutExtension(fileName), Path.GetExtension(fileName));
+                }
+                await WriteToFileAsync(await response.Stream, GetFullPath(destinationPath), overwrite: false);
+
+                return destinationPath;
+            }
+            else
+            {
+                throw new ArgumentException($"The given url returned '{response.StatusCode}', indicating failure. The url might be wrong, or there might be a networking issue.");
+            }
+        }
+
+        private string GetUniqueFileName(string directory, string fileName, string extension)
+        {
+            var uniqueName = fileName;
+
+            var filePath = Path.Combine(directory, fileName + extension);
+            var exists = true;
+            var count = 0;
+
+            do
+            {
+                if(!File.Exists(filePath))
+                {
+                    exists = false;
+                }
+                else
+                {
+                    count++;
+                    uniqueName = fileName + count;
+                    filePath = Path.Combine(directory, uniqueName + extension);
+                }
+            }
+            while (exists);
+
+            return uniqueName + extension;
+        }
+
+        private string GetFileNameFromResponse(IHttpResponseMessageWrapper response, string url)
+        {
+            var contentDisposition = response.ContentDisposition();
+            string result;
+            if (contentDisposition != null && contentDisposition.FileName != null)
+            {
+                var fileName = Path.GetFileName(contentDisposition.FileName);
+                if(!Path.HasExtension(fileName))
+                {
+                    fileName += DefaultExtension;
+                }
+
+                result = fileName;
+            }
+            else
+            {
+                var uri = new Uri(url);
+                if (uri.Segments.Count() > 0 && uri.Segments.Last() != "/")
+                {
+                    var lastSegment = uri.Segments.Last();
+                    if (!Path.HasExtension(lastSegment))
+                    {
+                        lastSegment += DefaultExtension;
+                    }
+
+                    result = lastSegment;
+                }
+                else
+                {
+                    var parts = uri.Host.Split('.');
+
+                    // There's no segment, use the domain name.
+                    string domain;
+                    switch (parts.Length)
+                    {
+                        case 1:
+                        case 2:
+                            // It's localhost if 1, no www if 2
+                            domain = parts.First();
+                            break;
+                        case 3:
+                            domain = parts[1];
+                            break;
+                        default:
+                            throw new NotImplementedException("We don't handle the case that the Host has more than three segments");
+                    }
+
+                    result = domain + DefaultExtension;
+                }
+            }
+
+            return result;
+        }
+
+        internal CodeGenerator? GetCodeGenerator(CommandOption codeGeneratorOption)
+        {
+            CodeGenerator? codeGenerator;
+            if (codeGeneratorOption.HasValue())
+            {
+                codeGenerator = Enum.Parse<CodeGenerator>(codeGeneratorOption.Value());
+            }
+            else
+            {
+                codeGenerator = null;
+            }
+
+            return codeGenerator;
+        }
+
+        internal void ValidateCodeGenerator(CommandOption codeGeneratorOption)
+        {
+            if (codeGeneratorOption.HasValue())
+            {
+                var value = codeGeneratorOption.Value();
+                if (!Enum.TryParse(value, out CodeGenerator _))
+                {
+                    throw new ArgumentException($"Invalid value '{value}' given as code generator.");
+                }
+            }
+        }
+
         internal string GetFullPath(string path)
         {
             return Path.IsPathFullyQualified(path)
@@ -288,7 +390,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             }*/
             try
             {
-                using var packageVersionStream = await _httpClient.GetStreamAsync(PackageVersionUrl);
+                using var packageVersionStream = await (await _httpClient.GetResponseAsync(PackageVersionUrl)).Stream;
                 using var packageVersionDocument = await JsonDocument.ParseAsync(packageVersionStream);
                 var packageVersionsElement = packageVersionDocument.RootElement.GetProperty("Packages");
                 var packageVersionsDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

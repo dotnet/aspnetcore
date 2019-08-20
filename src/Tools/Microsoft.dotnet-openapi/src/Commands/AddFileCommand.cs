@@ -38,7 +38,6 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             foreach (var sourceFile in _sourceFileArg.Values)
             {
-                await EnsurePackagesInProjectAsync(projectFilePath, codeGenerator);
                 if (IsLocalFile(sourceFile))
                 {
                     if (!ApprovedExtensions.Any(e => sourceFile.EndsWith(e)))
@@ -46,7 +45,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
                         await Warning.WriteLineAsync($"The extension for the given file '{sourceFile}' should have been one of: {string.Join(",", ApprovedExtensions)}.");
                         await Warning.WriteLineAsync($"The reference has been added, but may fail at build-time if the format is not correct.");
                     }
-                    AddOpenAPIReference(OpenApiReference, projectFilePath, sourceFile, codeGenerator);
+                    await AddOpenAPIReference(OpenApiReference, projectFilePath, sourceFile, codeGenerator);
                 }
                 else
                 {

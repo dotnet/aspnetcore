@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Openapi.Tools;
@@ -20,7 +23,12 @@ namespace Microsoft.DotNet.OpenApi.Tests
         protected readonly ITestOutputHelper _outputHelper;
 
         protected const string Content = @"{""x-generator"": ""NSwag""}";
+        protected const string ActualUrl = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/api-with-examples.yaml";
+        protected const string BrokenUrl= "https://www.microsoft.com/en-us/dingos.json";
         protected const string FakeOpenApiUrl = "https://contoso.com/openapi.json";
+        protected const string NoDispositionUrl = "https://contoso.com/nodisposition.yaml";
+        protected const string NoExtensionUrl = "https://contoso.com/noextension";
+        protected const string NoSegmentUrl = "https://contoso.com";
         protected const string DifferentUrl = "https://contoso.com/different.json";
         protected const string PackageUrl = "https://go.microsoft.com/fwlink/?linkid=2099561";
         protected const string DifferentUrlContent = @"
@@ -67,18 +75,36 @@ namespace Microsoft.DotNet.OpenApi.Tests
             return new TemporaryNSwagProject(project, nswagJsonFile);
         }
 
-        internal Application GetApplication()
+        internal Application GetApplication(bool realHttp = false)
         {
+            IHttpClientWrapper wrapper;
+            if(realHttp)
+            {
+                wrapper = new HttpClientWrapper(new HttpClient());
+            }
+            else
+            {
+                wrapper = new TestHttpClientWrapper(DownloadMock());
+            }
             return new Application(
-                _tempDir.Root, new TestHttpClientWrapper(DownloadMock()), _output, _error);
+                _tempDir.Root, wrapper, _output, _error);
         }
 
-        private IDictionary<string, string> DownloadMock()
+        private IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> DownloadMock()
         {
-            return new Dictionary<string, string> {
-                { FakeOpenApiUrl, Content },
-                { DifferentUrl, DifferentUrlContent },
-                { PackageUrl, PackageUrlContent }
+            var noExtension = new ContentDispositionHeaderValue("attachment");
+            noExtension.Parameters.Add(new NameValueHeaderValue("filename", "filename"));
+            var extension = new ContentDispositionHeaderValue("attachment");
+            extension.Parameters.Add(new NameValueHeaderValue("filename", "filename.json"));
+            var justAttachments = new ContentDispositionHeaderValue("attachment");
+
+            return new Dictionary<string, Tuple<string, ContentDispositionHeaderValue>> {
+                { FakeOpenApiUrl, Tuple.Create(Content, extension)},
+                { DifferentUrl, Tuple.Create<string, ContentDispositionHeaderValue>(DifferentUrlContent, null) },
+                { PackageUrl, Tuple.Create<string, ContentDispositionHeaderValue>(PackageUrlContent, null) },
+                { NoDispositionUrl, Tuple.Create<string, ContentDispositionHeaderValue>(Content, null) },
+                { NoExtensionUrl, Tuple.Create(Content, noExtension) },
+                { NoSegmentUrl, Tuple.Create(Content, justAttachments) }
             };
         }
 
@@ -91,9 +117,9 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
     public class TestHttpClientWrapper : IHttpClientWrapper
     {
-        private readonly IDictionary<string, string> _results;
+        private readonly IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> _results;
 
-        public TestHttpClientWrapper(IDictionary<string, string> results)
+        public TestHttpClientWrapper(IDictionary<string, Tuple<string, ContentDispositionHeaderValue>> results)
         {
             _results = results;
         }
@@ -102,10 +128,43 @@ namespace Microsoft.DotNet.OpenApi.Tests
         {
         }
 
-        public Task<Stream> GetStreamAsync(string url)
+        public Task<IHttpResponseMessageWrapper> GetResponseAsync(string url)
         {
-            byte[] byteArray = Encoding.ASCII.GetBytes(_results[url]);
-            return Task.FromResult<Stream>(new MemoryStream(byteArray));
+            var result = _results[url];
+            byte[] byteArray = Encoding.ASCII.GetBytes(result.Item1);
+            var stream = new MemoryStream(byteArray);
+
+            return Task.FromResult<IHttpResponseMessageWrapper>(new TestHttpResponseMessageWrapper(stream, result.Item2));
+        }
+    }
+
+    public class TestHttpResponseMessageWrapper : IHttpResponseMessageWrapper
+    {
+        public Task<Stream> Stream { get; }
+
+        public HttpStatusCode StatusCode { get; } = HttpStatusCode.OK;
+
+        public bool IsSuccessCode()
+        {
+            return true;
+        }
+
+        private ContentDispositionHeaderValue _contentDisposition;
+
+        public TestHttpResponseMessageWrapper(
+            MemoryStream stream,
+            ContentDispositionHeaderValue header)
+        {
+            Stream = Task.FromResult<Stream>(stream);
+            _contentDisposition = header;
+        }
+
+        public ContentDispositionHeaderValue ContentDisposition() {
+            return _contentDisposition;
+        }
+
+        public void Dispose()
+        {
         }
     }
 

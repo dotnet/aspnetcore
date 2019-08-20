@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.OpenApi.Refresh.Tests
             Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
             Assert.Equal(0, run);
 
-            var expectedJsonPath = Path.Combine(_tempDir.Root, "openapi", "openapi.json");
+            var expectedJsonPath = Path.Combine(_tempDir.Root, "filename.json");
             var json = await File.ReadAllTextAsync(expectedJsonPath);
             json += "trash";
             await File.WriteAllTextAsync(expectedJsonPath, json);

@@ -12,8 +12,6 @@ namespace Microsoft.DotNet.OpenApi.Commands
     internal class AddURLCommand : BaseCommand
     {
         private const string CommandName = "url";
-        private const string DefaultOpenAPIDir = "openapi";
-        private const string DefaultOpenAPIFile = "openapi.json";
 
         private const string OutputFileName = "--output-file";
         private const string SourceUrlArgName = "source-URL";
@@ -38,24 +36,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceUrlArgName);
             var codeGenerator = GetCodeGenerator(_codeGeneratorOption);
 
-            string outputFile;
-            if (_outputFileOption.HasValue())
-            {
-                outputFile = _outputFileOption.Value();
-            }
-            else
-            {
-                outputFile = Path.Combine(DefaultOpenAPIDir, DefaultOpenAPIFile);
-            }
-            await EnsurePackagesInProjectAsync(projectFilePath, codeGenerator);
-
             if (IsUrl(sourceFile))
             {
-                var destination = GetFullPath(outputFile);
                 // We have to download the file from that URL, save it to a local file, then create a OpenApiReference
-                await DownloadToFileAsync(sourceFile, destination, overwrite: false);
+                var outputFile = await DownloadGivenOption(sourceFile, _outputFileOption);
 
-                AddOpenAPIReference(OpenApiReference, projectFilePath, outputFile, codeGenerator, sourceFile);
+                await AddOpenAPIReference(OpenApiReference, projectFilePath, outputFile, codeGenerator, sourceFile);
             }
             else
             {
