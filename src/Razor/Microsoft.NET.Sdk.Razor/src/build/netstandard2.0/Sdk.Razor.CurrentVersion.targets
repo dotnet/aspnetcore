@@ -779,18 +779,20 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    Called after ComputeFilesToPublish and ComputeRefAssembliesToPublish but before CopyFilesToPublishDirectory - this target is called when
+    Called after ComputeResolvedFilesToPublishList but before CopyFilesToPublishDirectory - this target is called when
     publishing the project to get a list of files to the output directory.
   -->
   <Target
     Name="_RazorComputeFilesToPublish"
-    AfterTargets="ComputeRefAssembliesToPublish"
+    AfterTargets="ComputeResolvedFilesToPublishList"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '@(RazorGenerate)'!=''">
 
     <!-- If we generated an assembly/pdb then include those -->
     <ItemGroup>
       <ResolvedFileToPublish Include="@(RazorIntermediateAssembly)" Condition="'$(CopyBuildOutputToPublishDirectory)'=='true'">
         <RelativePath>@(RazorIntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
+        <!-- Pass assembly to linker and crossgen -->
+        <PostprocessAssembly>true</PostprocessAssembly>
       </ResolvedFileToPublish>
       <ResolvedFileToPublish Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="'$(CopyOutputSymbolsToPublishDirectory)'=='true'">
         <RelativePath>@(_RazorDebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
