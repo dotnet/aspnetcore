@@ -311,6 +311,9 @@ $restore = $RunRestore
 $nodeReuse = $false
 $env:MSBUILDDISABLENODEREUSE=1
 
+# Allow SDK to roll forward for major, minor, and patch. This is needed until the Razor SDK targets netcoreapp5.0
+$env:DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX=2
+
 # Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
 # conditions in building C++
 # Fixing this is tracked by https://github.com/aspnet/AspNetCore-Internal/issues/601
