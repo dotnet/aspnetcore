@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
         static Constants()
         {
-            // Microsoft SignalR/[Version] ([Detailed Version]; [Operating System]; [Runtime]; [Runtime Version])
             var userAgent = "";
 
             var assemblyVersion = typeof(Constants)
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 userAgent = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
             }
 
-            //UserAgentHeader = new ProductInfoHeaderValue("Microsoft SignalR", assemblyVersion.InformationalVersion);
             UserAgentHeader = userAgent;
         }
 
