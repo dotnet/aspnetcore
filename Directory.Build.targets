@@ -120,6 +120,14 @@
       <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
+    <!-- Workaround while there is no publicly released 5.0 SDK available for source build -->
+    <FrameworkReference 
+      Update="Microsoft.NETCore.App"
+      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(DotNetBuildFromSource)' == 'true'"
+      RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)"
+      TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      />
+
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
 
