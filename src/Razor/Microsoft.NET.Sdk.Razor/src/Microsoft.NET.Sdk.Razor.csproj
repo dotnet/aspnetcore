@@ -36,6 +36,8 @@
     <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Client.cs">
       <Link>Shared\Client.cs</Link>
     </Compile>
+
+    <Content Include="_._" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="LayoutDependencies" BeforeTargets="Build" Condition="'$(IsInnerBuild)' != 'true'">
