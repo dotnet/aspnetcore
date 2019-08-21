@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             httpClient.Timeout = HttpClientTimeout;
 
             // Start with the user agent header
-            httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.UserAgentHeader);
+            httpClient.DefaultRequestHeaders.Add(Constants.UserAgent, Constants.UserAgentHeader);
 
             // Apply any headers configured on the HttpConnectionOptions
             if (_httpConnectionOptions?.Headers != null)
@@ -559,9 +559,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 foreach (var header in _httpConnectionOptions.Headers)
                 {
                     // Check if the key is User-Agent and remove if empty string then replace if it exists.
-                    if (string.Equals(header.Key, "User-Agent", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(header.Key, Constants.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
-                        if(string.IsNullOrEmpty(header.Value))
+                        if (string.IsNullOrEmpty(header.Value))
                         {
                             httpClient.DefaultRequestHeaders.Remove(header.Key);
                         }

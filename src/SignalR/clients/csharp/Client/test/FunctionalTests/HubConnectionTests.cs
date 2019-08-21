@@ -1466,7 +1466,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
                     {
                         options.Headers["User-Agent"] = "";
-
                     })
                     .Build();
                 try
@@ -1502,7 +1501,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .WithUrl(server.Url + "/default", HttpTransportType.LongPolling, options =>
                     {
                         options.Headers["User-Agent"] = "User Value";
-
                     })
                     .Build();
                 try

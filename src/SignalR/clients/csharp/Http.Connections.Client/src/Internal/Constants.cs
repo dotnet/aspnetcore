@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -11,12 +10,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
+        public const string UserAgent = "User-Agent";
         public static readonly string UserAgentHeader;
 
         static Constants()
         {
-            var userAgent = "";
-
             var assemblyVersion = typeof(Constants)
                 .Assembly
                 .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
@@ -24,10 +22,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Debug.Assert(assemblyVersion != null);
 
-
             var majorVersion = typeof(Constants).Assembly.GetName().Version.Major;
             var minorVersion = typeof(Constants).Assembly.GetName().Version.Minor;
-            var os = getOperatingSystem();
+            var os = RuntimeInformation.OSDescription;
             var runtime = ".NET";
             var runtimeVersion = RuntimeInformation.FrameworkDescription;
 
@@ -35,26 +32,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             // but in case it isn't then don't include version in user-agent
             if (assemblyVersion != null)
             {
-                userAgent = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
+                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
+            } else
+            {
+                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion}; {os}; {runtime}; {runtimeVersion})";
             }
-
-            UserAgentHeader = userAgent;
-        }
-
-        public static string getOperatingSystem()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return "Windows NT";
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                return "macOS";
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return "Linux";
-            }
-
-            return "";
         }
     }
 }
