@@ -114,6 +114,11 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         internal static int RouteComparison(RouteEntry x, RouteEntry y)
         {
+            if (ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+
             var xTemplate = x.Template;
             var yTemplate = y.Template;
             if (xTemplate.Segments.Length != y.Template.Segments.Length)

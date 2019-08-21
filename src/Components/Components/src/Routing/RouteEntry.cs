@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    [DebuggerDisplay("Handler = {Handler}, Template = {Template}")]
     internal class RouteEntry
     {
         public RouteEntry(RouteTemplate template, Type handler, string[] unusedRouteParameterNames)
