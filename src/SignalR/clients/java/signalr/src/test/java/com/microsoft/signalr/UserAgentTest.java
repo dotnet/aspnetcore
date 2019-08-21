@@ -15,23 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class UserAgentTest {
 
-    private static Stream<Arguments> OperatingSystems() {
-        return Stream.of(
-                Arguments.of("Windows XP", "Windows NT"),
-                Arguments.of("wInDoWs 95", "Windows NT"),
-                Arguments.of("Macintosh", "macOS"),
-                Arguments.of("Linux", "Linux"),
-                Arguments.of("unix", "Linux"),
-                Arguments.of("", ""),
-                Arguments.of("1234", ""));
-    }
-
-    @ParameterizedTest
-    @MethodSource("OperatingSystems")
-    public void getOSName(String osInput, String os) {
-        assertEquals(os, UserAgentHelper.findOSName(osInput));
-    }
-
     private static Stream<Arguments> Versions() {
         return Stream.of(
                 Arguments.of("1.0.0", "1.0"),
@@ -53,7 +36,19 @@ public class UserAgentTest {
 
     @Test
     public void verifyJavaVersion(){
-        assertEquals(System.getProperty("java.vendor"), UserAgentHelper.getJavaVersion());
+        assertEquals(System.getProperty("java.version"), UserAgentHelper.getJavaVersion());
     }
 
+    @Test
+    public void checkUserAgentString(){
+        String userAgent = UserAgentHelper.createUserAgentString();
+        assertNotNull(userAgent);
+
+        String detailedVersion = Version.getDetailedVersion();
+        String handMadeUserAgent = "Microsoft SignalR/" + UserAgentHelper.getVersion(detailedVersion) +
+                "; (" + detailedVersion + "; " + UserAgentHelper.getOS() + "; Java; " +
+                UserAgentHelper.getJavaVersion() + "; " + UserAgentHelper.getJavaVendor() + ")";
+
+        assertEquals(handMadeUserAgent, userAgent);
+    }
 }
