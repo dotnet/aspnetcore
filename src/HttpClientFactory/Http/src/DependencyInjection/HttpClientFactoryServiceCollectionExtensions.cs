@@ -10,7 +10,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extensions methods to configure an <see cref="IServiceCollection"/> for <see cref="IHttpClientFactory"/>.
+    /// Extension methods to configure an <see cref="IServiceCollection"/> for <see cref="IHttpClientFactory"/>.
     /// </summary>
     public static class HttpClientFactoryServiceCollectionExtensions
     {
@@ -182,7 +182,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// will be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -220,11 +220,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -262,7 +262,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a binding between the <typeparamref name="TClient"/> type and a named <see cref="HttpClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -308,11 +308,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -359,7 +359,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -404,7 +404,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -449,11 +449,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -499,11 +499,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// be set to the type name of <typeparamref name="TClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -548,7 +548,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -600,7 +600,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -652,11 +652,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -709,11 +709,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a binding between the <typeparamref name="TClient" /> type and a named <see cref="HttpClient"/>.
         /// </summary>
         /// <typeparam name="TClient">
-        /// The type of the typed client. They type specified will be registered in the service collection as
+        /// The type of the typed client. The type specified will be registered in the service collection as
         /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
-        /// The implementation type of the typed client. They type specified will be instantiated by the
+        /// The implementation type of the typed client. The type specified will be instantiated by the
         /// <see cref="ITypedHttpClientFactory{TImplementation}"/>
         /// </typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
