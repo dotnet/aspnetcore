@@ -61,6 +61,18 @@ namespace Microsoft.DotNet.OpenApi.Add.Tests
             Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
             Assert.Equal(0, run);
 
+            Assert.Contains("Usage: openapi add", _output.ToString());
+        }
+
+        [Fact]
+        public void OpenApi_Add_File_Empty_ShowsHelp()
+        {
+            var app = GetApplication();
+            var run = app.Execute(new string[] { "add", "file", "--help" });
+
+            Assert.True(string.IsNullOrEmpty(_error.ToString()), $"Threw error: {_error.ToString()}");
+            Assert.Equal(0, run);
+
             Assert.Contains("Usage: openapi ", _output.ToString());
         }
 

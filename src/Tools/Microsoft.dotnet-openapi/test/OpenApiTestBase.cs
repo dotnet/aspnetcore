@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
 
         protected const string Content = @"{""x-generator"": ""NSwag""}";
         protected const string ActualUrl = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v3.0/api-with-examples.yaml";
-        protected const string BrokenUrl= "https://www.microsoft.com/en-us/dingos.json";
+        protected const string BrokenUrl = "https://www.microsoft.com/en-us/dingos.json";
         protected const string FakeOpenApiUrl = "https://contoso.com/openapi.json";
         protected const string NoDispositionUrl = "https://contoso.com/nodisposition.yaml";
         protected const string NoExtensionUrl = "https://contoso.com/noextension";
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.OpenApi.Tests
         internal Application GetApplication(bool realHttp = false)
         {
             IHttpClientWrapper wrapper;
-            if(realHttp)
+            if (realHttp)
             {
                 wrapper = new HttpClientWrapper(new HttpClient());
             }
@@ -159,7 +159,8 @@ namespace Microsoft.DotNet.OpenApi.Tests
             _contentDisposition = header;
         }
 
-        public ContentDispositionHeaderValue ContentDisposition() {
+        public ContentDispositionHeaderValue ContentDisposition()
+        {
             return _contentDisposition;
         }
 

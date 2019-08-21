@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Build.Locator;
 using Microsoft.DotNet.Openapi.Tools;
 using Microsoft.DotNet.OpenApi.Commands;
@@ -35,7 +34,8 @@ namespace Microsoft.DotNet.OpenApi
             Description = "OpenApi reference management operations.";
             ShortVersionGetter = GetInformationalVersion;
 
-            HelpOption("-?|-h|--help");
+            Help = HelpOption("-?|-h|--help");
+            Help.Inherited = true;
 
             Invoke = () =>
             {
@@ -49,6 +49,8 @@ namespace Microsoft.DotNet.OpenApi
         }
 
         public string WorkingDirectory { get; }
+
+        public CommandOption Help { get; }
 
         public new int Execute(params string[] args)
         {

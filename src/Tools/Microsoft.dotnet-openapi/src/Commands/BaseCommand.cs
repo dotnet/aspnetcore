@@ -43,7 +43,6 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             ProjectFileOption = Option("-p|--updateProject", "The project file update.", CommandOptionType.SingleValue);
 
-            Help = HelpOption("-?|-h|--help");
             if (Parent is Application)
             {
                 WorkingDirectory = ((Application)Parent).WorkingDirectory;
@@ -58,8 +57,6 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         public CommandOption ProjectFileOption { get; }
 
-        internal CommandOption Help { get; }
-
         public TextWriter Warning
         {
             get { return Out; }
@@ -71,13 +68,29 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         private async Task<int> ExecuteAsync()
         {
-            if (!ValidateArguments() || Help.HasValue())
+            if (GetApplication().Help.HasValue())
+            {
+                ShowHelp();
+                return 0;
+            }
+
+            if (!ValidateArguments())
             {
                 ShowHelp();
                 return 1;
             }
 
             return await ExecuteCoreAsync();
+        }
+
+        private Application GetApplication()
+        {
+            var parent = Parent;
+            while(!(parent is Application))
+            {
+                parent = parent.Parent;
+            }
+            return (Application)parent;
         }
 
         internal FileInfo ResolveProjectFile(CommandOption projectOption)
@@ -137,6 +150,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             CodeGenerator? codeGenerator,
             string sourceUrl = null)
         {
+            // EnsurePackagesInProjectAsync MUST happen before LoadProject, because otherwise the global state set by ProjectCollection doesn't pick up the nuget edits, and we end up losing them.
             await EnsurePackagesInProjectAsync(projectFile, codeGenerator);
             var project = LoadProject(projectFile);
             var items = project.GetItems(tagName);
@@ -268,7 +282,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             do
             {
-                if(!File.Exists(filePath))
+                if (!File.Exists(filePath))
                 {
                     exists = false;
                 }
@@ -291,7 +305,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
             if (contentDisposition != null && contentDisposition.FileName != null)
             {
                 var fileName = Path.GetFileName(contentDisposition.FileName);
-                if(!Path.HasExtension(fileName))
+                if (!Path.HasExtension(fileName))
                 {
                     fileName += DefaultExtension;
                 }

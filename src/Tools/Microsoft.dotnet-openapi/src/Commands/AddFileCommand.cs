@@ -38,19 +38,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             foreach (var sourceFile in _sourceFileArg.Values)
             {
-                if (IsLocalFile(sourceFile))
+                if (!ApprovedExtensions.Any(e => sourceFile.EndsWith(e)))
                 {
-                    if (!ApprovedExtensions.Any(e => sourceFile.EndsWith(e)))
-                    {
-                        await Warning.WriteLineAsync($"The extension for the given file '{sourceFile}' should have been one of: {string.Join(",", ApprovedExtensions)}.");
-                        await Warning.WriteLineAsync($"The reference has been added, but may fail at build-time if the format is not correct.");
-                    }
-                    await AddOpenAPIReference(OpenApiReference, projectFilePath, sourceFile, codeGenerator);
+                    await Warning.WriteLineAsync($"The extension for the given file '{sourceFile}' should have been one of: {string.Join(",", ApprovedExtensions)}.");
+                    await Warning.WriteLineAsync($"The reference has been added, but may fail at build-time if the format is not correct.");
                 }
-                else
-                {
-                    throw new ArgumentException($"{SourceFileArgName} of '{sourceFile}' could not be found.");
-                }
+                await AddOpenAPIReference(OpenApiReference, projectFilePath, sourceFile, codeGenerator);
             }
 
             return 0;
@@ -65,7 +58,23 @@ namespace Microsoft.DotNet.OpenApi.Commands
         {
             ValidateCodeGenerator(_codeGeneratorOption);
 
-            Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceFileArgName);
+            try
+            {
+                Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceFileArgName);
+            }
+            catch(ArgumentException ex)
+            {
+                Error.Write(ex.Message);
+                return false;
+            }
+
+            foreach (var sourceFile in _sourceFileArg.Values)
+            {
+                if (!IsLocalFile(sourceFile))
+                {
+                    Error.Write($"{SourceFileArgName} of '{sourceFile}' could not be found.");
+                }
+            }
             return true;
         }
     }

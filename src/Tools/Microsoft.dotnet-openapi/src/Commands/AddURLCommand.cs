@@ -36,18 +36,10 @@ namespace Microsoft.DotNet.OpenApi.Commands
             var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceUrlArgName);
             var codeGenerator = GetCodeGenerator(_codeGeneratorOption);
 
-            if (IsUrl(sourceFile))
-            {
-                // We have to download the file from that URL, save it to a local file, then create a OpenApiReference
-                var outputFile = await DownloadGivenOption(sourceFile, _outputFileOption);
+            // We have to download the file from that URL, save it to a local file, then create a OpenApiReference
+            var outputFile = await DownloadGivenOption(sourceFile, _outputFileOption);
 
-                await AddOpenAPIReference(OpenApiReference, projectFilePath, outputFile, codeGenerator, sourceFile);
-            }
-            else
-            {
-                Error.Write($"{SourceUrlArgName} was not valid. Valid values are URLs");
-                return 1;
-            }
+            await AddOpenAPIReference(OpenApiReference, projectFilePath, outputFile, codeGenerator, sourceFile);
 
             return 0;
         }
@@ -55,7 +47,12 @@ namespace Microsoft.DotNet.OpenApi.Commands
         protected override bool ValidateArguments()
         {
             ValidateCodeGenerator(_codeGeneratorOption);
-            Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceUrlArgName);
+            var sourceFile = Ensure.NotNullOrEmpty(_sourceFileArg.Value, SourceUrlArgName);
+            if (!IsUrl(sourceFile))
+            {
+                Error.Write($"{SourceUrlArgName} was not valid. Valid values are URLs");
+                return false;
+            }
             return true;
         }
     }
