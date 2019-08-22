@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             }
             else
             {
-                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion}; {os}; {runtime}; {runtimeVersion})";
+                UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({os}; {runtime}; {runtimeVersion})";
             }
         }
     }
