@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             if (assemblyVersion != null)
             {
                 UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion} ({assemblyVersion.InformationalVersion}; {os}; {runtime}; {runtimeVersion})";
-            } else
+            }
+            else
             {
                 UserAgentHeader = $"Microsoft SignalR/{majorVersion}.{minorVersion}; {os}; {runtime}; {runtimeVersion})";
             }
