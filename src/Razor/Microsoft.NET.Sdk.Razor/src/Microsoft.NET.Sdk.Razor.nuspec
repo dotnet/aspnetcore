@@ -8,6 +8,7 @@
     <file src="Sdk\*" target="Sdk" />
     <file src="build\**" target="build" />
     <file src="buildMultiTargeting\**" target="buildMultiTargeting" />
+    <file src="_._" target="lib\netstandard2.0\_._" />
 
     <file src="$outputPath$\**" target="\" />
   </files>
