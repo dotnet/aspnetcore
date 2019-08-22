@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Build.Framework;
@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.ApiDescription.Client
     /// <summary>
     /// Restore <see cref="ITaskItem"/>s from given property value.
     /// </summary>
-    public class GetCurrentItems : Task
+    public class GetCurrentOpenApiReference : Task
     {
         /// <summary>
         /// The property value to deserialize.

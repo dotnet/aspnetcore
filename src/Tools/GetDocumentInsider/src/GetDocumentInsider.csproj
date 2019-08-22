@@ -18,7 +18,7 @@
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
-  <Target Name="BuildX86" AfterTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">
+  <Target Name="BuildX86" AfterTargets="CoreBuild" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Properties="TargetFramework=$(TargetFramework);Platform=x86" Targets="Build" />
   </Target>
 </Project>

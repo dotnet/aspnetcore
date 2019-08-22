@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- Do not complain about lack of lib folder. -->
     <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -9,7 +9,7 @@
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>Build Tasks;MSBuild;Swagger;OpenAPI;code generation;Web API client;service reference</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DevelopmentDependency>true</DevelopmentDependency>
     <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
